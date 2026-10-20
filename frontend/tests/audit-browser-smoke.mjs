@@ -37,6 +37,7 @@ try {
     check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `public page fits ${width}px viewport`)
     await page.screenshot({ path: resolve(output, `public-${width}.png`), fullPage: true })
     if (width === 390 || width === 1440) await page.screenshot({ path: resolve(output, `public-${width}-first-screen.png`) })
+    await page.locator('#about').screenshot({ path: resolve(output, `about-${width}.png`) })
   }
   check(!requested.some(url => new URL(url).pathname.startsWith('/api/')), 'anonymous homepage does not access internal APIs')
   check(!requested.some(url => /pdf-|pdf\.worker|three\.module|vanta|ogl-|forecast-clouds/.test(url)), 'public page does not fetch PDF, WebGL or hidden cloud background')

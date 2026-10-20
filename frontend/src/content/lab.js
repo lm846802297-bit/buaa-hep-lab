@@ -14,6 +14,7 @@ export const lab = {
 
 export const advisorProfile = {
   name: lab.advisor,
+  groupRole: '导师',
   english: 'Xiao-Ping Wang',
   institution: lab.institution,
   title: '副教授 · 博士生导师',
@@ -23,12 +24,17 @@ export const advisorProfile = {
   source: lab.source,
 }
 
-// Collaboration confirmed by the group; academic fields checked on the linked homepage.
+// Group roles confirmed by the user; public academic details checked on faculty homepages.
 export const collaborators = [
   {
     name: '刘佳',
+    english: 'Jia Liu',
+    groupRole: '学术指导',
     institution: '北京大学物理学院',
+    title: '长聘副教授',
     field: '粒子物理理论',
+    intro: '从事粒子物理理论研究，研究涵盖暗物质物理、对撞机物理、希格斯物理、中微子物理与粒子天体物理，围绕基本粒子、相互作用及标准模型之外的物理开展研究。',
+    highlights: ['相关研究成果发表于 Physical Review Letters、Nature Communications、Physical Review D、JHEP、JCAP 和 Communications Physics 等学术期刊。'],
     topics: ['暗物质物理', '对撞机物理', '希格斯物理', '中微子物理', '粒子天体物理'],
     source: 'https://faculty.pku.edu.cn/liujia/zh_CN/index.htm',
   },

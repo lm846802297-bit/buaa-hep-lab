@@ -13,12 +13,21 @@ describe('Public academic website', () => {
     expect(html).toContain('暂定名称')
     expect(html).toContain('href="/hub"')
     expect(html).toContain('BibTeX')
-    expect(html).toContain('合作成员')
+    expect(html).toContain('aria-label="导师：王小平"')
+    expect(html).toContain('aria-label="学术指导：刘佳"')
+    expect(html).not.toContain('合作成员')
     expect(html).toContain('副教授 · 博士生导师')
     expect(html).toContain(advisorProfile.intro)
     for (const topic of advisorProfile.topics) expect(html).toContain(topic)
     expect(html).toContain('刘佳')
     expect(html).toContain('北京大学物理学院')
+    expect(html).toContain('长聘副教授')
+    expect(html).toContain('Jia Liu')
+    for (const person of collaborators) {
+      expect(html).toContain(person.intro)
+      for (const topic of person.topics) expect(html).toContain(topic)
+      for (const highlight of person.highlights) expect(html).toContain(highlight)
+    }
     expect(html).toContain('https://faculty.pku.edu.cn/liujia/zh_CN/index.htm')
     for (const paper of publications) expect(html).toContain(`https://arxiv.org/abs/${paper.id}`)
     expect(html).not.toContain('演示管理员')
@@ -28,10 +37,10 @@ describe('Public academic website', () => {
   it('keeps the public content profile limited to approved academic fields', () => {
     expect(Object.keys(lab).sort()).toEqual(['name', 'provisional', 'shortName', 'institution', 'field', 'english', 'advisor', 'source', 'intro'].sort())
     expect(JSON.stringify(lab)).not.toMatch(/[\w.-]+@[\w.-]+/)
-    expect(Object.keys(advisorProfile).sort()).toEqual(['name', 'english', 'institution', 'title', 'field', 'topics', 'intro', 'source'].sort())
+    expect(Object.keys(advisorProfile).sort()).toEqual(['name', 'groupRole', 'english', 'institution', 'title', 'field', 'topics', 'intro', 'source'].sort())
     expect(JSON.stringify(advisorProfile)).not.toMatch(/邮箱|电话|办公|履历|照片|[\w.-]+@[\w.-]+/)
     for (const person of collaborators) {
-      expect(Object.keys(person).sort()).toEqual(['name', 'institution', 'field', 'topics', 'source'].sort())
+      expect(Object.keys(person).sort()).toEqual(['name', 'english', 'groupRole', 'institution', 'title', 'field', 'intro', 'highlights', 'topics', 'source'].sort())
       expect(JSON.stringify(person)).not.toMatch(/邮箱|电话|办公|履历|照片|[\w.-]+@[\w.-]+/)
     }
     expect(publications.every(p => /^\d{4}\.\d{4,5}$/.test(p.id))).toBe(true)
