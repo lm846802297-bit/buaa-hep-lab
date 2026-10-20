@@ -40,7 +40,7 @@ try {
   check(status.max_upload_bytes, 1048576, 'D1-only upload size is advertised');
   check(Object.hasOwn(status, 'user_count'), false, 'anonymous status does not expose group size');
   check(Object.hasOwn(status, 'default_location'), false, 'anonymous status does not expose internal meeting location');
-  const setup = { admin_name: 'Local verification admin', admin_email: 'local-admin@example.invalid', admin_password: randomBytes(18).toString('hex'), lab_name: 'Local verification lab', lab_short_name: 'TEST', institution: 'Test', invite_code: 'LOCAL-TEST-ONLY', default_location: '' };
+  const setup = { admin_name: 'Local verification admin', admin_email: 'local-admin@example.invalid', admin_password: randomBytes(18).toString('hex'), lab_name: 'Local verification lab', lab_short_name: 'TEST', institution: 'Test', invite_code: 'LOCAL-TEST-ONLY', default_location: 'Local verification room' };
   check((await post('/system/setup', setup)).status, 403, 'untrusted visitor cannot claim administrator');
   check((await (await request('/system/status')).json()).initialized, false, 'failed setup has no side effects');
   const created = await post('/system/setup', { ...setup, setup_token: setupToken });
@@ -51,7 +51,7 @@ try {
   check(Object.hasOwn(publicStatus, 'user_count'), false, 'initialized public status does not expose group size');
   check(Object.hasOwn(publicStatus, 'default_location'), false, 'initialized public status does not expose internal meeting location');
   const adminStatus = await (await request('/system/status', { headers: { Authorization: `Bearer ${admin.access_token}` } })).json();
-  check(adminStatus.default_location, '', 'authenticated status retains the configured default location');
+  check(adminStatus.default_location, 'Local verification room', 'authenticated status retains the configured default location');
   check((await post('/system/setup', { ...setup, setup_token: setupToken })).status, 400, 'initialization cannot repeat');
   check((await request('/auth/me')).status, 401, 'anonymous requests are rejected');
   check((await request('/auth/me', { headers: { Authorization: `Bearer ${admin.access_token}` } })).status, 200, 'issued token works on protected endpoints');
