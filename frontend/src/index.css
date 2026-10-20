@@ -1712,3 +1712,512 @@ html[data-bg-style="clouds-static"] body {
   background: rgba(197, 230, 223, 0.2);
 }
 
+
+
+/* ==========================================================================
+   Quiet Research — Claude-inspired, BUAA-owned academic design system.
+   Scope: only the opt-in/default light theme; legacy dark themes remain intact.
+   ========================================================================== */
+:root[data-color-scheme="quiet-research"] {
+  color-scheme: light;
+  --bg: #F7F5F0;
+  --panel: #FFFEFA;
+  --panel-solid: #FFFEFA;
+  --surface: #F3F0E9;
+  --raised: #EEEAE2;
+  --glass: #FFFEFA;
+  --text: #292722;
+  --soft: #514D45;
+  --muted: #777168;
+  --accent: #B85E3F;
+  --accent-strong: #A94F33;
+  --accent-ink: #FFFFFF;
+  --line: #E2DDD3;
+  --warning: #8A5A16;
+  --warning-bg: #F7EEDC;
+  --danger: #A43F38;
+  --danger-bg: #F8E8E5;
+  --danger-border: #E6BDB8;
+  --success: #2F6B4F;
+  --focus: #A94F33;
+  --font: Inter, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --serif: Georgia, "Noto Serif SC", "Songti SC", serif;
+  --radius: 14px;
+  --shadow: 0 2px 10px rgb(41 39 34 / 5%);
+  --sidebar: 248px;
+}
+:root[data-color-scheme="quiet-research"] body,
+:root[data-color-scheme="quiet-research"] #app {
+  background: var(--bg);
+  color: var(--text);
+}
+:root[data-color-scheme="quiet-research"] body {
+  font-family: var(--font);
+}
+:root[data-color-scheme="quiet-research"] h1,
+:root[data-color-scheme="quiet-research"] h2,
+:root[data-color-scheme="quiet-research"] h3,
+:root[data-color-scheme="quiet-research"] h4 {
+  color: var(--text);
+}
+:root[data-color-scheme="quiet-research"] ::selection {
+  background: #F0DCD3;
+  color: #292722;
+}
+:root[data-color-scheme="quiet-research"] ::-webkit-scrollbar-thumb {
+  background: #C9C1B5;
+}
+:root[data-color-scheme="quiet-research"] option {
+  background: #FFFEFA;
+  color: #292722;
+}
+:root[data-color-scheme="quiet-research"] input,
+:root[data-color-scheme="quiet-research"] select,
+:root[data-color-scheme="quiet-research"] textarea {
+  color: var(--text);
+  background: var(--surface);
+  border-color: var(--line);
+}
+:root[data-color-scheme="quiet-research"] input:focus,
+:root[data-color-scheme="quiet-research"] select:focus,
+:root[data-color-scheme="quiet-research"] textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgb(184 94 63 / 15%);
+}
+:root[data-color-scheme="quiet-research"] input::placeholder,
+:root[data-color-scheme="quiet-research"] textarea::placeholder {
+  color: #81796E;
+}
+:root[data-color-scheme="quiet-research"] .forecast-atmosphere {
+  display: none !important;
+}
+:root[data-color-scheme="quiet-research"] .app-shell {
+  background: var(--bg);
+}
+:root[data-color-scheme="quiet-research"] .app-shell.has-sidebar {
+  padding-left: var(--sidebar);
+}
+:root[data-color-scheme="quiet-research"] .app-shell.has-sidebar.sidebar-collapsed {
+  padding-left: var(--sidebar);
+}
+:root[data-color-scheme="quiet-research"] .workspace {
+  max-width: 1440px;
+  color: var(--text);
+}
+:root[data-color-scheme="quiet-research"] .panel,
+:root[data-color-scheme="quiet-research"] .glass-card,
+:root[data-color-scheme="quiet-research"] .app-shell .paper-row,
+:root[data-color-scheme="quiet-research"] .app-shell .recommend-panel,
+:root[data-color-scheme="quiet-research"] .app-shell .library-paper,
+:root[data-color-scheme="quiet-research"] .app-shell .book-card,
+:root[data-color-scheme="quiet-research"] .app-shell .timeline-slot,
+:root[data-color-scheme="quiet-research"] .app-shell .week-view,
+:root[data-color-scheme="quiet-research"] .app-shell .login-card,
+:root[data-color-scheme="quiet-research"] .app-shell .share-card {
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+:root[data-color-scheme="quiet-research"] .glass-card::before,
+:root[data-color-scheme="quiet-research"] .glass-card::after {
+  box-shadow: none;
+}
+:root[data-color-scheme="quiet-research"] .forecast-sidebar {
+  width: var(--sidebar);
+  align-items: stretch;
+  padding: 20px 14px;
+  background: #F1EEE7;
+  border-right: 1px solid var(--line);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+:root[data-color-scheme="quiet-research"] .sidebar-top {
+  align-items: flex-start;
+  margin: 0 0 24px;
+  padding: 0 8px 20px;
+  border-bottom: 1px solid var(--line);
+}
+:root[data-color-scheme="quiet-research"] .sidebar-top .sidebar-brand {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+:root[data-color-scheme="quiet-research"] .sidebar-brand-logo {
+  width: 30px;
+  height: 30px;
+  filter: none;
+}
+:root[data-color-scheme="quiet-research"] .sidebar-brand:hover .sidebar-brand-logo {
+  transform: none;
+  filter: none;
+}
+:root[data-color-scheme="quiet-research"] .sidebar-brand-text {
+  color: var(--text);
+  font-size: 13px;
+  letter-spacing: .01em;
+}
+:root[data-color-scheme="quiet-research"] .sidebar-links {
+  gap: 4px;
+}
+:root[data-color-scheme="quiet-research"] .sidebar-link.iso-pro,
+:root[data-color-scheme="quiet-research"] .sidebar-tool.iso-pro {
+  width: 100%;
+  height: 42px;
+  justify-content: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--soft);
+  transition: background .16s ease, color .16s ease, border-color .16s ease;
+}
+:root[data-color-scheme="quiet-research"] .iso-pro .iso-layer {
+  display: none;
+}
+:root[data-color-scheme="quiet-research"] .iso-pro .iso-icon {
+  width: 20px;
+  height: 20px;
+  color: currentColor;
+  transform: none !important;
+}
+:root[data-color-scheme="quiet-research"] .iso-pro .iso-icon :deep(svg) {
+  transform: none !important;
+}
+:root[data-color-scheme="quiet-research"] .iso-pro .iso-text {
+  position: static;
+  opacity: 1;
+  transform: none;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: inherit;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  font-size: 13px;
+  font-weight: 500;
+  pointer-events: auto;
+}
+:root[data-color-scheme="quiet-research"] .iso-pro:hover .iso-text {
+  transform: none;
+}
+:root[data-color-scheme="quiet-research"] .sidebar-link.iso-pro:hover,
+:root[data-color-scheme="quiet-research"] .sidebar-tool.iso-pro:hover,
+:root[data-color-scheme="quiet-research"] .sidebar-link.router-link-exact-active,
+:root[data-color-scheme="quiet-research"] .sidebar-tool.router-link-exact-active {
+  background: #E8E2D8;
+  color: #8E472F;
+  border-color: #E0D6C9;
+}
+:root[data-color-scheme="quiet-research"] .sidebar-link.router-link-exact-active::before {
+  left: -14px;
+  top: 9px;
+  height: 22px;
+  width: 3px;
+  background: var(--accent);
+}
+:root[data-color-scheme="quiet-research"] .sidebar-bottom {
+  gap: 5px;
+  align-items: stretch;
+}
+:root[data-color-scheme="quiet-research"] .account-btn-duck {
+  width: 100%;
+  height: 42px;
+  border-radius: 10px;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+:root[data-color-scheme="quiet-research"] .account-btn-duck .sign {
+  width: 28px;
+  flex: 0 0 28px;
+}
+:root[data-color-scheme="quiet-research"] .account-btn-duck .text {
+  opacity: 1;
+  width: auto;
+  padding: 0 0 0 8px;
+  color: var(--soft);
+  font-size: 13px;
+}
+:root[data-color-scheme="quiet-research"] .logout-btn-duck {
+  border-radius: 10px;
+  box-shadow: none;
+}
+:root[data-color-scheme="quiet-research"] .user-menu {
+  background: var(--panel);
+  border-color: var(--line);
+  box-shadow: var(--shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+:root[data-color-scheme="quiet-research"] .button.primary,
+:root[data-color-scheme="quiet-research"] .button-primary {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: none;
+}
+:root[data-color-scheme="quiet-research"] .button.primary:hover:not(:disabled),
+:root[data-color-scheme="quiet-research"] .button-primary:hover:not(:disabled) {
+  color: #FFFFFF;
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+:root[data-color-scheme="quiet-research"] .button.secondary {
+  color: var(--text);
+  background: #F1EEE7;
+  border-color: var(--line);
+}
+:root[data-color-scheme="quiet-research"] .button.secondary:hover:not(:disabled) {
+  background: #E9E2D8;
+  border-color: #CFC5B7;
+}
+:root[data-color-scheme="quiet-research"] .button.ghost,
+:root[data-color-scheme="quiet-research"] .button-quiet {
+  color: var(--soft);
+}
+:root[data-color-scheme="quiet-research"] .button.ghost:hover,
+:root[data-color-scheme="quiet-research"] .button-quiet:hover {
+  background: #F0ECE4;
+  color: var(--text);
+}
+:root[data-color-scheme="quiet-research"] .page-heading h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  letter-spacing: -.025em;
+}
+:root[data-color-scheme="quiet-research"] .page-heading p,
+:root[data-color-scheme="quiet-research"] .muted {
+  color: var(--muted);
+}
+:root[data-color-scheme="quiet-research"] .forecast-home {
+  color: var(--text);
+  background: transparent;
+}
+:root[data-color-scheme="quiet-research"] .forecast-intro h1 {
+  font-family: var(--serif);
+  font-size: clamp(34px, 4vw, 48px);
+  font-weight: 400;
+  letter-spacing: -.035em;
+  line-height: 1.18;
+}
+:root[data-color-scheme="quiet-research"] .forecast-intro h1,
+:root[data-color-scheme="quiet-research"] .forecast-intro h1 * {
+  color: var(--text);
+}
+:root[data-color-scheme="quiet-research"] .forecast-intro p,
+:root[data-color-scheme="quiet-research"] .forecast-intro .group-name-en,
+:root[data-color-scheme="quiet-research"] .home-date {
+  color: var(--muted);
+}
+:root[data-color-scheme="quiet-research"] .forecast-home .eyebrow,
+:root[data-color-scheme="quiet-research"] .forecast-home .section-label {
+  color: var(--accent);
+}
+:root[data-color-scheme="quiet-research"] .home-primary-links .glass-card,
+:root[data-color-scheme="quiet-research"] .forecast-right .glass-card,
+:root[data-color-scheme="quiet-research"] .personal-agenda .glass-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+:root[data-color-scheme="quiet-research"] .forecast-right .glass-card:hover,
+:root[data-color-scheme="quiet-research"] .home-primary-links .glass-card:hover,
+:root[data-color-scheme="quiet-research"] .personal-agenda .glass-card:hover {
+  background: #FBF8F2;
+  border-color: #D6CBBE;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+:root[data-color-scheme="quiet-research"] .week-day,
+:root[data-color-scheme="quiet-research"] .forecast-day {
+  color: var(--soft);
+}
+:root[data-color-scheme="quiet-research"] .forecast-day.today {
+  background: #F4E5DE;
+  border-color: #E4C5B7;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+:root[data-color-scheme="quiet-research"] .day-name,
+:root[data-color-scheme="quiet-research"] .day-summary,
+:root[data-color-scheme="quiet-research"] .week-detail-link {
+  color: var(--muted);
+}
+:root[data-color-scheme="quiet-research"] .day-number {
+  color: var(--text);
+  font-weight: 400;
+}
+:root[data-color-scheme="quiet-research"] .day-markers span {
+  background: var(--accent);
+}
+:root[data-color-scheme="quiet-research"] .home-error {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+}
+:root[data-color-scheme="quiet-research"] .app-shell .paper-main h2,
+:root[data-color-scheme="quiet-research"] .app-shell .preview-card h3,
+:root[data-color-scheme="quiet-research"] .app-shell .resource-shell .book-body h2 {
+  font-family: var(--serif);
+  color: var(--text);
+}
+:root[data-color-scheme="quiet-research"] .app-shell .paper-main .abstract,
+:root[data-color-scheme="quiet-research"] .app-shell .recommendation,
+:root[data-color-scheme="quiet-research"] .app-shell .library-paper .abstract,
+:root[data-color-scheme="quiet-research"] .markdown-content {
+  color: var(--soft);
+}
+:root[data-color-scheme="quiet-research"] .markdown-content pre {
+  background: #F0EDE6;
+}
+:root[data-color-scheme="quiet-research"] .markdown-content pre code {
+  color: var(--text);
+}
+:root[data-color-scheme="quiet-research"] .app-shell .timeline-slot.nearest {
+  background: #F4E5DE;
+  border-color: #E4C5B7;
+}
+:root[data-color-scheme="quiet-research"] .app-shell .timeline-slot.nearest .button.secondary {
+  color: #FFFFFF;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+:root[data-color-scheme="quiet-research"] .app-shell .login-card .brand-name,
+:root[data-color-scheme="quiet-research"] .app-shell .login-card .card-title,
+:root[data-color-scheme="quiet-research"] .app-shell .share-card h1 {
+  color: var(--text);
+}
+:root[data-color-scheme="quiet-research"] .app-shell .login-card .brand-tag {
+  color: var(--accent);
+  background: #F4E5DE;
+  border-color: #E4C5B7;
+}
+:root[data-color-scheme="quiet-research"] .forecast-day:hover,
+:root[data-color-scheme="quiet-research"] .week-event:hover {
+  background: #F1EEE7;
+}
+:root[data-color-scheme="quiet-research"] .sidebar-brand-logo {
+  filter: none !important;
+}
+:root[data-color-scheme="quiet-research"] .sidebar-grip-handle,
+:root[data-color-scheme="quiet-research"] .pin-pulse-ring,
+:root[data-color-scheme="quiet-research"] .pin-guide-tooltip {
+  animation: none !important;
+  box-shadow: none !important;
+}
+:root[data-color-scheme="quiet-research"] .forecast-sidebar.is-floating {
+  background: #F1EEE7;
+  box-shadow: 4px 0 18px rgb(41 39 34 / 8%);
+}
+:root[data-color-scheme="quiet-research"] .app-footer {
+  color: var(--muted);
+  border-color: var(--line);
+}
+:root[data-color-scheme="quiet-research"] .demo-watermark-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='340' viewBox='0 0 480 340'%3E%3Cg transform='rotate(-22 240 170)'%3E%3Ctext x='240' y='135' text-anchor='middle' dominant-baseline='central' fill='%2329231F' fill-opacity='0.07' font-size='56' font-family='system-ui, sans-serif' font-weight='600' letter-spacing='4'%3E%E8%99%9A%E6%9E%84%E4%BF%A1%E6%81%AF%3C/text%3E%3Ctext x='240' y='205' text-anchor='middle' dominant-baseline='central' fill='%2329231F' fill-opacity='0.07' font-size='56' font-family='system-ui, sans-serif' font-weight='600' letter-spacing='4'%3E%E4%BB%85%E4%BE%9B%E5%B1%95%E7%A4%BA%3C/text%3E%3C/g%3E%3C/svg%3E");
+}
+:root[data-color-scheme="quiet-research"] .lab-public {
+  background: var(--bg);
+}
+:root[data-color-scheme="quiet-research"] .lab-public h1,
+:root[data-color-scheme="quiet-research"] .lab-public h2,
+:root[data-color-scheme="quiet-research"] .lab-public h3,
+:root[data-color-scheme="quiet-research"] .lab-public .paper-content h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  letter-spacing: -.025em;
+}
+:root[data-color-scheme="quiet-research"] .lab-public .public-header {
+  min-height: 78px;
+}
+:root[data-color-scheme="quiet-research"] .lab-public .public-hero {
+  min-height: 610px;
+}
+:root[data-color-scheme="quiet-research"] .lab-public .public-section {
+  padding-block: 84px;
+}
+:root[data-color-scheme="quiet-research"] .lab-public .research-detail,
+:root[data-color-scheme="quiet-research"] .lab-public .physics-resource-card {
+  background: #FFFEFA;
+  border-color: var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+:root[data-color-scheme="quiet-research"] .lab-public .research-tabs button {
+  border-bottom-color: var(--line);
+}
+:root[data-color-scheme="quiet-research"] .lab-public .paper-summary,
+:root[data-color-scheme="quiet-research"] .lab-public .hero-intro,
+:root[data-color-scheme="quiet-research"] .lab-public .section-top > p,
+:root[data-color-scheme="quiet-research"] .lab-public .section-description,
+:root[data-color-scheme="quiet-research"] .lab-public .about-section > div > p {
+  color: var(--soft);
+}
+:root[data-color-scheme="quiet-research"] .lab-public .paper-actions,
+:root[data-color-scheme="quiet-research"] .lab-public .paper-doi,
+:root[data-color-scheme="quiet-research"] .lab-public .paper-actions button {
+  color: var(--accent);
+}
+:root[data-color-scheme="quiet-research"] .lab-public .nav-hub {
+  border-left-color: var(--line);
+}
+:root[data-color-scheme="quiet-research"] .lab-public .button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #FFFFFF;
+}
+:root[data-color-scheme="quiet-research"] .lab-public .button.primary:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+:root[data-color-scheme="quiet-research"] .lab-public .button.ghost {
+  color: var(--soft);
+  border: 1px solid var(--line);
+}
+:root[data-color-scheme="quiet-research"] .lab-public .button.ghost:hover {
+  background: #F0ECE4;
+}
+:root[data-color-scheme="quiet-research"] .lab-public .research-symbol {
+  color: var(--accent);
+}
+@media (max-width: 900px) {
+  :root[data-color-scheme="quiet-research"] .app-shell.has-sidebar,
+  :root[data-color-scheme="quiet-research"] .app-shell.has-sidebar.sidebar-collapsed {
+    padding-left: 0;
+  }
+  :root[data-color-scheme="quiet-research"] .forecast-sidebar {
+    display: none;
+  }
+}
+@media (max-width: 768px) {
+  :root[data-color-scheme="quiet-research"] .app-shell.has-sidebar,
+  :root[data-color-scheme="quiet-research"] .app-shell.has-sidebar.sidebar-collapsed {
+    padding-top: calc(52px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+  :root[data-color-scheme="quiet-research"] .workspace {
+    padding: 20px 18px 48px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-color-scheme="quiet-research"] *,
+  :root[data-color-scheme="quiet-research"] *::before,
+  :root[data-color-scheme="quiet-research"] *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
