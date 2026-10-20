@@ -103,19 +103,31 @@ describe('useThemeStyle', () => {
     expect(document.documentElement.setAttribute).toHaveBeenCalledWith('data-glass-style', 'liquid')
   })
 
-  it('migrates previous default users on legacy themes to classic-cyan and clouds-static', async () => {
+  it('preserves existing appearance settings because legacy values may be intentional', async () => {
     const { migratePreviousDefaultUsers, DEFAULT_MIGRATION_KEY } = await import('./useThemeStyle')
     store['laborbit_color_scheme'] = 'obsidian-gray'
     store['laborbit_bg_type'] = 'earth-orbit'
+    store['laborbit_theme_style'] = 'earth-orbit'
+    store['laborbit_glass_style'] = 'liquid'
     delete store[DEFAULT_MIGRATION_KEY]
 
     migratePreviousDefaultUsers()
 
-    expect(store['laborbit_color_scheme']).toBe('quiet-research')
-    expect(store['laborbit_bg_type']).toBe('paper')
-    expect(store['laborbit_theme_style']).toBe('paper')
-    expect(store['laborbit_glass_style']).toBe('solid')
+    expect(store['laborbit_color_scheme']).toBe('obsidian-gray')
+    expect(store['laborbit_bg_type']).toBe('earth-orbit')
+    expect(store['laborbit_theme_style']).toBe('earth-orbit')
+    expect(store['laborbit_glass_style']).toBe('liquid')
     expect(store[DEFAULT_MIGRATION_KEY]).toBe('1')
+  })
+
+  it('keeps Quiet Research as the default for new users without stored preferences', async () => {
+    const { DEFAULT_COLOR_SCHEME, DEFAULT_BG_TYPE, DEFAULT_GLASS_STYLE, currentColorScheme, currentBgType, currentGlassStyle } = await import('./useThemeStyle')
+    expect(DEFAULT_COLOR_SCHEME).toBe('quiet-research')
+    expect(DEFAULT_BG_TYPE).toBe('paper')
+    expect(DEFAULT_GLASS_STYLE).toBe('solid')
+    expect(currentColorScheme.value).toBe('quiet-research')
+    expect(currentBgType.value).toBe('paper')
+    expect(currentGlassStyle.value).toBe('solid')
   })
 
   it('preserves user custom color scheme and local media during migration', async () => {
