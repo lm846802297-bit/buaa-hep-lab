@@ -33,7 +33,7 @@ const publicHtml = [html]
 for (const route of publicRoutes) {
   const routeHtml = await readFile(`dist/${route.path}/index.html`, 'utf8')
   assert(routeHtml.includes(`<title>${route.title}</title>`), `Missing route-specific title for /${route.path}`)
-  assert(routeHtml.includes(`content="https://buaa-hep-hub.pages.dev/${route.path}"`), `Missing canonical URL for /${route.path}`)
+  assert(routeHtml.includes(`<link rel="canonical" href="https://buaa-hep-hub.pages.dev/${route.path}" />`), `Missing canonical URL for /${route.path}`)
   assert(routeHtml.includes('content="index,follow"'), `Public route /${route.path} must be indexable`)
   assert(routeHtml.includes(route.content), `Missing prerendered content for /${route.path}`)
   publicHtml.push(routeHtml)

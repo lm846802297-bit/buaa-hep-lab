@@ -10,6 +10,7 @@ const copyMessage = ref('')
 const years = [...new Set(publications.map(p => p.year))].sort((a, b) => Number(b) - Number(a))
 const reviewNow = ref(new Date())
 const publicationReviews = computed(() => Object.fromEntries(publications.map(paper => [paper.id, publicationReviewStatus(paper.last_verified_at, reviewNow.value)])))
+const resourceReview = computed(() => publicationReviewStatus(publicResourceCheckedAt, reviewNow.value))
 const visiblePapers = computed(() => filterPublications(publications, { category: filter.value, query: query.value, year: selectedYear.value, sort: sortOrder.value }))
 import { filterPublications, publicationBibtex, citationText } from '../utils/publications'
 import { publicationReviewStatus } from '../utils/publicationReview'
@@ -128,7 +129,7 @@ function downloadBibtex() {
       <div class="physics-resource-controls" role="group" aria-label="物理资源分类"><button type="button" :aria-pressed="resourceCategory === 'all'" :class="{ selected: resourceCategory === 'all' }" @click="resourceCategory = 'all'">全部资源</button><button v-for="category in resourceCategories" :key="category" type="button" :aria-pressed="resourceCategory === category" :class="{ selected: resourceCategory === category }" @click="resourceCategory = category">{{ category }}</button></div>
       <p class="physics-resource-count" role="status">显示 {{ visibleResources.length }} / {{ publicResources.length }} 项资源</p>
       <div class="physics-resource-grid"><article v-for="resource in visibleResources" :key="resource.id" class="physics-resource-card"><span>{{ resource.category }}</span><h3><a :href="resource.url" target="_blank" rel="noopener noreferrer" :aria-label="resource.name + '（新标签页）'">{{ resource.name }} <span aria-hidden="true">↗</span></a></h3><p>{{ resource.description }}</p></article></div>
-      <p class="physics-resource-note">资源说明核对：{{ publicResourceCheckedAt }}。站内仅提供导航，不代管第三方数据或计算服务。</p>
+      <p class="physics-resource-note" :class="{ 'is-stale': resourceReview.status !== 'current' }">资源说明核对：{{ publicResourceCheckedAt }} · {{ resourceReview.status === 'current' ? '处于 180 天复核周期内' : resourceReview.label }}。站内仅提供导航，不代管第三方数据或计算服务。</p>
     </section>
 
     <section id="about" class="public-section about-section">
@@ -191,6 +192,7 @@ function downloadBibtex() {
 .physics-resource-card h3 a:hover { text-decoration:underline; text-underline-offset:4px; }
 .physics-resource-card p { color:var(--soft); font-size:14px; line-height:1.85; }
 .physics-resource-note { font-size:13px; color:var(--muted); line-height:1.8; margin-top:24px; }
+.physics-resource-note.is-stale { color:var(--warning); font-weight:600; }
 @media(max-width:1100px) { .physics-resource-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:900px) {
   .public-header { flex-wrap:wrap; }

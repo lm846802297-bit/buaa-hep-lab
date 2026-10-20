@@ -1,12 +1,14 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { directions, publications, publicContentReviewedAt } from '../content/lab'
+import { publicationReviewStatus } from '../utils/publicationReview'
 
 const props = defineProps({ topic: { type: String, default: '' } })
 const topic = computed(() => directions.find(item => item.id === props.topic) || null)
 const relatedPapers = computed(() => topic.value
   ? topic.value.references.map(id => publications.find(paper => paper.id === id)).filter(Boolean)
   : [])
+const contentReview = computed(() => publicationReviewStatus(publicContentReviewedAt))
 onMounted(() => {
   document.title = topic.value
     ? `${topic.value.title} | BUAA HEP Hub`
@@ -34,7 +36,7 @@ onMounted(() => {
         <div class="topic-tags">
           <span v-for="tag in topic.tags" :key="tag">{{ tag }}</span>
         </div>
-        <p class="topic-review">内容审核：{{ publicContentReviewedAt }} · 关联论文为选读索引，不代表计算已独立复现</p>
+        <p class="topic-review" :class="{ 'is-stale': contentReview.status !== 'current' }">内容审核：{{ publicContentReviewedAt }} · {{ contentReview.status === 'current' ? '处于 180 天复核周期内' : contentReview.label }} · 关联论文为选读索引，不代表计算已独立复现</p>
       </header>
 
       <section class="topic-section" aria-labelledby="topic-question">
@@ -99,6 +101,7 @@ onMounted(() => {
 .topic-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:28px; }
 .topic-tags span { padding:6px 12px; border:1px solid var(--line); border-radius:999px; font-size:12px; color:var(--muted); }
 .topic-review { position:relative; margin-top:22px; color:var(--muted); font-size:12px; line-height:1.7; }
+.topic-review.is-stale { color:var(--warning); font-weight:600; }
 .topic-section { padding:44px 0; border-bottom:1px solid var(--line); }
 .topic-section h2 { margin:10px 0 18px; font-family:var(--serif); font-size:clamp(26px,3vw,34px); font-weight:400; }
 .topic-section>p:not(.eyebrow) { max-width:800px; color:var(--soft); font-size:16px; line-height:1.95; }

@@ -44,6 +44,26 @@ function escapeIcsText(value = '') {
     .replace(/;/g, '\\;')
 }
 
+function foldIcsLine(line) {
+  const encoder = new TextEncoder()
+  const output = []
+  let current = ''
+  let octets = 0
+  for (const character of line) {
+    const characterOctets = encoder.encode(character).length
+    if (octets + characterOctets > 75) {
+      output.push(current)
+      current = ` ${character}`
+      octets = 1 + characterOctets
+    } else {
+      current += character
+      octets += characterOctets
+    }
+  }
+  output.push(current)
+  return output.join('\r\n')
+}
+
 function formatIcsDate(value) {
   const date = new Date(value)
   return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')
@@ -78,5 +98,5 @@ export function buildPublicIcsCalendar(events, now = new Date()) {
   }
 
   lines.push('END:VCALENDAR')
-  return lines.join('\r\n') + '\r\n'
+  return lines.map(foldIcsLine).join('\r\n') + '\r\n'
 }

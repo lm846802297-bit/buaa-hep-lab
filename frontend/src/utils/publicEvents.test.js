@@ -44,6 +44,15 @@ describe('public event allowlist and calendar export', () => {
     expect(calendar.endsWith('END:VCALENDAR\r\n')).toBe(true)
   })
 
+  it('folds long UTF-8 content lines to the RFC 5545 75-octet limit', () => {
+    const calendar = buildPublicIcsCalendar([event({ title: '高能粒子物理研究专题'.repeat(20) })], now)
+    const lines = calendar.trimEnd().split('\r\n')
+    expect(lines.some(line => line.startsWith(' '))).toBe(true)
+    for (const line of lines) {
+      expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75)
+    }
+  })
+
   it('never exports private, cancelled, past or stale events', () => {
     const events = [
       event({ visibility: 'members', id: 'private' }),

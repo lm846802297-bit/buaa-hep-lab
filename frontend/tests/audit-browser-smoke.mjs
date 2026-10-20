@@ -2,7 +2,7 @@ import { chromium, expect } from '@playwright/test'
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
 import { readFile, stat, mkdir, writeFile } from 'node:fs/promises'
-import { resolve, extname } from 'node:path'
+import { resolve, extname, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('../dist', import.meta.url))
@@ -10,10 +10,15 @@ const output = resolve(process.env.AUDIT_OUTPUT_DIR || fileURLToPath(new URL('..
 await mkdir(output, { recursive: true })
 const server = createServer(async (req, res) => {
   try {
-    const path = new URL(req.url, 'http://local.invalid').pathname
-    let file = resolve(root, '.' + path)
-    if (!file.startsWith(root)) { res.writeHead(403).end(); return }
-    try { if (!(await stat(file)).isFile()) file = resolve(root, 'index.html') } catch { file = resolve(root, 'index.html') }
+    const pathname = new URL(req.url, 'http://local.invalid').pathname
+    let file = resolve(root, '.' + pathname)
+    if (file !== root && !file.startsWith(root + sep)) { res.writeHead(403).end(); return }
+    try {
+      const info = await stat(file)
+      if (info.isDirectory()) file = resolve(file, 'index.html')
+      else if (!info.isFile()) file = resolve(root, 'index.html')
+    } catch { file = resolve(root, 'index.html') }
+    if (file !== root && !file.startsWith(root + sep)) { res.writeHead(403).end(); return }
     const data = await readFile(file)
     const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.json': 'application/json' }
     res.writeHead(200, { 'Content-Type': types[extname(file)] || 'application/octet-stream' }).end(data)
@@ -133,6 +138,15 @@ try {
   check(await staticPage.locator('a[href="https://arxiv.org/abs/2210.09335"]').count() > 0, 'static HTML includes approved research links')
   check(await staticPage.locator('.research-static article').count() === 5, 'all five detailed research descriptions are readable without JavaScript')
   check(await staticPage.locator('.physics-resource-card a').count() === 9, 'all public resource links work without JavaScript')
+  for (const route of [
+    { path: '/research/dark', heading: '暗物质与暗扇区' },
+    { path: '/people', heading: '团队与学术指导' },
+    { path: '/events', heading: '学术活动' },
+  ]) {
+    await staticPage.goto(base + route.path)
+    check(await staticPage.getByRole('heading', { name: route.heading, exact: true }).isVisible(), `public route ${route.path} renders without JavaScript`)
+    check(await staticPage.locator('link[rel="canonical"]').getAttribute('href') === `https://buaa-hep-hub.pages.dev${route.path}`, `public route ${route.path} has static canonical metadata`)
+  }
   await nojs.close()
 
   const privateContext = await browser.newContext({ viewport: { width: 390, height: 844 } })

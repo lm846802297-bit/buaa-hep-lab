@@ -20,7 +20,7 @@ export function publicationReviewStatus(lastVerifiedAt, now = new Date(), maxAge
     return { status: 'invalid', lastVerifiedAt, ageDays, label: '核对日期晚于当前日期 · 请复核' }
   }
   if (ageDays > maxAgeDays) {
-    return { status: 'stale', lastVerifiedAt, ageDays, label: `元数据待复核 · 上次核对 ${lastVerifiedAt}` }
+    return { status: 'stale', lastVerifiedAt, ageDays, label: `待复核 · 上次核对 ${lastVerifiedAt}` }
   }
-  return { status: 'current', lastVerifiedAt, ageDays, label: `元数据核对 ${lastVerifiedAt}` }
+  return { status: 'current', lastVerifiedAt, ageDays, label: `已核对 ${lastVerifiedAt}` }
 }
