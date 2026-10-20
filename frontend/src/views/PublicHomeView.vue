@@ -1,0 +1,107 @@
+<script setup>
+import { computed, onMounted, ref } from 'vue'
+import { lab, advisorProfile, collaborators, directions, publications } from '../content/lab'
+const menuOpen = ref(false)
+const filter = ref('all')
+const query = ref('')
+const visiblePapers = computed(() => publications.filter(p =>
+  (filter.value === 'all' || p.category === filter.value) &&
+  `${p.title} ${p.tag} ${p.year} ${p.authors.join(' ')}`.toLowerCase().includes(query.value.toLowerCase().trim())))
+const currentDirection = ref(0)
+const activeDirection = computed(() => directions[currentDirection.value])
+onMounted(() => { document.title = `${lab.name}${lab.provisional ? '（暂定）' : ''} | ${lab.field}` })
+function downloadBibtex() {
+  const entries = visiblePapers.value.map(p => `@article{Wang${p.id.replace('.', '')},\n  title = {${p.title}},\n  author = {${p.authors.join(' and ')}},\n  journal = {${p.journal}},\n  year = {${p.year}},\n  eprint = {${p.id}},\n  archivePrefix = {arXiv},\n  doi = {${p.doi}}\n}`).join('\n\n')
+  const url = URL.createObjectURL(new Blob([entries], { type: 'text/plain;charset=utf-8' }))
+  const link = document.createElement('a'); link.href = url; link.download = 'buaa-hep-selected.bib'; link.click(); URL.revokeObjectURL(url)
+}
+</script>
+
+<template>
+  <div class="lab-public">
+    <header class="public-header">
+      <a href="#top" class="public-brand" aria-label="课题组首页" @click="menuOpen = false">
+        <svg class="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="24" cy="24" r="17"/><ellipse cx="24" cy="24" rx="9" ry="22" transform="rotate(45 24 24)"/><path d="M3 24h42"/><circle cx="24" cy="24" r="3" fill="currentColor"/></svg>
+        <span><strong>{{ lab.shortName }}</strong><small>北京航空航天大学 · 物理学院</small></span>
+      </a>
+      <button class="menu-toggle button secondary" :aria-expanded="menuOpen" aria-controls="public-navigation" @click="menuOpen = !menuOpen">{{ menuOpen ? '关闭菜单' : '菜单' }}</button>
+      <nav id="public-navigation" :class="{ open: menuOpen }" aria-label="官网导航">
+        <a href="#research" @click="menuOpen = false">研究方向</a><a href="#publications" @click="menuOpen = false">代表成果</a><a href="#about" @click="menuOpen = false">关于我们</a>
+        <router-link class="nav-hub" to="/hub">组内协作 <span aria-hidden="true">↗</span></router-link>
+      </nav>
+    </header>
+
+    <section id="top" class="public-hero">
+      <div class="hero-copy">
+        <div class="hero-eyebrow"><span class="status-dot"></span> {{ lab.english }}</div>
+        <h1>从微观粒子，<br>探寻<span>物理的新边界。</span></h1>
+        <p class="hero-intro">{{ lab.intro }}</p>
+        <div class="hero-actions"><a href="#research" class="button primary">探索研究方向 <span aria-hidden="true">↗</span></a><a href="#publications" class="button ghost">阅读代表论文 <span aria-hidden="true">↓</span></a></div>
+        <div class="hero-affiliation"><span>BEIHANG UNIVERSITY</span><span>{{ lab.name }} <small v-if="lab.provisional">/ 暂定名称</small></span></div>
+      </div>
+      <figure class="collision-figure">
+        <svg viewBox="0 0 600 600" role="img" aria-labelledby="collision-title collision-description">
+          <title id="collision-title">粒子碰撞径迹示意</title><desc id="collision-description">同心探测层围绕一个碰撞中心，多条弯曲径迹向外延伸。这是概念示意，并非真实实验数据。</desc>
+          <defs><radialGradient id="collision-glow"><stop stop-color="currentColor" stop-opacity=".16"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></radialGradient></defs>
+          <circle cx="300" cy="300" r="290" fill="url(#collision-glow)"/>
+          <g class="detector-rings" fill="none"><circle v-for="r in [48,88,135,180,225,264]" :key="r" cx="300" cy="300" :r="r"/><ellipse cx="300" cy="300" rx="264" ry="98" transform="rotate(-27 300 300)"/><path d="M18 300h564M300 18v564" stroke-dasharray="3 8"/></g>
+          <g class="collision-tracks" fill="none" stroke-linecap="round"><path d="M300 300Q365 222 528 112"/><path d="M300 300C356 325 458 320 570 377"/><path d="M300 300Q250 339 127 495"/><path d="M300 300Q238 261 42 213"/><path d="M300 300C328 250 339 163 356 37"/><path d="M300 300C317 351 338 459 426 530"/><path d="M300 300Q197 315 43 378"/><path d="M300 300Q246 190 172 60"/><path d="M300 300C353 278 429 226 552 214"/><path d="M300 300Q271 399 259 562"/></g>
+          <g class="track-hits" fill="currentColor"><circle cx="300" cy="300" r="5"/><circle cx="450" cy="170" r="3"/><circle cx="197" cy="409" r="3"/><circle cx="336" cy="172" r="3"/><circle cx="466" cy="337" r="3"/></g>
+          <g class="collision-annotations" fill="currentColor"><text x="438" y="94">μ⁺</text><text x="478" y="418">χ</text><text x="105" y="464">μ⁻</text><text x="340" y="284">p → ← p</text><text x="318" y="582">NEW PHYSICS, NEW POSSIBILITIES</text></g>
+        </svg>
+        <figcaption><span>EVENT DISPLAY / CONCEPTUAL</span><span>理论 · 模型 · 信号</span></figcaption>
+      </figure>
+    </section>
+    <div class="research-strip"><span>高能粒子物理唯象学</span><span>暗物质</span><span>中微子</span><span>希格斯物理</span><span>超出标准模型</span></div>
+
+    <section id="research" class="public-section research-section">
+      <div class="section-top"><div><span class="eyebrow">01 / RESEARCH</span><h2>让理论走向可检验的信号。</h2></div><p>从基本相互作用出发，<br>连接微观模型与实验观测。</p></div>
+      <div class="research-layout">
+        <div class="research-tabs" role="tablist" aria-label="研究方向" aria-orientation="vertical">
+          <button v-for="(d, i) in directions" :id="`research-tab-${i}`" :key="d.id" role="tab" :aria-selected="i === currentDirection" aria-controls="research-detail" :tabindex="i === currentDirection ? 0 : -1" :class="{ active: i === currentDirection }" @click="currentDirection = i" @keydown.down.prevent="currentDirection = (currentDirection + 1) % directions.length; $nextTick(() => $el.querySelector('#research-tab-' + currentDirection).focus())" @keydown.up.prevent="currentDirection = (currentDirection + directions.length - 1) % directions.length; $nextTick(() => $el.querySelector('#research-tab-' + currentDirection).focus())"><span>{{ d.number }}</span><strong>{{ d.title }}</strong><span aria-hidden="true">↗</span></button>
+        </div>
+        <article id="research-detail" class="research-detail" role="tabpanel" :aria-labelledby="`research-tab-${currentDirection}`" tabindex="0"><span class="research-symbol" aria-hidden="true">{{ activeDirection.symbol }}</span><span class="eyebrow">{{ activeDirection.en }}</span><h3>{{ activeDirection.title }}</h3><p>{{ activeDirection.text }}</p><div class="topic-tags"><span v-for="tag in activeDirection.tags" :key="tag">{{ tag }}</span></div></article>
+      </div>
+    </section>
+
+    <section id="publications" class="public-section publications-section">
+      <div class="section-top"><div><span class="eyebrow">02 / SELECTED PUBLICATIONS</span><h2>以研究回应问题。</h2></div><button class="button secondary" :disabled="!visiblePapers.length" @click="downloadBibtex">导出 BibTeX <span aria-hidden="true">↓</span></button></div>
+      <p class="section-description">以下为公开代表成果选录，非完整或最新论文列表。标题与链接已核对至 arXiv 原始记录。</p>
+      <div class="publication-controls"><div class="segmented" aria-label="论文主题筛选"><button v-for="item in [{ id: 'all', label: '全部成果' }, { id: 'dark', label: '暗物质' }, { id: 'collider', label: '对撞机物理' }]" :key="item.id" :aria-pressed="filter === item.id" :class="{ selected: filter === item.id }" @click="filter = item.id">{{ item.label }}</button></div><label class="paper-search"><span class="sr-only">搜索论文标题、作者或年份</span><input v-model="query" type="search" placeholder="搜索标题、作者、年份"/></label></div>
+      <div aria-live="polite" class="paper-list">
+        <article v-for="paper in visiblePapers" :key="paper.id" class="public-paper"><div class="paper-year">{{ paper.year }}<small>hep-ph</small></div><div class="paper-content"><span class="paper-tag">{{ paper.tag }}</span><h3><a :href="`https://arxiv.org/abs/${paper.id}`" target="_blank" rel="noopener noreferrer">{{ paper.title }}</a></h3><p class="paper-authors">{{ paper.authors.join(' · ') }}</p><p class="paper-journal">{{ paper.journal }}</p></div><a :href="`https://arxiv.org/abs/${paper.id}`" target="_blank" rel="noopener noreferrer" class="paper-link" :aria-label="`阅读论文 ${paper.id}`">arXiv <span aria-hidden="true">↗</span></a></article>
+        <div v-if="!visiblePapers.length" class="paper-empty">没有匹配的论文。<button class="button ghost" @click="query = ''; filter = 'all'">清除筛选</button></div>
+      </div>
+    </section>
+
+    <section id="about" class="public-section about-section"><div><span class="eyebrow">03 / ABOUT THE GROUP</span><h2>保持好奇，<br>一起探索基本规律。</h2><p>依托{{ lab.institution }}，聚焦{{ lab.field }}。我们在理论研究、文献研读与学术讨论中，探索新的物理可能性。</p></div><div class="about-details"><div class="academic-partner"><span>学术指导</span><strong>{{ advisorProfile.name }} <small> / {{ advisorProfile.english }}</small></strong><p class="partner-affiliation">{{ advisorProfile.institution }} · {{ advisorProfile.title }}</p><p>{{ advisorProfile.intro }}</p><p class="partner-topics">研究方向：{{ advisorProfile.topics.join('、') }}</p><a :href="advisorProfile.source" target="_blank" rel="noopener noreferrer">北京航空航天大学学院主页 ↗</a><a href="#publications">查看代表成果 ↓</a></div><div v-for="person in collaborators" :key="person.source" class="academic-partner"><span>合作成员</span><strong>{{ person.name }}</strong><p class="partner-affiliation">{{ person.institution }} · {{ person.field }}</p><p class="partner-topics">{{ person.topics.join('、') }}</p><a :href="person.source" target="_blank" rel="noopener noreferrer">北京大学教师主页 ↗</a></div><div><span>研究领域</span><strong>{{ lab.field }}</strong></div><p>更多成员介绍与学术活动将在确认后补充。</p></div></section>
+
+    <section class="public-section collaboration-section"><div><span class="eyebrow">RESEARCH, TOGETHER</span><h2>把日常协作，留给更好的研究。</h2><p>组会安排、文献讨论与研习资料，在同一个工作台持续积累。</p><router-link to="/hub" class="button primary">进入组内协作 <span aria-hidden="true">↗</span></router-link></div><div class="hub-module-list"><span><i>01</i> 组会与学术日程 <small>SEMINARS</small></span><span><i>02</i> 文献推荐与讨论 <small>LITERATURE</small></span><span><i>03</i> 资料库与个人收藏 <small>RESOURCES</small></span><p>工作台需登录访问 · 首次使用由管理员初始化</p></div></section>
+    <footer class="public-footer"><span>{{ lab.shortName }}<small>{{ lab.name }}<template v-if="lab.provisional">（暂定名称）</template></small></span><span>基于 <a href="https://github.com/Chocologism/lab-orbit" target="_blank" rel="noopener noreferrer">LabOrbit</a> 定制 · 非学校官方门户</span><a href="#top">回到顶部 ↑</a></footer>
+  </div>
+</template>
+
+<style scoped>
+.lab-public { background:var(--bg); color:var(--text); position:relative; overflow:hidden; font-family:var(--font); }
+.public-header,.public-hero,.public-section,.public-footer,.research-strip { width:min(1280px,calc(100% - 96px)); margin-inline:auto; }
+.public-header { min-height:104px; display:flex; align-items:center; justify-content:space-between; gap:24px; border-bottom:1px solid var(--line); }
+.public-brand { display:flex; align-items:center; gap:14px; text-decoration:none; }
+.brand-mark { width:42px; height:42px; color:var(--accent); stroke:currentColor; stroke-width:1; }
+.public-brand strong { display:block; font-size:20px; font-weight:500; letter-spacing:.08em; }.public-brand small { display:block; font-size:11px; color:var(--muted); letter-spacing:.08em; margin-top:4px; }
+nav { display:flex; align-items:center; gap:32px; font-size:14px; } nav>a { padding:12px 0; color:var(--soft); } nav>a:hover { color:var(--accent); }.nav-hub { border-left:1px solid var(--line); padding-left:28px; }.nav-hub span { margin-left:12px; }.menu-toggle { display:none; }
+.public-hero { display:grid; grid-template-columns:1.08fr 1fr; align-items:center; min-height:690px; gap:16px; padding:64px 0 56px; }
+.hero-eyebrow { color:var(--accent); font-size:11px; letter-spacing:.13em; text-transform:uppercase; display:flex; align-items:center; gap:10px; margin-bottom:28px; }.status-dot { width:6px; height:6px; background:var(--accent); border-radius:50%; }
+h1 { font-size:clamp(38px,4.5vw,68px); font-weight:400; line-height:1.35; letter-spacing:-.055em; margin:0 0 24px; }h1 span { color:var(--accent); }.hero-intro { max-width:480px; color:var(--muted); font-size:15px; line-height:1.95; }.hero-actions { display:flex; gap:12px; margin:32px 0 44px; }.hero-actions a { gap:24px; }.hero-affiliation { display:flex; flex-direction:column; gap:8px; font-size:12px; color:var(--soft); }.hero-affiliation>span:first-child { font-size:10px; color:var(--muted); letter-spacing:.19em; }.hero-affiliation small { color:var(--muted); font-size:11px; }
+.collision-figure { margin:0; color:var(--accent); position:relative; }.collision-figure>svg { display:block; width:100%; overflow:visible; }.detector-rings { stroke:currentColor; stroke-opacity:.17; stroke-width:.7; }.collision-tracks { stroke:currentColor; stroke-width:1.5; }.collision-tracks path:nth-child(3n) { stroke:var(--warning); stroke-width:1; opacity:.8; }.collision-tracks path:nth-child(2n) { opacity:.5; }.collision-annotations { font-family:var(--font); font-size:18px; }.collision-annotations text:last-child { font-size:7px; letter-spacing:.8px; opacity:.6; }.collision-figure figcaption { font-size:9px; letter-spacing:.12em; display:flex; justify-content:space-between; color:var(--muted); padding:0 28px; }
+.research-strip { border-top:1px solid var(--line); border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:20px; padding:24px 0; color:var(--muted); font-size:12px; }.research-strip span:first-child { color:var(--accent); }
+.public-section { padding:96px 0; scroll-margin-top:24px; }.section-top { display:flex; justify-content:space-between; align-items:flex-end; gap:28px; margin-bottom:36px; }.eyebrow { font-size:10px; letter-spacing:.17em; margin-bottom:16px; }h2 { font-size:clamp(28px,3.1vw,40px); font-weight:400; line-height:1.45; letter-spacing:-.03em; }.section-top>p,.section-description { font-size:14px; line-height:1.9; color:var(--muted); }
+.research-layout { display:grid; grid-template-columns:1fr 1.1fr; gap:64px; }.research-tabs { display:flex; flex-direction:column; }.research-tabs button { display:flex; align-items:center; gap:24px; padding:28px 4px; border:0; border-bottom:1px solid var(--line); background:transparent; text-align:left; color:var(--muted); font-size:14px; cursor:pointer; }.research-tabs strong { font-size:20px; font-weight:400; flex:1; }.research-tabs button.active { color:var(--accent); }.research-tabs button.active strong { color:var(--text); }.research-tabs button.active>span:last-child { transform:rotate(45deg); }.research-detail { background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:44px 36px; position:relative; overflow:hidden; }.research-detail .eyebrow { max-width:75%; color:var(--accent); position:relative; }.research-detail h3 { font-size:24px; font-weight:400; margin:28px 0 16px; position:relative; }.research-detail p { color:var(--soft); font-size:15px; line-height:1.9; position:relative; max-width:440px; }.research-symbol { position:absolute; right:26px; top:-10px; font-size:140px; font-weight:300; line-height:1; color:var(--accent); opacity:.12; }.topic-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:28px; }.topic-tags span { border:1px solid var(--line); border-radius:999px; padding:5px 12px; color:var(--muted); font-size:11px; }
+.publications-section { border-top:1px solid var(--line); }.publications-section .section-top { margin-bottom:14px; }.publication-controls { display:flex; gap:16px; justify-content:space-between; align-items:center; margin:32px 0 12px; }.segmented button { border:0; background:transparent; color:var(--muted); padding:9px 15px; border-radius:8px; font-size:13px; min-height:40px; cursor:pointer; }.segmented button.selected { background:var(--raised); color:var(--text); }.paper-search input { width:260px; border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:12px 16px; color:var(--text); font-size:13px; }.public-paper { display:grid; grid-template-columns:82px 1fr 80px; gap:28px; padding:32px 0; border-bottom:1px solid var(--line); }.paper-year { font-size:28px; font-weight:300; color:var(--muted); line-height:1.25; }.paper-year small { display:block; font-size:10px; margin-top:12px; letter-spacing:.05em; }.paper-tag { color:var(--accent); font-size:11px; }.paper-content h3 { font-size:20px; line-height:1.5; font-weight:400; margin:10px 0; max-width:840px; }.paper-content h3 a:hover { color:var(--accent); }.paper-authors,.paper-journal { font-size:12px; color:var(--muted); line-height:1.8; }.paper-journal { color:var(--soft); margin-top:5px; }.paper-link { font-size:12px; color:var(--accent); display:flex; align-items:center; gap:14px; }.paper-empty { padding:44px 0; color:var(--muted); }
+.about-section { display:grid; grid-template-columns:1fr 1fr; gap:96px; }.about-section>div>p { font-size:15px; line-height:1.95; color:var(--muted); max-width:450px; margin-top:24px; }.about-details>div { display:flex; flex-direction:column; gap:12px; border-bottom:1px solid var(--line); padding:20px 0; }.about-details>div:first-child { padding-top:0; }.about-details>div>span { font-size:11px; color:var(--muted); }.about-details strong,.about-details a { font-size:17px; font-weight:400; }.about-details small { font-size:12px; color:var(--muted); }.about-details a { color:var(--accent); }.about-details>p { font-size:12px!important; }
+.academic-partner p { margin:0; font-size:14px; line-height:1.8; color:var(--soft); }.academic-partner .partner-topics { color:var(--muted); }.academic-partner a { font-size:14px; }
+.collaboration-section { display:grid; grid-template-columns:1.15fr 1fr; gap:72px; border-top:1px solid var(--line); }.collaboration-section h2 { font-size:30px; }.collaboration-section p { font-size:14px; color:var(--muted); margin:18px 0 28px; line-height:1.8; }.collaboration-section .button { gap:28px; }.hub-module-list>span { display:flex; gap:20px; align-items:center; padding:20px 0; border-bottom:1px solid var(--line); font-size:15px; }.hub-module-list i { font-size:11px; color:var(--muted); font-style:normal; }.hub-module-list small { margin-left:auto; font-size:9px; letter-spacing:.1em; color:var(--muted); }.hub-module-list>p { font-size:11px; }
+.public-footer { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:32px 0; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }.public-footer>span:first-child { font-size:15px; color:var(--text); letter-spacing:.05em; }.public-footer small { display:block; font-size:10px; color:var(--muted); margin-top:8px; }.public-footer a:hover { color:var(--accent); }.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }a,button,input { outline-offset:5px; }a:focus-visible,button:focus-visible,input:focus-visible { outline:2px solid var(--focus); }.button:disabled { opacity:.5; cursor:not-allowed; }
+@media(min-width:1600px) { .public-hero { min-height:760px; } }
+@media(max-width:1000px) { .public-header,.public-hero,.public-section,.public-footer,.research-strip { width:calc(100% - 56px); }.public-hero { min-height:620px; }nav { gap:20px; }.research-layout { gap:28px; }.about-section,.collaboration-section { gap:40px; }.public-hero h1 { font-size:44px; } }
+@media(max-width:700px) { .public-header,.public-hero,.public-section,.public-footer,.research-strip { width:calc(100% - 36px); }.public-header { min-height:84px; flex-wrap:wrap; }.public-brand strong { font-size:16px; }.public-brand small { font-size:10px; }.brand-mark { width:34px; height:34px; }.menu-toggle { display:flex; font-size:12px; min-height:40px; padding:8px 12px; }nav { display:none; width:100%; padding-bottom:20px; flex-wrap:wrap; gap:12px 22px; }nav.open { display:flex; }.nav-hub { border-left:0; padding-left:0; }.public-hero { grid-template-columns:1fr; padding-top:48px; gap:16px; min-height:0; }.public-hero h1 { font-size:clamp(33px,8vw,48px); }.hero-eyebrow { font-size:9px; letter-spacing:.08em; }.hero-actions { gap:4px; margin:28px 0 32px; }.hero-actions a { gap:12px; padding-inline:14px; font-size:12px; }.hero-intro { font-size:14px; }.collision-figure { width:min(100%,430px); margin-inline:auto; }.research-strip { flex-wrap:wrap; justify-content:flex-start; gap:14px 20px; font-size:10px; padding:20px 0; }.public-section { padding:56px 0; }.section-top { align-items:flex-start; flex-direction:column; gap:16px; }.section-top h2 { font-size:27px; }.section-top>p br { display:none; }.research-layout,.about-section,.collaboration-section { grid-template-columns:1fr; gap:28px; }.research-tabs strong { font-size:18px; }.research-tabs button { padding:22px 0; }.research-detail { padding:28px 24px; }.research-detail h3 { font-size:22px; }.research-detail p { font-size:14px; }.publication-controls { flex-direction:column; align-items:stretch; }.paper-search input { width:100%; box-sizing:border-box; }.segmented { align-self:flex-start; }.segmented button { padding:8px 12px; }.public-paper { grid-template-columns:50px 1fr; gap:16px; }.paper-year { font-size:22px; }.paper-content h3 { font-size:17px; }.paper-link { grid-column:2; padding:4px 0; }.public-footer { flex-wrap:wrap; gap:20px; }.public-footer>span:nth-child(2) { order:3; flex-basis:100%; }.collaboration-section h2 { font-size:26px; } }
+</style>

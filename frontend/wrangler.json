@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "buaa-hep-hub",
+  "compatibility_date": "2026-09-17",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "pages_build_output_dir": "./dist",
+  "d1_databases": [
+    {
+      "database_name": "buaa-hep-hub-db",
+      "database_id": "3d563c1f-130b-4e66-b68b-42df31606674",
+      "binding": "DB"
+    }
+  ],
+  "vars": {}
+}
