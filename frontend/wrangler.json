@@ -13,5 +13,11 @@
       "binding": "DB"
     }
   ],
-  "vars": {}
+  "vars": {},
+  "r2_buckets": [
+    {
+      "binding": "FILES_BUCKET",
+      "bucket_name": "buaa-hep-hub-files"
+    }
+  ]
 }
