@@ -1,9 +1,19 @@
 import { ref } from 'vue'
 
-export const DEFAULT_COLOR_SCHEME = 'classic-cyan'
-export const DEFAULT_BG_TYPE = 'clouds-static'
+export const DEFAULT_COLOR_SCHEME = 'quiet-research'
+export const DEFAULT_BG_TYPE = 'paper'
+export const DEFAULT_GLASS_STYLE = 'solid'
 
 export const COLOR_SCHEMES = [
+  {
+    id: 'quiet-research',
+    name: '安静研究（推荐）',
+    subtitle: '温暖纸白 · 墨色文字 · 克制陶土橙',
+    colors: ['#F7F5F0', '#B85E3F', '#FFFEFA'],
+    primaryColor: '#B85E3F',
+    baseColor: '#F7F5F0',
+    surfaceColor: '#FFFEFA'
+  },
   {
     id: 'classic-cyan',
     name: '经典冷青与玄青',
@@ -35,6 +45,12 @@ export const COLOR_SCHEMES = [
 
 export const BG_OPTIONS = [
   {
+    id: 'paper',
+    name: '纸白（推荐）',
+    subtitle: '纯色背景 · 无动态特效 · 专注科研内容',
+    type: 'static'
+  },
+  {
     id: 'clouds-static',
     name: '云山日光（静态）',
     subtitle: '静态日光云海 · 静谧清晰',
@@ -62,6 +78,14 @@ export const BG_OPTIONS = [
 
 // 兼容旧版 THEME_STYLES 导出
 export const THEME_STYLES = [
+  {
+    id: 'paper',
+    name: '纸白（安静研究）',
+    subtitle: '温暖纸白 · 无背景图',
+    colors: ['#F7F5F0', '#B85E3F', '#FFFEFA'],
+    primaryColor: '#B85E3F',
+    bgPreview: '#F7F5F0'
+  },
   {
     id: 'clouds-static',
     name: '云山日光（静态）',
@@ -91,7 +115,7 @@ export const THEME_STYLES = [
 const COLOR_SCHEME_KEY = 'laborbit_color_scheme'
 const BG_TYPE_KEY = 'laborbit_bg_type'
 const LEGACY_STORAGE_KEY = 'laborbit_theme_style'
-export const DEFAULT_MIGRATION_KEY = 'laborbit_default_v20260930_cyan_clouds'
+export const DEFAULT_MIGRATION_KEY = 'laborbit_default_v20261021_quiet_research'
 export const CUSTOM_COLOR_SCHEME_KEY = 'laborbit_custom_color_scheme'
 export const GLASS_STYLE_KEY = 'laborbit_glass_style'
 export const BG_DIM_KEY = 'laborbit_bg_dim_percent_v2'
@@ -104,15 +128,21 @@ export function migratePreviousDefaultUsers() {
     const savedScheme = localStorage.getItem(COLOR_SCHEME_KEY)
     const savedBg = localStorage.getItem(BG_TYPE_KEY)
     const savedLegacy = localStorage.getItem(LEGACY_STORAGE_KEY)
+    const savedGlass = localStorage.getItem(GLASS_STYLE_KEY)
 
-    const isOldDefaultScheme = !savedScheme || savedScheme === 'obsidian-gray'
-    const isOldDefaultBg = !savedBg || savedBg === 'earth-orbit'
-    const isOldLegacy = !savedLegacy || savedLegacy === 'earth-orbit'
+    const isDefaultScheme = !savedScheme || savedScheme === 'classic-cyan' || savedScheme === 'obsidian-gray'
+    const isDefaultBg = !savedBg || savedBg === 'earth-orbit' || savedBg === 'clouds-static'
+    const isDefaultLegacy = !savedLegacy || savedLegacy === 'earth-orbit' || savedLegacy === 'clouds-static'
 
-    if (savedScheme !== 'custom' && savedBg !== 'custom-local' && (isOldDefaultScheme || isOldDefaultBg || isOldLegacy)) {
+    // Move users on the old default look to the new paper-first research design.
+    // Preserve deliberately chosen nebula/custom schemes and custom or animated backgrounds.
+    if (isDefaultScheme && isDefaultBg && isDefaultLegacy) {
       localStorage.setItem(COLOR_SCHEME_KEY, DEFAULT_COLOR_SCHEME)
       localStorage.setItem(BG_TYPE_KEY, DEFAULT_BG_TYPE)
-      localStorage.setItem(LEGACY_STORAGE_KEY, 'clouds-static')
+      localStorage.setItem(LEGACY_STORAGE_KEY, 'paper')
+      if (!savedGlass || savedGlass === 'liquid') {
+        localStorage.setItem(GLASS_STYLE_KEY, DEFAULT_GLASS_STYLE)
+      }
     }
     localStorage.setItem(DEFAULT_MIGRATION_KEY, '1')
   } catch (e) {
@@ -201,6 +231,13 @@ export function setBgDim(val) {
 
 export const GLASS_OPTIONS = [
   {
+    id: 'solid',
+    name: '纯色研究界面（推荐）',
+    subtitle: '不使用毛玻璃或 WebGL 折射',
+    description: '使用实色表面、细边框和轻阴影，优先保证论文、公式与长文本的可读性。',
+    tag: '默认推荐'
+  },
+  {
     id: 'liquid',
     name: '液态玻璃设计',
     subtitle: '原版晶莹 · WebGL 拟真光感折射与液态质感',
@@ -217,22 +254,22 @@ export const GLASS_OPTIONS = [
 ]
 
 function getInitialGlassStyle() {
-  if (typeof window === 'undefined') return 'liquid'
+  if (typeof window === 'undefined') return DEFAULT_GLASS_STYLE
   try {
     const saved = localStorage.getItem(GLASS_STYLE_KEY)
-    if (saved === 'liquid' || saved === 'frosted') {
+    if (saved === 'liquid' || saved === 'frosted' || saved === 'solid') {
       return saved
     }
   } catch (e) {
     console.warn('Failed to read glass style from localStorage:', e)
   }
-  return 'liquid'
+  return DEFAULT_GLASS_STYLE
 }
 
 export const currentGlassStyle = ref(getInitialGlassStyle())
 
 export function setGlassStyle(styleId) {
-  const actualStyle = styleId === 'frosted' ? 'frosted' : 'liquid'
+  const actualStyle = ['solid', 'frosted', 'liquid'].includes(styleId) ? styleId : DEFAULT_GLASS_STYLE
   currentGlassStyle.value = actualStyle
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem(GLASS_STYLE_KEY, actualStyle)
@@ -499,7 +536,7 @@ function getInitialColorScheme() {
   if (typeof window === 'undefined') return DEFAULT_COLOR_SCHEME
   try {
     const saved = localStorage.getItem(COLOR_SCHEME_KEY)
-    if (saved === 'obsidian-gray' || saved === 'classic-cyan' || saved === 'nebula-purple' || saved === 'custom') {
+    if (saved === 'quiet-research' || saved === 'obsidian-gray' || saved === 'classic-cyan' || saved === 'nebula-purple' || saved === 'custom') {
       return saved
     }
     // 从旧版兼容器迁移
@@ -517,7 +554,7 @@ function getInitialBgType() {
   if (typeof window === 'undefined') return DEFAULT_BG_TYPE
   try {
     const saved = localStorage.getItem(BG_TYPE_KEY)
-    if (saved === 'galaxy' || saved === 'vanta-fog' || saved === 'clouds-static' || saved === 'custom-local') {
+    if (saved === 'paper' || saved === 'galaxy' || saved === 'vanta-fog' || saved === 'clouds-static' || saved === 'custom-local') {
       return saved
     }
     // 从旧版兼容器迁移
@@ -536,6 +573,7 @@ export const currentBgType = ref(getInitialBgType())
 
 // 兼容器：保留 currentThemeStyle 响应式对象
 function resolveLegacyTheme(scheme, bg) {
+  if (scheme === 'quiet-research') return bg === 'paper' ? 'paper' : bg
   if (scheme === 'obsidian-gray') return 'clouds-static'
   if (scheme === 'nebula-purple') return 'galaxy'
   if (scheme === 'custom') return 'custom'
@@ -584,15 +622,15 @@ export function applyThemeToDOM(scheme = currentColorScheme.value, bg = currentB
     if (!bg || bg === 'clouds-static' || bg === 'earth-orbit') actualBg = 'clouds-static'
   }
 
-  if (actualScheme !== 'obsidian-gray' && actualScheme !== 'classic-cyan' && actualScheme !== 'nebula-purple' && actualScheme !== 'custom') {
+  if (actualScheme !== 'quiet-research' && actualScheme !== 'obsidian-gray' && actualScheme !== 'classic-cyan' && actualScheme !== 'nebula-purple' && actualScheme !== 'custom') {
     actualScheme = DEFAULT_COLOR_SCHEME
   }
 
-  actualBg = (actualBg === 'galaxy' || actualBg === 'vanta-fog' || actualBg === 'clouds-static' || actualBg === 'custom-local')
+  actualBg = (actualBg === 'paper' || actualBg === 'galaxy' || actualBg === 'vanta-fog' || actualBg === 'clouds-static' || actualBg === 'custom-local')
     ? actualBg
     : DEFAULT_BG_TYPE
 
-  const legacyTheme = actualScheme === 'nebula-purple' ? 'galaxy' : (actualScheme === 'custom' ? 'custom' : (actualBg === 'vanta-fog' ? 'vanta-fog' : 'clouds-static'))
+  const legacyTheme = actualScheme === 'quiet-research' && actualBg === 'paper' ? 'paper' : (actualScheme === 'nebula-purple' ? 'galaxy' : (actualScheme === 'custom' ? 'custom' : (actualBg === 'vanta-fog' ? 'vanta-fog' : 'clouds-static')))
 
   // 1. 设置解耦属性
   doc.setAttribute('data-color-scheme', actualScheme)
@@ -629,7 +667,7 @@ export function applyThemeToDOM(scheme = currentColorScheme.value, bg = currentB
           doc.style.removeProperty(v)
         }
       })
-      const baseBg = actualScheme === 'obsidian-gray' ? '#090d16' : (actualScheme === 'nebula-purple' ? '#03020a' : '#081f28')
+      const baseBg = actualScheme === 'quiet-research' ? '#F7F5F0' : (actualScheme === 'obsidian-gray' ? '#090d16' : (actualScheme === 'nebula-purple' ? '#03020a' : '#081f28'))
       doc.style.backgroundColor = baseBg
     }
 
@@ -677,7 +715,7 @@ applyThemeToDOM(currentColorScheme.value, currentBgType.value)
 
 export function useThemeStyle() {
   function setColorScheme(scheme) {
-    if (scheme !== 'obsidian-gray' && scheme !== 'classic-cyan' && scheme !== 'nebula-purple' && scheme !== 'custom') return
+    if (scheme !== 'quiet-research' && scheme !== 'obsidian-gray' && scheme !== 'classic-cyan' && scheme !== 'nebula-purple' && scheme !== 'custom') return
     currentColorScheme.value = scheme
     currentThemeStyle.value = resolveLegacyTheme(scheme, currentBgType.value)
     applyThemeToDOM(scheme, currentBgType.value)
@@ -690,7 +728,7 @@ export function useThemeStyle() {
   }
 
   function setBgType(bgType) {
-    if (bgType !== 'galaxy' && bgType !== 'vanta-fog' && bgType !== 'clouds-static' && bgType !== 'custom-local') return
+    if (bgType !== 'paper' && bgType !== 'galaxy' && bgType !== 'vanta-fog' && bgType !== 'clouds-static' && bgType !== 'custom-local') return
     currentBgType.value = bgType
     currentThemeStyle.value = resolveLegacyTheme(currentColorScheme.value, bgType)
     applyThemeToDOM(currentColorScheme.value, bgType)
@@ -704,7 +742,10 @@ export function useThemeStyle() {
 
   // 兼容旧版 setThemeStyle 调用
   function setThemeStyle(style) {
-    if (style === 'earth-orbit' || style === 'clouds-static') {
+    if (style === 'paper') {
+      setColorScheme('quiet-research')
+      setBgType('paper')
+    } else if (style === 'earth-orbit' || style === 'clouds-static') {
       setColorScheme('classic-cyan')
       setBgType('clouds-static')
     } else if (style === 'galaxy') {
