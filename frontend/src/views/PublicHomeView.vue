@@ -89,6 +89,7 @@ function downloadBibtex() {
           <div class="topic-tags"><span v-for="tag in activeDirection.tags" :key="tag">{{ tag }}</span></div>
           <div class="research-evidence"><h4>相关研究选读</h4><ul><li v-for="paper in relatedResearchPapers" :key="paper.id"><a :href="paper.source_url" target="_blank" rel="noopener noreferrer">{{ paper.title }} <span aria-hidden="true">↗</span></a><small>arXiv:{{ paper.id }}</small></li></ul></div>
           <button class="button secondary related-papers" @click="showRelatedPapers(activeDirection.id)">查看相关论文 <span aria-hidden="true">↓</span></button>
+          <router-link class="button ghost topic-detail-link" :to="`/research/${activeDirection.id}`">阅读专题详情 <span aria-hidden="true">↗</span></router-link>
         </article>
       </div>
       <noscript><div class="research-static"><h3>全部研究方向</h3><article v-for="direction in directions" :key="direction.id"><h4>{{ direction.title }}</h4><p>{{ direction.text }}</p><dl><dt>研究问题</dt><dd>{{ direction.question }}</dd><dt>主要方法</dt><dd>{{ direction.methods }}</dd><dt>实验联系</dt><dd>{{ direction.probes }}</dd></dl><p>{{ direction.detail }}</p></article></div></noscript>
@@ -196,6 +197,8 @@ function downloadBibtex() {
 }
 @media(max-width:650px) { .physics-resource-grid { grid-template-columns:1fr; } .physics-resource-card { padding:20px; } .research-explainer dd { font-size:14px; } }
 .related-papers { margin-top:24px; }
+.topic-detail-link { margin:24px 0 0 8px; min-height:44px; display:inline-flex; align-items:center; gap:10px; }
+@media(max-width:650px) { .topic-detail-link { margin-left:0; } }
 .publication-controls { gap:20px; flex-wrap:wrap; }
 .publication-controls .segmented { flex-wrap:wrap; gap:4px; }
 .publication-controls .segmented button { white-space:normal; }
