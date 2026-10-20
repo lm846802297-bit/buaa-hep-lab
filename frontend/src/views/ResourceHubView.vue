@@ -13,6 +13,8 @@
       </button>
     </section>
 
+    <router-link class="learning-entry" to="/learning"><span><strong>学习与计算</strong><small>五个基础专题 · 权威资源 · 可复现计算记录</small></span><span aria-hidden="true">进入指南 ↗</span></router-link>
+
     <!-- 分类与检索栏 -->
     <section class="category-bar">
       <div class="category-buttons">
@@ -905,6 +907,11 @@ const handleDeleteCategory = async (name) => {
 </script>
 
 <style scoped>
+.learning-entry { display:flex; justify-content:space-between; align-items:center; gap:20px; margin:20px 0 24px; padding:20px 24px; border:1px solid var(--line); border-radius:20px; background:var(--panel-solid); color:var(--accent); }
+.learning-entry strong { display:block; font-size:18px; font-weight:500; }
+.learning-entry small { display:block; font-size:13px; color:var(--soft); margin-top:6px; }
+.learning-entry>span:last-child { flex-shrink:0; font-size:14px; }
+@media(max-width:650px) { .learning-entry { padding:18px; flex-wrap:wrap; } }
 .resource-shell {
   max-width: 1180px;
   margin: auto;
