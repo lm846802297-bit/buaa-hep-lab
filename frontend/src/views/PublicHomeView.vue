@@ -105,7 +105,31 @@ function downloadBibtex() {
       </div>
     </section>
 
-    <section id="about" class="public-section about-section"><div><span class="eyebrow">03 / ABOUT THE GROUP</span><h2>保持好奇，<br>一起探索基本规律。</h2><p>依托{{ lab.institution }}，聚焦{{ lab.field }}。我们在理论研究、文献研读与学术讨论中，探索新的物理可能性。</p></div><div class="about-details"><div class="academic-partner"><span>学术指导</span><strong>{{ advisorProfile.name }} <small> / {{ advisorProfile.english }}</small></strong><p class="partner-affiliation">{{ advisorProfile.institution }} · {{ advisorProfile.title }}</p><p>{{ advisorProfile.intro }}</p><p class="partner-topics">研究方向：{{ advisorProfile.topics.join('、') }}</p><a :href="advisorProfile.source" target="_blank" rel="noopener noreferrer">北京航空航天大学学院主页 ↗</a><a href="#publications">查看代表成果 ↓</a></div><div v-for="person in collaborators" :key="person.source" class="academic-partner"><span>合作成员</span><strong>{{ person.name }}</strong><p class="partner-affiliation">{{ person.institution }} · {{ person.field }}</p><p class="partner-topics">{{ person.topics.join('、') }}</p><a :href="person.source" target="_blank" rel="noopener noreferrer">北京大学教师主页 ↗</a></div><div><span>研究领域</span><strong>{{ lab.field }}</strong></div><p>更多成员介绍与学术活动将在确认后补充。</p></div></section>
+    <section id="about" class="public-section about-section">
+      <div><span class="eyebrow">03 / ABOUT THE GROUP</span><h2>保持好奇，<br>一起探索基本规律。</h2><p>依托{{ lab.institution }}，聚焦{{ lab.field }}。我们在理论研究、文献研读与学术讨论中，探索新的物理可能性。</p></div>
+      <div class="about-details">
+        <div class="academic-partner" role="group" :aria-label="advisorProfile.groupRole + '：' + advisorProfile.name">
+          <span>{{ advisorProfile.groupRole }}</span>
+          <strong>{{ advisorProfile.name }} <small> / {{ advisorProfile.english }}</small></strong>
+          <p class="partner-affiliation">{{ advisorProfile.institution }} · {{ advisorProfile.title }}</p>
+          <p>{{ advisorProfile.intro }}</p>
+          <p class="partner-topics">研究方向：{{ advisorProfile.topics.join('、') }}</p>
+          <a :href="advisorProfile.source" target="_blank" rel="noopener noreferrer">北京航空航天大学学院主页 ↗</a>
+          <a href="#publications">查看代表成果 ↓</a>
+        </div>
+        <div v-for="person in collaborators" :key="person.source" class="academic-partner" role="group" :aria-label="person.groupRole + '：' + person.name">
+          <span>{{ person.groupRole }}</span>
+          <strong>{{ person.name }} <small> / {{ person.english }}</small></strong>
+          <p class="partner-affiliation">{{ person.institution }} · {{ person.title }}</p>
+          <p>{{ person.intro }}</p>
+          <p class="partner-topics">研究方向：{{ person.topics.join('、') }}</p>
+          <p v-for="highlight in person.highlights" :key="highlight">{{ highlight }}</p>
+          <a :href="person.source" target="_blank" rel="noopener noreferrer">北京大学教师主页 ↗</a>
+        </div>
+        <div><span>研究领域</span><strong>{{ lab.field }}</strong></div>
+        <p>更多成员介绍与学术活动将在确认后补充。</p>
+      </div>
+    </section>
 
     <section class="public-section collaboration-section"><div><span class="eyebrow">RESEARCH, TOGETHER</span><h2>把日常协作，留给更好的研究。</h2><p>组会安排、文献讨论与研习资料，在同一个工作台持续积累。</p><router-link to="/hub" class="button primary">进入组内协作 <span aria-hidden="true">↗</span></router-link></div><div class="hub-module-list"><span><i>01</i> 组会与学术日程 <small>SEMINARS</small></span><span><i>02</i> 文献推荐与讨论 <small>LITERATURE</small></span><span><i>03</i> 资料库与个人收藏 <small>RESOURCES</small></span><p>工作台需登录访问 · 首次使用由管理员初始化</p></div></section>
     <footer class="public-footer"><span>{{ lab.shortName }}<small>{{ lab.name }}<template v-if="lab.provisional">（暂定名称）</template></small></span><span>基于 <a href="https://github.com/Chocologism/lab-orbit" target="_blank" rel="noopener noreferrer">LabOrbit</a> 定制 · 非学校官方门户</span><a href="#top">回到顶部 ↑</a></footer>
