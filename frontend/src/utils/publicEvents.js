@@ -68,7 +68,7 @@ export function buildPublicIcsCalendar(events, now = new Date()) {
       `DTSTART:${formatIcsDate(event.start_at)}`,
       `DTEND:${formatIcsDate(event.end_at)}`,
       `SUMMARY:${escapeIcsText(event.title)}`,
-      ...(event.speaker ? [`ORGANIZER;CN=${escapeIcsText(event.speaker)}:MAILTO:noreply@buaa-hep-hub.pages.dev`] : []),
+      ...(event.speaker ? [`X-SPEAKER:${escapeIcsText(event.speaker)}`] : []),
       ...(event.location ? [`LOCATION:${escapeIcsText(event.location)}`] : []),
       ...(event.abstract ? [`DESCRIPTION:${escapeIcsText(event.abstract)}`] : []),
       ...(event.source_url ? [`URL:${escapeIcsText(event.source_url)}`] : []),
