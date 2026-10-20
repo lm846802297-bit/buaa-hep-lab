@@ -35,9 +35,12 @@ describe('useThemeStyle', () => {
     delete global.document
   })
 
-  it('defaults to clouds-static for first-time visitors when localStorage is empty', async () => {
-    const { currentThemeStyle } = await import('./useThemeStyle')
+  it('defaults to the Quiet Research paper theme for first-time visitors', async () => {
+    const { currentThemeStyle, currentColorScheme, currentBgType, currentGlassStyle } = await import('./useThemeStyle')
     expect(currentThemeStyle.value).toBe('paper')
+    expect(currentColorScheme.value).toBe('quiet-research')
+    expect(currentBgType.value).toBe('paper')
+    expect(currentGlassStyle.value).toBe('solid')
   })
 
   it('allows changing theme style and persists to localStorage and DOM', async () => {
