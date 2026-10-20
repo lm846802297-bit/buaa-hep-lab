@@ -125,28 +125,13 @@ export function migratePreviousDefaultUsers() {
   if (typeof window === 'undefined') return
   try {
     if (localStorage.getItem(DEFAULT_MIGRATION_KEY)) return
-    const savedScheme = localStorage.getItem(COLOR_SCHEME_KEY)
-    const savedBg = localStorage.getItem(BG_TYPE_KEY)
-    const savedLegacy = localStorage.getItem(LEGACY_STORAGE_KEY)
-    const savedGlass = localStorage.getItem(GLASS_STYLE_KEY)
 
-    const isDefaultScheme = !savedScheme || savedScheme === 'classic-cyan' || savedScheme === 'obsidian-gray'
-    const isDefaultBg = !savedBg || savedBg === 'earth-orbit' || savedBg === 'clouds-static'
-    const isDefaultLegacy = !savedLegacy || savedLegacy === 'earth-orbit' || savedLegacy === 'clouds-static'
-
-    // Move users on the old default look to the new paper-first research design.
-    // Preserve deliberately chosen nebula/custom schemes and custom or animated backgrounds.
-    if (isDefaultScheme && isDefaultBg && isDefaultLegacy) {
-      localStorage.setItem(COLOR_SCHEME_KEY, DEFAULT_COLOR_SCHEME)
-      localStorage.setItem(BG_TYPE_KEY, DEFAULT_BG_TYPE)
-      localStorage.setItem(LEGACY_STORAGE_KEY, 'paper')
-      if (!savedGlass || savedGlass === 'liquid') {
-        localStorage.setItem(GLASS_STYLE_KEY, DEFAULT_GLASS_STYLE)
-      }
-    }
+    // A stored classic/legacy theme cannot be distinguished from a deliberate user choice.
+    // New installs already inherit Quiet Research from DEFAULT_*; preserve every saved
+    // appearance setting rather than silently replacing an existing preference.
     localStorage.setItem(DEFAULT_MIGRATION_KEY, '1')
   } catch (e) {
-    console.warn('Failed to migrate default theme:', e)
+    console.warn('Failed to record appearance migration state:', e)
   }
 }
 
