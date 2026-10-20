@@ -1,0 +1,65 @@
+
+/hub
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/login
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/setup
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/account
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/seminars
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/library
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/arxiv
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/resources
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/mailbox
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/notices
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/favorites
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/feedback
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/assistant
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/quick-share
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/style
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+

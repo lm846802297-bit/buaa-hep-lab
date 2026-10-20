@@ -1,0 +1,235 @@
+{
+  "conditions": "Chromium, 390x844, cold context, CPU 4x slowdown, 150ms latency, 200KB/s; static localhost; hub uses isolated fictitious demo data; EventTiming is laboratory timing, not field INP",
+  "results": [
+    {
+      "route": "/",
+      "run": 1,
+      "requests": 5,
+      "jsBytes": 2070903,
+      "gzipBytes": 615602,
+      "initialResources": [
+        {
+          "name": "/assets/forecast/forecast-clouds-drift-seamless.jpg",
+          "type": "link"
+        },
+        {
+          "name": "/assets/index-C9N3-Tn-.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/index-Dk0woznV.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/PublicHomeView-DKB-6w2U.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/PublicHomeView-upoLIwG7.css",
+          "type": "link"
+        }
+      ],
+      "lcp": 13556,
+      "labInteractionMax": 16,
+      "domContentLoaded": 12998.89999999851,
+      "errors": []
+    },
+    {
+      "route": "/",
+      "run": 2,
+      "requests": 5,
+      "jsBytes": 2070903,
+      "gzipBytes": 615602,
+      "initialResources": [
+        {
+          "name": "/assets/forecast/forecast-clouds-drift-seamless.jpg",
+          "type": "link"
+        },
+        {
+          "name": "/assets/index-C9N3-Tn-.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/index-Dk0woznV.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/PublicHomeView-DKB-6w2U.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/PublicHomeView-upoLIwG7.css",
+          "type": "link"
+        }
+      ],
+      "lcp": 13608,
+      "labInteractionMax": 16,
+      "domContentLoaded": 12995,
+      "errors": []
+    },
+    {
+      "route": "/",
+      "run": 3,
+      "requests": 5,
+      "jsBytes": 2070903,
+      "gzipBytes": 615602,
+      "initialResources": [
+        {
+          "name": "/assets/forecast/forecast-clouds-drift-seamless.jpg",
+          "type": "link"
+        },
+        {
+          "name": "/assets/index-C9N3-Tn-.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/index-Dk0woznV.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/PublicHomeView-DKB-6w2U.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/PublicHomeView-upoLIwG7.css",
+          "type": "link"
+        }
+      ],
+      "lcp": 13612,
+      "labInteractionMax": 16,
+      "domContentLoaded": 12999.39999999851,
+      "errors": []
+    },
+    {
+      "route": "/hub?demo=1",
+      "run": 1,
+      "requests": 5,
+      "jsBytes": 2057443,
+      "gzipBytes": 609945,
+      "initialResources": [
+        {
+          "name": "/assets/forecast/forecast-clouds-drift-seamless.jpg",
+          "type": "link"
+        },
+        {
+          "name": "/assets/index-C9N3-Tn-.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/index-Dk0woznV.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/LO_logo.svg",
+          "type": "img"
+        },
+        {
+          "name": "/api/video/earth-orbit",
+          "type": "video"
+        }
+      ],
+      "lcp": 13528,
+      "labInteractionMax": 0,
+      "domContentLoaded": 12984.10000000149,
+      "errors": []
+    },
+    {
+      "route": "/hub?demo=1",
+      "run": 2,
+      "requests": 13,
+      "jsBytes": 2057443,
+      "gzipBytes": 609945,
+      "initialResources": [
+        {
+          "name": "/assets/forecast/forecast-clouds-drift-seamless.jpg",
+          "type": "link"
+        },
+        {
+          "name": "/assets/index-C9N3-Tn-.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/index-Dk0woznV.css",
+          "type": "link"
+        },
+        {
+          "name": "/v1/forecast",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/earth-orbit-poster.jpg",
+          "type": "video"
+        },
+        {
+          "name": "/assets/LO_logo.svg",
+          "type": "img"
+        },
+        {
+          "name": "/api/video/earth-orbit",
+          "type": "video"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-00.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-01.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-02.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-03.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-04.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-05.bin",
+          "type": "fetch"
+        }
+      ],
+      "lcp": 13480,
+      "labInteractionMax": 0,
+      "domContentLoaded": 12976.60000000149,
+      "errors": []
+    },
+    {
+      "route": "/hub?demo=1",
+      "run": 3,
+      "requests": 5,
+      "jsBytes": 2057443,
+      "gzipBytes": 609945,
+      "initialResources": [
+        {
+          "name": "/assets/forecast/forecast-clouds-drift-seamless.jpg",
+          "type": "link"
+        },
+        {
+          "name": "/assets/index-C9N3-Tn-.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/index-Dk0woznV.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/LO_logo.svg",
+          "type": "img"
+        },
+        {
+          "name": "/api/video/earth-orbit",
+          "type": "video"
+        }
+      ],
+      "lcp": 13560,
+      "labInteractionMax": 0,
+      "domContentLoaded": 12988,
+      "errors": []
+    }
+  ]
+}

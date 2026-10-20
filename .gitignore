@@ -76,3 +76,6 @@ htmlcov/
 scratch/
 *.mp4
 
+
+# Browser audit outputs (user-facing copies live outside the source checkout)
+frontend/test-results/

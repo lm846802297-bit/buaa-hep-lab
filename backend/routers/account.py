@@ -1,3 +1,4 @@
+from ..login_protection import protect_attempt
 import io
 import json
 import re
@@ -60,6 +61,7 @@ class CredentialsInput(BaseModel):
 
 @router.put('/credentials', response_model=Token)
 def credentials(body: CredentialsInput, user=Depends(get_current_user), db: Session = Depends(get_db)):
+    protect_attempt(db, 'credentials:account', str(user.id), 10)
     if not verify_password(body.current_password, user.hashed_password):
         raise HTTPException(400, '当前密码错误')
     if body.email is None and body.new_password is None:

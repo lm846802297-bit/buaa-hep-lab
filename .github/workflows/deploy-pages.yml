@@ -1,9 +1,6 @@
 name: Deploy LabOrbit Demo to GitHub Pages
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -17,6 +14,7 @@ concurrency:
 
 jobs:
   build:
+    if: ${{ vars.ENABLE_GITHUB_PAGES_DEMO == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码 (Checkout)
@@ -25,7 +23,7 @@ jobs:
       - name: 设置 Node.js 环境 (Node 22)
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -33,6 +31,9 @@ jobs:
         run: |
           cd frontend
           npm ci
+
+      - name: Test before building demo
+        run: npm --prefix frontend test
 
       - name: 构建 GitHub Pages 演示版 (Build Demo Frontend)
         env:

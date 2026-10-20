@@ -1,9 +1,17 @@
 import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import { Env, UserRow } from '../types';
-import { createToken, authMiddleware, adminOnlyMiddleware } from '../middleware/auth';
+import { createToken, authMiddleware, adminOnlyMiddleware, hasSigningSecret } from '../middleware/auth';
+
+import { passwordError, protectAuthAttempts } from '../middleware/loginProtection';
 
 const app = new Hono<{ Bindings: Env; Variables: { user: UserRow } }>();
+
+app.use('*', async (c, next) => {
+  if (!hasSigningSecret(c.env.JWT_SECRET)) return c.json({ detail: '部署尚未配置登录密钥，请联系管理员完成配置' }, 503);
+  c.header('Cache-Control', 'no-store');
+  await next();
+});
 
 type InviteRole = 'student' | 'admin';
 type InviteIdentity = 'student' | 'teacher';
@@ -79,7 +87,7 @@ function inviteAssignment(body: Record<string, unknown>) {
   return { registration_role, registration_identity };
 }
 
-app.post('/login', async (c) => {
+app.post('/login', protectAuthAttempts('login'), async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const email = (body.email || '').trim().toLowerCase();
   const password = body.password || '';
@@ -109,7 +117,7 @@ app.post('/login', async (c) => {
     return c.json({ detail: '用户不存在或密码错误' }, 401);
   }
 
-  const secret = c.env.JWT_SECRET || 'laborbit-secure-secret-key-2026';
+  const secret = c.env.JWT_SECRET!;
   const token = await createToken(user, secret);
 
   await ensureUserPresenceSchema(c.env.DB);
@@ -123,7 +131,7 @@ app.post('/login', async (c) => {
   });
 });
 
-app.post('/register', async (c) => {
+app.post('/register', protectAuthAttempts('register'), async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const realName = (body.name || '').trim();
   const nickname = (body.nickname || '').trim();
@@ -135,7 +143,7 @@ app.post('/register', async (c) => {
   if (!email || !password || !invite_code) {
     return c.json({ detail: '邮箱、密码与邀请码为必填项' }, 400);
   }
-  if (password.length < 6) return c.json({ detail: '密码至少需要 6 个字符' }, 400);
+  if (passwordError(password)) return c.json({ detail: passwordError(password) }, 400);
 
   await ensureInviteCodeSchema(c.env.DB);
   const invite = await c.env.DB.prepare(
@@ -187,7 +195,7 @@ app.post('/register', async (c) => {
     return c.json({ detail: '注册失败，请稍后重试' }, 500);
   }
 
-  const secret = c.env.JWT_SECRET || 'laborbit-secure-secret-key-2026';
+  const secret = c.env.JWT_SECRET!;
   const token = await createToken(user, secret);
 
   const { hashed_password: _, ...safeUser } = user;
@@ -388,7 +396,7 @@ app.post('/members', authMiddleware, adminOnlyMiddleware, async (c) => {
 
   if (!name) return c.json({ detail: '姓名不能为空' }, 400);
   if (!email || !email.includes('@')) return c.json({ detail: '请输入有效的邮箱地址' }, 400);
-  if (!password || password.length < 6) return c.json({ detail: '密码至少需要 6 个字符' }, 400);
+  if (!password || passwordError(password)) return c.json({ detail: '密码至少需要 8 个字符' }, 400);
 
   const existing = await c.env.DB.prepare('SELECT id FROM users WHERE LOWER(email) = ?')
     .bind(email)

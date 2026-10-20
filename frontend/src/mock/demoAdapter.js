@@ -169,7 +169,7 @@ export async function demoAxiosAdapter(config) {
   }
   if (cleanUrl === '/api/auth/register' && method === 'post') {
     if (!body.email || !body.password || !body.invite_code) return respond({ detail: '邮箱、密码与邀请码为必填项' }, 400)
-    if (body.password.length < 6) return respond({ detail: '密码至少需要 6 个字符' }, 400)
+    if (body.password.length < 8) return respond({ detail: '密码至少需要 8 个字符' }, 400)
     if (body.invite_code.trim().toUpperCase() !== 'HEP-DEMO') return respond({ detail: '演示邀请码为 HEP-DEMO' }, 400)
     const realName = (body.name || '').trim()
     const nickname = (body.nickname || '').trim()
@@ -641,6 +641,7 @@ export async function demoAxiosAdapter(config) {
       if (method === 'post') {
         const newBook = {
           id: Date.now(),
+          created_by_id: getStored('labhub_user', DEMO_MEMBERS[0]).id,
           title: body.title || '新学术资料',
           authors: body.authors || '',
           category: body.category || '教材',
@@ -663,6 +664,12 @@ export async function demoAxiosAdapter(config) {
     const mBookId = cleanUrl.match(/\/api\/resources\/books\/(\d+)$/)
     if (mBookId) {
       const bId = parseInt(mBookId[1], 10)
+      const book = books.find(b => b.id === bId)
+      const actor = getStored('labhub_user', DEMO_MEMBERS[0])
+      if (method === 'put' || method === 'delete') {
+        if (!book) return respond({ detail: '资料条目不存在' }, 404)
+        if (actor.role !== 'admin' && book.created_by_id !== actor.id) return respond({ detail: '只有资料创建者或管理员可以修改或删除' }, 403)
+      }
       if (method === 'put') {
         const target = books.find(b => b.id === bId)
         if (target) {

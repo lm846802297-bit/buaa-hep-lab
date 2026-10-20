@@ -1,9 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { Renderer, Program, Mesh, Color, Triangle } from 'ogl'
-import * as THREE from 'three'
-import FOG from 'vanta/dist/vanta.fog.min'
 import { currentThemeStyle, currentBgType, isBgVideoPaused } from '../composables/useThemeStyle'
 import { getLocalBackground } from '../utils/localBgStorage'
 import {
@@ -108,7 +105,7 @@ float Star(vec2 uv, float flare) {
 vec3 StarLayer(vec2 uv) {
   vec3 col = vec3(0.0);
 
-  vec2 gv = fract(uv) - 0.5; 
+  vec2 gv = fract(uv) - 0.5;
   vec2 id = floor(uv);
 
   for (int y = -1; y <= 1; y++) {
@@ -124,7 +121,7 @@ vec3 StarLayer(vec2 uv) {
       float blu = smoothstep(STAR_COLOR_CUTOFF, 1.0, Hash21(si + 3.0)) + STAR_COLOR_CUTOFF;
       float grn = min(red, blu) * seed;
       vec3 base = vec3(red, grn, blu);
-      
+
       float hue = atan(base.g - base.r, base.b - base.r) / (2.0 * 3.14159) + 0.5;
       hue = fract(hue + uHueShift / 360.0);
       float sat = length(base - vec3(dot(base, vec3(0.299, 0.587, 0.114)))) * uSaturation;
@@ -139,7 +136,7 @@ vec3 StarLayer(vec2 uv) {
       float twinkle = trisn(uTime * uSpeed + seed * 6.2831) * 0.5 + 1.0;
       twinkle = mix(1.0, twinkle, uTwinkleIntensity);
       star *= twinkle;
-      
+
       col += star * size * color;
     }
   }
@@ -152,7 +149,7 @@ void main() {
   vec2 uv = ((vUv * uResolution.xy - focalPx) / uResolution.y) * 1.35;
 
   vec2 mouseNorm = uMouse - vec2(0.5);
-  
+
   if (uAutoCenterRepulsion > 0.0) {
     vec2 centerUV = vec2(0.0, 0.0);
     float centerDist = length(uv - centerUV);
@@ -318,8 +315,9 @@ function update(now) {
   }
 }
 
-function initGalaxy() {
-  if (!containerRef.value) return
+async function initGalaxy() {
+  const { Renderer, Program, Mesh, Color, Triangle } = await import('ogl')
+  if (!containerRef.value || currentBgType.value !== 'galaxy') return
   destroyGalaxy()
   const ctn = containerRef.value
 
@@ -438,8 +436,10 @@ function destroyGalaxy() {
 // ==========================================
 let vantaEffect = null
 
-function initVantaFog() {
-  if (!containerRef.value) return
+async function initVantaFog() {
+  const THREE = await import('three')
+  const { default: FOG } = await import('vanta/dist/vanta.fog.min')
+  if (!containerRef.value || currentBgType.value !== 'vanta-fog') return
   destroyVantaFog()
 
   const customThree = {
@@ -684,10 +684,10 @@ function startAtmosphere(bgType) {
       }
     } else if (bgType === 'vanta-fog') {
       destroyGalaxy()
-      initVantaFog()
+      initVantaFog().catch(() => onMediaLoaded())
     } else if (bgType === 'galaxy') {
       destroyVantaFog()
-      initGalaxy()
+      initGalaxy().catch(() => onMediaLoaded())
     } else if (bgType === 'custom-local') {
       destroyGalaxy()
       destroyVantaFog()

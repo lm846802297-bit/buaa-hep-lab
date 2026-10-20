@@ -27,8 +27,8 @@ function stopGlobalTicker() {
 
 /**
  * 根据活跃时间戳与参考时间计算在线状态
- * @param {string|number|Date|null} lastActiveAt 
- * @param {number} [nowMs] 
+ * @param {string|number|Date|null} lastActiveAt
+ * @param {number} [nowMs]
  * @returns {'online' | 'away' | 'offline'}
  */
 export function calcPresenceStatus(lastActiveAt, nowMs = presenceNow.value) {
@@ -126,6 +126,11 @@ export function usePresence() {
 
   onBeforeUnmount(() => {
     stopGlobalTicker()
+    if (tickerRefCount <= 0) {
+      clearInterval(heartbeatTimer)
+      heartbeatTimer = null
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   })
 
   return {

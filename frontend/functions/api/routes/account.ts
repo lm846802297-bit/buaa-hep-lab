@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import { Env, UserRow } from '../types';
 import { authMiddleware, createToken } from '../middleware/auth';
 
+import { passwordError, protectAuthAttempts } from '../middleware/loginProtection';
+
 const app = new Hono<{ Bindings: Env; Variables: { user: UserRow } }>();
 
 app.use('*', authMiddleware);
@@ -27,7 +29,7 @@ app.put('/profile', async (c) => {
   return c.json(updated);
 });
 
-app.put('/credentials', async (c) => {
+app.put('/credentials', protectAuthAttempts('credentials'), async (c) => {
   const user = c.get('user');
   const body = await c.req.json().catch(() => ({}));
   const current_password = body.current_password || '';
@@ -63,8 +65,8 @@ app.put('/credentials', async (c) => {
   let finalPassword = user.hashed_password;
   let tokenVersion = user.token_version + 1;
   if (new_password) {
-    if (new_password.length < 6) {
-      return c.json({ detail: '新密码长度至少需 6 位' }, 400);
+    if (passwordError(new_password)) {
+      return c.json({ detail: passwordError(new_password) }, 400);
     }
     finalPassword = await bcrypt.hash(new_password, 6);
   }
@@ -81,8 +83,8 @@ app.put('/credentials', async (c) => {
     .bind(user.id)
     .first();
 
-  const secret = c.env.JWT_SECRET || 'laborbit-secure-secret-key-2026';
-  return c.json({ access_token: await createToken(updated as UserRow, secret), token_type: 'bearer', user: updated });
+  const secret = c.env.JWT_SECRET!;
+  return c.json({ access_token: await createToken({ ...user, ...updated, token_version: tokenVersion } as UserRow, secret), token_type: 'bearer', user: updated });
 });
 
 app.post('/avatar', async (c) => {

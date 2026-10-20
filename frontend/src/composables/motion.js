@@ -1,6 +1,10 @@
-import { gsap } from 'gsap'
-export const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
-export function enterPage(el, done) {
-  gsap.fromTo(el, { opacity: 0, y: reducedMotion() ? 0 : 6 }, { opacity: 1, y: 0, duration: reducedMotion() ? 0 : .12, ease: 'power2.out', clearProps: 'transform,opacity', onComplete: done })
+export const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+function animatePage(el, frames, duration, done) {
+  if (reducedMotion() || typeof el.animate !== 'function') { done(); return }
+  const animation = el.animate(frames, { duration, easing: 'ease-out' })
+  animation.finished.then(() => done(), () => done())
 }
-export function leavePage(el, done) { gsap.to(el, { opacity: 0, duration: reducedMotion() ? 0 : .06, onComplete: done }) }
+export function enterPage(el, done) {
+  animatePage(el, [{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' }], 120, done)
+}
+export function leavePage(el, done) { animatePage(el, [{ opacity: 1 }, { opacity: 0 }], 60, done) }

@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { Env, UserRow } from '../types';
-import { authMiddleware, adminOnlyMiddleware, seminarManagerMiddleware } from '../middleware/auth';
+import { authMiddleware, canManageSeminars, isAssignedPresenter, adminOnlyMiddleware, seminarManagerMiddleware } from '../middleware/auth';
 import { resolveOrCreateSeminarPaper, archiveSeminarPresentationArxiv, unarchiveSeminarPresentationArxiv, extractArxivId, extractAllArxivIds, fetchArxivMetadata, decodeHtmlEntities } from '../utils/papers';
 
 const app = new Hono<{ Bindings: Env; Variables: { user: UserRow } }>();
@@ -108,7 +108,7 @@ app.get('/mine/upcoming', async (c) => {
   };
 
   const { results: seminars } = await c.env.DB.prepare(
-    `SELECT * FROM seminar_schedules 
+    `SELECT * FROM seminar_schedules
      WHERE date >= ? AND status != 'cancelled'
      ORDER BY date ASC, time ASC, id ASC`
   ).bind(today).all();
@@ -169,7 +169,7 @@ app.get('/mine/upcoming', async (c) => {
 app.get('/mine/upcoming-presentations', async (c) => {
   const user = c.get('user');
   const today = getTodayString();
-  const isMgr = user.role === 'admin' || Boolean(user.is_seminar_manager);
+  const isMgr = canManageSeminars(user);
   const showAll = c.req.query('all') === '1' && isMgr;
 
   const userNames = new Set(
@@ -249,7 +249,7 @@ app.get('/reminders', async (c) => {
 
   // 1. 主讲人未填摘要提醒（仅当 0 <= daysUntil <= absDays 时提醒）
   const { results: seminars } = await c.env.DB.prepare(
-    `SELECT * FROM seminar_schedules 
+    `SELECT * FROM seminar_schedules
      WHERE date >= ? AND status = 'upcoming'
      ORDER BY date ASC`
   ).bind(today).all();
@@ -794,17 +794,16 @@ app.put('/:id', async (c) => {
     return c.json({ detail: '组会不存在' }, 404);
   }
 
-  const isManager = user && (user.role === 'admin' || user.role === 'teacher' || Boolean(user.can_manage_seminars));
-  const isPresenter = user && (
-    (existing.presenter_id && existing.presenter_id === user.id) ||
-    (existing.presenter_name && (
-      existing.presenter_name.trim().toLowerCase() === (user.real_name || '').trim().toLowerCase() ||
-      existing.presenter_name.trim().toLowerCase() === (user.name || '').trim().toLowerCase()
-    ))
-  );
+  const isManager = canManageSeminars(user);
+  const isPresenter = await isAssignedPresenter(c.env.DB, user, existing);
 
   if (!isManager && !isPresenter) {
     return c.json({ detail: '你没有修改该组会的权限，请联系管理员或主讲人' }, 403);
+  }
+
+  if (!isManager && (['date', 'location', 'presenter_id', 'presenter_name', 'status', 'paper_id'].some(key =>
+    body[key] !== undefined && body[key] !== existing[key]) || body.presentations !== undefined)) {
+    return c.json({ detail: '排期、主讲人和分享人调整需要组会管理权限' }, 403);
   }
 
   const date = body.date !== undefined ? body.date.trim() : existing.date;
@@ -827,7 +826,7 @@ app.put('/:id', async (c) => {
   const paper_id = existing.paper_id || null;
 
   await c.env.DB.prepare(
-    `UPDATE seminar_schedules 
+    `UPDATE seminar_schedules
      SET date = ?, time = ?, location = ?, presenter_id = ?, presenter_name = ?, topic = ?, paper_id = ?, slides_url = ?, notes = ?, status = ?, abstract = ?
      WHERE id = ?`
   ).bind(date, time, location, presenter_id, presenter_name, topic, paper_id, slides_url, notes, status, abstract, id).run();
@@ -910,7 +909,7 @@ async function handlePresentationShare(c: any) {
     'SELECT * FROM seminar_presentations WHERE seminar_id = ? ORDER BY position ASC, id ASC'
   ).bind(seminarId).all<any>();
 
-  const isMgr = user && (user.role === 'admin' || user.role === 'teacher' || Boolean(user.can_manage_seminars));
+  const isMgr = canManageSeminars(user);
   const userNames = [user?.real_name, user?.name, user?.nickname].filter(Boolean).map(n => String(n).trim().toLowerCase());
 
   let targetPres: any = null;
@@ -936,7 +935,7 @@ async function handlePresentationShare(c: any) {
   }
 
   const targetPresName = (targetPres.presenter_name || '').trim().toLowerCase();
-  const isOwner = (targetPres.presenter_id && targetPres.presenter_id === user?.id) || (targetPresName && userNames.includes(targetPresName));
+  const isOwner = await isAssignedPresenter(c.env.DB, user, targetPres);
 
   if (!isMgr && !isOwner) {
     return c.json({ detail: '只有该文献分享人本人或管理员可以修改分享内容' }, 403);
@@ -1008,9 +1007,8 @@ app.post('/link-presentation-paper', async (c) => {
       .filter(Boolean)
       .map(n => (n as string).trim().toLowerCase())
   );
-  const isMgr = user.role === 'admin' || Boolean(user.is_seminar_manager);
-  const isOwner = (targetPres.presenter_id && targetPres.presenter_id === user.id) ||
-    (targetPres.presenter_name && userNames.has(targetPres.presenter_name.trim().toLowerCase()));
+  const isMgr = canManageSeminars(user);
+  const isOwner = await isAssignedPresenter(c.env.DB, user, targetPres);
 
   if (!isMgr && !isOwner) {
     return c.json({ detail: '只有该文献分享人本人或管理员可以将文献链接到此组会' }, 403);
@@ -1106,7 +1104,7 @@ app.post('/link-presentation-paper', async (c) => {
       const abstractClean = decodeHtmlEntities(meta.abstract || '');
 
       const insRes = await c.env.DB.prepare(
-        `INSERT INTO arxiv_papers 
+        `INSERT INTO arxiv_papers
          (arxiv_id, title, journal, source_url, authors, abstract, primary_category, published_date, pdf_url, recommended_by_id, recommend_comment, is_pinned, seminar_id, title_zh, abstract_zh, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, datetime('now'))`
       ).bind(
@@ -1201,14 +1199,8 @@ app.put('/:id/topic', async (c) => {
     return c.json({ detail: '组会不存在' }, 404);
   }
 
-  const isManager = user && (user.role === 'admin' || user.role === 'teacher' || Boolean(user.can_manage_seminars));
-  const isPresenter = user && (
-    (existing.presenter_id && existing.presenter_id === user.id) ||
-    (existing.presenter_name && (
-      existing.presenter_name.trim().toLowerCase() === (user.real_name || '').trim().toLowerCase() ||
-      existing.presenter_name.trim().toLowerCase() === (user.name || '').trim().toLowerCase()
-    ))
-  );
+  const isManager = canManageSeminars(user);
+  const isPresenter = await isAssignedPresenter(c.env.DB, user, existing);
 
   if (!isManager && !isPresenter) {
     return c.json({ detail: '你没有修改该组会标题的权限' }, 403);
@@ -1232,14 +1224,8 @@ app.put('/:id/abstract', async (c) => {
     return c.json({ detail: '组会不存在' }, 404);
   }
 
-  const isManager = user && (user.role === 'admin' || user.role === 'teacher' || Boolean(user.can_manage_seminars));
-  const isPresenter = user && (
-    (existing.presenter_id && existing.presenter_id === user.id) ||
-    (existing.presenter_name && (
-      existing.presenter_name.trim().toLowerCase() === (user.real_name || '').trim().toLowerCase() ||
-      existing.presenter_name.trim().toLowerCase() === (user.name || '').trim().toLowerCase()
-    ))
-  );
+  const isManager = canManageSeminars(user);
+  const isPresenter = await isAssignedPresenter(c.env.DB, user, existing);
 
   if (!isManager && !isPresenter) {
     return c.json({ detail: '你没有修改该组会摘要的权限' }, 403);
@@ -1296,7 +1282,7 @@ async function handlePostponeCascade(c: any, seminarIdParam?: string) {
 
   // Shift all upcoming seminars >= target.date by days
   const res = await c.env.DB.prepare(
-    `UPDATE seminar_schedules 
+    `UPDATE seminar_schedules
      SET date = date(date, '+' || ? || ' days')
      WHERE date >= ? AND status = 'upcoming'`
   ).bind(days, target.date).run();

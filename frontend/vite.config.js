@@ -55,6 +55,7 @@ export default defineConfig({
     allowedHosts: true
   },
   build: {
+    manifest: true,
     target: ['es2020', 'safari14']
   }
 })

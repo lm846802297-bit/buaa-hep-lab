@@ -762,7 +762,8 @@
 
 <script setup>
 import { ref, computed, reactive, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import ArxivPdfViewer from './ArxivPdfViewer.vue'
+import { defineAsyncComponent } from 'vue'
+const ArxivPdfViewer = defineAsyncComponent(() => import('./ArxivPdfViewer.vue'))
 import AppIcon from './AppIcon.vue'
 import ModelSelectPopover from './ModelSelectPopover.vue'
 import { renderMarkdown } from '../utils/markdown.js'

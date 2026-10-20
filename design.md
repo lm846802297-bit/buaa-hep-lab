@@ -1,4 +1,4 @@
-# 科研协作工作台 · 设计规范
+# 科研协作工作台 · 设计规范与改进路线图
 
 ## 北航课题组定制
 
@@ -136,5 +136,201 @@
 - 资料表单复用 FileField，支持 PDF 上传和外链。上传中禁用保存与关闭；卡片复用 AttachmentLink 以携带认证读取附件。
 - 首页“我的汇报安排”展示个人下一次主讲与 arXiv 分享。桌面双列、手机单列，16px 间距、16–20px 内边距，倒计时 32px / 400；按北京时间显示今天或剩余天数。仅显示真实安排，未安排和读取失败分别表达。
 - 原有主讲摘要七天提醒继续保留；分享人需关联账号，旧姓名记录只做唯一精确匹配。首页反馈回复入口显示未读数量，每分钟及返回页面时刷新。
-
 - 成员注册仅邮箱、密码和邀请码必填；真实姓名与昵称选填。均留空时生成成员显示名，真实姓名保持空白，个人资料保存不要求补填。
+
+## 10. 网站 UI 与前端审查（2026-10-20）
+
+### 10.1 审查范围与证据边界
+
+本轮检查了 `design.md`、`README.md`、`frontend/src/views/PublicHomeView.vue`、`frontend/src/content/lab.js`、`frontend/src/router/index.js`、`frontend/src/App.vue`、`frontend/src/index.css`、`frontend/index.html`、部分 API 路由及 GitHub Actions 记录，并核对了北航物理学院教师主页、INSPIRE-HEP 记录和 arXiv 原始论文页。
+
+**本轮是源码审查，不是完整线上验收。** 直接打开 `https://buaa-hep-hub.pages.dev/` 与 `/hub` 的网页读取均未成功；因此没有把源码推断说成实际浏览器测量，也没有检查生产 D1 数据、Cloudflare 运行时密钥或登录后的实际页面。下列风险需按对应验收标准复测。
+
+### 10.2 当前 UI 的优点与原则
+
+- 公开首页已经具有清晰的信息层次：研究组介绍、研究方向切换、代表论文、学术指导与合作成员、组内协作入口。
+- `PublicHomeView.vue` 已有论文搜索、主题筛选和 BibTeX 导出；粒子碰撞 SVG 带有 `title`、`desc`，明确标注为概念示意，不能当成真实实验事件图。
+- 页面已有移动端布局断点、键盘焦点样式、部分 ARIA 属性；全局 CSS 已包含 `prefers-reduced-motion` 规则。
+- 因此不建议推倒重做。保留深青配色、宽留白和简洁线稿，优先补齐真实学术内容、可读性、加载性能和权限边界；不要继续堆叠动画、玻璃层或与研究无关的装饰。
+- 公开官网与登录后的科研工作台应有一致的色彩与排版系统，但视觉目的不同：官网突出研究方向与成果，工作台突出日程、文献和任务效率。
+
+### 10.3 前端性能：最高优先级之一
+
+- 2026-10-20 的构建日志中，主入口 `index-C9N3-Tn-.js` 约为 **2,009.56 kB，gzip 后约 609.95 kB**。这是单个主入口文件的构建值，不是整个网站总下载量，但已足以要求做入口拆分和性能基线测量。
+- `frontend/src/router/index.js` 静态导入 `HomeView.vue`；`frontend/src/App.vue` 也静态导入若干工作台导航、背景与节日组件。应检查这些依赖是否被公开首页一起下载。
+- 将 `/hub` 和其他业务页面改为按路由动态导入；PDF.js 只在阅读 PDF 时加载；Three.js、Vanta、OGL、GSAP 等特效依赖仅在确实需要的页面或用户开启相应效果后加载。
+- `frontend/index.html` 全局预加载 `forecast-clouds-drift-seamless.jpg`，但公开页根容器 `.lab-public` 使用实色背景。应验证公开首页是否因此下载了不会显示的背景图，并将预加载限制在实际需要云景的工作台路由。
+- 为公开首页和工作台分别建立性能预算。初始 JavaScript 可先以 **gzip 后不超过 250 kB** 作为待验证的优化目标；若功能拆分后仍超出，应以真实 LCP、INP、网络瀑布和低端手机测试结果调整预算，而不是只看构建器警告。
+- 验收：记录拆分前后的初始请求、JS 总量、LCP、INP；确认 `/` 不加载 PDF 阅读器和不必要的内部功能代码，`/hub` 的主要功能仍可正常使用。
+
+### 10.4 公开官网 UI 改进
+
+#### P1：把论文成果做准确、做完整
+
+目前 `frontend/src/content/lab.js` 只有 3 篇代表论文；主题筛选只包含“全部成果、暗物质、对撞机物理”，没有中微子、相变/引力波或量子计量学分类。与教师主页和 INSPIRE-HEP 中可查到的成果相比，当前选录不足以展示课题组研究范围。
+
+- 将公开代表成果逐步扩展到约 **10–15 篇经过人工核对的代表作**，不必把全部历史论文都塞进首页。
+- 论文分类至少覆盖：暗物质与暗扇区；中微子与新相互作用；希格斯与对撞机唯象；长寿命粒子；相变与引力波；对撞机精度与量子计量学。论文可有多个主题标签，但需指定稳定的主分类。
+- 每条论文数据应记录 arXiv ID、完整标题、作者、期刊引用、DOI、主题标签、发表状态、最后核对日期和原始来源链接。区分“已发表”“预印本”“修订中”或“状态待核对”；未查到期刊信息时不能自行补写。
+- 论文卡片建议同时提供 arXiv、期刊/DOI（若存在）、复制引用、BibTeX 下载。当前已有 BibTeX 导出功能，应保留，并增加 DOI/出版信息展示，不重复开发第二套文献库。
+- 搜索可以覆盖标题、作者、年份、arXiv ID、期刊和主题标签；摘要全文检索可作为后续功能。加入年份筛选、排序和无结果提示，但保持操作简单。
+- 从研究方向卡片提供“查看相关论文”链接，并自动带入相应筛选；这样研究介绍、代表成果和技术专题之间形成可导航的路径。
+
+#### P2：细化研究专题而不是堆砌视觉特效
+
+建议先把现有三个方向补充成有证据支持的专题入口：
+
+1. **暗物质与暗扇区：** 热遗迹/共湮灭、非弹性暗物质、轻子门户、轴子或类轴子、超轻标量暗物质，以及直接探测、对撞机和宇宙学的互补性。
+2. **中微子与新相互作用：** 惰性中微子、太阳中微子相关新相互作用、中微子自相互作用及可检验信号。
+3. **希格斯与对撞机唯象：** 希格斯耦合、长寿命粒子、异常顶夸克耦合、未来 μ 子对撞机与对撞机精度。
+4. **相变与引力波：** 暗扇区或标量介导的一阶相变、引力波预言、长寿命粒子信号，以及理论预言与实验灵敏度之间的区别。
+5. **量子计量学与精密测量：** QFI、经典 Fisher 信息、纠缠态、衰变道和相空间选择对可达测量精度的影响。
+
+每个专题首期只需提供研究问题、两三段准确简介、代表论文和相关实验/理论方法。只有当组内确认方向仍然活跃、并且有合适的内容维护人时，才进一步做成独立长页面。
+
+#### P2：视觉、可访问性与移动端
+
+- 公开首页当前采用深色背景、线稿探测器图、方向标签和分隔式论文列表，风格本身不需要大改。可以提高论文期刊与 DOI 元数据的视觉层级，并确保 9–11px 的装饰性小字不承载关键学术信息。
+- 工作台沿用 Forecast Center 的云景/玻璃卡片设计，是现有产品选择；但天气视觉与高能物理科研工具并非天然匹配。后续可考虑用低对比度的探测器几何、粒子径迹或抽象场纹理替代部分天气语义，且不得将生成示意图冒充真实事件显示。此项为视觉方向建议，不是必须立即更换背景。
+- 公开页研究方向是垂直选项卡，现有代码处理上下箭头；可补齐 `Home` / `End` 键盘行为，并确保焦点、选中态和面板关系保持一致。
+- 保持 `prefers-reduced-motion`、明显的键盘焦点和真实文字标签；对玻璃/背景叠加效果执行对比度检查。若正文或按钮在复杂背景上难以阅读，应优先增加实色底或遮罩，而不是继续增加阴影。
+- 视觉验收至少覆盖 320、360、390、768、1024、1440 px；检查 200% 缩放、长论文标题、无结果、加载中、失败状态、菜单展开、对话框和日历。页面不得发生非必要横向溢出。
+
+### 10.5 SEO、分享与公开页面元数据
+
+- `frontend/index.html` 已有 title、description 和 favicon，但尚未看到 canonical、Open Graph、Twitter Card、面向公开论文/课题组的结构化数据、`robots.txt` 和 `sitemap.xml` 的完整实现。
+- 为公开首页配置规范 URL、社交分享标题/摘要/预览图和合适的结构化数据；为公开研究专题设置独立标题和摘要。公开内容优先考虑预渲染/静态生成，以减少对客户端 JavaScript 执行的依赖。
+- `/hub`、`/login`、`/setup` 等内部入口可设置 `noindex`，但 **robots/noindex 不是访问控制**；内部数据必须继续由服务端认证与授权保护。
+- 公开页中的导师和合作成员信息仅保留已确认、公开且必要的学术信息。组名正式确认前，不要擅自移除“暂定名称”提示；也不要在没有许可时添加个人照片、私人联系方式或未确认的招生信息。
+
+### 10.6 可增加的功能（按收益排序）
+
+| 优先级 | 功能 | 设计原则与边界 |
+|---|---|---|
+| P1 | 代表论文目录增强 | 扩展主题/年份筛选、DOI/期刊信息、复制引用和更完整的 BibTeX；复用现有文献元数据，不再造一个独立文献系统 |
+| P1 | 研究方向与论文互链 | 从每个方向跳到相关论文筛选；论文卡片返回相关研究专题 |
+| P2 | 研究专题页 | 以“问题—模型/方法—可观测信号—代表论文”组织内容，公式注明近似与模型适用范围 |
+| P2 | 论文元数据核对工作流 | 自动提取 arXiv/DOI 元数据后进入待审核队列；未经人工确认不得自动发布到公开主页 |
+| P2 | 复制引用与 RIS 导出 | 服务于学术引用工作流；若现有 BibTeX 已足够，RIS 可延后 |
+| P3 | 中英文切换 | 只有课题组确实需要面向国际访问者维护双语内容时再做，避免无人维护的机器翻译页面 |
+| P3 | 公开动态/新闻 | 只展示经过确认的论文、报告或招生信息；不把内部通知、日程或成员数据同步到公开端 |
+
+暂不建议增加更多滚动动画、3D 卡片、粒子背景交互、访客计数器或未经核实的实时论文自动发布。这些功能对学术信息质量帮助有限，还会增加加载成本和维护负担。
+
+## 11. 安全、权限与部署审查清单
+
+以下为源码层面的发现，尚未等同于生产环境渗透测试。实现前应补充回归测试，生产环境状态也需复核。
+
+| ID | 优先级 | 源码观察 | 建议与验收 |
+|---|---|---|---|
+| SEC-01 | P1 | `frontend/functions/api/routes/resources.ts` 的 `PUT /books/:id` 读取目标资料后更新记录，但没有校验资料创建者或管理员身份 | 在服务端强制检查创建者/管理员权限；普通成员尝试修改他人资料必须返回 403。删除权限规则也应与产品政策统一 |
+| SEC-02 | P1 | `frontend/functions/api/routes/mailbox.ts` 的 `/sync-stream` 接受 URL 查询参数中的 Token，并调用 `verifyToken`，但没有像通用 `authMiddleware` 一样比较数据库 `token_version` | 统一校验 Token 版本；避免在 URL 中传递长期有效的 JWT，优先采用短时、一次性、仅限 SSE 的票据。测试改密后旧 Token 在所有 API 上均失效，并检查访问日志不保留凭据 |
+| SEC-03 | P1 | `frontend/functions/api/routes/seminars.ts` 部分逻辑使用 `user.is_seminar_manager`，而 `UserRow` 与 D1 schema 定义的是 `can_manage_seminars` | 抽取统一的组会权限判断函数；测试管理员、教师、获授权学生、普通学生和主讲人本人在每个相关端点上的结果 |
+| SEC-04 | P1 | `frontend/functions/api/routes/auth.ts` 的注册/密码校验最低长度为 6，bcrypt cost 为 6；已检查的登录路由中未发现应用层失败限速 | 优先添加按 IP 和账户维度的速率限制、连续失败退避和监控；密码策略应提高到课题组认可的强度。提高 bcrypt cost 前需在 Cloudflare Worker CPU 限制下实测，不应盲目调高导致合法登录失败 |
+| SEC-05 | P2 | `auth.ts` 和 `authMiddleware` 中保留默认 JWT secret 回退；但 `frontend/functions/api/[[route]].ts` 的全局中间件要求 `JWT_SECRET` 已设置且长度至少 32，缺失时返回 503 | 当前外层检查降低了默认密钥被实际使用的可能性，但仍应删除默认密钥回退，让密钥缺失时始终 fail closed；增加无密钥/弱密钥部署测试 |
+| SEC-06 | P2 | 后端资料删除允许 `admin`、`teacher` 或创建者操作，而 `ResourceHubView.vue` 仅向管理员或创建者显示删除按钮 | 明确教师是否应有全局删除权；后端权限和 UI 能力必须一致。UI 隐藏按钮只是易用性，不是安全边界 |
+| CI-01 | P1 | 2026-10-20 的 Cloudflare Pages 工作流日志显示缺少 `CLOUDFLARE_API_TOKEN` 或 `CLOUDFLARE_ACCOUNT_ID`，因此跳过部署；GitHub Pages 演示工作流在发布阶段因 Pages 未启用返回 404 | 在 Cloudflare 仪表盘核对线上发布来源和最近部署记录；如仍需自动发布，配置正确的仓库 Secrets；若不再需要 GitHub Pages 演示，禁用或移除相应工作流 |
+| CI-02 | P1 | 已检查的部署工作流执行构建，但没有在部署前运行完整前端测试；README 测试徽章与使用说明中的测试数量也不一致 | CI 顺序应为安装依赖、`npm --prefix frontend test`、生产构建、关键路由/API 冒烟测试、部署、发布后健康检查。同步更新测试徽章和文档；测试或构建失败时不得发布 |
+
+注意：以上是基于当前 `main` 源码的审查点，不代表这些问题已在生产环境被利用。任何修复都应先在测试环境完成权限矩阵和回归验证，再部署。
+
+## 12. 课题组研究方向与代表成果来源
+
+### 12.1 方向依据
+
+北航物理学院王小平教师主页将研究方向概括为“高能粒子物理唯象学研究”，具体涉及超出标准模型的新粒子、暗物质模型与探测、中微子理论模型与非标准相互作用、希格斯物理，以及加速器和非加速器新物理探测。当前公开主页的三个主方向与之基本一致，但近期论文显示，页面可以进一步呈现长寿命粒子、相变与引力波、对撞机量子计量学、轴矢量轻子新相互作用和精密顶夸克物理。
+
+官方来源：[北航物理学院王小平教师主页](https://physics.buaa.edu.cn/info/1265/3153.htm)。学院主页链接到旧版 INSPIRE 作者页；近期合作论文可从 [INSPIRE-HEP 的 Jia Liu 作者记录](https://inspirehep.net/authors/1336279) 以及每篇论文的 arXiv 原始记录交叉核对。论文元数据的核对日期为 **2026-10-20**。
+
+### 12.2 候选代表论文清单
+
+以下清单用于更新网站选录，不意味着每篇都是课题组当前的优先研究方向，也不代表完整论文列表。公开前仍应由课题组核对作者归属、研究重点、出版状态及中文简介。
+
+| arXiv | 论文主题/标题 | 期刊或状态 | 建议页面分类 |
+|---|---|---|---|
+| [2610.04971](https://arxiv.org/abs/2610.04971) | *Probing anomalous Wtb couplings through bW spin correlations in top-quark pair production at the HL-LHC* | 2026-10 预印本；本次检索未见期刊出版信息 | 对撞机精度、顶夸克物理 |
+| [2608.27258](https://arxiv.org/abs/2608.27258) | *An Axial U_A(1)_{Lμ−Lτ}: UV Completion and Experimental Searches* | 2026-08 预印本；出版状态待后续核对 | 规范新相互作用、UV 完备性 |
+| [2604.01304](https://arxiv.org/abs/2604.01304) | *Supermassive Primordial Black Holes from a Catalyzed Dark Phase Transition for Little Red Dots* | 2026-04 预印本；出版状态待后续核对 | 暗扇区、相变与宇宙学 |
+| [2603.17237](https://arxiv.org/abs/2603.17237) | *Ultralight Scalar Dark Matter with Off-Diagonal Flavor Couplings* | *Phys. Rev. D* 114 (2026) 015022 | 超轻暗物质、味物理 |
+| [2510.20672](https://arxiv.org/abs/2510.20672) | *Axial-vector leptophilic fifth force sourced by solar neutrinos* | *Phys. Rev. D* 113 (2026) 055041 | 中微子、新相互作用 |
+| [2509.23925](https://arxiv.org/abs/2509.23925) | *Probing Scalar-Mediated Sterile Neutrinos with Gravitational Wave and Colliders Signals* | *Phys. Rev. D* 113 (2026) 095006 | 惰性中微子、相变与对撞机 |
+| [2508.13276](https://arxiv.org/abs/2508.13276) | *Probing Purely Inelastic Scalar Dark Matter Across Colliders and Gravitational Wave Observatories* | *Phys. Rev. D* 112 (2025) 115014 | 非弹性暗物质、长寿命粒子、引力波 |
+| [2506.10673](https://arxiv.org/abs/2506.10673) | *Reaching the Ultimate Quantum Precision Limit at Colliders: Conditions and Case Studies* | *Phys. Rev. Lett.* 135 (2025) 241804 | 量子计量学、对撞机精度 |
+| [2505.06001](https://arxiv.org/abs/2505.06001) | *Scattering Entanglement Entropy and Its Implications for Electroweak Phase Transitions* | *Phys. Rev. D* 112 (2025) 015028 | 量子信息、电弱相变 |
+| [2409.17243](https://arxiv.org/abs/2409.17243) | *Long-lived sterile neutrino searches at future muon colliders* | *Phys. Rev. D* 111 (2025) 075001 | 惰性中微子、未来对撞机 |
+| [2407.11653](https://arxiv.org/abs/2407.11653) | *Particle conversions beyond the WKB approximation and solar-induced gravitational waves from dark photon dark matter* | *Phys. Rev. D* 110 (2024) 115026 | 暗光子、宇宙学、引力波 |
+| [2210.09335](https://arxiv.org/abs/2210.09335) | *The ALP explanation to muon (g−2) and its test at future Tera-Z and Higgs factories* | *Phys. Rev. D* 107 (2023) 095016 | ALP、缪子反常磁矩、未来对撞机 |
+| [2111.01164](https://arxiv.org/abs/2111.01164) | *Heavy long-lived coannihilation partner from inelastic Dark Matter model and its signatures at the LHC* | *JHEP* 04 (2022) 024 | 非弹性暗物质、长寿命粒子 |
+| [2110.14665](https://arxiv.org/abs/2110.14665) | *ν scalar in the early Universe and (g−2)μ* | *Phys. Rev. D* 105 (2022) L051702 | 中微子、早期宇宙、缪子反常磁矩 |
+| [2104.06421](https://arxiv.org/abs/2104.06421) | *Searching for lepton portal dark matter with colliders and gravitational waves* | *JHEP* 06 (2021) 149 | 轻子门户暗物质、对撞机、引力波 |
+| [2102.10118](https://arxiv.org/abs/2102.10118) | *Challenges for a QCD Axion at the 10 MeV Scale* | *JHEP* 05 (2021) 138 | QCD 轴子、暗扇区 |
+
+网站选录应以原始论文页和 INSPIRE 元数据为准。arXiv 预印本日期不是期刊出版日期；如果论文后来发表或有勘误，需更新出版状态、DOI 和版本信息。不要把合作作者的全部论文自动等同于课题组独立成果；由课题组确认哪些作品适合展示在“代表成果”区域。
+
+### 12.3 公开内容管理规则
+
+- 公开页面只使用 `frontend/src/content/lab.js` 白名单数据；不从内部成员表、日程、通知、邮箱、收藏、文献推荐或站点管理接口自动生成公开内容。
+- 每篇论文保留 `source_url` 和 `last_verified_at`；有 DOI 时同时保留 DOI 与期刊引用；没有正式出版记录时使用“预印本”标签。
+- 中文简介必须是对论文内容的准确概括，不把未来实验灵敏度写成已实现的探测能力，不把模型允许区域写成已被实验确认。
+- 不公开尚未发表的组内研究、审稿材料、未公开的成员信息、内部会议内容或私人联系方式。
+- 建议每 3–6 个月人工核对一次代表论文，重要新成果发表后及时更新；自动抓取只能形成草稿，不能绕过人工审核直接上线。
+
+## 13. 实施顺序与验收标准
+
+### 第一阶段：权限与部署可靠性（P0/P1）
+
+1. 修复资料更新的所有权检查、组会管理权限字段不一致、邮箱同步的 Token 版本检查和 URL Token 风险。
+2. 明确教师、管理员、资料创建者、普通成员的操作权限，并在服务端实施；前端按钮只负责显示相应能力。
+3. 增加登录限速和失败保护，检查密码策略与 Cloudflare Worker CPU 预算。
+4. CI 增加测试、构建和部署后健康检查；核实当前线上发布流程与 Secrets 状态。
+
+**验收：** 未授权编辑他人资料返回 403；修改密码后旧 Token 在所有受保护 API（包括 `/mailbox/sync-stream`）失效；组会权限判断使用同一字段/函数；缺失密钥时服务端拒绝处理认证请求；测试失败不会部署。
+
+### 第二阶段：前端性能与可访问性（P1）
+
+1. 先拆分公共首页与内部工作台的入口包，按需加载 PDF.js、背景与 WebGL 特效。
+2. 移除公开页不需要的背景预加载，测量真实首屏性能。
+3. 完成响应式、键盘、对比度、减少动态偏好和长标题验收。
+
+**验收：** 公开首页不加载不必要的内部功能；页面在 320–1440 px 范围内无非必要横向溢出；主要交互可仅用键盘完成；提供优化前后性能数据。
+
+### 第三阶段：论文目录和专题内容（P1/P2）
+
+1. 人工核对并扩充代表论文，补齐出版状态、DOI、主题标签和来源。
+2. 增加中微子、相变/引力波、量子计量学等有论文支持的分类。
+3. 连接研究方向卡片与相关论文；为每个专题编写简短、可核验的介绍。
+
+**验收：** 每条论文的 arXiv 链接有效；标题、作者、期刊/DOI、状态与原始记录一致；预印本不会误标为已发表；无未经确认的成员/联系信息。
+
+### 第四阶段：SEO、分享和持续维护（P2/P3）
+
+1. 添加公开页 canonical、社交分享元数据、结构化数据、robots 与 sitemap。
+2. 为公开页面建立定期人工审核机制；后续再评估中英文版本和公开动态。
+3. 需要截图或视觉回归时，使用真实浏览器在已登录/未登录状态下执行并保存结果；不要以源码检查替代实际渲染验收。
+
+**验收：** 搜索与社交分享元数据正确；内部路由不被误作公开学术内容；公开信息可追溯到来源；维护流程有明确负责人。
+
+## 14. 本次核查来源与限制
+
+- [北航物理学院：王小平教师主页](https://physics.buaa.edu.cn/info/1265/3153.htm) — 研究方向、教师公开介绍和历史代表成果。
+- [北航物理学院：量子计量学与对撞机唯象学研究进展](https://physics.buaa.edu.cn/info/1250/4710.htm) — 2025 年 PRL 成果的学院新闻说明。
+- [INSPIRE-HEP：Jia Liu 作者记录](https://inspirehep.net/authors/1336279) — 交叉核对近年与 Xiao-Ping Wang 合作的论文与出版状态。
+- [arXiv:2506.10673](https://arxiv.org/abs/2506.10673) — 对撞机量子精度极限。
+- [arXiv:2608.27258](https://arxiv.org/abs/2608.27258) — 轴矢量 `U(1)_{L_μ-L_τ}` 模型。
+- [arXiv:2603.17237](https://arxiv.org/abs/2603.17237) — 超轻标量暗物质与非对角味耦合。
+- [arXiv:2508.13276](https://arxiv.org/abs/2508.13276) — 纯非弹性标量暗物质、对撞机与引力波。
+- [arXiv:2509.23925](https://arxiv.org/abs/2509.23925) — 标量介导惰性中微子、引力波与对撞机。
+- [arXiv:2610.04971](https://arxiv.org/abs/2610.04971) — 异常 `Wtb` 耦合与 HL-LHC 自旋关联。
+- 仓库源码：[PublicHomeView.vue](https://github.com/lm846802297-bit/buaa-hep-lab/blob/main/frontend/src/views/PublicHomeView.vue)、[lab.js](https://github.com/lm846802297-bit/buaa-hep-lab/blob/main/frontend/src/content/lab.js)、[router/index.js](https://github.com/lm846802297-bit/buaa-hep-lab/blob/main/frontend/src/router/index.js)、[index.css](https://github.com/lm846802297-bit/buaa-hep-lab/blob/main/frontend/src/index.css)、[API 入口](https://github.com/lm846802297-bit/buaa-hep-lab/blob/main/frontend/functions/api/%5B%5Broute%5D%5D.ts)。
+
+**未完成项：** 本轮未能直接渲染线上页面，未执行完整测试套件、Lighthouse、真实账号角色矩阵、生产数据库检查或渗透测试。完成这些步骤前，所有安全与性能结论都应保持“源码审查发现/待运行时验证”的状态。
+
+
+## 15. 本轮落实（2026-10-20）
+
+- 用户已确认全部 16 篇代表论文、6 个论文分类和 5 个研究方向。新增相变与引力波、量子计量学入口；长寿命粒子保留跨方向标签。
+- 论文卡片展示出版状态、期刊、DOI、摘要式简介、原始记录与核对日期。搜索覆盖编号、DOI、期刊与主题，支持年份与排序；预印本不虚构期刊。
+- 研究方向支持上下箭头、Home/End 与焦点同步，可跳至相关成果。保留减少动态偏好和概念事件显示说明。
+- 公开页预渲染只读取静态白名单。内部页面 noindex；访问控制仍由后端独立实施。
+- 深青主题与布局不另起体系；目录控件采用可折行布局，DOI 可任意折行，小屏保持可操作。
+- 实际验证记录见 docs/audit/实施与验收报告.md；此前第 10–14 节中的构建数值和未验收描述属于本轮修改前的历史审查基线。

@@ -6,7 +6,7 @@
     <script type="text/javascript">
       (function(l) {
         if (l.search[1] === '/' ) {
-          var decoded = l.search.slice(1).split('&').map(function(s) { 
+          var decoded = l.search.slice(1).split('&').map(function(s) {
             return s.replace(/~and~/g, '&')
           }).join('?');
           window.history.replaceState(null, null,
@@ -36,6 +36,8 @@
           var bgHex = scheme === 'nebula-purple' ? '#03020a' : '#081f28';
 
           var doc = document.documentElement;
+          var siteBase = '%BASE_URL%'.replace(/\/$/, '');
+          doc.dataset.publicPage = String(window.location.pathname.replace(/\/$/, '') === siteBase);
           doc.setAttribute('data-color-scheme', scheme);
           doc.setAttribute('data-bg-type', bgType);
           doc.setAttribute('data-theme-style', legacyStyle);
@@ -68,7 +70,7 @@
 
           doc.style.backgroundColor = bgHex;
           var basePath = window.location.pathname.startsWith('/lab-orbit') ? '/lab-orbit' : '';
-          if (bgType === 'clouds-static') {
+          if (bgType === 'clouds-static' && doc.dataset.publicPage !== 'true') {
             doc.style.backgroundImage = "url('" + basePath + "/assets/forecast/forecast-clouds-drift-seamless.jpg')";
             doc.style.backgroundPosition = "center center";
             doc.style.backgroundSize = "cover";
@@ -88,10 +90,19 @@
     <meta name="browsermode" content="application" />
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#081f28" />
-    <link rel="preload" as="image" href="/assets/forecast/forecast-clouds-drift-seamless.jpg" />
     <meta name="description" content="北京航空航天大学粒子物理研究组（暂定名称）：高能粒子物理唯象学、暗物质、中微子与希格斯物理研究，以及组内科研协作。" />
+    <link rel="canonical" href="https://buaa-hep-hub.pages.dev/" />
+    <meta name="robots" content="index,follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:url" content="https://buaa-hep-hub.pages.dev/" />
+    <meta property="og:title" content="北航粒子物理研究组（暂定） | 高能粒子物理唯象学" />
+    <meta property="og:description" content="北京航空航天大学粒子物理研究组：研究方向、代表成果与学术合作。课题组名称暂定。" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="北航粒子物理研究组（暂定）" />
+    <meta name="twitter:description" content="高能粒子物理唯象学、暗物质、中微子与希格斯物理。" />
     <title>北航粒子物理研究组（暂定） | 高能粒子物理唯象学</title>
-    
+
     <style>
       :root {
         color-scheme: dark;
@@ -131,13 +142,16 @@
         background-image: none;
         color: #f8fafc;
       }
+      html[data-public-page="true"], html[data-public-page="true"] body {
+        background-image: none !important;
+      }
       #app {
         min-height: 100vh;
         min-height: 100dvh;
         background-color: transparent;
       }
     </style>
-    
+
     <!-- 优先使用系统原生高质量排版字体栈，避免外网字体请求阻塞页面渲染 -->
     <script>
       (function() {

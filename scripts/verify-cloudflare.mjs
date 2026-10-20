@@ -66,7 +66,7 @@ try {
     check(saved.status, 200, 'profile can be saved without names');
     check((await saved.json()).real_name, '', 'saving does not invent a real name');
   }
-  check((await post('/auth/register', { email: 'invalid@example.invalid', password: 'testing', invite_code: 'WRONG' })).status, 400, 'nameless registration still requires valid invitation');
+  check((await post('/auth/register', { email: 'invalid@example.invalid', password: 'testing-password', invite_code: 'WRONG' })).status, 400, 'nameless registration still requires valid invitation');
   check((await post('/auth/register', { email: 'invalid@example.invalid', password: '123', invite_code: setup.invite_code })).status, 400, 'short passwords remain rejected');
   const memberHeaders = { Authorization: `Bearer ${member.access_token}` };
   check((await request('/system/settings', { headers: memberHeaders })).status, 403, 'members cannot change site settings');
@@ -84,6 +84,27 @@ try {
     check((await mf.dispatchFetch(`https://local.invalid${file.url}`, { headers: memberHeaders })).status, 200, 'signed-in group members can retrieve files');
   }
   check((await request('/files', multipart(new Uint8Array(1048577), memberHeaders))).status, 400, 'D1-only upload limit is enforced');
+  const bookResponse = await post('/resources/books', { title: 'Owner test', authors: 'Test author' }, admin.access_token);
+  const book = await bookResponse.json();
+  const put = (path, data, token) => request(path, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(data) });
+  check((await put(`/resources/books/${book.id}`, { title: 'Unauthorized' }, member.access_token)).status, 403, 'members cannot edit another creator resource');
+  await db.prepare("UPDATE users SET role='teacher' WHERE id=?").bind(member.user.id).run();
+  check((await request(`/resources/books/${book.id}`, { method: 'DELETE', headers: memberHeaders })).status, 403, 'teachers have no global resource deletion privilege');
+  check((await put(`/resources/books/${book.id}`, { title: 'Authorized' }, admin.access_token)).status, 200, 'administrator can edit the resource');
+  check((await request(`/auth/me?token=${member.access_token}`)).status, 401, 'URL tokens are rejected');
+  check((await request(`/mailbox/sync-stream?token=${member.access_token}`)).status, 401, 'stream does not accept URL tokens');
+  const changed = await put('/account/credentials', { current_password: setup.admin_password, new_password: randomBytes(18).toString('hex') }, admin.access_token);
+  check(changed.status, 200, 'administrator can rotate credentials');
+  const fresh = await changed.json();
+  for (const endpoint of ['/auth/me', '/resources/books', '/mailbox/sync-stream']) {
+    check((await request(endpoint, { headers: { Authorization: `Bearer ${admin.access_token}` } })).status, 401, 'old session revoked at '+endpoint);
+  }
+  check((await request('/auth/me', { headers: { Authorization: `Bearer ${fresh.access_token}` } })).status, 200, 'new versioned session works');
+  check((await request('/mailbox/sync-stream', { headers: { Authorization: `Bearer ${fresh.access_token}` } })).status, 400, 'new session reaches stream mailbox configuration check');
+  for (let i=0; i<10; i++) check((await post('/auth/login', { email: 'blocked@example.invalid', password: 'wrong-password' })).status, 401, 'failed login is tracked');
+  const blocked = await post('/auth/login', { email: 'blocked@example.invalid', password: 'wrong-password' });
+  check(blocked.status, 429, 'persistent account limit enforced');
+  check(Number(blocked.headers.get('Retry-After')) > 0, true, 'throttle includes Retry-After');
   status = await (await request('/system/status')).json();
   check(status.initialized, true, 'successful setup persists');
   console.log(`Cloudflare runtime verification: ${count} checks passed (ephemeral local database, no R2).`);

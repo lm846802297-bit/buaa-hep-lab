@@ -436,7 +436,7 @@ async function handleCreateMember() {
     notify('请输入有效的邮箱地址', 'error')
     return
   }
-  if (!createMemberForm.value.password || createMemberForm.value.password.length < 6) {
+  if (!createMemberForm.value.password || createMemberForm.value.password.length < 8) {
     notify('初始密码长度不得少于 6 位', 'error')
     return
   }
@@ -2582,8 +2582,8 @@ async function deleteMember(member) {
         >
           {{ member.identity === 'teacher' ? '设为学生' : '设为导师' }}
         </button>
-        <button 
-          type="button" 
+        <button
+          type="button"
           :class="['button small', member.role === 'admin' ? 'secondary' : 'ghost']"
           :disabled="permissionBusy || (member.id === user.id && members.filter(m => m.role === 'admin').length <= 1)"
           :title="member.role === 'admin' ? '取消管理员权限' : '提升为管理员'"
@@ -2706,7 +2706,7 @@ async function deleteMember(member) {
       </label>
       <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px;">
         <span>初始登录密码 <strong style="color: var(--danger)">*</strong></span>
-        <input v-model="createMemberForm.password" type="password" required minlength="6" placeholder="至少 6 位密码" autocomplete="new-password" />
+        <input v-model="createMemberForm.password" type="password" required minlength="8" placeholder="至少 8 位密码" autocomplete="new-password" />
       </label>
     </div>
 

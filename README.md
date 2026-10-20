@@ -11,6 +11,10 @@
 - 从 GitHub 下载源码后，本地运行前需安装前端依赖并构建：`npm --prefix frontend ci`、`npm --prefix frontend run build`，然后运行 `start-windows.cmd`。
 - 此次仅保存源码，未配置 GitHub 到 Cloudflare 的自动发布凭据。
 
+本轮已按审计修复资料/组会权限与 Token 撤销，加入登录限速；公开页采用课题组确认的 16 篇论文、6 类与 5 个研究方向。
+
+验证方法、性能基线和运行时边界见 [实施与验收报告](docs/audit/实施与验收报告.md)。CI 对前端与 API 执行自动化测试、生产构建、入口预算检查、浏览器和本地 Pages 运行时检查。GitHub Pages 演示发布改为手动且需启用变量；Cloudflare 自动发布仍需设置专用仓库 Secrets。
+
 以下保留原项目说明与来源信息。
 
 ---
@@ -31,7 +35,7 @@
   <a href="#-中文文档"><img src="https://img.shields.io/badge/文档-简体中文-blue.svg" alt="Chinese Doc"></a>
   <a href="#-english-documentation"><img src="https://img.shields.io/badge/Document-English-green.svg" alt="English Doc"></a>
   <img src="https://img.shields.io/badge/License-MIT-emerald.svg" alt="License">
-  <img src="https://img.shields.io/badge/Tests-369%20passed-brightgreen.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-738%20passed-brightgreen.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Python-3.11+-3776AB.svg?logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Vue.js-3.x-4FC08D.svg?logo=vuedotjs&logoColor=white" alt="Vue 3">
   <img src="https://img.shields.io/badge/FastAPI-0.110+-009688.svg?logo=fastapi&logoColor=white" alt="FastAPI">
@@ -291,7 +295,7 @@ docker compose -f deploy/docker-compose.yml up -d
 5. **页面布局与视觉重整规范**：详述 Liquid Glass 流动毛玻璃设计变量、`BaseDialog` 双重坐标判定防误关黄金规则，以及多端自适应响应式设计；
 6. **3D 动画、微动效与 KaTeX 渲染**：指导调节 Three.js 封面轮播景深与手势阻尼、Hover 卡片微动效，以及 LaTeX 数学公式实时排版引擎；
 7. **设计图标体系扩展与品牌替换**：基于 `AppIcon.vue` 的 50+ 语义化 SVG 矢量图标字典扩展机制；
-8. **质量门禁与测试验收清单**：包含 57 个测试套件、369+ 单元测试 100% 通过核查、多环境静态构建与本地服务拉起验证。
+8. **质量门禁与测试验收清单**：包含 102 个测试文件、738 项测试 100% 通过核查、多环境静态构建与本地服务拉起验证。
 
 ### 3. 如何借助 AI 进行 Vibe-Coding 定制
 在支持 Agent Skill 的编辑器（如 Antigravity、Cursor、Windsurf 等）中，无需手动翻阅全站代码，只需像与架构师对话一样提出需求，AI 将自动加载该 Skill 并执行精确修改：
@@ -301,7 +305,7 @@ docker compose -f deploy/docker-compose.yml up -d
 > - *"请在文献库卡片上新增一个‘一键复制 BibTeX’的按钮，并遵循三轨一致性原则补充接口和演示沙盒。"*
 > - *"帮我把组会 3D 海报轮播的旋转惯性调大一点，卡片加一个发光悬停特效。"*
 
-修改完成后，AI 将自动运行 `npm --prefix frontend test` 确保全部 369 个单元测试 100% 通过，杜绝功能回退。
+修改完成后，AI 将自动运行 `npm --prefix frontend test` 确保全部 738 项测试 100% 通过，杜绝功能回退。
 
 ---
 
@@ -578,7 +582,7 @@ The skill establishes 8 full-stack Standard Operating Procedures (SOPs):
 5. **UI & Layout Customization**: Liquid Glass design tokens, `BaseDialog` double-mousedown backdrop guard, and responsive design standards;
 6. **3D Animations & Scientific Typesetting**: Three.js 3D cover carousel tuning, CSS micro-interactions, and KaTeX LaTeX rendering;
 7. **Semantic Icon System**: Extending the central `AppIcon.vue` SVG icon library;
-8. **Pre-Flight Gates & Test Verification**: Complete test verification suite ensuring 100% pass rate across all 369 unit tests before shipping.
+8. **Pre-Flight Gates & Test Verification**: Complete test verification suite ensuring 100% pass rate across all 738 tests before shipping.
 
 ### 3. How to Customize via Vibe-Coding
 In any AI-assisted coding environment (such as Antigravity, Cursor, or Windsurf), developers or lab members can simply issue high-level prompts:
@@ -588,7 +592,7 @@ In any AI-assisted coding environment (such as Antigravity, Cursor, or Windsurf)
 > - *"Add a 'Copy BibTeX' button to the literature card, following the Triple Consistency rule to keep FastAPI, Cloudflare Functions, and demo mock in sync."*
 > - *"Adjust the 3D seminar carousel dampening and add a glowing hover border to the cards."*
 
-The AI assistant will automatically consult the SOP, make precise modifications across the stack, and run `npm --prefix frontend test` to ensure all 369 unit tests pass with zero regressions.
+The AI assistant will automatically consult the SOP, make precise modifications across the stack, and run `npm --prefix frontend test` to ensure all 738 tests pass with zero regressions.
 
 ---
 

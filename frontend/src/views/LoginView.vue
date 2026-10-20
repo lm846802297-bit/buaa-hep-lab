@@ -16,10 +16,10 @@
       <!-- 模式切换开关（afraid-cougar-9 风格） -->
       <div class="card-switch">
         <div class="switch-wrapper">
-          <button 
-            type="button" 
-            class="switch-side" 
-            :class="{ active: !isRegister }" 
+          <button
+            type="button"
+            class="switch-side"
+            :class="{ active: !isRegister }"
             @click="isRegister = false"
           >
             登录
@@ -28,10 +28,10 @@
             <input type="checkbox" class="toggle" v-model="isRegister" aria-label="切换登录与注册" />
             <span class="slider"></span>
           </label>
-          <button 
-            type="button" 
-            class="switch-side" 
-            :class="{ active: isRegister }" 
+          <button
+            type="button"
+            class="switch-side"
+            :class="{ active: isRegister }"
             @click="isRegister = true"
           >
             注册
@@ -41,8 +41,8 @@
 
       <!-- 3D 翻转卡片核心（afraid-cougar-9 动效） -->
       <div class="flip-card">
-        <div 
-          class="flip-card__inner" 
+        <div
+          class="flip-card__inner"
           :class="{ 'is-flipped': isRegister, 'has-error': Boolean(errorMsg) }"
         >
           <!-- 正面：登录表单 -->
@@ -104,8 +104,8 @@
                 type="password"
                 required
                 autocomplete="new-password"
-                minlength="6"
-                hint="至少 6 位密码"
+                minlength="8"
+                hint="至少 8 位密码"
               />
 
               <!-- 密码安全等级评估（但不作强制） -->

@@ -1,5 +1,4 @@
 import { ref, computed } from 'vue'
-import { authApi } from '../api/client'
 
 const showTutorial = ref(false)
 const currentStepIndex = ref(0)
@@ -838,7 +837,7 @@ export function useTutorial() {
   })
 
   const isFirstStep = computed(() => currentStepIndex.value === 0 && currentSubStepIndex.value === 0)
-  
+
   const isLastStep = computed(() => {
     const isLastModule = currentStepIndex.value >= steps.value.length - 1
     const isLastSub = currentSubStepIndex.value >= currentSubStepList.value.length - 1
@@ -960,6 +959,7 @@ export function useTutorial() {
 
   async function finishTutorial() {
     try {
+      const { authApi } = await import('../api/client')
       await authApi.completeTutorial()
     } catch (err) {
       console.warn('同步完成教程状态至服务器失败 (离线或无网络):', err)
@@ -984,7 +984,7 @@ export function useTutorial() {
   }
 
   function skipTutorial() {
-    finishTutorial()
+    return finishTutorial()
   }
 
   function setUserRole(role) {

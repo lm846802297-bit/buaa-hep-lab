@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
 import { Buffer } from 'node:buffer';
 import { Env, UserRow } from '../types';
-import { authMiddleware, adminOnlyMiddleware, verifyToken } from '../middleware/auth';
+import { authMiddleware, adminOnlyMiddleware } from '../middleware/auth';
 import { CloudflareImapClient, decryptUserPassword, parseRawEmail, extractMessageId, extractDateHeader, extractSubjectHeader, isTalkEmail, isConferenceEmail, isNoticeEmail } from '../utils/imap';
 import { CloudflareSmtpClient, parseExternalEmails } from '../utils/smtp';
 
@@ -110,30 +110,10 @@ export function parseEmailTimestamp(dateStr?: string, fallbackStr?: string): num
 const app = new Hono<{ Bindings: Env; Variables: { user: UserRow } }>();
 
 // SSE 同步接口：通过真实 IMAP 协议直连用户配置的邮件服务器进行增量同步
-app.get('/sync-stream', async (c) => {
-  let token = c.req.query('token');
-  if (!token) {
-    const authHeader = c.req.header('Authorization');
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.substring(7).trim();
-    }
-  }
-
-  if (!token) {
-    return c.json({ detail: '未提供身份认证凭据' }, 401);
-  }
-
-  const payload = await verifyToken(token, c.env.JWT_SECRET);
-  if (!payload || !payload.sub) {
-    return c.json({ detail: '身份认证失败或凭据已过期' }, 401);
-  }
-
-  const userId = parseInt(payload.sub, 10);
-  const user = await c.env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first<UserRow>();
-  if (!user) {
-    return c.json({ detail: '未找到对应用户' }, 401);
-  }
-
+app.get('/sync-stream', authMiddleware, async (c) => {
+  const user = c.get('user');
+  const userId = user.id;
+  c.header('Cache-Control', 'no-store');
   await ensureMailboxTables(c.env.DB);
 
   const config = await c.env.DB.prepare('SELECT * FROM user_mail_configs WHERE user_id = ?').bind(userId).first<any>();
@@ -212,7 +192,7 @@ app.get('/sync-stream', async (c) => {
 
       // 预先查询当前用户已缓存的所有邮件（建立内存 UID 与 语义元数据 Map，将判定耗时由每次网络/DB查询降至 0ms）
       const cachedList = await c.env.DB.prepare(
-        `SELECT id, msg_uid, subject, sender_name, sender_email, date_str, has_attachments, body_text, body_html, snippet, poster_url, attachments 
+        `SELECT id, msg_uid, subject, sender_name, sender_email, date_str, has_attachments, body_text, body_html, snippet, poster_url, attachments
          FROM user_cached_emails WHERE user_id = ?`
       ).bind(userId).all<any>();
 
@@ -432,8 +412,8 @@ app.get('/sync-stream', async (c) => {
               const updateBodyHtml = parsed.body_html || existingRecord.body_html || '';
               const updateSnippet = parsed.snippet || existingRecord.snippet || '';
               const updatePoster = posterUrl || existingRecord.poster_url || '';
-              const updateAttachments = (attachmentsJson && attachmentsJson !== '[]') 
-                ? attachmentsJson 
+              const updateAttachments = (attachmentsJson && attachmentsJson !== '[]')
+                ? attachmentsJson
                 : (existingRecord.attachments && existingRecord.attachments !== '[]' ? existingRecord.attachments : '[]');
               const updateHasAtt = (savedAttachments.length > 0 || Boolean(updatePoster) || (updateAttachments !== '[]' && updateAttachments !== '')) ? 1 : 0;
 
@@ -462,7 +442,7 @@ app.get('/sync-stream', async (c) => {
               existingRecord.has_attachments = updateHasAtt;
             } else {
               const insertRes = await c.env.DB.prepare(
-                `INSERT OR IGNORE INTO user_cached_emails 
+                `INSERT OR IGNORE INTO user_cached_emails
                  (user_id, msg_uid, subject, sender_name, sender_email, recipient, date_str, snippet, body_text, body_html, has_attachments, poster_url, attachments, is_read, fetched_at)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'))`
               ).bind(

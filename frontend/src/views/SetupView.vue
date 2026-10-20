@@ -61,7 +61,7 @@ function goToStep2() {
     errorMessage.value = '请设定管理员登录密码'
     return
   }
-  if (form.admin_password.length < 6) {
+  if (form.admin_password.length < 8) {
     errorMessage.value = '管理员密码长度不得少于 6 位'
     return
   }
@@ -193,34 +193,34 @@ async function handleCompleteSetup() {
         <div class="form-row">
           <div class="form-group">
             <label>管理员姓名 / 昵称 <span class="required">*</span></label>
-            <input 
-              v-model="form.admin_name" 
-              type="text" 
-              class="input-field" 
-              placeholder="如：张教授 / 李管理员" 
-              required 
+            <input
+              v-model="form.admin_name"
+              type="text"
+              class="input-field"
+              placeholder="如：张教授 / 李管理员"
+              required
               autofocus
             />
           </div>
           <div class="form-group">
             <label>真实姓名 <span class="optional">(选填)</span></label>
-            <input 
-              v-model="form.admin_real_name" 
-              type="text" 
-              class="input-field" 
-              placeholder="用于报告人实名匹配" 
+            <input
+              v-model="form.admin_real_name"
+              type="text"
+              class="input-field"
+              placeholder="用于报告人实名匹配"
             />
           </div>
         </div>
 
         <div class="form-group">
           <label>管理员工作邮箱 <span class="required">*</span></label>
-          <input 
-            v-model="form.admin_email" 
-            type="email" 
-            class="input-field" 
-            placeholder="admin@your-university.edu.cn" 
-            required 
+          <input
+            v-model="form.admin_email"
+            type="email"
+            class="input-field"
+            placeholder="admin@your-university.edu.cn"
+            required
           />
           <span class="field-hint">此邮箱将自动获得系统的超级管理员权限，具备成员授权与全站管控能力。</span>
         </div>
@@ -228,22 +228,22 @@ async function handleCompleteSetup() {
         <div class="form-row">
           <div class="form-group">
             <label>安全密码 <span class="required">*</span></label>
-            <input 
-              v-model="form.admin_password" 
-              type="password" 
-              class="input-field" 
-              placeholder="不少于 6 位安全字符" 
-              required 
+            <input
+              v-model="form.admin_password"
+              type="password"
+              class="input-field"
+              placeholder="不少于 6 位安全字符"
+              required
             />
           </div>
           <div class="form-group">
             <label>确认密码 <span class="required">*</span></label>
-            <input 
-              v-model="form.admin_password_confirm" 
-              type="password" 
-              class="input-field" 
-              placeholder="再次输入以确认" 
-              required 
+            <input
+              v-model="form.admin_password_confirm"
+              type="password"
+              class="input-field"
+              placeholder="再次输入以确认"
+              required
             />
           </div>
         </div>
@@ -261,23 +261,23 @@ async function handleCompleteSetup() {
         <div class="form-row">
           <div class="form-group">
             <label>课题组 / 实验室全称 <span class="required">*</span></label>
-            <input 
-              v-model="form.lab_name" 
-              type="text" 
-              class="input-field" 
-              placeholder="如：智能感知与计算科学研究组" 
-              required 
+            <input
+              v-model="form.lab_name"
+              type="text"
+              class="input-field"
+              placeholder="如：智能感知与计算科学研究组"
+              required
               autofocus
             />
           </div>
           <div class="form-group">
             <label>缩写标识 / 短名称 <span class="required">*</span></label>
-            <input 
-              v-model="form.lab_short_name" 
-              type="text" 
-              class="input-field" 
-              placeholder="如：LabOrbit / AISYS" 
-              required 
+            <input
+              v-model="form.lab_short_name"
+              type="text"
+              class="input-field"
+              placeholder="如：LabOrbit / AISYS"
+              required
             />
             <span class="field-hint">显示在导航栏 Brand 图标与移动端角标中。</span>
           </div>
@@ -285,22 +285,22 @@ async function handleCompleteSetup() {
 
         <div class="form-group">
           <label>网站标语 Slogan</label>
-          <input 
-            v-model="form.site_slogan" 
-            type="text" 
-            class="input-field" 
-            placeholder="课题组内部科研协作与知识管理平台" 
+          <input
+            v-model="form.site_slogan"
+            type="text"
+            class="input-field"
+            placeholder="课题组内部科研协作与知识管理平台"
           />
         </div>
 
         <div class="form-group">
           <label>初始成员注册邀请码 <span class="required">*</span></label>
-          <input 
-            v-model="form.invite_code" 
-            type="text" 
-            class="input-field" 
-            placeholder="请自行设定，仅向组内成员提供" 
-            required 
+          <input
+            v-model="form.invite_code"
+            type="text"
+            class="input-field"
+            placeholder="请自行设定，仅向组内成员提供"
+            required
           />
           <span class="field-hint">全站实行私有化保护，组员必须凭此邀请码方可注册账号（后续管理员可随时生成更多邀请码）。</span>
         </div>
@@ -308,20 +308,20 @@ async function handleCompleteSetup() {
         <div class="form-row">
           <div class="form-group">
             <label>所属科研院所 / 高校 <span class="optional">(选填)</span></label>
-            <input 
-              v-model="form.institution" 
-              type="text" 
-              class="input-field" 
-              placeholder="如：清华大学计算机系 / 前沿交叉科学研究院" 
+            <input
+              v-model="form.institution"
+              type="text"
+              class="input-field"
+              placeholder="如：清华大学计算机系 / 前沿交叉科学研究院"
             />
           </div>
           <div class="form-group">
             <label>默认组会研讨地点 <span class="optional">(选填)</span></label>
-            <input 
-              v-model="form.default_location" 
-              type="text" 
-              class="input-field" 
-              placeholder="待确认，可稍后修改" 
+            <input
+              v-model="form.default_location"
+              type="text"
+              class="input-field"
+              placeholder="待确认，可稍后修改"
             />
           </div>
         </div>

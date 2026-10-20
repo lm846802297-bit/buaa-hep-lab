@@ -1,6 +1,5 @@
 import { ref, computed } from 'vue'
 import { mailboxApi, noticeApi } from '../api/client'
-import { extractNoticesFromEmailsWithAi, isAiAssistantReady } from '../services/aiService'
 import { normalizeNoticeTitle } from '../utils/noticeValidity'
 
 // 单例模块级响应式状态，跨路由持久化
@@ -22,6 +21,7 @@ export function useNoticeScanState() {
    * @param {Array} existingNotices - 当前系统中已存在的通知列表，用于精确查重
    */
   async function startNoticeScan(existingNotices = []) {
+    const { extractNoticesFromEmailsWithAi, isAiAssistantReady } = await import('../services/aiService')
     if (!isAiAssistantReady()) {
       alert('请先在个人中心配置并测试 AI 大模型助手。')
       return false

@@ -1,17 +1,35 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { lab, advisorProfile, collaborators, directions, publications } from '../content/lab'
+import { computed, onMounted, ref, nextTick } from 'vue'
+import { lab, advisorProfile, collaborators, directions, publications, publicationCategories } from '../content/lab'
 const menuOpen = ref(false)
 const filter = ref('all')
 const query = ref('')
-const visiblePapers = computed(() => publications.filter(p =>
-  (filter.value === 'all' || p.category === filter.value) &&
-  `${p.title} ${p.tag} ${p.year} ${p.authors.join(' ')}`.toLowerCase().includes(query.value.toLowerCase().trim())))
+const selectedYear = ref('all')
+const sortOrder = ref('newest')
+const copyMessage = ref('')
+const years = [...new Set(publications.map(p => p.year))].sort((a, b) => Number(b) - Number(a))
+const visiblePapers = computed(() => filterPublications(publications, { category: filter.value, query: query.value, year: selectedYear.value, sort: sortOrder.value }))
+import { filterPublications, publicationBibtex, citationText } from '../utils/publications'
+async function copyCitation(paper) {
+  try { await navigator.clipboard.writeText(citationText(paper)); copyMessage.value = `已复制 arXiv:${paper.id} 的引用` }
+  catch { copyMessage.value = '复制未完成，请使用 BibTeX 下载引用' }
+}
+function showRelatedPapers(id) {
+  filter.value = id; query.value = ''; selectedYear.value = 'all'
+  document.getElementById('publications')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+}
+function moveResearchTab(event, index) {
+  const target = { ArrowDown: (index + 1) % directions.length, ArrowUp: (index + directions.length - 1) % directions.length, Home: 0, End: directions.length - 1 }[event.key]
+  if (target === undefined) return
+  event.preventDefault()
+  currentDirection.value = target
+  nextTick(() => document.getElementById(`research-tab-${target}`)?.focus())
+}
 const currentDirection = ref(0)
 const activeDirection = computed(() => directions[currentDirection.value])
 onMounted(() => { document.title = `${lab.name}${lab.provisional ? '（暂定）' : ''} | ${lab.field}` })
 function downloadBibtex() {
-  const entries = visiblePapers.value.map(p => `@article{Wang${p.id.replace('.', '')},\n  title = {${p.title}},\n  author = {${p.authors.join(' and ')}},\n  journal = {${p.journal}},\n  year = {${p.year}},\n  eprint = {${p.id}},\n  archivePrefix = {arXiv},\n  doi = {${p.doi}}\n}`).join('\n\n')
+  const entries = publicationBibtex(visiblePapers.value)
   const url = URL.createObjectURL(new Blob([entries], { type: 'text/plain;charset=utf-8' }))
   const link = document.createElement('a'); link.href = url; link.download = 'buaa-hep-selected.bib'; link.click(); URL.revokeObjectURL(url)
 }
@@ -58,19 +76,32 @@ function downloadBibtex() {
       <div class="section-top"><div><span class="eyebrow">01 / RESEARCH</span><h2>让理论走向可检验的信号。</h2></div><p>从基本相互作用出发，<br>连接微观模型与实验观测。</p></div>
       <div class="research-layout">
         <div class="research-tabs" role="tablist" aria-label="研究方向" aria-orientation="vertical">
-          <button v-for="(d, i) in directions" :id="`research-tab-${i}`" :key="d.id" role="tab" :aria-selected="i === currentDirection" aria-controls="research-detail" :tabindex="i === currentDirection ? 0 : -1" :class="{ active: i === currentDirection }" @click="currentDirection = i" @keydown.down.prevent="currentDirection = (currentDirection + 1) % directions.length; $nextTick(() => $el.querySelector('#research-tab-' + currentDirection).focus())" @keydown.up.prevent="currentDirection = (currentDirection + directions.length - 1) % directions.length; $nextTick(() => $el.querySelector('#research-tab-' + currentDirection).focus())"><span>{{ d.number }}</span><strong>{{ d.title }}</strong><span aria-hidden="true">↗</span></button>
+          <button v-for="(d, i) in directions" :id="`research-tab-${i}`" :key="d.id" role="tab" :aria-selected="i === currentDirection" aria-controls="research-detail" :tabindex="i === currentDirection ? 0 : -1" :class="{ active: i === currentDirection }" @click="currentDirection = i" @keydown="moveResearchTab($event, i)"><span>{{ d.number }}</span><strong>{{ d.title }}</strong><span aria-hidden="true">↗</span></button>
         </div>
-        <article id="research-detail" class="research-detail" role="tabpanel" :aria-labelledby="`research-tab-${currentDirection}`" tabindex="0"><span class="research-symbol" aria-hidden="true">{{ activeDirection.symbol }}</span><span class="eyebrow">{{ activeDirection.en }}</span><h3>{{ activeDirection.title }}</h3><p>{{ activeDirection.text }}</p><div class="topic-tags"><span v-for="tag in activeDirection.tags" :key="tag">{{ tag }}</span></div></article>
+        <article id="research-detail" class="research-detail" role="tabpanel" :aria-labelledby="`research-tab-${currentDirection}`" tabindex="0"><span class="research-symbol" aria-hidden="true">{{ activeDirection.symbol }}</span><span class="eyebrow">{{ activeDirection.en }}</span><h3>{{ activeDirection.title }}</h3><p>{{ activeDirection.text }}</p><p>{{ activeDirection.detail }}</p><div class="topic-tags"><span v-for="tag in activeDirection.tags" :key="tag">{{ tag }}</span></div><button class="button secondary related-papers" @click="showRelatedPapers(activeDirection.id)">查看相关论文 <span aria-hidden="true">↓</span></button></article>
       </div>
     </section>
 
     <section id="publications" class="public-section publications-section">
       <div class="section-top"><div><span class="eyebrow">02 / SELECTED PUBLICATIONS</span><h2>以研究回应问题。</h2></div><button class="button secondary" :disabled="!visiblePapers.length" @click="downloadBibtex">导出 BibTeX <span aria-hidden="true">↓</span></button></div>
-      <p class="section-description">以下为公开代表成果选录，非完整或最新论文列表。标题与链接已核对至 arXiv 原始记录。</p>
-      <div class="publication-controls"><div class="segmented" aria-label="论文主题筛选"><button v-for="item in [{ id: 'all', label: '全部成果' }, { id: 'dark', label: '暗物质' }, { id: 'collider', label: '对撞机物理' }]" :key="item.id" :aria-pressed="filter === item.id" :class="{ selected: filter === item.id }" @click="filter = item.id">{{ item.label }}</button></div><label class="paper-search"><span class="sr-only">搜索论文标题、作者或年份</span><input v-model="query" type="search" placeholder="搜索标题、作者、年份"/></label></div>
-      <div aria-live="polite" class="paper-list">
-        <article v-for="paper in visiblePapers" :key="paper.id" class="public-paper"><div class="paper-year">{{ paper.year }}<small>hep-ph</small></div><div class="paper-content"><span class="paper-tag">{{ paper.tag }}</span><h3><a :href="`https://arxiv.org/abs/${paper.id}`" target="_blank" rel="noopener noreferrer">{{ paper.title }}</a></h3><p class="paper-authors">{{ paper.authors.join(' · ') }}</p><p class="paper-journal">{{ paper.journal }}</p></div><a :href="`https://arxiv.org/abs/${paper.id}`" target="_blank" rel="noopener noreferrer" class="paper-link" :aria-label="`阅读论文 ${paper.id}`">arXiv <span aria-hidden="true">↗</span></a></article>
-        <div v-if="!visiblePapers.length" class="paper-empty">没有匹配的论文。<button class="button ghost" @click="query = ''; filter = 'all'">清除筛选</button></div>
+      <p class="section-description">以下为公开代表成果选录，非完整或最新论文列表。16 篇选录已由课题组确认，书目信息交叉核对至 arXiv 与 INSPIRE-HEP；最近核对：2026-10-20。</p>
+      <div class="publication-controls"><div class="segmented" aria-label="论文主题筛选"><button v-for="item in [{ id: 'all', label: '全部成果' }, ...publicationCategories]" :key="item.id" :aria-pressed="filter === item.id" :class="{ selected: filter === item.id }" @click="filter = item.id">{{ item.label }}</button></div><label class="paper-search"><span class="sr-only">搜索论文标题、作者、编号、DOI、期刊或主题</span><input v-model="query" type="search" placeholder="搜索标题、作者、编号或 DOI"/></label></div>
+      <div class="publication-options"><label>年份 <select v-model="selectedYear" aria-label="论文年份"><option value="all">全部年份</option><option v-for="year in years" :key="year" :value="year">{{ year }}</option></select></label><label>排序 <select v-model="sortOrder" aria-label="论文排序"><option value="newest">年份由新到旧</option><option value="oldest">年份由旧到新</option></select></label><p role="status">显示 {{ visiblePapers.length }} / {{ publications.length }} 篇</p></div>
+      <p v-if="copyMessage" class="citation-status" role="status">{{ copyMessage }}</p>
+      <div class="paper-list">
+        <article v-for="paper in visiblePapers" :key="paper.id" class="public-paper">
+          <div class="paper-year">{{ paper.year }}<small>hep-ph</small></div>
+          <div class="paper-content"><div class="paper-heading"><span class="paper-tag">{{ paper.tag }}</span><span class="paper-status">{{ paper.status === 'published' ? '已发表' : '预印本' }}</span></div>
+            <h3><a :href="paper.source_url" target="_blank" rel="noopener noreferrer">{{ paper.title }}</a></h3>
+            <p class="paper-authors">{{ paper.authors.join(' · ') }}</p>
+            <p class="paper-summary">{{ paper.summary }}</p>
+            <p class="paper-journal">{{ paper.journal || '预印本 · 暂未检索到期刊出版记录' }}</p>
+            <a v-if="paper.doi" :href="`https://doi.org/${paper.doi}`" target="_blank" rel="noopener noreferrer" class="paper-doi">DOI: {{ paper.doi }}</a>
+            <p class="paper-verification">arXiv:{{ paper.id }} · 元数据核对 {{ paper.last_verified_at }}</p>
+            <div class="paper-actions"><a :href="paper.source_url" target="_blank" rel="noopener noreferrer" :aria-label="`阅读论文 ${paper.id}`">arXiv ↗</a><a :href="paper.inspire_url" target="_blank" rel="noopener noreferrer" :aria-label="`核对论文 ${paper.id} 的 INSPIRE 记录`">INSPIRE ↗</a><button @click="copyCitation(paper)" :aria-label="`复制论文 ${paper.id} 的引用`">复制引用</button></div>
+          </div>
+        </article>
+        <div v-if="!visiblePapers.length" class="paper-empty">没有匹配的论文。<button class="button ghost" @click="query = ''; filter = 'all'; selectedYear = 'all'">清除筛选</button></div>
       </div>
     </section>
 
@@ -82,6 +113,23 @@ function downloadBibtex() {
 </template>
 
 <style scoped>
+.related-papers { margin-top:24px; }
+.publication-controls { gap:20px; flex-wrap:wrap; }
+.publication-controls .segmented { flex-wrap:wrap; gap:4px; }
+.publication-controls .segmented button { white-space:normal; }
+.publication-options { display:flex; gap:20px; flex-wrap:wrap; align-items:center; margin:20px 0; color:var(--muted); font-size:14px; }
+.publication-options label { display:flex; gap:10px; align-items:center; }
+.publication-options select { color:var(--text); background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+.publication-options p { margin-left:auto; }
+.paper-heading { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.paper-status { font-size:12px; color:var(--soft); border:1px solid var(--line); padding:2px 8px; border-radius:999px; }
+.paper-summary { color:var(--soft); font-size:14px; line-height:1.8; margin:12px 0; }
+.paper-doi { color:var(--accent); font-size:14px; overflow-wrap:anywhere; }
+.paper-verification { font-size:12px; color:var(--muted); margin-top:12px; }
+.paper-actions { display:flex; flex-wrap:wrap; gap:16px; margin-top:14px; font-size:14px; color:var(--accent); }
+.paper-actions button { color:inherit; background:transparent; border:0; padding:0; cursor:pointer; font:inherit; }
+.citation-status { color:var(--success); font-size:14px; }
+
 .lab-public { background:var(--bg); color:var(--text); position:relative; overflow:hidden; font-family:var(--font); }
 .public-header,.public-hero,.public-section,.public-footer,.research-strip { width:min(1280px,calc(100% - 96px)); margin-inline:auto; }
 .public-header { min-height:104px; display:flex; align-items:center; justify-content:space-between; gap:24px; border-bottom:1px solid var(--line); }

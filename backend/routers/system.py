@@ -1,3 +1,4 @@
+from ..login_protection import password_error
 from typing import Optional
 import os
 import secrets
@@ -78,7 +79,7 @@ def get_system_status(db: Session = Depends(get_db)):
     """公开端点：查询系统当前是否已初始化及基本站点元数据"""
     user_count = db.query(User).count()
     is_init = (user_count > 0) and (get_setting_val(db, "is_initialized", "") == "true" or user_count > 0)
-    
+
     return {
         "initialized": is_init,
         "setup_token_required": not is_init and bool(os.getenv("LABHUB_SETUP_TOKEN")),
@@ -115,8 +116,8 @@ def setup_initial_system(req: SystemSetupRequest, db: Session = Depends(get_db))
 
     if not admin_name or not admin_email or not admin_password:
         raise HTTPException(status_code=400, detail="管理员姓名、邮箱和密码为必填项")
-    if len(admin_password) < 6:
-        raise HTTPException(status_code=400, detail="管理员密码长度不得少于 6 位")
+    if password_error(admin_password):
+        raise HTTPException(status_code=400, detail=password_error(admin_password))
     if not lab_name or not lab_short_name:
         raise HTTPException(status_code=400, detail="课题组全称与缩写标识为必填项")
     if not invite_code:

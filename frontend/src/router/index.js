@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 
 const routes = [
   { path: '/', name: 'PublicHome', component: () => import('../views/PublicHomeView.vue'), meta: { public: true } },
@@ -8,7 +7,7 @@ const routes = [
   {
     path: '/hub',
     name: 'Home',
-    component: HomeView,
+    component: () => import('../views/HomeView.vue'),
     meta: { requiresAuth: true },
   },
   { path: '/library', name: 'Library', component: () => import('../views/LibraryView.vue'), meta: { requiresAuth: true } },
@@ -80,7 +79,6 @@ const router = createRouter({
   routes,
 })
 
-import { useSiteConfig } from '../composables/useSiteConfig'
 
 router.beforeEach(async (to, from, next) => {
   // The public website must remain available before setup and without a backend.
@@ -99,6 +97,7 @@ router.beforeEach(async (to, from, next) => {
     initDemoAuth()
   }
 
+  const { useSiteConfig } = await import('../composables/useSiteConfig')
   const { siteConfig, fetchSiteStatus } = useSiteConfig()
 
   if (siteConfig.initialized === null) {
@@ -125,6 +124,14 @@ router.beforeEach(async (to, from, next) => {
   } else {
     next()
   }
+})
+
+router.afterEach(to => {
+  const isPublic = !!to.meta.public
+  let robots = document.querySelector('meta[name="robots"]')
+  if (!robots) { robots = document.createElement('meta'); robots.name = 'robots'; document.head.append(robots) }
+  robots.content = isPublic ? 'index,follow' : 'noindex,nofollow'
+  if (!isPublic) document.title = '组内科研协作 | BUAA HEP Hub'
 })
 
 export default router

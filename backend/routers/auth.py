@@ -1,7 +1,8 @@
+from ..login_protection import protect_attempt, password_error
 from datetime import datetime
 from uuid import uuid4
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import Request, APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
@@ -157,7 +158,10 @@ def toggle_invite_code(
 # ──────────── 注册 / 登录 ────────────
 
 @router.post("/register", response_model=Token)
-def register(user_in: UserRegister, db: Session = Depends(get_db)):
+def register(user_in: UserRegister, request: Request, db: Session = Depends(get_db)):
+    protect_attempt(db, 'register', request.client.host if request.client else 'unknown', 20)
+    if password_error(user_in.password):
+        raise HTTPException(400, password_error(user_in.password))
     # 校验组内邀请码：检查数据库激活的码与 fallback 集合
     code_input = user_in.invite_code.strip()
     db_active_codes = db.query(InviteCode).filter(InviteCode.is_active == True).all()
@@ -200,8 +204,10 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-def login(login_in: UserLogin, db: Session = Depends(get_db)):
+def login(login_in: UserLogin, request: Request, db: Session = Depends(get_db)):
     email = login_in.email.strip().lower()
+    protect_attempt(db, 'login:ip', request.client.host if request.client else 'unknown', 60)
+    protect_attempt(db, 'login:account', email, 10)
     user = db.query(User).filter(User.email == email).first()
 
     if not user or not verify_password(login_in.password, user.hashed_password):

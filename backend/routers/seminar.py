@@ -22,6 +22,17 @@ from ..services.reminders import (
 from ..schemas import SeminarSettings, PresentationArxivInput, PresentationInput
 from pydantic import BaseModel, Field, ConfigDict
 
+def assigned_presenter(db, user, record):
+    if record.presenter_id:
+        return record.presenter_id == user.id
+    name = (record.presenter_name or '').strip().lower()
+    if not name:
+        return False
+    matches = [candidate.id for candidate in db.query(User).all()
+               if name in {value.strip().lower() for value in (candidate.name, candidate.real_name, candidate.nickname) if value}]
+    return matches == [user.id]
+
+
 router = APIRouter(prefix="/api/seminars", tags=["Seminars"])
 
 
@@ -190,7 +201,7 @@ async def submit_presentation_arxiv(
         if body.presentation_id is not None and p.id == body.presentation_id:
             target_presentation = p
             break
-        elif body.presentation_id is None and (p.presenter_id == current_user.id or (p.presenter_name and p.presenter_name.strip().lower() in user_names)):
+        elif body.presentation_id is None and assigned_presenter(db, current_user, p):
             target_presentation = p
             if not target_presentation.presenter_id:
                 target_presentation.presenter_id = current_user.id
@@ -206,7 +217,7 @@ async def submit_presentation_arxiv(
             raise HTTPException(404, '未在该组会中找到对应的文献分享人记录')
 
     if target_presentation.presenter_id != current_user.id and not is_mgr:
-        if target_presentation.presenter_name and target_presentation.presenter_name.strip().lower() in user_names:
+        if assigned_presenter(db, current_user, target_presentation):
             target_presentation.presenter_id = current_user.id
         else:
             raise HTTPException(403, '只有该文献分享人本人或管理员可以修改分享内容')
@@ -412,7 +423,7 @@ def get_seminars(
         db.rollback()
 
     seminars = db.query(SeminarSchedule).order_by(SeminarSchedule.date.desc(), SeminarSchedule.time.desc()).all()
-    
+
     return [format_seminar(s, current_user.id, db) for s in seminars]
 
 
@@ -631,8 +642,8 @@ def batch_set_location(
         query = query.filter(SeminarSchedule.status == 'upcoming')
     elif req.scope == 'unset_only':
         query = query.filter(
-            (SeminarSchedule.location == '') | 
-            (SeminarSchedule.location == '待定') | 
+            (SeminarSchedule.location == '') |
+            (SeminarSchedule.location == '待定') |
             (SeminarSchedule.location.is_(None))
         )
     elif req.scope != 'all':

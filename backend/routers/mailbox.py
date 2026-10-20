@@ -104,7 +104,7 @@ def save_mailbox_config(
 ):
     """保存或更新当前用户的邮箱配置"""
     config = db.query(UserMailConfig).filter(UserMailConfig.user_id == current_user.id).first()
-    
+
     if not config:
         if not body.password:
             raise HTTPException(status_code=422, detail="首次配置邮箱必须提供登录密码或客户端授权码")
@@ -209,27 +209,10 @@ def delete_mailbox_config(
 
 @router.get("/sync-stream")
 def sync_mailbox_stream(
-    token: Optional[str] = Query(None),
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """通过 Server-Sent Events (SSE) 流式返回邮件同步实时进度与状态"""
-    auth_token = credentials.credentials if credentials else token
-    if not auth_token:
-        raise HTTPException(status_code=401, detail="未提供身份认证凭据")
-    try:
-        payload = jwt.decode(auth_token, SECRET_KEY, algorithms=[ALGORITHM])
-        sub_val = payload.get("sub")
-        if not sub_val:
-            raise HTTPException(status_code=401, detail="无效凭据")
-        user_id = int(sub_val)
-        user = db.query(User).filter(User.id == user_id).first()
-    except Exception:
-        raise HTTPException(status_code=401, detail="身份认证失败或凭据已过期")
-
-    if not user:
-        raise HTTPException(status_code=401, detail="未找到对应用户")
-
+    """Stream sync progress using the same versioned Bearer authentication as other APIs."""
     config = db.query(UserMailConfig).filter(UserMailConfig.user_id == user.id).first()
     if not config:
         raise HTTPException(status_code=400, detail="当前用户尚未配置邮箱")

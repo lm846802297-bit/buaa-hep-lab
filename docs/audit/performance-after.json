@@ -1,0 +1,899 @@
+{
+  "conditions": "Chromium, 390x844, cold context, CPU 4x slowdown, 150ms latency, 200KB/s; uncompressed static localhost; hub uses isolated fictitious demo data; EventTiming is laboratory timing, not field INP",
+  "results": [
+    {
+      "route": "/",
+      "run": 1,
+      "requests": 5,
+      "jsBytes": 223171,
+      "gzipBytes": 82428,
+      "initialResources": [
+        {
+          "name": "/assets/index-tBQvSzgG.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/index-d2TQ40YP.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/PublicHomeView-Cdi5isdw.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/PublicHomeView-B13zTA0X.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/_plugin-vue_export-helper-DlAUqK2U.js",
+          "type": "script"
+        }
+      ],
+      "lcp": 2032,
+      "labInteractionMax": 24,
+      "domContentLoaded": 2177,
+      "errors": []
+    },
+    {
+      "route": "/",
+      "run": 2,
+      "requests": 5,
+      "jsBytes": 223171,
+      "gzipBytes": 82428,
+      "initialResources": [
+        {
+          "name": "/assets/index-tBQvSzgG.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/index-d2TQ40YP.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/PublicHomeView-Cdi5isdw.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/PublicHomeView-B13zTA0X.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/_plugin-vue_export-helper-DlAUqK2U.js",
+          "type": "script"
+        }
+      ],
+      "lcp": 1956,
+      "labInteractionMax": 24,
+      "domContentLoaded": 2165.699999999255,
+      "errors": []
+    },
+    {
+      "route": "/",
+      "run": 3,
+      "requests": 5,
+      "jsBytes": 223171,
+      "gzipBytes": 82428,
+      "initialResources": [
+        {
+          "name": "/assets/index-tBQvSzgG.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/index-d2TQ40YP.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/PublicHomeView-Cdi5isdw.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/PublicHomeView-B13zTA0X.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/_plugin-vue_export-helper-DlAUqK2U.js",
+          "type": "script"
+        }
+      ],
+      "lcp": 1956,
+      "labInteractionMax": 16,
+      "domContentLoaded": 2173.10000000149,
+      "errors": []
+    },
+    {
+      "route": "/hub?demo=1",
+      "run": 1,
+      "requests": 63,
+      "jsBytes": 744659,
+      "gzipBytes": 245876,
+      "initialResources": [
+        {
+          "name": "/assets/index-tBQvSzgG.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/index-d2TQ40YP.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/PublicHomeView-Cdi5isdw.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/forecast/forecast-clouds-drift-seamless.jpg",
+          "type": "css"
+        },
+        {
+          "name": "/assets/useSiteConfig-HuNCgA9K.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/client-CVfbGbCj.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/demoAdapter-DrS2ufvy.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/HomeView-CotXuoPT.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/AppIcon-BrAsKEO8.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/_plugin-vue_export-helper-DlAUqK2U.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/IconRobot-Csw6hhBI.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/useWeekDrag-Wuq655F6.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/BaseDialog-N6aWVeeD.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/BaseDialog-CuHXFZTv.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/feedback-DK9Ixa1m.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/useWeekDrag-DIIYTPq0.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/SilentLizardButton-dTSST8jy.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/SilentLizardButton-9VSh9_3K.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/noticeValidity-CBz-k32W.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/schedule-HXRkSVHS.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/arxivUnread-HJp9lP4Q.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/midAutumn-CjgqDTiU.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/nationalDay-DlOfCZhd.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/favorites-aXzeXYgR.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/useHomeGridEngine-DrLDlrT8.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/HomeView-DnAtnei_.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/WorkspaceSession-J6qcGlah.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/usePresence-BVuZe9Y-.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/ForecastAtmosphere-DiKJHjAE.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/localBgStorage-D1FVfbLw.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/ForecastAtmosphere-Dgn_YtMP.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/MidAutumnMooncakes-CyhjqzW4.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/MidAutumnMooncakes-CcoVGA7Z.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/NationalDayCelebration-DQxW2vyB.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/NationalDayCelebration-Cy-5j0a0.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/MobileHeader-BzKrudaJ.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/UserAvatar-bzDxAO6B.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/UserAvatar-DfWZzYyS.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/MobileHeader-QjcbuFSm.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/Navbar-C01UZoeK.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/LO_logo-DCN60-0d.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/noticeUnread-B4bdrm8g.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/resourceUnread-Bi6mp7Gk.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/useAiAssistantState-C5T8FuV0.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/Navbar-C3Pv73hl.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/MobileNavBar-B--E8TWj.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/MobileNavBar-CBgkIs_l.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/FeedbackHost-CtgNvmZU.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/NoticeScanBanner-TM7cm6MZ.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/useNoticeScanState-Ddr2r4tu.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/NoticeScanBanner-DuOdKzce.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/DemoModeBanner-DL9FXP8i.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/DemoModeBanner-BEgZ_GrN.css",
+          "type": "link"
+        },
+        {
+          "name": "/v1/forecast",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/earth-orbit-poster.jpg",
+          "type": "video"
+        },
+        {
+          "name": "/api/video/earth-orbit",
+          "type": "video"
+        },
+        {
+          "name": "/assets/LO_logo.svg",
+          "type": "img"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-00.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-01.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-02.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-03.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-04.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-05.bin",
+          "type": "fetch"
+        }
+      ],
+      "lcp": 6512,
+      "labInteractionMax": 16,
+      "domContentLoaded": 2440.199999999255,
+      "errors": []
+    },
+    {
+      "route": "/hub?demo=1",
+      "run": 2,
+      "requests": 63,
+      "jsBytes": 744659,
+      "gzipBytes": 245876,
+      "initialResources": [
+        {
+          "name": "/assets/index-tBQvSzgG.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/index-d2TQ40YP.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/PublicHomeView-Cdi5isdw.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/forecast/forecast-clouds-drift-seamless.jpg",
+          "type": "css"
+        },
+        {
+          "name": "/assets/useSiteConfig-HuNCgA9K.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/client-CVfbGbCj.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/demoAdapter-DrS2ufvy.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/HomeView-CotXuoPT.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/AppIcon-BrAsKEO8.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/_plugin-vue_export-helper-DlAUqK2U.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/IconRobot-Csw6hhBI.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/useWeekDrag-Wuq655F6.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/BaseDialog-N6aWVeeD.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/BaseDialog-CuHXFZTv.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/feedback-DK9Ixa1m.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/useWeekDrag-DIIYTPq0.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/SilentLizardButton-dTSST8jy.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/SilentLizardButton-9VSh9_3K.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/noticeValidity-CBz-k32W.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/schedule-HXRkSVHS.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/arxivUnread-HJp9lP4Q.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/midAutumn-CjgqDTiU.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/nationalDay-DlOfCZhd.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/favorites-aXzeXYgR.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/useHomeGridEngine-DrLDlrT8.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/HomeView-DnAtnei_.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/WorkspaceSession-J6qcGlah.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/usePresence-BVuZe9Y-.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/localBgStorage-D1FVfbLw.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/ForecastAtmosphere-DiKJHjAE.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/ForecastAtmosphere-Dgn_YtMP.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/MidAutumnMooncakes-CyhjqzW4.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/MidAutumnMooncakes-CcoVGA7Z.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/NationalDayCelebration-DQxW2vyB.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/NationalDayCelebration-Cy-5j0a0.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/MobileHeader-BzKrudaJ.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/UserAvatar-bzDxAO6B.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/UserAvatar-DfWZzYyS.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/MobileHeader-QjcbuFSm.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/Navbar-C01UZoeK.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/LO_logo-DCN60-0d.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/noticeUnread-B4bdrm8g.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/resourceUnread-Bi6mp7Gk.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/useAiAssistantState-C5T8FuV0.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/Navbar-C3Pv73hl.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/MobileNavBar-B--E8TWj.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/MobileNavBar-CBgkIs_l.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/FeedbackHost-CtgNvmZU.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/NoticeScanBanner-TM7cm6MZ.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/useNoticeScanState-Ddr2r4tu.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/NoticeScanBanner-DuOdKzce.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/DemoModeBanner-DL9FXP8i.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/DemoModeBanner-BEgZ_GrN.css",
+          "type": "link"
+        },
+        {
+          "name": "/v1/forecast",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/earth-orbit-poster.jpg",
+          "type": "video"
+        },
+        {
+          "name": "/api/video/earth-orbit",
+          "type": "video"
+        },
+        {
+          "name": "/assets/LO_logo.svg",
+          "type": "img"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-00.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-01.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-02.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-03.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-04.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-05.bin",
+          "type": "fetch"
+        }
+      ],
+      "lcp": 6516,
+      "labInteractionMax": 16,
+      "domContentLoaded": 2430.39999999851,
+      "errors": []
+    },
+    {
+      "route": "/hub?demo=1",
+      "run": 3,
+      "requests": 63,
+      "jsBytes": 744659,
+      "gzipBytes": 245876,
+      "initialResources": [
+        {
+          "name": "/assets/index-tBQvSzgG.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/index-d2TQ40YP.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/PublicHomeView-Cdi5isdw.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/forecast/forecast-clouds-drift-seamless.jpg",
+          "type": "css"
+        },
+        {
+          "name": "/assets/useSiteConfig-HuNCgA9K.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/client-CVfbGbCj.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/demoAdapter-DrS2ufvy.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/HomeView-CotXuoPT.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/AppIcon-BrAsKEO8.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/_plugin-vue_export-helper-DlAUqK2U.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/IconRobot-Csw6hhBI.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/useWeekDrag-Wuq655F6.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/BaseDialog-N6aWVeeD.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/BaseDialog-CuHXFZTv.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/feedback-DK9Ixa1m.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/useWeekDrag-DIIYTPq0.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/SilentLizardButton-dTSST8jy.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/SilentLizardButton-9VSh9_3K.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/schedule-HXRkSVHS.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/noticeValidity-CBz-k32W.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/arxivUnread-HJp9lP4Q.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/midAutumn-CjgqDTiU.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/nationalDay-DlOfCZhd.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/favorites-aXzeXYgR.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/useHomeGridEngine-DrLDlrT8.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/HomeView-DnAtnei_.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/WorkspaceSession-J6qcGlah.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/usePresence-BVuZe9Y-.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/ForecastAtmosphere-DiKJHjAE.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/localBgStorage-D1FVfbLw.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/ForecastAtmosphere-Dgn_YtMP.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/MidAutumnMooncakes-CyhjqzW4.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/MidAutumnMooncakes-CcoVGA7Z.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/NationalDayCelebration-DQxW2vyB.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/NationalDayCelebration-Cy-5j0a0.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/MobileHeader-BzKrudaJ.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/UserAvatar-bzDxAO6B.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/UserAvatar-DfWZzYyS.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/MobileHeader-QjcbuFSm.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/Navbar-C01UZoeK.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/LO_logo-DCN60-0d.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/noticeUnread-B4bdrm8g.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/resourceUnread-Bi6mp7Gk.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/useAiAssistantState-C5T8FuV0.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/Navbar-C3Pv73hl.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/MobileNavBar-B--E8TWj.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/MobileNavBar-CBgkIs_l.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/FeedbackHost-CtgNvmZU.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/NoticeScanBanner-TM7cm6MZ.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/useNoticeScanState-Ddr2r4tu.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/NoticeScanBanner-DuOdKzce.css",
+          "type": "link"
+        },
+        {
+          "name": "/assets/DemoModeBanner-DL9FXP8i.js",
+          "type": "script"
+        },
+        {
+          "name": "/assets/DemoModeBanner-BEgZ_GrN.css",
+          "type": "link"
+        },
+        {
+          "name": "/v1/forecast",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/earth-orbit-poster.jpg",
+          "type": "video"
+        },
+        {
+          "name": "/api/video/earth-orbit",
+          "type": "video"
+        },
+        {
+          "name": "/assets/LO_logo.svg",
+          "type": "img"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-00.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-01.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-02.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-03.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-04.bin",
+          "type": "fetch"
+        },
+        {
+          "name": "/assets/forecast/raw/earth-orbit-part-05.bin",
+          "type": "fetch"
+        }
+      ],
+      "lcp": 6496,
+      "labInteractionMax": 24,
+      "domContentLoaded": 2436.39999999851,
+      "errors": []
+    }
+  ]
+}

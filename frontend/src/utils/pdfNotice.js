@@ -1,15 +1,9 @@
-import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs'
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 
-// Configure worker for browser environment
-if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-  try {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-      'pdfjs-dist/build/pdf.worker.min.mjs',
-      import.meta.url
-    ).toString()
-  } catch (e) {
-    // Falls back to main-thread fake worker
-  }
+async function loadPdfEngine() {
+  const pdfjsLib = await import('pdfjs-dist/build/pdf.mjs')
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker
+  return pdfjsLib
 }
 
 /**
@@ -27,6 +21,7 @@ export async function extractTextFromPdfUrl(pdfUrl, { maxPages = 5, signal } = {
       throw new Error(`获取 PDF 文件失败: HTTP ${response.status}`)
     }
     const arrayBuffer = await response.arrayBuffer()
+    const pdfjsLib = await loadPdfEngine()
     const loadingTask = pdfjsLib.getDocument({
       data: new Uint8Array(arrayBuffer),
       cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/cmaps/',
@@ -68,6 +63,7 @@ export async function renderPdfFirstPageToDataUrl(pdfUrl, { scale = 1.5, signal 
     const response = await fetch(pdfUrl, { signal })
     if (!response.ok) return ''
     const arrayBuffer = await response.arrayBuffer()
+    const pdfjsLib = await loadPdfEngine()
     const loadingTask = pdfjsLib.getDocument({
       data: new Uint8Array(arrayBuffer),
       cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/cmaps/',

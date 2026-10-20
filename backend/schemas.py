@@ -9,7 +9,7 @@ class UserRegister(BaseModel):
     name: str = Field('', max_length=100)
     nickname: str = ''
     email: str
-    password: str = Field(min_length=6)
+    password: str = Field(min_length=8)
     invite_code: str
 
 class UserLogin(BaseModel):

@@ -12,13 +12,19 @@ from .database import get_db
 from .models import User
 
 # 密钥与配置
-SECRET_KEY = os.getenv("LABHUB_SECRET_KEY", "labhub-default-secret-key-change-me-in-prod")
+SECRET_KEY = os.getenv("LABHUB_SECRET_KEY", "")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 30
 PRIMARY_INVITE_CODE = os.getenv("LABHUB_INVITE_CODE", "LAB-2026")
 VALID_INVITE_CODES = {PRIMARY_INVITE_CODE, "LAB-2026"}
 
 security = HTTPBearer(auto_error=False)
+
+
+def signing_key() -> str:
+    if len(SECRET_KEY) < 32:
+        raise HTTPException(503, '部署尚未配置登录密钥，请联系管理员完成配置')
+    return SECRET_KEY
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -44,7 +50,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     else:
         expire = datetime.now(timezone.utc) + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, signing_key(), algorithm=ALGORITHM)
     return encoded_jwt
 
 
@@ -60,7 +66,7 @@ def get_current_user(
         )
     token = credentials.credentials
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, signing_key(), algorithms=[ALGORITHM])
         sub_val = payload.get("sub")
         if sub_val is None:
             raise HTTPException(
@@ -68,7 +74,7 @@ def get_current_user(
                 detail="无效的认证凭据",
             )
         user_id = int(sub_val)
-    except jwt.PyJWTError:
+    except (jwt.PyJWTError, ValueError, TypeError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token 已过期或无效，请重新登录",
@@ -92,7 +98,7 @@ def get_optional_user(
     if not credentials:
         return None
     try:
-        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(credentials.credentials, signing_key(), algorithms=[ALGORITHM])
         sub_val = payload.get("sub")
         if sub_val is None:
             return None

@@ -1,7 +1,26 @@
 import { Context, Next } from 'hono';
 import { Env, UserRow, JWTPayload } from '../types';
 
-const DEFAULT_SECRET = 'laborbit-secure-secret-key-2026';
+export function hasSigningSecret(secret: unknown): secret is string {
+  return typeof secret === 'string' && secret.length >= 32;
+}
+
+export function canManageSeminars(user: UserRow | undefined): boolean {
+  return !!user && (user.role === 'admin' || user.role === 'teacher' || Boolean(user.can_manage_seminars));
+}
+
+export function canManageResource(user: UserRow, createdById: unknown): boolean {
+  return user.role === 'admin' || createdById === user.id;
+}
+
+export async function isAssignedPresenter(db: D1Database, user: UserRow, record: { presenter_id?: number; presenter_name?: string }): Promise<boolean> {
+  if (record.presenter_id) return record.presenter_id === user.id;
+  const name = (record.presenter_name || '').trim().toLowerCase();
+  if (!name) return false;
+  const { results } = await db.prepare('SELECT id FROM users WHERE LOWER(TRIM(name)) = ? OR LOWER(TRIM(real_name)) = ? OR LOWER(TRIM(nickname)) = ?')
+    .bind(name, name, name).all<{ id: number }>();
+  return results.length === 1 && results[0].id === user.id;
+}
 
 function base64UrlEncode(str: string | Uint8Array): string {
   let binary = '';
@@ -43,7 +62,8 @@ async function getHmacKey(secret: string): Promise<CryptoKey> {
   );
 }
 
-export async function createToken(user: UserRow, secret: string = DEFAULT_SECRET): Promise<string> {
+export async function createToken(user: UserRow, secret: string): Promise<string> {
+  if (!hasSigningSecret(secret)) throw new Error('Signing secret is not configured');
   const key = await getHmacKey(secret);
   const header = { alg: 'HS256', typ: 'JWT' };
   const exp = Math.floor(Date.now() / 1000) + 30 * 24 * 3600; // 30 days
@@ -52,7 +72,7 @@ export async function createToken(user: UserRow, secret: string = DEFAULT_SECRET
     email: user.email,
     role: user.role,
     name: user.name,
-    token_version: user.token_version,
+    token_version: user.token_version ?? 0,
     exp,
   };
 
@@ -65,11 +85,14 @@ export async function createToken(user: UserRow, secret: string = DEFAULT_SECRET
   return `${headerEncoded}.${payloadEncoded}.${signatureEncoded}`;
 }
 
-export async function verifyToken(token: string, secret: string = DEFAULT_SECRET): Promise<JWTPayload | null> {
+export async function verifyToken(token: string, secret: string): Promise<JWTPayload | null> {
+  if (!hasSigningSecret(secret)) return null;
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
     const [headerB64, payloadB64, sigB64] = parts;
+    const header = JSON.parse(base64UrlDecode(headerB64));
+    if (header.alg !== 'HS256' || header.typ !== 'JWT') return null;
     const key = await getHmacKey(secret);
     const dataToVerify = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
 
@@ -84,7 +107,8 @@ export async function verifyToken(token: string, secret: string = DEFAULT_SECRET
     if (!valid) return null;
 
     const payload: JWTPayload = JSON.parse(base64UrlDecode(payloadB64));
-    if (payload.exp && Math.floor(Date.now() / 1000) > payload.exp) {
+    if (!Number.isFinite(payload.exp) || Math.floor(Date.now() / 1000) >= payload.exp ||
+        !/^\d+$/.test(payload.sub) || !Number.isInteger(payload.token_version)) {
       return null; // Expired
     }
     return payload;
@@ -94,19 +118,20 @@ export async function verifyToken(token: string, secret: string = DEFAULT_SECRET
 }
 
 export async function authMiddleware(c: Context<{ Bindings: Env; Variables: { user: UserRow } }>, next: Next) {
+  if (!hasSigningSecret(c.env.JWT_SECRET)) {
+    return c.json({ detail: '部署尚未配置登录密钥，请联系管理员完成配置' }, 503);
+  }
   const authHeader = c.req.header('Authorization');
   let token = '';
   if (authHeader && authHeader.startsWith('Bearer ')) {
     token = authHeader.slice(7).trim();
-  } else {
-    token = c.req.query('token') || '';
   }
 
   if (!token) {
     return c.json({ detail: '未提供身份认证 Token，请先登录' }, 401);
   }
 
-  const secret = c.env.JWT_SECRET || DEFAULT_SECRET;
+  const secret = c.env.JWT_SECRET;
   const payload = await verifyToken(token, secret);
   if (!payload || !payload.sub) {
     return c.json({ detail: '身份认证失败或凭据已过期' }, 401);
@@ -118,7 +143,7 @@ export async function authMiddleware(c: Context<{ Bindings: Env; Variables: { us
     return c.json({ detail: '未找到对应用户' }, 401);
   }
 
-  if (payload.token_version !== undefined && user.token_version !== payload.token_version) {
+  if ((user.token_version ?? 0) !== payload.token_version) {
     return c.json({ detail: '登录已失效，请重新登录' }, 401);
   }
 
@@ -136,7 +161,7 @@ export async function adminOnlyMiddleware(c: Context<{ Bindings: Env; Variables:
 
 export async function seminarManagerMiddleware(c: Context<{ Bindings: Env; Variables: { user: UserRow } }>, next: Next) {
   const user = c.get('user');
-  if (!user || (user.role !== 'admin' && user.role !== 'teacher' && !user.can_manage_seminars)) {
+  if (!canManageSeminars(user)) {
     return c.json({ detail: '你没有新增或修改组会的权限，请联系管理员授权' }, 403);
   }
   await next();

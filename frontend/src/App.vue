@@ -1,26 +1,25 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
-import Navbar from './components/Navbar.vue'
-import MobileHeader from './components/MobileHeader.vue'
-import MobileNavBar from './components/MobileNavBar.vue'
-import FeedbackHost from './components/FeedbackHost.vue'
-import NoticeScanBanner from './components/NoticeScanBanner.vue'
-import ForecastAtmosphere from './components/ForecastAtmosphere.vue'
-import MidAutumnMooncakes from './components/MidAutumnMooncakes.vue'
-import NationalDayCelebration from './components/NationalDayCelebration.vue'
-import SystemTutorialModal from './components/SystemTutorialModal.vue'
-import DemoModeBanner from './components/DemoModeBanner.vue'
+const Navbar = defineAsyncComponent(() => import('./components/Navbar.vue'))
+const MobileHeader = defineAsyncComponent(() => import('./components/MobileHeader.vue'))
+const MobileNavBar = defineAsyncComponent(() => import('./components/MobileNavBar.vue'))
+const FeedbackHost = defineAsyncComponent(() => import('./components/FeedbackHost.vue'))
+const NoticeScanBanner = defineAsyncComponent(() => import('./components/NoticeScanBanner.vue'))
+const ForecastAtmosphere = defineAsyncComponent(() => import('./components/ForecastAtmosphere.vue'))
+const MidAutumnMooncakes = defineAsyncComponent(() => import('./components/MidAutumnMooncakes.vue'))
+const NationalDayCelebration = defineAsyncComponent(() => import('./components/NationalDayCelebration.vue'))
+const SystemTutorialModal = defineAsyncComponent(() => import('./components/SystemTutorialModal.vue'))
+const DemoModeBanner = defineAsyncComponent(() => import('./components/DemoModeBanner.vue'))
 import { enterPage, leavePage } from './composables/motion'
-import { usePresence } from './composables/usePresence'
 import { useTutorial } from './composables/useTutorial'
-import { authApi } from './api/client'
 import { isDemoMode } from './mock/isDemo'
 
-usePresence()
+const WorkspaceSession = defineAsyncComponent(() => import('./components/WorkspaceSession.vue'))
 
 const route = useRoute()
 const isPublic = computed(() => !!route.meta.public)
+watch(isPublic, value => { document.documentElement.dataset.publicPage = String(value) }, { immediate: true })
 const showNavbar = computed(() => !isPublic.value && !['/login', '/quick-share', '/setup'].includes(route.path))
 const isHome = computed(() => route.path === '/hub')
 const isAssistant = computed(() => route.path === '/assistant')
@@ -29,7 +28,7 @@ const isExcludedRoute = computed(() => isPublic.value || ['/setup', '/login', '/
 
 const isPinned = ref(localStorage.getItem('sidebar_pinned') === 'true')
 
-const { openTutorial, closeTutorial } = useTutorial()
+const { openTutorial, closeTutorial, showTutorial } = useTutorial()
 let hasCheckedTutorial = false
 
 async function checkTutorialEligibility() {
@@ -38,6 +37,7 @@ async function checkTutorialEligibility() {
 
   if (hasCheckedTutorial) return
   try {
+    const { authApi } = await import('./api/client')
     const u = await authApi.getMe()
     if (u && !u.tutorial_completed && !u.is_tutorial_completed) {
       hasCheckedTutorial = true
@@ -63,6 +63,7 @@ function onUpdatePinned(val) {
 
 <template>
   <div class="app-shell" :class="{ 'is-home': isHome, 'has-sidebar': showNavbar, 'sidebar-collapsed': !isPinned && showNavbar }">
+    <WorkspaceSession v-if="showNavbar" />
     <ForecastAtmosphere v-if="!isPublic" />
     <MidAutumnMooncakes v-if="!isPublic" />
     <NationalDayCelebration v-if="!isPublic" />
@@ -81,24 +82,24 @@ function onUpdatePinned(val) {
     <MobileNavBar v-if="showNavbar" />
     <FeedbackHost v-if="!isPublic" />
     <NoticeScanBanner v-if="!isPublic" />
-    <SystemTutorialModal v-if="!isPublic" />
+    <SystemTutorialModal v-if="!isPublic && showTutorial" />
     <DemoModeBanner v-if="isDemo && !isExcludedRoute" />
     <div v-if="isDemo && !isExcludedRoute" class="demo-watermark-overlay" aria-hidden="true"></div>
   </div>
 </template>
 
 <style>
-.skip-link { 
-  position: fixed; 
-  top: -60px; 
-  left: 20px; 
-  background: var(--accent); 
-  color: #ffffff; 
-  padding: 10px 20px; 
-  z-index: 200; 
-  border-radius: 9999px; 
-  font-weight: 500; 
-  font-size: 13px; 
+.skip-link {
+  position: fixed;
+  top: -60px;
+  left: 20px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 10px 20px;
+  z-index: 200;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 13px;
 }
 .skip-link:focus { top: 12px; }
 .home-workspace { width: 100%; min-width: 0; }

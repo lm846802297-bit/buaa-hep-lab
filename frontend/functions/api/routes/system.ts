@@ -1,3 +1,4 @@
+import { passwordError } from '../middleware/loginProtection';
 import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import { timingSafeEqual } from 'node:crypto';
@@ -110,8 +111,8 @@ app.post('/setup', async (c) => {
   if (!adminName || !adminEmail || !adminPassword) {
     return c.json({ detail: '管理员姓名、邮箱和密码为必填项' }, 400);
   }
-  if (adminPassword.length < 6) {
-    return c.json({ detail: '管理员密码长度不得少于 6 位' }, 400);
+  if (passwordError(adminPassword)) {
+    return c.json({ detail: passwordError(adminPassword) }, 400);
   }
   if (!labName || !labShortName) {
     return c.json({ detail: '课题组全称与缩写标识为必填项' }, 400);

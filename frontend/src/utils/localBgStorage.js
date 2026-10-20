@@ -1,17 +1,17 @@
-import UTIF from 'utif'
 
 const DB_NAME = 'labhub_local_assets'
 const DB_VERSION = 2
 const STORE_NAME = 'backgrounds'
 const BG_KEY = 'custom_bg'
 
-function getUtif() {
+async function getUtif() {
+  const { default: UTIF } = await import('utif')
   return UTIF?.decode ? UTIF : (UTIF?.default || UTIF)
 }
 
 /**
  * 将 TIFF 文件/Blob 解码并转换为浏览器可原生渲染的现代图片 Blob (WebP / PNG)
- * @param {Blob | File} file 
+ * @param {Blob | File} file
  * @returns {Promise<Blob>}
  */
 export async function convertTiffToDisplayableBlob(file) {
@@ -26,7 +26,7 @@ export async function convertTiffToDisplayableBlob(file) {
   }
 
   const buffer = await file.arrayBuffer()
-  const utif = getUtif()
+  const utif = await getUtif()
   const ifds = utif.decode(buffer)
   if (!ifds || ifds.length === 0) {
     throw new Error('无法解析该 TIFF 文件，文件可能已损坏或格式不兼容')
@@ -125,7 +125,7 @@ function openDB() {
 
 /**
  * 保存本地图片或视频到 IndexedDB
- * @param {File} file 
+ * @param {File} file
  * @returns {Promise<{ name: string, type: 'image' | 'video', mime: string, size: number, isConvertedTiff?: boolean }>}
  */
 export async function saveLocalBackground(file) {

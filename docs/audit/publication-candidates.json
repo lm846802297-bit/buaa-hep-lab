@@ -1,0 +1,686 @@
+[
+  {
+    "id": "2610.04971",
+    "title": "Probing anomalous $Wtb$ couplings through $bW$ spin correlations in top-quark pair production at the HL-LHC",
+    "authors": [
+      "Bi, Qi",
+      "Li, Zekun",
+      "Liu, Chuntao",
+      "Liu, Jia",
+      "Wang, Xiao-Ping"
+    ],
+    "journal": "",
+    "doi": "",
+    "date": "2026/10/04",
+    "source_url": "https://arxiv.org/abs/2610.04971",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/3211613",
+    "publication_info": [],
+    "dois": [],
+    "inspire_status": "matched",
+    "publication_status": "preprint_no_journal_record_found",
+    "category_proposal": "对撞机精度与量子计量学",
+    "tags_proposal": [
+      "顶夸克",
+      "自旋关联"
+    ],
+    "recommendation": "备选：最新预印本",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2608.27258",
+    "title": "An Axial $U_A(1)_{L_\\mu-L_\\tau}$: UV Completion and Experimental Searches",
+    "authors": [
+      "Fang, Rundong",
+      "Guo, Jinhui",
+      "Li, Ming",
+      "Liu, Jia",
+      "Wang, Xiao-Ping",
+      "Xiong, Yiheng"
+    ],
+    "journal": "",
+    "doi": "",
+    "date": "2026/08/27",
+    "source_url": "https://arxiv.org/abs/2608.27258",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/3196970",
+    "publication_info": [],
+    "dois": [],
+    "inspire_status": "matched",
+    "publication_status": "preprint_no_journal_record_found",
+    "category_proposal": "中微子与新相互作用",
+    "tags_proposal": [
+      "轴矢量规范相互作用",
+      "UV 完备性"
+    ],
+    "recommendation": "备选：最新预印本",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2604.01304",
+    "title": "Supermassive Primordial Black Holes from a Catalyzed Dark Phase Transition for Little Red Dots",
+    "authors": [
+      "Guo, Jinhui",
+      "Liu, Jia",
+      "Tanaka, Masanori",
+      "Wang, Xiao-Ping",
+      "Xiao, Huangyu"
+    ],
+    "journal": "",
+    "doi": "",
+    "date": "2026/04/01",
+    "source_url": "https://arxiv.org/abs/2604.01304",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/3138837",
+    "publication_info": [],
+    "dois": [],
+    "inspire_status": "matched",
+    "publication_status": "preprint_no_journal_record_found",
+    "category_proposal": "相变与引力波",
+    "tags_proposal": [
+      "暗扇区",
+      "原初黑洞"
+    ],
+    "recommendation": "备选：交叉专题预印本",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2603.17237",
+    "title": "Ultralight Scalar Dark Matter with Off-Diagonal Flavor Couplings",
+    "authors": [
+      "Guo, Jinhui",
+      "Liu, Jia",
+      "Peng, Chenhao",
+      "Wang, Xiao-Ping",
+      "Zhao, Hang"
+    ],
+    "journal": "Phys.Rev.D 114 (2026) 015022",
+    "doi": "10.1103/3c9n-gfvj",
+    "date": "2026/03/18",
+    "source_url": "https://arxiv.org/abs/2603.17237",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/3131006",
+    "publication_info": [
+      {
+        "journal_volume": "114",
+        "artid": "015022",
+        "material": "publication",
+        "year": 2026,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1613970"
+        },
+        "journal_issue": "1",
+        "journal_title": "Phys.Rev.D"
+      }
+    ],
+    "dois": [
+      "10.1103/3c9n-gfvj"
+    ],
+    "inspire_status": "matched",
+    "publication_year": 2026,
+    "publication_status": "published",
+    "category_proposal": "暗物质与暗扇区",
+    "tags_proposal": [
+      "超轻标量",
+      "味物理"
+    ],
+    "recommendation": "推荐",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2510.20672",
+    "title": "An Axial-Vector Leptophilic Fifth Force Sourced by Solar Neutrinos",
+    "authors": [
+      "Fang, Rundong",
+      "Guo, Ji-Heng",
+      "Liu, Jia",
+      "Wang, Xiao-Ping",
+      "Zhao, YanLi"
+    ],
+    "journal": "Phys.Rev.D 113 (2026) 055041",
+    "doi": "10.1103/mrm8-qv1j",
+    "date": "2025/10/23",
+    "source_url": "https://arxiv.org/abs/2510.20672",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/3072560",
+    "publication_info": [
+      {
+        "journal_volume": "113",
+        "artid": "055041",
+        "material": "publication",
+        "year": 2026,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1613970"
+        },
+        "journal_issue": "5",
+        "journal_title": "Phys.Rev.D"
+      }
+    ],
+    "dois": [
+      "10.1103/mrm8-qv1j"
+    ],
+    "inspire_status": "matched",
+    "publication_year": 2026,
+    "publication_status": "published",
+    "category_proposal": "中微子与新相互作用",
+    "tags_proposal": [
+      "太阳中微子",
+      "第五力"
+    ],
+    "recommendation": "推荐",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2509.23925",
+    "title": "Probing Scalar-Mediated Sterile Neutrinos with Gravitational Wave and Colliders Signals",
+    "authors": [
+      "Bi, Qi",
+      "Guo, Jinhui",
+      "Liao, Jian",
+      "Liu, Jia",
+      "Wang, Xiao-Ping"
+    ],
+    "journal": "Phys.Rev.D 113 (2026) 095006",
+    "doi": "10.1103/29kg-f6jb",
+    "date": "2025/09/28",
+    "source_url": "https://arxiv.org/abs/2509.23925",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/2974387",
+    "publication_info": [
+      {
+        "journal_volume": "113",
+        "artid": "095006",
+        "material": "publication",
+        "year": 2026,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1613970"
+        },
+        "journal_issue": "9",
+        "journal_title": "Phys.Rev.D"
+      }
+    ],
+    "dois": [
+      "10.1103/29kg-f6jb"
+    ],
+    "inspire_status": "matched",
+    "publication_year": 2026,
+    "publication_status": "published",
+    "category_proposal": "中微子与新相互作用",
+    "tags_proposal": [
+      "惰性中微子",
+      "相变与引力波",
+      "对撞机"
+    ],
+    "recommendation": "推荐",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2508.13276",
+    "title": "Probing Purely Inelastic Scalar Dark Matter Across Colliders and Gravitational Wave Observatories",
+    "authors": [
+      "Guo, Jinhui",
+      "Liu, Jia",
+      "Peng, Chenhao",
+      "Wang, Xiao-Ping"
+    ],
+    "journal": "Phys.Rev.D 112 (2025) 115014",
+    "doi": "10.1103/9myr-9xx5",
+    "date": "2025/08/18",
+    "source_url": "https://arxiv.org/abs/2508.13276",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/2962219",
+    "publication_info": [
+      {
+        "journal_volume": "112",
+        "artid": "115014",
+        "material": "publication",
+        "year": 2025,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1613970"
+        },
+        "journal_issue": "11",
+        "journal_title": "Phys.Rev.D"
+      }
+    ],
+    "dois": [
+      "10.1103/9myr-9xx5"
+    ],
+    "inspire_status": "matched",
+    "publication_year": 2025,
+    "publication_status": "published",
+    "category_proposal": "暗物质与暗扇区",
+    "tags_proposal": [
+      "非弹性暗物质",
+      "长寿命粒子",
+      "相变与引力波"
+    ],
+    "recommendation": "推荐",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2506.10673",
+    "title": "Ultimate Quantum Precision Limit at Colliders: Conditions and Case Studies",
+    "authors": [
+      "Ai, Tengyu",
+      "Bi, Qi",
+      "He, Yuxin",
+      "Liu, Jia",
+      "Wang, Xiao-Ping"
+    ],
+    "journal": "Phys.Rev.Lett. 135 (2025) 241804",
+    "doi": "10.1103/3m4t-pk9b",
+    "date": "2025/06/12",
+    "source_url": "https://arxiv.org/abs/2506.10673",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/2933814",
+    "publication_info": [
+      {
+        "journal_volume": "135",
+        "artid": "241804",
+        "material": "publication",
+        "year": 2025,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1214495"
+        },
+        "journal_issue": "24",
+        "journal_title": "Phys.Rev.Lett."
+      }
+    ],
+    "dois": [
+      "10.1103/3m4t-pk9b",
+      "10.1103/3m4t-pk9b"
+    ],
+    "inspire_status": "matched",
+    "publication_year": 2025,
+    "publication_status": "published",
+    "category_proposal": "对撞机精度与量子计量学",
+    "tags_proposal": [
+      "量子精度",
+      "对撞机"
+    ],
+    "recommendation": "推荐",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2505.06001",
+    "title": "Scattering Entanglement Entropy and Its Implications for Electroweak Phase Transitions",
+    "authors": [
+      "Liu, Jia",
+      "Tanaka, Masanori",
+      "Wang, Xiao-Ping",
+      "Zhang, Jing-Jun",
+      "Zheng, Zifan"
+    ],
+    "journal": "Phys.Rev.D 112 (2025) 015028",
+    "doi": "10.1103/958t-h23m",
+    "date": "2025/05/09",
+    "source_url": "https://arxiv.org/abs/2505.06001",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/2919815",
+    "publication_info": [
+      {
+        "journal_volume": "112",
+        "pubinfo_freetext": "Phys.Rev.D 112 (2025), 015028",
+        "artid": "015028",
+        "material": "publication",
+        "year": 2025,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1613970"
+        },
+        "journal_issue": "1",
+        "journal_title": "Phys.Rev.D"
+      }
+    ],
+    "dois": [
+      "10.1103/958t-h23m",
+      "10.1103/958t-h23m"
+    ],
+    "inspire_status": "matched",
+    "publication_year": 2025,
+    "publication_status": "published",
+    "category_proposal": "相变与引力波",
+    "tags_proposal": [
+      "电弱相变",
+      "散射纠缠熵"
+    ],
+    "recommendation": "推荐",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2409.17243",
+    "title": "Long-lived Sterile Neutrino Searches at Future Muon Colliders",
+    "authors": [
+      "Bi, Qi",
+      "Guo, Jinhui",
+      "Liu, Jia",
+      "Luo, Yan",
+      "Wang, Xiao-Ping"
+    ],
+    "journal": "Phys.Rev.D 111 (2025) 075001",
+    "doi": "10.1103/PhysRevD.111.075001",
+    "date": "2024/09/25",
+    "source_url": "https://arxiv.org/abs/2409.17243",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/2833950",
+    "publication_info": [
+      {
+        "journal_volume": "111",
+        "pubinfo_freetext": "Phys.Rev.D 111, 075001 (2025)",
+        "artid": "075001",
+        "material": "publication",
+        "year": 2025,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1613970"
+        },
+        "journal_issue": "7",
+        "journal_title": "Phys.Rev.D"
+      }
+    ],
+    "dois": [
+      "10.1103/PhysRevD.111.075001",
+      "10.1103/PhysRevD.111.075001"
+    ],
+    "inspire_status": "matched",
+    "publication_year": 2025,
+    "publication_status": "published",
+    "category_proposal": "长寿命粒子",
+    "tags_proposal": [
+      "惰性中微子",
+      "未来 μ 子对撞机"
+    ],
+    "recommendation": "推荐",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2407.11653",
+    "title": "Particle Conversions Beyond the WKB Approximation and Solar-Induced Gravitational Waves from Dark Photon Dark Matter",
+    "authors": [
+      "Ai, Tengyu",
+      "He, Yuxuan",
+      "Liu, Jia",
+      "Ma, Xiaolin",
+      "Wang, Xiao-Ping"
+    ],
+    "journal": "Phys.Rev.D 110 (2024) 115026",
+    "doi": "10.1103/PhysRevD.110.115026",
+    "date": "2024/07/16",
+    "source_url": "https://arxiv.org/abs/2407.11653",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/2808213",
+    "publication_info": [
+      {
+        "journal_volume": "110",
+        "pubinfo_freetext": "Phys. Rev. D 110, 115026 (2024)",
+        "artid": "115026",
+        "material": "publication",
+        "year": 2024,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1613970"
+        },
+        "journal_issue": "11",
+        "journal_title": "Phys.Rev.D"
+      }
+    ],
+    "dois": [
+      "10.1103/PhysRevD.110.115026",
+      "10.1103/PhysRevD.110.115026"
+    ],
+    "inspire_status": "matched",
+    "publication_year": 2024,
+    "publication_status": "published",
+    "category_proposal": "暗物质与暗扇区",
+    "tags_proposal": [
+      "暗光子",
+      "引力波",
+      "WKB 近似"
+    ],
+    "recommendation": "推荐",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2210.09335",
+    "title": "The ALP explanation to muon $(g-2)$ and its test at future Tera-$Z$ and Higgs factories",
+    "authors": [
+      "Liu, Jia",
+      "Ma, Xiaolin",
+      "Wang, Lian-Tao",
+      "Wang, Xiao-Ping"
+    ],
+    "journal": "Phys.Rev.D 107 (2023) 095016",
+    "doi": "10.1103/PhysRevD.107.095016",
+    "date": "2022/10/17",
+    "source_url": "https://arxiv.org/abs/2210.09335",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/2166736",
+    "publication_info": [
+      {
+        "journal_volume": "107",
+        "artid": "095016",
+        "material": "publication",
+        "year": 2023,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1613970"
+        },
+        "journal_issue": "9",
+        "journal_title": "Phys.Rev.D"
+      }
+    ],
+    "dois": [
+      "10.1103/PhysRevD.107.095016",
+      "10.1103/PhysRevD.107.095016"
+    ],
+    "inspire_status": "matched",
+    "publication_year": 2023,
+    "publication_status": "published",
+    "category_proposal": "希格斯与对撞机唯象",
+    "tags_proposal": [
+      "ALP",
+      "缪子反常磁矩"
+    ],
+    "recommendation": "推荐：现有公开论文",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2111.01164",
+    "title": "Heavy long-lived coannihilation partner from inelastic Dark Matter model and its signatures at the LHC",
+    "authors": [
+      "Guo, Jinhui",
+      "He, Yuxuan",
+      "Liu, Jia",
+      "Wang, Xiao-Ping"
+    ],
+    "journal": "JHEP 04 (2022) 024",
+    "doi": "10.1007/JHEP04(2022)024",
+    "date": "2021/11/01",
+    "source_url": "https://arxiv.org/abs/2111.01164",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/1958894",
+    "publication_info": [
+      {
+        "journal_volume": "04",
+        "artid": "024",
+        "year": 2022,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1213103"
+        },
+        "page_start": "024",
+        "journal_title": "JHEP"
+      },
+      {
+        "pubinfo_freetext": "JHEP04(2022)024",
+        "material": "publication"
+      }
+    ],
+    "dois": [
+      "10.1007/JHEP04(2022)024",
+      "10.1007/JHEP04(2022)024"
+    ],
+    "inspire_status": "matched",
+    "publication_year": 2022,
+    "publication_status": "published",
+    "category_proposal": "长寿命粒子",
+    "tags_proposal": [
+      "非弹性暗物质",
+      "共湮灭",
+      "LHC"
+    ],
+    "recommendation": "推荐：现有公开论文",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2110.14665",
+    "title": "A $\\nu$ scalar in the early universe and $(g-2)_{\\mu}$",
+    "authors": [
+      "Liu, Jia",
+      "McGinnis, Navin",
+      "Wagner, Carlos E. M.",
+      "Wang, Xiao-Ping"
+    ],
+    "journal": "Phys.Rev.D 105 (2022) L051702",
+    "doi": "10.1103/PhysRevD.105.L051702",
+    "date": "2021/10/27",
+    "source_url": "https://arxiv.org/abs/2110.14665",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/1954952",
+    "publication_info": [
+      {
+        "journal_volume": "105",
+        "artid": "L051702",
+        "material": "publication",
+        "year": 2022,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1613970"
+        },
+        "journal_issue": "5",
+        "journal_title": "Phys.Rev.D"
+      },
+      {
+        "journal_volume": "105",
+        "year": 2022,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1613970"
+        },
+        "journal_issue": "5",
+        "journal_title": "Phys.Rev.D"
+      }
+    ],
+    "dois": [
+      "10.1103/PhysRevD.105.L051702",
+      "10.1103/PhysRevD.105.L051702",
+      "10.1103/PhysRevD.105.L051702"
+    ],
+    "inspire_status": "matched",
+    "publication_year": 2022,
+    "publication_status": "published",
+    "category_proposal": "中微子与新相互作用",
+    "tags_proposal": [
+      "早期宇宙",
+      "轻标量",
+      "缪子反常磁矩"
+    ],
+    "recommendation": "推荐",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2104.06421",
+    "title": "Searching for lepton portal dark matter with colliders and gravitational waves",
+    "authors": [
+      "Liu, Jia",
+      "Wang, Xiao-Ping",
+      "Xie, Ke-Pan"
+    ],
+    "journal": "JHEP 06 (2021) 149",
+    "doi": "10.1007/JHEP06(2021)149",
+    "date": "2021/04/13",
+    "source_url": "https://arxiv.org/abs/2104.06421",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/1858217",
+    "publication_info": [
+      {
+        "journal_volume": "06",
+        "pubinfo_freetext": "JHEP 06 (2021) 149",
+        "artid": "149",
+        "material": "publication",
+        "year": 2021,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1213103"
+        },
+        "page_start": "149",
+        "journal_title": "JHEP"
+      }
+    ],
+    "dois": [
+      "10.1007/JHEP06(2021)149",
+      "10.1007/JHEP06(2021)149"
+    ],
+    "inspire_status": "matched",
+    "publication_year": 2021,
+    "publication_status": "published",
+    "category_proposal": "暗物质与暗扇区",
+    "tags_proposal": [
+      "轻子门户",
+      "对撞机",
+      "引力波"
+    ],
+    "recommendation": "推荐：现有公开论文",
+    "approved_at": "2026-10-20"
+  },
+  {
+    "id": "2102.10118",
+    "title": "Challenges for a QCD Axion at the 10 MeV Scale",
+    "authors": [
+      "Liu, Jia",
+      "McGinnis, Navin",
+      "Wagner, Carlos E. M.",
+      "Wang, Xiao-Ping"
+    ],
+    "journal": "JHEP 05 (2021) 138",
+    "doi": "10.1007/JHEP05(2021)138",
+    "date": "2021/02/19",
+    "source_url": "https://arxiv.org/abs/2102.10118",
+    "last_verified_at": "2026-10-20",
+    "review_status": "approved_by_group",
+    "inspire_url": "https://inspirehep.net/literature/1847786",
+    "publication_info": [
+      {
+        "journal_volume": "05",
+        "pubinfo_freetext": "JHEP05(2021)138",
+        "artid": "138",
+        "material": "publication",
+        "year": 2021,
+        "journal_record": {
+          "$ref": "https://inspirehep.net/api/journals/1213103"
+        },
+        "page_start": "138",
+        "journal_title": "JHEP"
+      }
+    ],
+    "dois": [
+      "10.1007/JHEP05(2021)138"
+    ],
+    "inspire_status": "matched",
+    "publication_year": 2021,
+    "publication_status": "published",
+    "category_proposal": "暗物质与暗扇区",
+    "tags_proposal": [
+      "QCD 轴子"
+    ],
+    "recommendation": "备选：经典工作",
+    "approved_at": "2026-10-20"
+  }
+]

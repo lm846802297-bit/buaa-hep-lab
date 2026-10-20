@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status, File, UploadFile
 from sqlalchemy.orm import Session
@@ -18,7 +19,7 @@ def admin_only(user: User = Depends(get_current_user)):
 
 
 @router.get("/categories", response_model=List[ResourceCategoryOut])
-def get_categories(db: Session = Depends(get_db)):
+def get_categories(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """获取所有可用资料分类（默认+自定义）"""
     # 保证默认分类存在
     for default_cat in ('教材', '工具', '网站'):
@@ -92,7 +93,7 @@ def get_resource_books(
     if q and q.strip():
         term = f"%{q.strip()}%"
         query = query.filter(ResourceBook.title.ilike(term) | ResourceBook.authors.ilike(term) | ResourceBook.description.ilike(term))
-    
+
     books = query.order_by(ResourceBook.order_num.asc(), ResourceBook.id.asc()).all()
     for b in books:
         b.favorite_count = db.query(func.count(Favorite.user_id)).filter(
@@ -127,7 +128,7 @@ def update_resource_book(
     book = db.query(ResourceBook).filter(ResourceBook.id == book_id).first()
     if not book:
         raise HTTPException(status_code=404, detail="未找到该教材资料")
-    if book.created_by_id not in (None, current_user.id) and current_user.role != 'admin':
+    if book.created_by_id != current_user.id and current_user.role != 'admin':
         raise HTTPException(status_code=403, detail="只有资料上传者或管理员可以编辑")
 
     for field, value in req.model_dump().items():
@@ -150,7 +151,7 @@ def delete_resource_book(
     if not book:
         raise HTTPException(status_code=404, detail="未找到该教材资料")
 
-    if book.created_by_id not in (None, current_user.id) and current_user.role != "admin":
+    if book.created_by_id != current_user.id and current_user.role != "admin":
         raise HTTPException(status_code=403, detail="只有资料上传者或管理员可以删除")
 
     db.delete(book)

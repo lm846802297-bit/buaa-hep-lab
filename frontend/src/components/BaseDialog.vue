@@ -1,14 +1,23 @@
 <script setup>
 import { ref, watch, nextTick, onBeforeUnmount, getCurrentInstance } from 'vue'
-import { gsap } from 'gsap'
 import { reducedMotion } from '../composables/motion'
 import AppIcon from './AppIcon.vue'
-import { renderLatex } from '../utils/latex'
 const props = defineProps({ open: Boolean, title: String, drawer: Boolean, busy: Boolean, wide: Boolean, frameStyle: [Object, String] })
 const emit = defineEmits(['close'])
+const titleHtml = ref('')
+let titleGeneration = 0
+watch(() => [props.title, props.open], async ([title, open]) => {
+  const generation = ++titleGeneration
+  const text = String(title || '')
+  titleHtml.value = text.replace(/[&<>"']/g, value => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[value]))
+  if (open && /[$\\]/.test(text)) {
+    const { renderLatex } = await import('../utils/latex')
+    if (generation === titleGeneration) titleHtml.value = renderLatex(text)
+  }
+}, { immediate: true })
 const dialog = ref(null), frame = ref(null)
 const titleId = `dialog-title-${getCurrentInstance().uid}`
-let previousFocus, animation
+let previousFocus, animation, openGeneration = 0
 let isBackdropMouseDown = false
 
 function close() { if (!props.busy) emit('close') }
@@ -54,8 +63,12 @@ function closeDialog(el) {
 }
 
 watch(() => props.open, async open => {
+  const generation = ++openGeneration
   await nextTick()
   if (!dialog.value) return
+  if (!open && !dialog.value.open) return
+  const { gsap } = await import('gsap')
+  if (generation !== openGeneration || !dialog.value) return
   animation?.kill()
   if (open) {
     previousFocus = document.activeElement
@@ -65,7 +78,7 @@ watch(() => props.open, async open => {
     animation = gsap.to(frame.value, { opacity: 0, x: props.drawer && !reducedMotion() ? 24 : 0, duration: reducedMotion() ? 0 : .18, onComplete: () => { closeDialog(dialog.value); if (previousFocus?.isConnected) previousFocus.focus() } })
   }
 }, { immediate: true })
-onBeforeUnmount(() => { animation?.kill(); closeDialog(dialog.value); if (previousFocus?.isConnected) previousFocus.focus() })
+onBeforeUnmount(() => { openGeneration++; animation?.kill(); closeDialog(dialog.value); if (previousFocus?.isConnected) previousFocus.focus() })
 </script>
 <template>
   <Teleport to="body">
@@ -81,7 +94,7 @@ onBeforeUnmount(() => { animation?.kill(); closeDialog(dialog.value); if (previo
     >
       <section ref="frame" class="dialog-frame" :style="frameStyle">
         <header class="dialog-heading">
-          <h2 :id="titleId" v-html="renderLatex(title)"></h2>
+          <h2 :id="titleId" v-html="titleHtml"></h2>
           <button class="icon-button" aria-label="关闭" :disabled="busy" @click="close">
             <AppIcon name="close" />
           </button>

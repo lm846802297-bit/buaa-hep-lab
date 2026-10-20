@@ -17,7 +17,7 @@ describe('Member registration form', () => {
     expect(inputs.filter(input => /\srequired(?:\s|[=>])/.test(input))).toHaveLength(3)
     expect(inputs.find(input => input.includes('autocomplete="name"'))).not.toContain('required')
     expect(inputs.find(input => input.includes('autocomplete="nickname"'))).not.toContain('required')
-    expect(inputs.find(input => input.includes('type="password"'))).toContain('minlength="6"')
+    expect(inputs.find(input => input.includes('type="password"'))).toContain('minlength="8"')
     expect(registration).not.toContain('确认密码')
   })
 })
