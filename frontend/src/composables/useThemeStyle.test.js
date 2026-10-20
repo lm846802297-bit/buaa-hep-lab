@@ -37,7 +37,7 @@ describe('useThemeStyle', () => {
 
   it('defaults to clouds-static for first-time visitors when localStorage is empty', async () => {
     const { currentThemeStyle } = await import('./useThemeStyle')
-    expect(currentThemeStyle.value).toBe('clouds-static')
+    expect(currentThemeStyle.value).toBe('paper')
   })
 
   it('allows changing theme style and persists to localStorage and DOM', async () => {
@@ -61,13 +61,15 @@ describe('useThemeStyle', () => {
     const { useThemeStyle, currentColorScheme, currentBgType, colorSchemes, bgOptions } = await import('./useThemeStyle')
     const { setColorScheme, setBgType } = useThemeStyle()
 
-    expect(colorSchemes).toHaveLength(3)
-    expect(colorSchemes.map(s => s.id)).toEqual(['classic-cyan', 'obsidian-gray', 'nebula-purple'])
+    expect(colorSchemes).toHaveLength(4)
+    expect(colorSchemes.map(s => s.id)).toEqual(['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple'])
+    expect(colorSchemes[0].baseColor).toBe('#F7F5F0')
+    expect(colorSchemes[0].primaryColor).toBe('#B85E3F')
     expect(colorSchemes[0].colors).toBeDefined()
     expect(colorSchemes[0].colors.length).toBeGreaterThanOrEqual(3)
 
-    expect(bgOptions).toHaveLength(4)
-    expect(bgOptions.map(b => b.id)).toEqual(['clouds-static', 'galaxy', 'vanta-fog', 'custom-local'])
+    expect(bgOptions).toHaveLength(5)
+    expect(bgOptions.map(b => b.id)).toEqual(['paper', 'clouds-static', 'galaxy', 'vanta-fog', 'custom-local'])
 
     // Change color scheme to obsidian-gray
     setColorScheme('obsidian-gray')
@@ -84,8 +86,8 @@ describe('useThemeStyle', () => {
 
   it('supports toggling glass styles between liquid and frosted', async () => {
     const { useThemeStyle, currentGlassStyle, glassOptions, setGlassStyle } = await import('./useThemeStyle')
-    expect(glassOptions).toHaveLength(2)
-    expect(glassOptions.map(g => g.id)).toEqual(['liquid', 'frosted'])
+    expect(glassOptions).toHaveLength(3)
+    expect(glassOptions.map(g => g.id)).toEqual(['solid', 'liquid', 'frosted'])
 
     setGlassStyle('frosted')
     expect(currentGlassStyle.value).toBe('frosted')
@@ -106,8 +108,10 @@ describe('useThemeStyle', () => {
 
     migratePreviousDefaultUsers()
 
-    expect(store['laborbit_color_scheme']).toBe('classic-cyan')
-    expect(store['laborbit_bg_type']).toBe('clouds-static')
+    expect(store['laborbit_color_scheme']).toBe('quiet-research')
+    expect(store['laborbit_bg_type']).toBe('paper')
+    expect(store['laborbit_theme_style']).toBe('paper')
+    expect(store['laborbit_glass_style']).toBe('solid')
     expect(store[DEFAULT_MIGRATION_KEY]).toBe('1')
   })
 
