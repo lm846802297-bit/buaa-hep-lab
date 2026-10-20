@@ -50,6 +50,10 @@ export const directions = [
     "symbol": "χ",
     "text": "构建暗物质理论模型，研究热遗迹、共湮灭、非弹性相互作用和超轻暗物质。连接对撞机、直接探测及宇宙学信息，分析不同检验途径的互补性。",
     "detail": "可观测信号取决于模型参数、产生机制与宇宙学假设；模型预言和实验排除范围需要在一致假设下比较。",
+    "question": "暗物质如何产生并留下可观测信号？不同质量尺度和相互作用如何连接宇宙学与实验？",
+    "methods": "研究热冻结、共湮灭与非弹性暗物质，以及超轻标量的味耦合；在具体模型中比较产生机制和探测预言。",
+    "probes": "联系直接探测、精密味观测、原子钟与对撞机搜索，考察不同探测途径对同一暗扇区模型的互补性。",
+    "references": ["2603.17237", "2508.13276"],
     "tags": [
       "暗物质模型",
       "暗扇区",
@@ -64,6 +68,10 @@ export const directions = [
     "symbol": "ν",
     "text": "研究中微子质量相关模型、惰性中微子，以及轻子与中微子的新相互作用。联系太阳中微子、早期宇宙、精密观测与对撞机搜索。",
     "detail": "在具体模型中梳理不同实验约束的适用条件，并研究低能信号与高能探测之间的关联。",
+    "question": "与中微子相关的新粒子如何影响早期宇宙和低能过程？轻子新相互作用能否在不同实验中交叉检验？",
+    "methods": "研究轻标量、惰性中微子与轻子新相互作用的模型，分析粒子质量、耦合、寿命及其对应的观测量。",
+    "probes": "联系宇宙学信息、太阳中微子、缪子磁矩和位移轻子信号，研究低能测量与未来对撞机搜索的关联。",
+    "references": ["2110.14665", "2409.17243"],
     "tags": [
       "惰性中微子",
       "新相互作用",
@@ -78,6 +86,10 @@ export const directions = [
     "symbol": "H",
     "text": "通过希格斯、顶夸克和长寿命粒子的产生与衰变，研究标准模型之外的新粒子与耦合。关注 LHC 与未来对撞机的可检验信号。",
     "detail": "区分理论截面、探测器接受度与实际实验约束；未来灵敏度是在给定运行条件和分析假设下的预测。",
+    "question": "希格斯、顶夸克和长寿命粒子的产生与衰变，如何检验新耦合、轻新粒子和暗扇区？",
+    "methods": "从理论模型的粒子谱和相互作用出发，分析产生道、衰变链与自旋关联，研究 LHC 和未来对撞机中的信号。",
+    "probes": "关注可见末态、缺失能量和位移顶点；将轻子精密观测与对撞机搜索结合，比较不同实验条件下的检验能力。",
+    "references": ["2210.09335", "2111.01164"],
     "tags": [
       "希格斯物理",
       "长寿命粒子",
@@ -92,6 +104,10 @@ export const directions = [
     "symbol": "Ω",
     "text": "研究暗扇区与电弱相变中的动力学问题，探索粒子物理模型与随机引力波背景之间的联系，并与对撞机信号进行互补分析。",
     "detail": "相变机制、成核过程和引力波谱依赖具体计算与近似；预测进入探测器灵敏度范围不等同于已经或必然被观测。",
+    "question": "暗扇区与电弱相变能否产生可检验的引力波背景？同一模型的对撞机信号又能提供什么信息？",
+    "methods": "结合具体标量相互作用与相变分析，研究暗物质模型的宇宙学演化、引力波预言，以及量子信息量与相变之间的联系。",
+    "probes": "比较引力波和粒子搜索的互补性；讨论探测前景时，需要说明成核过程、相变完成条件与引力波谱模型的假设。",
+    "references": ["2508.13276", "2505.06001"],
     "tags": [
       "一阶相变",
       "暗扇区",
@@ -106,6 +122,10 @@ export const directions = [
     "symbol": "I",
     "text": "研究量子信息在对撞机精密测量中的作用，比较量子 Fisher 信息、可测观测量和统计分析能够保留的信息。",
     "detail": "量子精度极限描述理想条件下的界限；实际精度还受到衰变道、相空间选择、探测效率与系统误差影响。",
+    "question": "一次碰撞能够提供多少关于新耦合的信息？实际可测的粒子动量与角分布距离理想量子精度极限有多远？",
+    "methods": "利用量子 Fisher 信息与自旋密度矩阵研究对撞机过程，比较自旋关联、角分布和不同可观测量保留的信息。",
+    "probes": "面向磁矩、希格斯相互作用和顶夸克耦合等测量；把理想信息界限与有限样本、实验选择和系统误差分开讨论。",
+    "references": ["2506.10673", "2610.04971"],
     "tags": [
       "量子 Fisher 信息",
       "自旋关联",
@@ -139,6 +159,20 @@ export const publicationCategories = [
     "id": "precision",
     "label": "量子计量与精度"
   }
+]
+
+// Public navigation to primary academic sources; never embed third-party trackers or private data.
+export const publicResourceCheckedAt = '2026-10-21'
+export const publicResources = [
+  { id: 'pdg', name: 'Particle Data Group', category: '文献与综述', url: 'https://pdg.lbl.gov/', description: '粒子性质、标准模型综述与实验方法参考；引用时核对具体版本和勘误。' },
+  { id: 'inspire', name: 'INSPIRE-HEP', category: '文献与综述', url: 'https://inspirehep.net/', description: '检索高能物理论文、作者和引用关系，交叉核对期刊与 DOI 信息。' },
+  { id: 'arxiv', name: 'arXiv · hep-ph', category: '文献与综述', url: 'https://arxiv.org/list/hep-ph/recent', description: '高能唯象学预印本与版本记录；预印本和期刊发表状态需分别核对。' },
+  { id: 'hepdata', name: 'HEPData', category: '实验与数据', url: 'https://www.hepdata.net/', description: '实验论文配套的表格、直方图与机器可读数据，用于追溯分析输入和数据版本。' },
+  { id: 'cern-open-data', name: 'CERN Open Data', category: '实验与数据', url: 'https://opendata.cern.ch/', description: '公开实验数据、软件、文档与分析环境；使用前核对数据发布级别与条件。' },
+  { id: 'feyncalc', name: 'FeynCalc', category: '计算与复现', url: 'https://feyncalc.github.io/', description: 'Mathematica 中的量子场论符号计算，查阅 Dirac 代数、迹与圈图计算文档。' },
+  { id: 'madgraph', name: 'MadGraph5_aMC@NLO', category: '计算与复现', url: 'https://launchpad.net/mg5amcnlo', description: '矩阵元与事例生成工具的官方项目页；按分析需求核对软件版本和模型设置。' },
+  { id: 'root', name: 'ROOT', category: '计算与复现', url: 'https://root.cern/', description: '高能物理数据分析框架，提供数据处理、统计分析与可视化的官方教程和参考。' },
+  { id: 'reana', name: 'REANA', category: '计算与复现', url: 'https://reanahub.io/', description: '可复现分析工作流平台，参考输入、软件环境、执行流程和输出的组织方式。' },
 ]
 
 // Bibliographic metadata cross-checked against arXiv and INSPIRE-HEP.

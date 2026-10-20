@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, nextTick } from 'vue'
-import { lab, advisorProfile, collaborators, directions, publications, publicationCategories } from '../content/lab'
+import { lab, advisorProfile, collaborators, directions, publications, publicationCategories, publicResources, publicResourceCheckedAt } from '../content/lab'
 const menuOpen = ref(false)
 const filter = ref('all')
 const query = ref('')
@@ -27,6 +27,10 @@ function moveResearchTab(event, index) {
 }
 const currentDirection = ref(0)
 const activeDirection = computed(() => directions[currentDirection.value])
+const relatedResearchPapers = computed(() => activeDirection.value.references.map(id => publications.find(paper => paper.id === id)).filter(Boolean))
+const resourceCategory = ref('all')
+const resourceCategories = [...new Set(publicResources.map(resource => resource.category))]
+const visibleResources = computed(() => publicResources.filter(resource => resourceCategory.value === 'all' || resource.category === resourceCategory.value))
 onMounted(() => { document.title = `${lab.name}${lab.provisional ? '（暂定）' : ''} | ${lab.field}` })
 function downloadBibtex() {
   const entries = publicationBibtex(visiblePapers.value)
@@ -44,7 +48,7 @@ function downloadBibtex() {
       </a>
       <button class="menu-toggle button secondary" :aria-expanded="menuOpen" aria-controls="public-navigation" @click="menuOpen = !menuOpen">{{ menuOpen ? '关闭菜单' : '菜单' }}</button>
       <nav id="public-navigation" :class="{ open: menuOpen }" aria-label="官网导航">
-        <a href="#research" @click="menuOpen = false">研究方向</a><a href="#publications" @click="menuOpen = false">代表成果</a><a href="#about" @click="menuOpen = false">关于我们</a>
+        <a href="#research" @click="menuOpen = false">研究方向</a><a href="#publications" @click="menuOpen = false">代表成果</a><a href="#physics-resources" @click="menuOpen = false">物理资源</a><a href="#about" @click="menuOpen = false">关于我们</a>
         <router-link class="nav-hub" to="/hub">组内协作 <span aria-hidden="true">↗</span></router-link>
       </nav>
     </header>
@@ -78,8 +82,16 @@ function downloadBibtex() {
         <div class="research-tabs" role="tablist" aria-label="研究方向" aria-orientation="vertical">
           <button v-for="(d, i) in directions" :id="`research-tab-${i}`" :key="d.id" role="tab" :aria-selected="i === currentDirection" aria-controls="research-detail" :tabindex="i === currentDirection ? 0 : -1" :class="{ active: i === currentDirection }" @click="currentDirection = i" @keydown="moveResearchTab($event, i)"><span>{{ d.number }}</span><strong>{{ d.title }}</strong><span aria-hidden="true">↗</span></button>
         </div>
-        <article id="research-detail" class="research-detail" role="tabpanel" :aria-labelledby="`research-tab-${currentDirection}`" tabindex="0"><span class="research-symbol" aria-hidden="true">{{ activeDirection.symbol }}</span><span class="eyebrow">{{ activeDirection.en }}</span><h3>{{ activeDirection.title }}</h3><p>{{ activeDirection.text }}</p><p>{{ activeDirection.detail }}</p><div class="topic-tags"><span v-for="tag in activeDirection.tags" :key="tag">{{ tag }}</span></div><button class="button secondary related-papers" @click="showRelatedPapers(activeDirection.id)">查看相关论文 <span aria-hidden="true">↓</span></button></article>
+        <article id="research-detail" class="research-detail" role="tabpanel" :aria-labelledby="`research-tab-${currentDirection}`" tabindex="0">
+          <span class="research-symbol" aria-hidden="true">{{ activeDirection.symbol }}</span><span class="eyebrow">{{ activeDirection.en }}</span><h3>{{ activeDirection.title }}</h3><p>{{ activeDirection.text }}</p>
+          <dl class="research-explainer"><div><dt>研究问题</dt><dd>{{ activeDirection.question }}</dd></div><div><dt>主要方法</dt><dd>{{ activeDirection.methods }}</dd></div><div><dt>实验联系</dt><dd>{{ activeDirection.probes }}</dd></div></dl>
+          <p class="research-scope">{{ activeDirection.detail }}</p>
+          <div class="topic-tags"><span v-for="tag in activeDirection.tags" :key="tag">{{ tag }}</span></div>
+          <div class="research-evidence"><h4>相关研究选读</h4><ul><li v-for="paper in relatedResearchPapers" :key="paper.id"><a :href="paper.source_url" target="_blank" rel="noopener noreferrer">{{ paper.title }} <span aria-hidden="true">↗</span></a><small>arXiv:{{ paper.id }}</small></li></ul></div>
+          <button class="button secondary related-papers" @click="showRelatedPapers(activeDirection.id)">查看相关论文 <span aria-hidden="true">↓</span></button>
+        </article>
       </div>
+      <noscript><div class="research-static"><h3>全部研究方向</h3><article v-for="direction in directions" :key="direction.id"><h4>{{ direction.title }}</h4><p>{{ direction.text }}</p><dl><dt>研究问题</dt><dd>{{ direction.question }}</dd><dt>主要方法</dt><dd>{{ direction.methods }}</dd><dt>实验联系</dt><dd>{{ direction.probes }}</dd></dl><p>{{ direction.detail }}</p></article></div></noscript>
     </section>
 
     <section id="publications" class="public-section publications-section">
@@ -105,8 +117,17 @@ function downloadBibtex() {
       </div>
     </section>
 
+    <section id="physics-resources" class="public-section physics-resources-section" aria-labelledby="physics-resources-title">
+      <div class="section-top"><div><span class="eyebrow">03 / PHYSICS RESOURCES</span><h2 id="physics-resources-title">让每一步探索，都有可靠的起点。</h2></div><p>文献、数据与计算工具，<br>从官方来源继续深入。</p></div>
+      <p class="section-description">精选常用物理网站，点击在新标签页打开。各站点的资料、软件和使用条件以原始来源为准。</p>
+      <div class="physics-resource-controls" role="group" aria-label="物理资源分类"><button type="button" :aria-pressed="resourceCategory === 'all'" :class="{ selected: resourceCategory === 'all' }" @click="resourceCategory = 'all'">全部资源</button><button v-for="category in resourceCategories" :key="category" type="button" :aria-pressed="resourceCategory === category" :class="{ selected: resourceCategory === category }" @click="resourceCategory = category">{{ category }}</button></div>
+      <p class="physics-resource-count" role="status">显示 {{ visibleResources.length }} / {{ publicResources.length }} 项资源</p>
+      <div class="physics-resource-grid"><article v-for="resource in visibleResources" :key="resource.id" class="physics-resource-card"><span>{{ resource.category }}</span><h3><a :href="resource.url" target="_blank" rel="noopener noreferrer" :aria-label="resource.name + '（新标签页）'">{{ resource.name }} <span aria-hidden="true">↗</span></a></h3><p>{{ resource.description }}</p></article></div>
+      <p class="physics-resource-note">资源说明核对：{{ publicResourceCheckedAt }}。站内仅提供导航，不代管第三方数据或计算服务。</p>
+    </section>
+
     <section id="about" class="public-section about-section">
-      <div><span class="eyebrow">03 / ABOUT THE GROUP</span><h2>保持好奇，<br>一起探索基本规律。</h2><p>依托{{ lab.institution }}，聚焦{{ lab.field }}。我们在理论研究、文献研读与学术讨论中，探索新的物理可能性。</p></div>
+      <div><span class="eyebrow">04 / ABOUT THE GROUP</span><h2>保持好奇，<br>一起探索基本规律。</h2><p>依托{{ lab.institution }}，聚焦{{ lab.field }}。我们在理论研究、文献研读与学术讨论中，探索新的物理可能性。</p></div>
       <div class="about-details">
         <div class="academic-partner" role="group" :aria-label="advisorProfile.groupRole + '：' + advisorProfile.name">
           <span>{{ advisorProfile.groupRole }}</span>
@@ -137,6 +158,43 @@ function downloadBibtex() {
 </template>
 
 <style scoped>
+.research-explainer { position:relative; margin:24px 0; display:grid; gap:18px; }
+.research-explainer dt { color:var(--accent); font-size:13px; margin-bottom:6px; }
+.research-explainer dd { margin:0; color:var(--soft); font-size:15px; line-height:1.85; }
+.research-detail .research-scope { padding-top:18px; border-top:1px solid var(--line); font-size:13px; color:var(--muted); }
+.research-evidence { position:relative; margin-top:26px; padding-top:20px; border-top:1px solid var(--line); }
+.research-evidence h4 { font-size:14px; font-weight:500; color:var(--soft); }
+.research-evidence ul { padding-left:18px; margin:14px 0 0; display:grid; gap:14px; }
+.research-evidence li { color:var(--muted); font-size:13px; }
+.research-evidence a { color:var(--accent); font-size:14px; line-height:1.7; overflow-wrap:anywhere; }
+.research-evidence a:hover { text-decoration:underline; text-underline-offset:4px; }
+.research-evidence small { display:block; margin-top:4px; font-size:12px; color:var(--muted); }
+.research-static article { padding:24px 0; border-bottom:1px solid var(--line); }
+.research-static h3,.research-static h4 { margin:18px 0; }
+.research-static p,.research-static dd { font-size:15px; line-height:1.8; color:var(--soft); margin:10px 0; }
+.research-static dt { margin-top:14px; font-size:14px; color:var(--accent); }
+.physics-resources-section { border-top:1px solid var(--line); }
+.physics-resource-controls { display:flex; flex-wrap:wrap; gap:8px; margin:28px 0 14px; }
+.physics-resource-controls button { min-height:44px; border:1px solid var(--line); padding:10px 16px; background:transparent; color:var(--soft); border-radius:12px; font-size:14px; }
+.physics-resource-controls button.selected { background:var(--raised); color:var(--text); border-color:var(--accent); }
+.physics-resource-count { font-size:13px; color:var(--muted); margin-bottom:18px; }
+.physics-resource-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+.physics-resource-card { min-width:0; border:1px solid var(--line); background:var(--surface); border-radius:20px; padding:24px; }
+.physics-resource-card>span { color:var(--muted); font-size:12px; }
+.physics-resource-card h3 { margin:12px 0 14px; font-size:20px; font-weight:400; overflow-wrap:anywhere; }
+.physics-resource-card h3 a { color:var(--accent); display:inline-block; padding:4px 0; min-height:44px; }
+.physics-resource-card h3 a:hover { text-decoration:underline; text-underline-offset:4px; }
+.physics-resource-card p { color:var(--soft); font-size:14px; line-height:1.85; }
+.physics-resource-note { font-size:13px; color:var(--muted); line-height:1.8; margin-top:24px; }
+@media(max-width:1100px) { .physics-resource-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:900px) {
+  .public-header { flex-wrap:wrap; }
+  .public-header .menu-toggle { display:flex; font-size:13px; min-height:44px; }
+  #public-navigation { display:none; width:100%; flex-wrap:wrap; gap:12px 22px; padding-bottom:20px; }
+  #public-navigation.open { display:flex; }
+  .public-header .nav-hub { border-left:0; padding-left:0; }
+}
+@media(max-width:650px) { .physics-resource-grid { grid-template-columns:1fr; } .physics-resource-card { padding:20px; } .research-explainer dd { font-size:14px; } }
 .related-papers { margin-top:24px; }
 .publication-controls { gap:20px; flex-wrap:wrap; }
 .publication-controls .segmented { flex-wrap:wrap; gap:4px; }

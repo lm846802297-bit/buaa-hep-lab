@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createSSRApp, h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import PublicHomeView from './PublicHomeView.vue'
-import { lab, advisorProfile, collaborators, publications } from '../content/lab'
+import { lab, advisorProfile, collaborators, publications, directions, publicResources } from '../content/lab'
 
 describe('Public academic website', () => {
   it('renders research and verified papers without a session or backend', async () => {
@@ -30,6 +30,15 @@ describe('Public academic website', () => {
     }
     expect(html).toContain('https://faculty.pku.edu.cn/liujia/zh_CN/index.htm')
     for (const paper of publications) expect(html).toContain(`https://arxiv.org/abs/${paper.id}`)
+    expect(html).toContain('id="physics-resources"')
+    for (const resource of publicResources) {
+      expect(html).toContain(resource.url)
+      expect(html).toContain(resource.description)
+    }
+    // Static rendering includes the full, script-free descriptions of every direction.
+    for (const direction of directions) {
+      for (const key of ['question', 'methods', 'probes']) expect(html).toContain(direction[key])
+    }
     expect(html).not.toContain('演示管理员')
     expect(html).not.toContain('邮箱')
     expect(html).not.toContain('办公地点')
@@ -45,5 +54,16 @@ describe('Public academic website', () => {
     }
     expect(publications.every(p => /^\d{4}\.\d{4,5}$/.test(p.id))).toBe(true)
     expect(new Set(publications.map(p => p.id)).size).toBe(publications.length)
+    for (const direction of directions) {
+      expect(direction.references).toHaveLength(2)
+      for (const id of direction.references) expect(publications.find(p => p.id === id)?.categories).toContain(direction.id)
+    }
+    expect(publicResources).toHaveLength(9)
+    expect(new Set(publicResources.map(resource => resource.url)).size).toBe(publicResources.length)
+    for (const resource of publicResources) {
+      expect(Object.keys(resource).sort()).toEqual(['id', 'name', 'category', 'url', 'description'].sort())
+      expect(new URL(resource.url).protocol).toBe('https:')
+      expect(JSON.stringify(resource)).not.toMatch(/邮箱|电话|办公|[\w.-]+@[\w.-]+\.[A-Za-z]{2,}/)
+    }
   })
 })
