@@ -6,6 +6,7 @@ describe('useThemeStyle', () => {
   let attrs = {}
 
   beforeEach(() => {
+    vi.resetModules()
     store = {}
     attrs = {}
 
