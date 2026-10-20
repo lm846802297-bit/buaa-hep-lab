@@ -16,8 +16,13 @@ export function publicationReviewStatus(lastVerifiedAt, now = new Date(), maxAge
 
   const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
   const ageDays = Math.floor((today - verifiedAt) / DAY_MS)
-  if (ageDays < 0) {
+  // Date-only review stamps can be one calendar day ahead of UTC when editors
+  // work in Asia/Shanghai. Treat that boundary as current, but disclose the ambiguity.
+  if (ageDays < -1) {
     return { status: 'invalid', lastVerifiedAt, ageDays, label: '核对日期晚于当前日期 · 请复核' }
+  }
+  if (ageDays === -1) {
+    return { status: 'current', lastVerifiedAt, ageDays: 0, label: `日期处于时区边界 · ${lastVerifiedAt}` }
   }
   if (ageDays > maxAgeDays) {
     return { status: 'stale', lastVerifiedAt, ageDays, label: `待复核 · 上次核对 ${lastVerifiedAt}` }

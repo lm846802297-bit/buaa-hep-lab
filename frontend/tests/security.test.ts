@@ -10,6 +10,8 @@ import seminars from '../functions/api/routes/seminars';
 import auth from '../functions/api/routes/auth';
 import account from '../functions/api/routes/account';
 import mailbox from '../functions/api/routes/mailbox';
+import arxiv from '../functions/api/routes/arxiv';
+import system from '../functions/api/routes/system';
 
 vi.mock('../functions/api/utils/imap', () => ({ CloudflareImapClient: vi.fn(), decryptUserPassword: vi.fn(), parseRawEmail: vi.fn(), extractMessageId: vi.fn(), extractDateHeader: vi.fn(), extractSubjectHeader: vi.fn(), isTalkEmail: vi.fn(), isConferenceEmail: vi.fn(), isNoticeEmail: vi.fn() }));
 vi.mock('../functions/api/utils/smtp', () => ({ CloudflareSmtpClient: vi.fn(), parseExternalEmails: vi.fn() }));
@@ -40,13 +42,39 @@ beforeEach(async () => {
   tokens = await Promise.all(users.map(user => createToken(user, secret)));
   env = { DB: d1(sqlite), JWT_SECRET: secret };
   app = new Hono();
-  app.route('/resources', resources); app.route('/seminars', seminars); app.route('/auth', auth); app.route('/account', account); app.route('/mailbox', mailbox);
+  app.route('/resources', resources); app.route('/seminars', seminars); app.route('/auth', auth); app.route('/account', account); app.route('/mailbox', mailbox); app.route('/arxiv', arxiv); app.route('/system', system);
   app.get('/protected', authMiddleware, c => c.json({ ok: true }));
   sqlite.prepare("INSERT INTO resource_books (id,title,authors,category,created_by_id) VALUES (1,'Original','Author','教材',1)").run();
   sqlite.prepare("INSERT INTO resource_books (id,title,authors,category,created_by_id) VALUES (2,'Unowned','Author','教材',NULL)").run();
   sqlite.prepare("INSERT INTO seminar_schedules (id,date,time,topic,presenter_id,presenter_name,status) VALUES (1,'2099-10-20','14:30','Original',1,'Member 1','scheduled')").run();
 });
 afterEach(() => sqlite.close());
+
+describe('public system status disclosure boundary', () => {
+  it('withholds member count and default meeting location from anonymous status requests', async () => {
+    sqlite.exec('CREATE TABLE IF NOT EXISTS system_settings (key VARCHAR(50) PRIMARY KEY, value TEXT NOT NULL)');
+    sqlite.prepare('INSERT INTO system_settings (key, value) VALUES (?, ?)').run('default_location', 'Internal meeting room / https://meet.example.invalid/secret');
+    const anonymous = await app.request('/system/status', { method: 'GET' }, env);
+    expect(anonymous.status).toBe(200);
+    const publicPayload = await anonymous.json() as Record<string, unknown>;
+    expect(publicPayload).not.toHaveProperty('default_location');
+    expect(publicPayload).not.toHaveProperty('user_count');
+    expect(publicPayload).toHaveProperty('initialized', true);
+
+    const authenticated = await request('/system/status', 0);
+    expect(authenticated.status).toBe(200);
+    const privatePayload = await authenticated.json() as Record<string, unknown>;
+    expect(privatePayload.default_location).toBe('Internal meeting room / https://meet.example.invalid/secret');
+    expect(privatePayload).not.toHaveProperty('user_count');
+  });
+});
+
+describe('public arXiv proxy input validation', () => {
+  it.each(['/proxy-pdf', '/proxy-markdown'])('rejects invalid identifiers before upstream fetch: %s', async endpoint => {
+    const response = await app.request(`/arxiv${endpoint}/not-an-arxiv-id`, { method: 'GET' }, env);
+    expect(response.status).toBe(400);
+  });
+});
 
 describe('resource ownership at HTTP boundary', () => {
   it.each([0, 2])('creator or administrator %i may edit and delete', async index => {

@@ -17,6 +17,8 @@ describe('publication review freshness', () => {
   it('never treats missing, malformed, impossible or future dates as verified', () => {
     expect(publicationReviewStatus('', today).status).toBe('unverified')
     expect(publicationReviewStatus('2026-13-40', today).status).toBe('invalid')
-    expect(publicationReviewStatus('2026-10-22', today).status).toBe('invalid')
+    expect(publicationReviewStatus('2026-10-22', today).status).toBe('current')
+    expect(publicationReviewStatus('2026-10-22', today).label).toContain('时区边界')
+    expect(publicationReviewStatus('2026-10-23', today).status).toBe('invalid')
   })
 })
