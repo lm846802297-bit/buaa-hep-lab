@@ -64,10 +64,10 @@ const privateHeaderRules = [
   '/assistant', '/assistant/*',
   '/style', '/style/*',
 ]
-const headerBlocks = headers.split(/\\n(?=\\/)/)
+const headerBlocks = headers.split(/\n(?=\/)/)
 for (const route of privateHeaderRules) {
-  const block = headerBlocks.find(item => item.split('\\n')[0].trim() === route)
-  assert(block && /X-Robots-Tag:\\s*noindex,\\s*nofollow/i.test(block), `Missing HTTP noindex header rule for ${route}`)
+  const block = headerBlocks.find(item => item.split('\n')[0].trim() === route)
+  assert(block && /X-Robots-Tag:\s*noindex,\s*nofollow/i.test(block), `Missing HTTP noindex header rule for ${route}`)
 }
 const sitemap = await readFile('dist/sitemap.xml', 'utf8')
 for (const path of ['/', ...directions.map(topic => `/research/${topic.id}`), '/people', '/events']) {
