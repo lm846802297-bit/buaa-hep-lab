@@ -41,7 +41,7 @@ describe('public event allowlist and calendar export', () => {
     expect(calendar).toContain('SUMMARY:Public HEP seminar\\, EFT\\; neutrinos')
     expect(calendar).toContain('DESCRIPTION:A public talk\\nwith a second line.')
     expect(calendar).toContain('LOCATION:Room 101')
-    expect(calendar).toEndWith('END:VCALENDAR\r\n')
+    expect(calendar.endsWith('END:VCALENDAR\r\n')).toBe(true)
   })
 
   it('never exports private, cancelled, past or stale events', () => {
