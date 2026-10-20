@@ -63,3 +63,11 @@
   X-Robots-Tag: noindex, nofollow
   Cache-Control: no-store
 
+/learning
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+/learning/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+

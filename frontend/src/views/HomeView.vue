@@ -596,6 +596,7 @@ const quickLinks = computed(() => [
   { to: '/mailbox', icon: 'envelope', label: '学术邮箱', note: '查收学术邮件与研讨通知', count: 'POP3 / IMAP' },
   { to: '/library', icon: 'book-open', label: '文献库', note: '让每次讨论留下记录', count: count('library', '篇') },
   { to: '/resources', icon: 'database', label: '教材与资料', note: '常用专著、讲义与代码', count: count('books', '册') },
+  { to: '/learning', icon: 'book-open', label: '学习与计算', note: '理论专题、权威来源与复现记录', count: '学习指南' },
 ])
 const calendarLink = date => ({ path: '/seminars', query: { view: 'week', date } })
 function onDayClick(e, day) {

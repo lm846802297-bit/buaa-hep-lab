@@ -14,7 +14,7 @@ let gzipBytes = 0
 for (const key of seen) {
   const item = manifest[key]
   assert(item, `Missing manifest record: ${key}`)
-  assert(!/pdf|three|vanta|ogl|\/HomeView-|SeminarView|MailboxView|AssistantView/.test(item.file), `Internal dependency on public entry: ${item.file}`)
+  assert(!/pdf|three|vanta|ogl|\/HomeView-|SeminarView|MailboxView|AssistantView|LearningView|StudyFormula/.test(item.file), `Internal dependency on public entry: ${item.file}`)
   if (item.file.endsWith('.js')) gzipBytes += gzipSync(await readFile(`dist/${item.file}`)).length
 }
 assert(gzipBytes <= 250000, `Public initial JavaScript gzip ${gzipBytes} exceeds 250000 bytes`)
