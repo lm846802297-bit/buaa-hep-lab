@@ -132,6 +132,12 @@ try {
     }),
   }, 'src/views/EventsView.vue')
 
+  if (!isDemo) {
+    const publicPaths = ['/', ...directions.map(topic => `/research/${topic.id}`), '/people', '/events']
+    const urls = publicPaths.map(path => `  <url><loc>${routeUrl(path)}</loc></url>`).join('\n')
+    await writeFile(join(outputDir, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`)
+  }
+
   console.log(`Prerendered homepage, ${directions.length} research topics, public people directory and public events page without API or database access.`)
 } finally {
   await server.close()
