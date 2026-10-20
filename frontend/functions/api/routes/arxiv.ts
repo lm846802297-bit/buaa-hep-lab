@@ -4,10 +4,10 @@ import { authMiddleware } from '../middleware/auth';
 
 const app = new Hono<{ Bindings: Env; Variables: { user: UserRow } }>();
 
-function getPublicArxivId(rawId: string): string | null {
+export function getPublicArxivId(rawId: string): string | null {
   const id = extractArxivId(rawId);
   if (!id) return null;
-  return /^(?:\\d{4}\\.\\d{4,5}(?:v\\d+)?|[a-zA-Z-]+(?:\\.[a-zA-Z]+)?\\/\\d{7})$/.test(id) ? id : null;
+  return /^(?:\d{4}\.\d{4,5}(?:v\d+)?|[a-zA-Z-]+(?:\.[a-zA-Z]+)?\/\d{7})$/.test(id) ? id : null;
 }
 
 app.use('*', async (c, next) => {

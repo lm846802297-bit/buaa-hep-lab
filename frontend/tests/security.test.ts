@@ -10,7 +10,7 @@ import seminars from '../functions/api/routes/seminars';
 import auth from '../functions/api/routes/auth';
 import account from '../functions/api/routes/account';
 import mailbox from '../functions/api/routes/mailbox';
-import arxiv from '../functions/api/routes/arxiv';
+import arxiv, { getPublicArxivId } from '../functions/api/routes/arxiv';
 import system from '../functions/api/routes/system';
 
 vi.mock('../functions/api/utils/imap', () => ({ CloudflareImapClient: vi.fn(), decryptUserPassword: vi.fn(), parseRawEmail: vi.fn(), extractMessageId: vi.fn(), extractDateHeader: vi.fn(), extractSubjectHeader: vi.fn(), isTalkEmail: vi.fn(), isConferenceEmail: vi.fn(), isNoticeEmail: vi.fn() }));
@@ -70,6 +70,14 @@ describe('public system status disclosure boundary', () => {
 });
 
 describe('public arXiv proxy input validation', () => {
+  it('accepts only normalized modern or legacy arXiv identifiers', () => {
+    expect(getPublicArxivId('2609.04305')).toBe('2609.04305');
+    expect(getPublicArxivId('https://arxiv.org/abs/2609.04305v2')).toBe('2609.04305v2');
+    expect(getPublicArxivId('hep-ph/9901234')).toBe('hep-ph/9901234');
+    expect(getPublicArxivId('not-an-arxiv-id')).toBeNull();
+    expect(getPublicArxivId('../../etc/passwd')).toBeNull();
+  });
+
   it.each(['/proxy-pdf', '/proxy-markdown'])('rejects invalid identifiers before upstream fetch: %s', async endpoint => {
     const response = await app.request(`/arxiv${endpoint}/not-an-arxiv-id`, { method: 'GET' }, env);
     expect(response.status).toBe(400);
