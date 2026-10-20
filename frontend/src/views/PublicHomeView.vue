@@ -8,8 +8,11 @@ const selectedYear = ref('all')
 const sortOrder = ref('newest')
 const copyMessage = ref('')
 const years = [...new Set(publications.map(p => p.year))].sort((a, b) => Number(b) - Number(a))
+const reviewNow = ref(new Date())
+const publicationReviews = computed(() => Object.fromEntries(publications.map(paper => [paper.id, publicationReviewStatus(paper.last_verified_at, reviewNow.value)])))
 const visiblePapers = computed(() => filterPublications(publications, { category: filter.value, query: query.value, year: selectedYear.value, sort: sortOrder.value }))
 import { filterPublications, publicationBibtex, citationText } from '../utils/publications'
+import { publicationReviewStatus } from '../utils/publicationReview'
 async function copyCitation(paper) {
   try { await navigator.clipboard.writeText(citationText(paper)); copyMessage.value = `已复制 arXiv:${paper.id} 的引用` }
   catch { copyMessage.value = '复制未完成，请使用 BibTeX 下载引用' }
@@ -110,7 +113,7 @@ function downloadBibtex() {
             <p class="paper-summary">{{ paper.summary }}</p>
             <p class="paper-journal">{{ paper.journal || '预印本 · 暂未检索到期刊出版记录' }}</p>
             <a v-if="paper.doi" :href="`https://doi.org/${paper.doi}`" target="_blank" rel="noopener noreferrer" class="paper-doi">DOI: {{ paper.doi }}</a>
-            <p class="paper-verification">arXiv:{{ paper.id }} · 元数据核对 {{ paper.last_verified_at }}</p>
+            <p class="paper-verification" :class="{ 'is-stale': publicationReviews[paper.id].status !== 'current' }">arXiv:{{ paper.id }} · {{ publicationReviews[paper.id].label }}</p>
             <div class="paper-actions"><a :href="paper.source_url" target="_blank" rel="noopener noreferrer" :aria-label="`阅读论文 ${paper.id}`">arXiv ↗</a><a :href="paper.inspire_url" target="_blank" rel="noopener noreferrer" :aria-label="`核对论文 ${paper.id} 的 INSPIRE 记录`">INSPIRE ↗</a><button @click="copyCitation(paper)" :aria-label="`复制论文 ${paper.id} 的引用`">复制引用</button></div>
           </div>
         </article>
@@ -211,6 +214,7 @@ function downloadBibtex() {
 .paper-summary { color:var(--soft); font-size:14px; line-height:1.8; margin:12px 0; }
 .paper-doi { color:var(--accent); font-size:14px; overflow-wrap:anywhere; }
 .paper-verification { font-size:12px; color:var(--muted); margin-top:12px; }
+.paper-verification.is-stale { color:var(--warning); font-weight:600; }
 .paper-actions { display:flex; flex-wrap:wrap; gap:16px; margin-top:14px; font-size:14px; color:var(--accent); }
 .paper-actions button { color:inherit; background:transparent; border:0; padding:0; cursor:pointer; font:inherit; }
 .citation-status { color:var(--success); font-size:14px; }
