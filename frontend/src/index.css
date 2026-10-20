@@ -1828,6 +1828,7 @@ html[data-bg-style="clouds-static"] body {
 }
 :root[data-color-scheme="quiet-research"] .forecast-sidebar {
   width: var(--sidebar);
+  transform: none !important;
   align-items: stretch;
   padding: 20px 14px;
   background: #F1EEE7;
@@ -1835,6 +1836,15 @@ html[data-bg-style="clouds-static"] body {
   box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+:root[data-color-scheme="quiet-research"] .sidebar-edge-trigger,
+:root[data-color-scheme="quiet-research"] .pin-anchor-wrapper {
+  display: none !important;
+}
+:root[data-color-scheme="quiet-research"] .forecast-sidebar.is-collapsed,
+:root[data-color-scheme="quiet-research"] .forecast-sidebar.is-peeking,
+:root[data-color-scheme="quiet-research"] .forecast-sidebar.is-floating {
+  transform: none !important;
 }
 :root[data-color-scheme="quiet-research"] .sidebar-top {
   align-items: flex-start;
@@ -2192,7 +2202,7 @@ html[data-bg-style="clouds-static"] body {
 :root[data-color-scheme="quiet-research"] .lab-public .research-symbol {
   color: var(--accent);
 }
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   :root[data-color-scheme="quiet-research"] .app-shell.has-sidebar,
   :root[data-color-scheme="quiet-research"] .app-shell.has-sidebar.sidebar-collapsed {
     padding-left: 0;
