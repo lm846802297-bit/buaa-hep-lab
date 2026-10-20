@@ -1,22 +1,13 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { createSSRApp, h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { directions, publications } from '../content/lab'
 
-const route = { params: { topic: 'dark' } }
-vi.mock('vue-router', () => ({
-  useRoute: () => route,
-}))
-
 import ResearchTopicView from './ResearchTopicView.vue'
 
 describe('public research topic pages', () => {
-  beforeEach(() => {
-    route.params.topic = 'dark'
-  })
-
   it('renders the scientific question, methods, observables and linked papers', async () => {
-    const app = createSSRApp(ResearchTopicView)
+    const app = createSSRApp(ResearchTopicView, { topic: 'dark' })
     app.component('router-link', {
       props: ['to'],
       setup: (props, { slots }) => () => h('a', { href: props.to }, slots.default?.()),
@@ -37,8 +28,7 @@ describe('public research topic pages', () => {
   })
 
   it('renders a safe not-found state for an unknown public topic', async () => {
-    route.params.topic = 'not-a-real-topic'
-    const app = createSSRApp(ResearchTopicView)
+    const app = createSSRApp(ResearchTopicView, { topic: 'not-a-real-topic' })
     app.component('router-link', {
       props: ['to'],
       setup: (props, { slots }) => () => h('a', { href: props.to }, slots.default?.()),
