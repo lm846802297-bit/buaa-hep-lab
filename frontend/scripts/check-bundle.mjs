@@ -52,6 +52,23 @@ for (const page of publicHtml) {
     assert(!page.includes(forbidden), `Internal field ${forbidden} leaked into prerendered public HTML`)
   }
 }
+const headers = await readFile('dist/_headers', 'utf8')
+const privateHeaderRules = [
+  '/hub', '/hub/*',
+  '/library', '/library/*',
+  '/learning', '/learning/*',
+  '/feedback', '/account', '/favorites',
+  '/admin', '/admin/*',
+  '/login', '/arxiv', '/seminars', '/resources', '/mailbox', '/notices',
+  '/quick-share', '/setup',
+  '/assistant', '/assistant/*',
+  '/style', '/style/*',
+]
+const headerBlocks = headers.split(/\\n(?=\\/)/)
+for (const route of privateHeaderRules) {
+  const block = headerBlocks.find(item => item.split('\\n')[0].trim() === route)
+  assert(block && /X-Robots-Tag:\\s*noindex,\\s*nofollow/i.test(block), `Missing HTTP noindex header rule for ${route}`)
+}
 const sitemap = await readFile('dist/sitemap.xml', 'utf8')
 for (const path of ['/', ...directions.map(topic => `/research/${topic.id}`), '/people', '/events']) {
   assert(sitemap.includes(`<loc>https://buaa-hep-hub.pages.dev${path === '/' ? '/' : path}</loc>`), `Sitemap is missing public route ${path}`)
