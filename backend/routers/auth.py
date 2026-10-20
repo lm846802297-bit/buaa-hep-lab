@@ -11,7 +11,7 @@ from ..models import User, InviteCode
 from ..schemas import Token, UserLogin, UserOut, UserRegister
 from ..services.reminders import auto_associate_user
 from ..auth import (
-    VALID_INVITE_CODES,
+    signing_key,
     create_access_token,
     get_current_user,
     get_password_hash,
@@ -19,7 +19,7 @@ from ..auth import (
 )
 
 
-router = APIRouter(prefix="/api/auth", tags=["Auth"])
+router = APIRouter(prefix="/api/auth", tags=["Auth"], dependencies=[Depends(signing_key)])
 
 
 def admin_only(user: User = Depends(get_current_user)):
@@ -162,10 +162,10 @@ def register(user_in: UserRegister, request: Request, db: Session = Depends(get_
     protect_attempt(db, 'register', request.client.host if request.client else 'unknown', 20)
     if password_error(user_in.password):
         raise HTTPException(400, password_error(user_in.password))
-    # 校验组内邀请码：检查数据库激活的码与 fallback 集合
+    # 只接受数据库中已激活的邀请码，不保留上游通用邀请码。
     code_input = user_in.invite_code.strip()
     db_active_codes = db.query(InviteCode).filter(InviteCode.is_active == True).all()
-    valid_codes = {c.code for c in db_active_codes} | VALID_INVITE_CODES
+    valid_codes = {c.code for c in db_active_codes}
 
     if code_input not in valid_codes:
         raise HTTPException(

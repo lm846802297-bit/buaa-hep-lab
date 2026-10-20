@@ -85,3 +85,12 @@ def test_no_default_signing_key(security_client, monkeypatch):
     client, headers, _ = security_client
     monkeypatch.setattr('backend.auth.SECRET_KEY', '')
     assert client.get('/api/auth/me', headers=headers[0]).status_code == 503
+    assert client.post('/api/auth/register', json={'email': 'new@example.invalid', 'password': 'test-password', 'invite_code': 'ANY'}).status_code == 503
+
+
+def test_known_upstream_invitation_is_not_a_registration_bypass(security_client):
+    client, _, session = security_client
+    response = client.post('/api/auth/register', json={'email': 'visitor@example.invalid', 'password': 'test-password', 'invite_code': 'LAB-2026'})
+    assert response.status_code == 400
+    with session() as db:
+        assert db.query(User).filter_by(email='visitor@example.invalid').first() is None
