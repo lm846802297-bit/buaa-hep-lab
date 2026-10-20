@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models import User, InviteCode, SystemSetting
 from ..auth import (
+    signing_key,
     create_access_token,
     get_password_hash,
     get_current_user,
@@ -107,6 +108,7 @@ def setup_initial_system(req: SystemSetupRequest, db: Session = Depends(get_db))
     if setup_token and not secrets.compare_digest(req.setup_token.encode(), setup_token.encode()):
         raise HTTPException(status_code=403, detail="部署初始化码不正确")
 
+    signing_key()
     admin_name = req.admin_name.strip()
     admin_email = req.admin_email.strip().lower()
     admin_password = req.admin_password.strip()
