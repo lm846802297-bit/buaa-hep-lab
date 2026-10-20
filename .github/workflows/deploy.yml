@@ -35,7 +35,7 @@ jobs:
           LABHUB_DB_PATH: /tmp/buaa-hep-ci.db
           SEED_DEMO_DATA: '0'
         run: |
-          pip install -r backend/requirements.txt pytest
+          pip install -r backend/requirements-test.txt
           python -m pytest backend/test_security_regressions.py backend/test_optional_registration.py backend/test_system_setup.py -q
       - run: npm --prefix frontend run build
       - name: Public entry budget and prerender verification
