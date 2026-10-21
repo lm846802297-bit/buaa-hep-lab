@@ -8,10 +8,10 @@ function formatOffsetDate(offset = 0) {
   return d.toISOString().slice(0, 10)
 }
 export const DEMO_MEMBERS = [
-  { id: 1, name: '李华（演示管理员）', real_name: '李华', email: 'admin@example.invalid', role: 'admin', identity: 'teacher', bio: '虚构账号，仅用于展示管理功能。', can_manage_seminars: true, is_tutorial_completed: true, tutorial_completed: true, created_at: '2026-01-10T08:00:00Z' },
-  { id: 2, name: '陈晨（演示组员）', real_name: '陈晨', email: 'member@example.invalid', role: 'member', identity: 'student', bio: '虚构账号：非弹性暗物质与长寿命粒子。', can_manage_seminars: true, is_tutorial_completed: true, tutorial_completed: true, created_at: '2026-03-01T09:00:00Z' },
-  { id: 3, name: '示例研究员', real_name: '示例研究员', email: 'researcher@example.invalid', role: 'member', identity: 'postdoc', bio: '虚构账号：中微子新相互作用与电弱相变。', can_manage_seminars: true, is_tutorial_completed: true, created_at: '2026-02-15T10:00:00Z' },
-  { id: 4, name: '示例学生', real_name: '示例学生', email: 'student@example.invalid', role: 'member', identity: 'student', bio: '虚构账号：对撞机精密测量与暗物质唯象学。', can_manage_seminars: false, is_tutorial_completed: true, created_at: '2026-05-20T14:30:00Z' },
+  { id: 1, name: '李华（演示管理员）', real_name: '李华', email: 'admin@example.invalid', role: 'admin', identity: 'teacher', bio: '演示管理员账号。', can_manage_seminars: true, is_tutorial_completed: true, tutorial_completed: true, created_at: '2026-01-10T08:00:00Z' },
+  { id: 2, name: '陈晨（演示组员）', real_name: '陈晨', email: 'member@example.invalid', role: 'member', identity: 'student', bio: '演示账号：暗物质与长寿命粒子。', can_manage_seminars: true, is_tutorial_completed: true, tutorial_completed: true, created_at: '2026-03-01T09:00:00Z' },
+  { id: 3, name: '示例研究员', real_name: '示例研究员', email: 'researcher@example.invalid', role: 'member', identity: 'postdoc', bio: '演示账号：中微子新相互作用。', can_manage_seminars: true, is_tutorial_completed: true, created_at: '2026-02-15T10:00:00Z' },
+  { id: 4, name: '示例学生', real_name: '示例学生', email: 'student@example.invalid', role: 'member', identity: 'student', bio: '演示账号：对撞机与暗物质唯象学。', can_manage_seminars: false, is_tutorial_completed: true, created_at: '2026-05-20T14:30:00Z' },
 ]
 export const DEMO_SITE_CONFIG = {
   initialized: true, user_count: 4, lab_name: `${lab.name}（演示）`, lab_short_name: lab.shortName,
@@ -28,7 +28,7 @@ const seminarTopics = [
 ]
 const seminarPaperIds = ['2508.13276', '2509.23925', '2510.20672', '2506.10673', '2409.17243']
 const seminarPresenterIds = [2, 3, 4, 1, 4]
-const seminarAbstract = '演示讨论：梳理模型假设、参数范围、可观测信号与实验限制。'
+const seminarAbstract = '演示讨论：模型、参数、信号与实验限制。'
 export const DEMO_SEMINARS = [2, 9, 16, -5, -12].map((offset, i) => {
   const presenterId = seminarPresenterIds[i]
   return {
@@ -47,10 +47,10 @@ export const DEMO_ARXIV_PAPERS = DEMO_PAPER_CATALOG.map((p, i) => ({
   id: 301 + i, arxiv_id: p.id, title: p.title, authors: p.authors.join(', '), journal: p.journal, primary_category: 'hep-ph',
   published_date: p.arxivSubmitted, source_url: `https://arxiv.org/abs/${p.id}`, pdf_url: `https://arxiv.org/pdf/${p.id}`,
   abstract: `演示用中文导读（非原文逐字摘要）：${p.summary}`, recommender: DEMO_MEMBERS[i % 2], recommended_by: DEMO_MEMBERS[i % 2].name,
-  recommended_at: formatOffsetDate(-2 - i), notes: '演示推荐；摘要为中文导读，推荐人与互动为虚构。',
+  recommended_at: formatOffsetDate(-2 - i), notes: '演示数据；摘要为导读，互动为虚构。',
   likes_count: 0, user_liked: false, is_liked_by_me: false, read: false, is_read_by_me: false, comments: [],
 }))
-export const DEMO_NOTICES = [{ id: 1, title: '欢迎体验粒子物理科研工作台', content: '演示数据；真实部署请运行管理员初始化向导。', is_pinned: true, created_by: DEMO_MEMBERS[0].name, created_at: formatOffsetDate(-1), priority: 'normal' }]
+export const DEMO_NOTICES = [{ id: 1, title: '欢迎体验粒子物理科研工作台', content: '演示数据；正式使用请运行初始化向导。', is_pinned: true, created_by: DEMO_MEMBERS[0].name, created_at: formatOffsetDate(-1), priority: 'normal' }]
 export const DEMO_RESOURCES_CATEGORIES = [
   { id: 1, name: '教材', is_default: true }, { id: 2, name: '综述与数据', is_default: true },
 ]
