@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, nextTick } from 'vue'
 import PublicThemeSwitcher from '../components/PublicThemeSwitcher.vue'
+import PublicSectionNav from '../components/PublicSectionNav.vue'
 import { lab, advisorProfile, collaborators, directions, publications, publicationCategories, publicResources, publicResourceCheckedAt } from '../content/lab'
 const menuOpen = ref(false)
 const filter = ref('all')
@@ -46,6 +47,7 @@ function downloadBibtex() {
 
 <template>
   <div class="lab-public">
+    <PublicSectionNav />
     <header class="public-header">
       <a href="#top" class="public-brand" aria-label="课题组首页" @click="menuOpen = false">
         <svg class="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="24" cy="24" r="17"/><ellipse cx="24" cy="24" rx="9" ry="22" transform="rotate(45 24 24)"/><path d="M3 24h42"/><circle cx="24" cy="24" r="3" fill="currentColor"/></svg>
@@ -160,7 +162,7 @@ function downloadBibtex() {
       </div>
     </section>
 
-    <section class="public-section collaboration-section"><div><span class="eyebrow">RESEARCH, TOGETHER</span><h2>把日常协作，留给更好的研究。</h2><p>组会安排、文献讨论与研习资料，在同一个工作台持续积累。</p><router-link to="/hub" class="button primary">进入组内协作 <span aria-hidden="true">↗</span></router-link></div><div class="hub-module-list"><span><i>01</i> 组会与学术日程 <small>SEMINARS</small></span><span><i>02</i> 文献推荐与讨论 <small>LITERATURE</small></span><span><i>03</i> 资料库与个人收藏 <small>RESOURCES</small></span><p>工作台需登录访问 · 首次使用由管理员初始化</p></div></section>
+    <section id="collaboration" class="public-section collaboration-section"><div><span class="eyebrow">RESEARCH, TOGETHER</span><h2>把日常协作，留给更好的研究。</h2><p>组会安排、文献讨论与研习资料，在同一个工作台持续积累。</p><router-link to="/hub" class="button primary">进入组内协作 <span aria-hidden="true">↗</span></router-link></div><div class="hub-module-list"><span><i>01</i> 组会与学术日程 <small>SEMINARS</small></span><span><i>02</i> 文献推荐与讨论 <small>LITERATURE</small></span><span><i>03</i> 资料库与个人收藏 <small>RESOURCES</small></span><p>工作台需登录访问 · 首次使用由管理员初始化</p></div></section>
     <footer class="public-footer"><span>{{ lab.shortName }}<small>{{ lab.name }}<template v-if="lab.provisional">（暂定名称）</template></small></span><span>基于 <a href="https://github.com/Chocologism/lab-orbit" target="_blank" rel="noopener noreferrer">LabOrbit</a> 定制 · 非学校官方门户</span><a href="#top">回到顶部 ↑</a></footer>
   </div>
 </template>
