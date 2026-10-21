@@ -15,7 +15,7 @@
 | 专题 | 标题与核对术语 | 最终 SVG 可见文字（逐字白名单） | 必须明确的限制 |
 |---|---|---|---|
 | 暗物质与暗扇区 | 暗物质直接探测、暗物质晕、靶核、核反冲、液氙探测器 | `DARK MATTER DIRECT DETECTION`；`Dark Matter Halo`；`Target Nucleus`；`Nuclear Recoil`；`Liquid Xenon Detector` | 底部曲线无数值刻度，不代表实验数据或特定模型的定量预测；不指定暗物质质量、耦合、核响应或探测效率。 |
-| 中微子与新相互作用 | 中微子味态、质量本征态、中微子振荡、PMNS 混合矩阵、`L/E` | `NEUTRINO OSCILLATION`；`FLAVOR STATES`；`PMNS MIXING MATRIX`；`ν_e`、`ν_μ`、`ν_τ`；`ν_1`、`ν_2`、`ν_3`；`L/E` | 矩阵色块没有数值，不代表 PMNS 矩阵元或其模方；波形不是指定振荡参数下的概率计算。图中的 `L/E` 没有单位、刻度或拟合结果。味态标签使用下标排版，不能将 `νe` 当作最终视觉排版。 |
+| 中微子与新相互作用 | 中微子味态、质量本征态、中微子振荡、PMNS 混合矩阵、`L/E` | `NEUTRINO OSCILLATION`；`FLAVOR STATES`；`PMNS MIXING MATRIX`；`ν_e`、`ν_μ`、`ν_τ`；`ν_1`、`ν_2`、`ν_3`；`MASS EIGENSTATES`；`L/E` | 矩阵色块没有数值，不代表 PMNS 矩阵元或其模方；波形不是指定振荡参数下的概率计算。图中的 `L/E` 没有单位、刻度或拟合结果。味态标签使用下标排版，不能将 `νe` 当作最终视觉排版。 |
 | 对撞机唯象 | 探测器层、粒子径迹、碰撞顶点、缺失横动量 | `COLLIDER EVENT DISPLAY`；`Detector Layers`；`Particle Tracks`；`Interaction Vertex`；`Missing Transverse Momentum` | 未指定具体实验、探测器、重建算法或事件拓扑；右下曲线图不对应真实事件或模拟样本。缺失横动量标签仅标识概念示意，不代表真实重建量。 |
 | 相变与引力波 | 宇宙相变、真空泡成核、泡扩张、泡碰撞、引力波 | `COSMOLOGICAL PHASE TRANSITION`；`Bubble Nucleation`；`Bubble Expansion`；`Bubble Collision`；`Gravitational Waves` | 波形与频谱不是数值预测；没有定量区分泡壁碰撞、声波和湍流的贡献。不能从插图反推出 `Ω_{GW}(f)` 或任何相变参数。 |
 | 量子计量 | Bloch 球、量子态、自旋关联、费舍尔信息、测量分布 | `QUANTUM METROLOGY`；`Bloch Sphere`；`Quantum State`；`Spin Correlations`；`Measurement Distribution`；`Fisher Information (conceptual)`；坐标符号 `x`、`y`、`z`、`θ` | 曲线没有数据、参数或数值刻度，不表示费舍尔信息或量子费舍尔信息的计算结果；示意图本身不构成量子态纠缠的证据。坐标标签应与图中的投影轴/横轴对应。 |
