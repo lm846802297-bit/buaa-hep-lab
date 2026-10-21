@@ -50,6 +50,32 @@ beforeEach(async () => {
 });
 afterEach(() => sqlite.close());
 
+
+describe('tutorial completion persistence', () => {
+  it('migrates a legacy users table and persists tutorial completion for the signed-in member', async () => {
+    // Simulate a database created before the tutorial flag existed.
+    sqlite.exec('ALTER TABLE users DROP COLUMN tutorial_completed');
+
+    const completion = await request('/auth/complete-tutorial', 0, 'POST');
+    expect(completion.status).toBe(200);
+    expect(await completion.json()).toMatchObject({
+      success: true,
+      tutorial_completed: true,
+      is_tutorial_completed: true,
+    });
+
+    const currentUser = await request('/auth/me', 0);
+    expect(currentUser.status).toBe(200);
+    expect((await currentUser.json()).tutorial_completed).toBe(true);
+    expect(sqlite.prepare('SELECT tutorial_completed FROM users WHERE id = 1').get()?.tutorial_completed).toBe(1);
+  });
+
+  it('requires authentication before saving tutorial completion', async () => {
+    const response = await app.request('/auth/complete-tutorial', { method: 'POST' }, env);
+    expect(response.status).toBe(401);
+  });
+});
+
 describe('public system status disclosure boundary', () => {
   it('withholds member count and default meeting location from anonymous status requests', async () => {
     sqlite.exec('CREATE TABLE IF NOT EXISTS system_settings (key VARCHAR(50) PRIMARY KEY, value TEXT NOT NULL)');

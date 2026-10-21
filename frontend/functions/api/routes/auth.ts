@@ -44,6 +44,31 @@ async function ensureUserPresenceSchema(db: D1Database) {
     console.warn('ensureUserPresenceSchema error:', err);
   }
 }
+let tutorialSchemaEnsured = false;
+
+async function ensureTutorialSchema(db: D1Database) {
+  if (tutorialSchemaEnsured) return;
+
+  const readColumns = async () => {
+    const { results } = await db.prepare('PRAGMA table_info(users)').all<{ name: string }>();
+    return new Set((results || []).map(column => column.name));
+  };
+
+  let columnNames = await readColumns();
+  if (!columnNames.has('tutorial_completed')) {
+    try {
+      await db.prepare('ALTER TABLE users ADD COLUMN tutorial_completed INTEGER NOT NULL DEFAULT 0').run();
+    } catch (err) {
+      // Another request/worker may have added the column concurrently. Only
+      // suppress the error if the column now exists; otherwise fail closed.
+      columnNames = await readColumns();
+      if (!columnNames.has('tutorial_completed')) throw err;
+    }
+  }
+
+  tutorialSchemaEnsured = true;
+}
+
 async function ensureInviteCodeSchema(db: D1Database) {
   if (inviteSchemaEnsured) return;
   try {
@@ -209,9 +234,31 @@ app.post('/register', protectAuthAttempts('register'), async (c) => {
 app.get('/me', authMiddleware, async (c) => {
   const user = c.get('user');
   await ensureUserPresenceSchema(c.env.DB);
+  await ensureTutorialSchema(c.env.DB);
   await c.env.DB.prepare('UPDATE users SET last_active_at = CURRENT_TIMESTAMP WHERE id = ?').bind(user.id).run().catch(() => {});
-  const { hashed_password, ...safeUser } = user;
-  return c.json({ ...safeUser, last_active_at: new Date().toISOString() });
+  // Re-read after schema checks so a column added for an older database is
+  // included in the response from this very request.
+  const currentUser = await c.env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(user.id).first<UserRow>();
+  const me = currentUser || user;
+  const { hashed_password, ...safeUser } = me;
+  const tutorialCompleted = Boolean(me.tutorial_completed);
+  return c.json({
+    ...safeUser,
+    tutorial_completed: tutorialCompleted,
+    is_tutorial_completed: tutorialCompleted,
+    last_active_at: new Date().toISOString(),
+  });
+});
+
+app.post('/complete-tutorial', authMiddleware, async (c) => {
+  const user = c.get('user');
+  await ensureTutorialSchema(c.env.DB);
+  await c.env.DB.prepare('UPDATE users SET tutorial_completed = 1 WHERE id = ?').bind(user.id).run();
+  return c.json({
+    success: true,
+    tutorial_completed: true,
+    is_tutorial_completed: true,
+  });
 });
 
 app.post('/heartbeat', authMiddleware, async (c) => {

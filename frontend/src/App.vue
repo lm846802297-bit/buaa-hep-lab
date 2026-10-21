@@ -35,21 +35,75 @@ const isExcludedRoute = computed(() => isPublic.value || ['/setup', '/login', '/
 const isPinned = ref(localStorage.getItem('sidebar_pinned') === 'true')
 
 const { openTutorial, closeTutorial, showTutorial } = useTutorial()
-let hasCheckedTutorial = false
+let checkedTutorialToken = null
+let tutorialCheckToken = null
+let tutorialCheckPromise = null
+
+function tutorialIsCompleted(user) {
+  const value = user?.tutorial_completed ?? user?.is_tutorial_completed
+  return value === true || value === 1 || value === '1'
+}
+
+function cachedTutorialBelongsToUser(cachedUser, user) {
+  if (!cachedUser || !user) return false
+  if (cachedUser.id != null && user.id != null) {
+    return String(cachedUser.id) === String(user.id)
+  }
+  return Boolean(
+    cachedUser.email &&
+    user.email &&
+    String(cachedUser.email).trim().toLowerCase() === String(user.email).trim().toLowerCase()
+  )
+}
 
 async function checkTutorialEligibility() {
-  const token = localStorage.getItem('labhub_token')
+  const token = localStorage.getItem('laborbit_token') || localStorage.getItem('labhub_token')
   if (!token || isPublic.value || route.path === '/setup' || route.path === '/login' || route.path === '/quick-share') return
 
-  if (hasCheckedTutorial) return
+  if (checkedTutorialToken === token) return
+  if (tutorialCheckPromise && tutorialCheckToken === token) return tutorialCheckPromise
+
+  const promise = (async () => {
+    try {
+      const { authApi } = await import('./api/client')
+      const user = await authApi.getMe()
+      const currentToken = localStorage.getItem('laborbit_token') || localStorage.getItem('labhub_token')
+      if (!user || currentToken !== token) return
+
+      checkedTutorialToken = token
+      if (tutorialIsCompleted(user)) return
+
+      // Older frontend builds could mark the tutorial complete locally while
+      // the API endpoint was missing. Honor that state for the same account,
+      // then backfill it to D1 so the tutorial does not reappear on this or
+      // another device.
+      let cachedUser = null
+      try {
+        cachedUser = JSON.parse(localStorage.getItem('labhub_user') || localStorage.getItem('laborbit_user') || 'null')
+      } catch {}
+      if (tutorialIsCompleted(cachedUser) && cachedTutorialBelongsToUser(cachedUser, user)) {
+        try {
+          await authApi.completeTutorial()
+        } catch {
+          // Keep the local dismissal effective if the network is temporarily unavailable.
+        }
+        return
+      }
+
+      openTutorial({ role: user.role, mandatory: true })
+    } catch {}
+  })()
+
+  tutorialCheckToken = token
+  tutorialCheckPromise = promise
   try {
-    const { authApi } = await import('./api/client')
-    const u = await authApi.getMe()
-    if (u && !u.tutorial_completed && !u.is_tutorial_completed) {
-      hasCheckedTutorial = true
-      openTutorial({ role: u.role, mandatory: true })
+    await promise
+  } finally {
+    if (tutorialCheckToken === token && tutorialCheckPromise === promise) {
+      tutorialCheckToken = null
+      tutorialCheckPromise = null
     }
-  } catch {}
+  }
 }
 
 watch(() => route.path, (to, from) => {
