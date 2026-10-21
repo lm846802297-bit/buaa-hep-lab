@@ -88,8 +88,8 @@ for (const topic of terms.topics) {
   )
   const labelMatch = topicView.match(labelMapping)
   assert.ok(labelMatch, `${topic.id}: mobile-visible labels could not be extracted from ResearchTopicView.vue.`)
-  const mobileLabels = [...labelMatch[1].matchAll(/'((?:\\\\.|[^'])*)'/g)]
-    .map(match => match[1].replace(/\\\\(['\\\\])/g, '$1'))
+  const mobileLabels = [...labelMatch[1].matchAll(/'([^']*)'/g)]
+    .map(match => match[1])
   assert.deepEqual(
     mobileLabels,
     topic.mobileLabels,
