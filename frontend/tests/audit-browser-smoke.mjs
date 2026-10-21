@@ -86,7 +86,7 @@ try {
   await publicSkinTrigger.click()
   await publicSkin.selectOption('worldline-console')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await page.waitForTimeout(280)
+  await page.waitForTimeout(180)
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
   const worldlineTuner = await page.evaluate(() => {

@@ -2706,17 +2706,23 @@ html[data-bg-style="clouds-static"] body {
   overflow: hidden;
   isolation: isolate;
   pointer-events: none;
+  background: transparent;
+}
+.worldline-shift-overlay__flash {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   opacity: 0;
   background:
-    radial-gradient(ellipse at center, color-mix(in srgb, var(--worldline-cyan) 13%, transparent), transparent 62%),
-    linear-gradient(115deg, color-mix(in srgb, var(--worldline-screen) 22%, transparent), color-mix(in srgb, var(--worldline-blue) 7%, transparent));
+    radial-gradient(ellipse at center, color-mix(in srgb, var(--worldline-cyan) 25%, transparent), transparent 64%),
+    linear-gradient(115deg, color-mix(in srgb, var(--worldline-screen) 44%, transparent), color-mix(in srgb, var(--worldline-blue) 18%, transparent));
   animation: worldline-shift-flash 1.32s ease-out both;
 }
 .worldline-shift-overlay::before {
   content: "";
   position: absolute;
   inset: -8%;
-  z-index: 0;
+  z-index: 1;
   background: repeating-linear-gradient(
     0deg,
     color-mix(in srgb, var(--worldline-cyan-hot) 12%, transparent) 0,
@@ -2734,7 +2740,7 @@ html[data-bg-style="clouds-static"] body {
   right: -8%;
   top: 36%;
   height: 18%;
-  z-index: 2;
+  z-index: 3;
   opacity: 0;
   background: linear-gradient(
     180deg,
@@ -2756,7 +2762,7 @@ html[data-bg-style="clouds-static"] body {
   border-radius: 50%;
   transform: translate(-50%, -50%) scale(.7);
   opacity: 0;
-  z-index: 1;
+  z-index: 2;
   filter: drop-shadow(0 0 18px color-mix(in srgb, var(--worldline-cyan) 22%, transparent));
   animation: worldline-dial-ignite 1.32s cubic-bezier(.16, .72, .18, 1) both;
 }
@@ -2813,7 +2819,7 @@ html[data-bg-style="clouds-static"] body {
   position: absolute;
   left: -10%;
   right: -10%;
-  z-index: 2;
+  z-index: 3;
   height: 3.2%;
   opacity: 0;
   border-block: 1px solid color-mix(in srgb, var(--worldline-cyan-hot) 62%, transparent);
@@ -2827,18 +2833,18 @@ html[data-bg-style="clouds-static"] body {
   position: absolute;
   top: 50%;
   left: 50%;
-  z-index: 3;
+  z-index: 4;
   width: min(440px, calc(100vw - 36px));
   padding: 22px 24px 20px;
   transform: translate(-50%, -50%);
-  border: 1px solid color-mix(in srgb, var(--worldline-cyan) 66%, var(--worldline-blue) 14%);
+  border: 1px solid color-mix(in srgb, var(--worldline-cyan-hot) 82%, var(--worldline-blue) 10%);
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--worldline-cyan) 5%, transparent), transparent 54%),
-    color-mix(in srgb, var(--worldline-screen) 91%, transparent);
+    linear-gradient(135deg, color-mix(in srgb, var(--worldline-cyan) 7%, transparent), transparent 54%),
+    color-mix(in srgb, var(--worldline-screen) 96%, transparent);
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--worldline-cyan) 8%, transparent),
-    0 0 36px color-mix(in srgb, var(--worldline-cyan) 17%, transparent),
-    0 0 72px color-mix(in srgb, var(--worldline-blue) 10%, transparent),
+    0 0 44px color-mix(in srgb, var(--worldline-cyan) 26%, transparent),
+    0 0 84px color-mix(in srgb, var(--worldline-blue) 16%, transparent),
     inset 0 0 28px color-mix(in srgb, var(--worldline-cyan) 5%, transparent);
   color: var(--worldline-cyan-hot);
   text-align: center;
@@ -2898,10 +2904,10 @@ html[data-bg-style="clouds-static"] body {
 }
 @keyframes worldline-shift-flash {
   0%, 100% { opacity: 0; }
-  12% { opacity: .86; }
-  34% { opacity: .30; }
-  52% { opacity: .64; }
-  76% { opacity: .18; }
+  12% { opacity: .92; }
+  34% { opacity: .38; }
+  52% { opacity: .76; }
+  76% { opacity: .20; }
 }
 @keyframes worldline-scanline {
   0% { opacity: 0; transform: translateY(-5%); }

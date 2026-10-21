@@ -107,6 +107,7 @@ function drawAmbient(time, delta) {
     if (particle.y > height + 8) particle.y = -8
   }
 
+  const connectionBins = [[], [], [], []]
   for (let i = 0; i < ambientParticles.length; i += 1) {
     const a = ambientParticles[i]
     for (let j = i + 1; j < ambientParticles.length; j += 1) {
@@ -115,31 +116,38 @@ function drawAmbient(time, delta) {
       const dy = a.y - b.y
       const distance = Math.sqrt(dx * dx + dy * dy)
       if (distance >= maxDistance) continue
-      const alpha = (1 - distance / maxDistance) * 0.12
-      ctx.strokeStyle = `rgba(85, 197, 225, ${alpha})`
-      ctx.lineWidth = 0.65
-      ctx.beginPath()
-      ctx.moveTo(a.x, a.y)
-      ctx.lineTo(b.x, b.y)
-      ctx.stroke()
+      const bin = Math.min(3, Math.floor((1 - distance / maxDistance) * 4))
+      connectionBins[bin].push(a.x, a.y, b.x, b.y)
     }
+  }
+  const connectionAlphas = [0.025, 0.052, 0.082, 0.12]
+  for (let bin = 0; bin < connectionBins.length; bin += 1) {
+    const lines = connectionBins[bin]
+    if (!lines.length) continue
+    ctx.beginPath()
+    for (let i = 0; i < lines.length; i += 4) {
+      ctx.moveTo(lines[i], lines[i + 1])
+      ctx.lineTo(lines[i + 2], lines[i + 3])
+    }
+    ctx.strokeStyle = `rgba(85, 197, 225, ${connectionAlphas[bin]})`
+    ctx.lineWidth = 0.65
+    ctx.stroke()
   }
 
   if (pointer.active) {
+    ctx.beginPath()
     for (const particle of ambientParticles) {
       const dx = particle.x - pointer.x
       const dy = particle.y - pointer.y
       const distance = Math.sqrt(dx * dx + dy * dy)
       if (distance > 1 && distance < 152) {
-        const alpha = (1 - distance / 152) * 0.24
-        ctx.strokeStyle = `rgba(85, 230, 242, ${alpha})`
-        ctx.lineWidth = 0.8
-        ctx.beginPath()
         ctx.moveTo(pointer.x, pointer.y)
         ctx.lineTo(particle.x, particle.y)
-        ctx.stroke()
       }
     }
+    ctx.strokeStyle = 'rgba(85, 230, 242, 0.14)'
+    ctx.lineWidth = 0.8
+    ctx.stroke()
     const radius = 18 + 3 * Math.sin(time * 0.006)
     ctx.strokeStyle = 'rgba(85, 230, 242, 0.34)'
     ctx.lineWidth = 0.9
@@ -427,6 +435,7 @@ onBeforeUnmount(() => {
     aria-hidden="true"
   ></canvas>
   <div v-if="isShifting" :key="shiftKey" class="worldline-shift-overlay" aria-hidden="true">
+    <div class="worldline-shift-overlay__flash"></div>
     <div class="worldline-shift-overlay__dial">
       <span class="worldline-shift-overlay__dial-ring worldline-shift-overlay__dial-ring--outer"></span>
       <span class="worldline-shift-overlay__dial-ticks"></span>
