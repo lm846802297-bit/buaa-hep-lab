@@ -103,10 +103,10 @@ export const directions = [
     "en": "PHASE TRANSITIONS & GRAVITATIONAL WAVES",
     "symbol": "Ω",
     "text": "研究暗扇区与电弱相变中的动力学问题，探索粒子物理模型与随机引力波背景之间的联系，并与对撞机信号进行互补分析。",
-    "detail": "标准模型（约 125 GeV Higgs）的电弱热演化是 crossover 而非一阶；强一阶相变通常需要新物理扩展。引力波谱依赖成核与源项假设，灵敏度覆盖不等于观测。",
+    "detail": "标准模型电弱热演化是 crossover 而非一阶；强一阶相变通常需要新物理扩展，GW 预测依赖成核和源项假设。",
     "question": "暗扇区与电弱相变能否产生可检验的引力波背景？同一模型的对撞机信号又能提供什么信息？",
     "methods": "结合有限温有效理论与适用的非微扰方法，分析相变成核、完成条件、引力波源及量子信息诊断量。",
-    "probes": "引力波预测须报告相变强度、β/H*、泡壁速度、效率因子和谱模型，并区分灵敏度预测与观测。",
+    "probes": "引力波预测需说明相变强度、β/H*、泡壁速度、效率因子与谱模型；灵敏度覆盖不等于观测。",
     "references": ["2604.01304", "2509.23925", "2508.13276", "2505.06001"],
     "tags": [
       "一阶相变",
@@ -263,7 +263,7 @@ export const publications = [
     ],
     "journal": "",
     "doi": "",
-    "summary": "提出畴壁催化暗相变形成超大质量原初黑洞的情景，并讨论其与 Little Red Dots 和 PTA 频段引力波的关联；属模型提案。",
+    "summary": "提出畴壁催化暗相变形成超大质量原初黑洞的模型，并讨论其与 Little Red Dots 和 PTA 频段引力波的关联。",
     "arxivSubmitted": "2026-04-01",
     "status": "preprint",
     "source_url": "https://arxiv.org/abs/2604.01304",
@@ -293,7 +293,7 @@ export const publications = [
     ],
     "journal": "Phys.Rev.D 114 (2026) 015022",
     "doi": "10.1103/3c9n-gfvj",
-    "summary": "研究非对角下型夸克味耦合的超轻标量暗物质，推导相干背景对夸克质量与 CKM 参数的振荡偏移，并讨论时域和味物理检验。",
+    "summary": "研究非对角味耦合的超轻标量暗物质及其对夸克质量、CKM 参数的振荡偏移和时域/味物理检验。",
     "arxivSubmitted": "2026-03-18",
     "status": "published",
     "source_url": "https://arxiv.org/abs/2603.17237",
@@ -323,7 +323,7 @@ export const publications = [
     ],
     "journal": "Phys.Rev.D 113 (2026) 055041",
     "doi": "10.1103/mrm8-qv1j",
-    "summary": "研究太阳中微子源产生的轴矢量轻子第五力，及其对缪子 g−2 储存环昼夜变化信号的影响。",
+    "summary": "研究太阳中微子源诱导的轴矢量轻子第五力及其对缪子 g−2 昼夜信号的影响。",
     "arxivSubmitted": "2025-10-23",
     "status": "published",
     "source_url": "https://arxiv.org/abs/2510.20672",
@@ -356,7 +356,7 @@ export const publications = [
     ],
     "journal": "Phys.Rev.D 113 (2026) 095006",
     "doi": "10.1103/29kg-f6jb",
-    "summary": "在标量介导惰性中微子模型中，比较一阶电弱相变引力波预言与长寿命中微子位移顶点搜索。",
+    "summary": "比较标量介导惰性中微子模型中的电弱相变引力波预言与位移顶点搜索。",
     "arxivSubmitted": "2025-09-28",
     "status": "published",
     "source_url": "https://arxiv.org/abs/2509.23925",
@@ -451,7 +451,7 @@ export const publications = [
     ],
     "journal": "Phys.Rev.D 112 (2025) 015028",
     "doi": "10.1103/958t-h23m",
-    "summary": "提出散射振幅纠缠熵极大值作为一阶电弱相变诊断量的可能性；并非已确立的普适判据。",
+    "summary": "提出以散射纠缠熵极大值诊断一阶电弱相变的可能性，尚非普适判据。",
     "arxivSubmitted": "2025-05-09",
     "status": "published",
     "source_url": "https://arxiv.org/abs/2505.06001",
@@ -680,7 +680,6 @@ export const publications = [
 // Public profile review date. This is editorial review metadata, not a claim of a complete roster.
 export const publicContentIndexCheckedAt = '2026-10-21'
 // Backward-compatible alias; this date tracks index/source checking, not independent scientific peer review.
-export const publicContentReviewedAt = publicContentIndexCheckedAt
 
 // Only confirmed public profiles are exposed. Do not add student names, personal contacts,
 // unpublished CV details, or internal member records without explicit approval.
