@@ -2361,7 +2361,7 @@ html[data-bg-style="clouds-static"] body {
   --worldline-device-coral: #e98278;
   --worldline-cyan-ambient: color-mix(in srgb, var(--worldline-cyan) 13%, transparent);
   --worldline-blue-ambient: color-mix(in srgb, var(--worldline-blue) 10%, transparent);
-  --worldline-screenline: color-mix(in srgb, var(--worldline-cyan) 4%, transparent);
+  --worldline-screenline: color-mix(in srgb, var(--worldline-cyan) 2.5%, transparent);
   --theme-tuner-ring: color-mix(in srgb, var(--text) 42%, var(--worldline-blue) 58%);
   --theme-tuner-axis: color-mix(in srgb, var(--worldline-cyan) 68%, transparent);
   --theme-tuner-core: var(--worldline-cyan);
@@ -2379,14 +2379,14 @@ html[data-bg-style="clouds-static"] body {
   background-image:
     radial-gradient(ellipse at 16% 0%, var(--worldline-cyan-ambient), transparent 38%),
     radial-gradient(ellipse at 88% 14%, var(--worldline-blue-ambient), transparent 34%),
-    repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 5px);
+    repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 6px);
   background-attachment: fixed;
 }
 :root[data-color-scheme="worldline-console"][data-public-page="true"] .lab-public {
   background-image:
     radial-gradient(ellipse at 16% 0%, var(--worldline-cyan-ambient), transparent 38%),
     radial-gradient(ellipse at 88% 14%, var(--worldline-blue-ambient), transparent 34%),
-    repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 5px);
+    repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 6px);
   background-attachment: fixed;
 }
 :root[data-color-scheme="worldline-console"] ::selection { background: color-mix(in srgb, var(--worldline-cyan) 34%, transparent); color: #fff8ea; }

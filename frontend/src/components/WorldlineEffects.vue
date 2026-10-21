@@ -177,14 +177,14 @@ function drawAmbient(time, delta) {
   }
   for (let i = localPulses.length - 1; i >= 0; i -= 1) {
     const pulse = localPulses[i]
-    pulse.radius += 3.4 * delta
-    pulse.life -= 0.032 * delta
+    pulse.radius += (pulse.speed || 3.4) * delta
+    pulse.life -= (pulse.decay || 0.032) * delta
     if (pulse.life <= 0) {
       localPulses.splice(i, 1)
       continue
     }
-    ctx.strokeStyle = `rgba(${pulse.tone}, ${pulse.life * 0.52})`
-    ctx.lineWidth = 1.1
+    ctx.strokeStyle = `rgba(${pulse.tone}, ${pulse.life * (pulse.alpha || 0.52)})`
+    ctx.lineWidth = pulse.width || 1.1
     ctx.beginPath()
     ctx.arc(pulse.x, pulse.y, pulse.radius, 0, Math.PI * 2)
     ctx.stroke()
@@ -207,8 +207,9 @@ function createBurst() {
       y: cy + (Math.random() - 0.5) * 12,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      curvature: (Math.random() - 0.5) * 0.012,
+      curvature: (Math.random() - 0.5) * 0.022,
       trailScale: 2.4 + Math.random() * 2.4,
+      trailPoints: [],
       phase: Math.random() * Math.PI * 2,
       life: 34 + Math.random() * 46,
       maxLife: 80,
@@ -224,21 +225,22 @@ function createBurst() {
 }
 
 function createClickSparks(x, y) {
-  const count = Math.min(12, Math.max(0, 180 - burstParticles.length))
+  const count = Math.min(18, Math.max(0, 180 - burstParticles.length))
   for (let i = 0; i < count; i += 1) {
     const angle = Math.random() * Math.PI * 2
-    const speed = 0.8 + Math.random() * 2.4
+    const speed = 1.3 + Math.random() * 3.3
     burstParticles.push({
       x,
       y,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      curvature: (Math.random() - 0.5) * 0.012,
-      trailScale: 1.6 + Math.random() * 2.2,
+      curvature: (Math.random() - 0.5) * 0.022,
+      trailScale: 2.8 + Math.random() * 2.4,
+      trailPoints: [],
       phase: Math.random() * Math.PI * 2,
-      life: 12 + Math.random() * 10,
-      maxLife: 22,
-      radius: 0.55 + Math.random() * 1.1,
+      life: 16 + Math.random() * 12,
+      maxLife: 28,
+      radius: 0.8 + Math.random() * 1.3,
       tone: pickTone()
     })
   }
@@ -261,6 +263,9 @@ function drawBurst(delta) {
     particle.vy = (vx * sin + vy * cos) * damping
     particle.x += particle.vx * delta
     particle.y += particle.vy * delta
+    particle.trailPoints ||= []
+    particle.trailPoints.push({ x: particle.x, y: particle.y })
+    if (particle.trailPoints.length > 8) particle.trailPoints.shift()
     particle.life -= delta
     if (particle.life <= 0) {
       burstParticles.splice(i, 1)
@@ -269,12 +274,23 @@ function drawBurst(delta) {
     const pulse = 0.88 + 0.12 * Math.sin((particle.maxLife - particle.life) * 0.18 + (particle.phase || 0))
     const alpha = Math.min(1, particle.life / particle.maxLife) * 0.88 * pulse
     ctx.strokeStyle = `rgba(${particle.tone}, ${alpha})`
-    ctx.lineWidth = particle.radius
+    ctx.lineWidth = Math.max(0.7, particle.radius * 0.86)
     ctx.beginPath()
-    const trailScale = particle.trailScale || 3.2
-    ctx.moveTo(particle.x - particle.vx * trailScale, particle.y - particle.vy * trailScale)
-    ctx.lineTo(particle.x, particle.y)
+    if (particle.trailPoints.length > 1) {
+      ctx.moveTo(particle.trailPoints[0].x, particle.trailPoints[0].y)
+      for (let point = 1; point < particle.trailPoints.length; point += 1) {
+        ctx.lineTo(particle.trailPoints[point].x, particle.trailPoints[point].y)
+      }
+    } else {
+      const trailScale = particle.trailScale || 3.2
+      ctx.moveTo(particle.x - particle.vx * trailScale, particle.y - particle.vy * trailScale)
+      ctx.lineTo(particle.x, particle.y)
+    }
     ctx.stroke()
+    ctx.fillStyle = `rgba(${particle.tone}, ${Math.min(1, alpha * 1.25)})`
+    ctx.beginPath()
+    ctx.arc(particle.x, particle.y, Math.max(0.45, particle.radius * 0.62), 0, Math.PI * 2)
+    ctx.fill()
   }
 
   for (let i = shockwaves.length - 1; i >= 0; i -= 1) {
@@ -371,8 +387,9 @@ function handlePointerLeave() {
 
 function handlePointerDown(event) {
   if (!isWorldlineActive.value || reducedMotion.value) return
-  localPulses.push({ x: event.clientX, y: event.clientY, radius: 3, life: 1, tone: pickTone() })
-  if (localPulses.length > 6) localPulses.shift()
+  localPulses.push({ x: event.clientX, y: event.clientY, radius: 3, life: 1, tone: '85, 230, 242', speed: 4.2, decay: 0.04, alpha: 0.72, width: 1.35 })
+  localPulses.push({ x: event.clientX, y: event.clientY, radius: 7, life: 0.72, tone: '255, 77, 134', speed: 3.1, decay: 0.035, alpha: 0.56, width: 0.9 })
+  if (localPulses.length > 6) localPulses.splice(0, localPulses.length - 6)
   createClickSparks(event.clientX, event.clientY)
   startAnimation()
 }
