@@ -57,9 +57,9 @@ for (const topic of terms.topics) {
   const visibleText = [...svg.matchAll(/<text\b[^>]*>([\s\S]*?)<\/text>/g)]
     .map(match => decodeXmlText(match[1].replace(/<[^>]+>/g, '').trim()))
   assert.deepEqual(
-    visibleText,
-    topic.visibleText,
-    `${topic.file}: visible SVG text must match the manually reviewed whitelist exactly.`,
+    [...visibleText].sort(),
+    [...topic.visibleText].sort(),
+    `${topic.file}: visible SVG text must match the manually reviewed whitelist exactly (independent of paint order).`,
   )
   // The desktop hero uses object-fit: cover in a wide frame. Keep every text baseline
   // within the conservative visible vertical band so labels cannot be cropped away.
