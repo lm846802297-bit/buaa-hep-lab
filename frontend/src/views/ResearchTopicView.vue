@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { directions, publications, publicContentIndexCheckedAt } from '../content/lab'
 import { publicationReviewStatus } from '../utils/publicationReview'
 import { researchTopicDetails, researchTopicResources } from '../content/researchTopicDetails'
@@ -16,15 +16,52 @@ const topicResources = computed(() => topicDetail.value
   ? topicDetail.value.resourceIds.map(id => researchTopicResources.find(resource => resource.id === id)).filter(Boolean)
   : [])
 const topicNavigation = computed(() => topicDetail.value?.navigation || [])
+
+const topicVisuals = {
+  dark: { src: '/images/research-topics/dark-matter.svg', alt: '暗物质粒子与靶核相互作用、产生核反冲的概念插图' },
+  neutrino: { src: '/images/research-topics/neutrino.svg', alt: '三种中微子传播波包相互交织的概念插图' },
+  collider: { src: '/images/research-topics/collider.svg', alt: '对撞机探测器中粒子碰撞与径迹的概念插图' },
+  phase: { src: '/images/research-topics/phase-gw.svg', alt: '早期宇宙相变泡及其传播波纹的概念插图' },
+  precision: { src: '/images/research-topics/quantum-metrology.svg', alt: '量子态、自旋关联和测量波形的概念插图' },
+}
+const currentTopicVisual = computed(() => topicVisuals[topic.value?.id] || null)
+const activeTopicSection = ref('topic-question')
+const isTopicNavOpen = ref(false)
+let topicSectionObserver
+
+function observeTopicSections() {
+  topicSectionObserver?.disconnect()
+  if (typeof IntersectionObserver === 'undefined') return
+  topicSectionObserver = new IntersectionObserver((entries) => {
+    const visible = entries
+      .filter(entry => entry.isIntersecting)
+      .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+    if (visible[0]) activeTopicSection.value = visible[0].target.id
+  }, { rootMargin: '-14% 0px -72% 0px', threshold: [0, 0.15, 0.35] })
+
+  for (const item of topicNavigation.value) {
+    const section = document.getElementById(item.target)
+    if (section) topicSectionObserver.observe(section)
+  }
+}
 const topicSectionTitles = computed(() => Object.fromEntries(
   topicNavigation.value.map(item => [item.target, item.heading]),
 ))
 const contentReview = computed(() => publicationReviewStatus(publicContentIndexCheckedAt))
-onMounted(() => {
+onMounted(async () => {
   document.title = topic.value
     ? `${topic.value.title} | BUAA HEP Hub`
     : '研究专题不存在 | BUAA HEP Hub'
+  await nextTick()
+  observeTopicSections()
 })
+watch(() => props.topic, async () => {
+  activeTopicSection.value = 'topic-question'
+  isTopicNavOpen.value = false
+  await nextTick()
+  observeTopicSections()
+})
+onBeforeUnmount(() => topicSectionObserver?.disconnect())
 </script>
 
 <template>
@@ -55,10 +92,40 @@ onMounted(() => {
         </div>
       </header>
 
-      <nav v-if="topicDetail" class="topic-local-nav" aria-label="专题内导航">
-        <span class="topic-local-label">{{ topic?.title }} · 目录</span>
-        <a v-for="item in topicNavigation" :key="item.target" :href="'#' + item.target">{{ item.label }}</a>
-      </nav>
+      <figure v-if="currentTopicVisual" class="topic-visual-panel">
+        <img :src="currentTopicVisual.src" :alt="currentTopicVisual.alt" width="1000" height="400" loading="lazy" decoding="async">
+        <figcaption>概念插图 · 非真实实验事件或科研数据</figcaption>
+      </figure>
+
+      <div class="topic-reading-layout">
+        <aside v-if="topicDetail" class="topic-sidebar" aria-label="专题目录">
+          <div class="topic-sidebar-heading">
+            <span class="topic-sidebar-kicker">FIELD INDEX</span>
+            <button
+              type="button"
+              class="topic-sidebar-toggle"
+              :aria-expanded="isTopicNavOpen"
+              @click="isTopicNavOpen = !isTopicNavOpen"
+            >
+              <span>专题目录</span>
+              <span aria-hidden="true">{{ isTopicNavOpen ? '−' : '+' }}</span>
+            </button>
+          </div>
+          <nav class="topic-local-nav" :class="{ 'is-open': isTopicNavOpen }" aria-label="专题内导航">
+            <a
+              v-for="(item, index) in topicNavigation"
+              :key="item.target"
+              :href="'#' + item.target"
+              :class="{ 'is-active': activeTopicSection === item.target }"
+              :aria-current="activeTopicSection === item.target ? 'location' : undefined"
+              @click="isTopicNavOpen = false"
+            >
+              <span class="topic-nav-index">{{ String(index + 1).padStart(2, '0') }}</span>
+              <span>{{ item.label }}</span>
+            </a>
+          </nav>
+        </aside>
+        <div class="topic-content-column">
 
       <section class="topic-section" aria-labelledby="topic-question">
         <p class="eyebrow">01 / MOTIVATION</p>
@@ -234,6 +301,8 @@ onMounted(() => {
         <p>本专题是带有来源入口、适用条件与失效边界的研究导读；它不替代原始论文、独立计算或实验分析复现。正式引用时请以所链接的原始来源及其版本为准。</p>
         <router-link to="/" class="button secondary">返回课题组首页</router-link>
       </footer>
+        </div>
+      </div>
     </template>
     <section v-else class="topic-not-found">
       <p class="eyebrow">404 / NOT FOUND</p>
@@ -245,7 +314,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.research-topic-page { width:min(980px,calc(100% - 48px)); margin:0 auto; padding:28px 0 80px; color:var(--text); }
+.research-topic-page { width:min(1280px,calc(100% - 48px)); margin:0 auto; padding:28px 0 80px; color:var(--text); }
 .topic-breadcrumb { display:flex; flex-wrap:wrap; gap:10px; align-items:center; color:var(--muted); font-size:13px; margin-bottom:52px; }
 .topic-breadcrumb a { color:var(--accent); }
 .topic-hero { position:relative; overflow:hidden; padding:clamp(28px,6vw,64px); border:1px solid var(--line); border-radius:18px; background:var(--panel); box-shadow:var(--shadow); }
@@ -262,10 +331,22 @@ onMounted(() => {
 .topic-hero-actions .button { min-height:46px; }
 .topic-all-guides { color:var(--accent); font-size:13px; text-underline-offset:4px; }
 .topic-all-guides:hover { text-decoration:underline; }
-.topic-local-nav { display:flex; align-items:center; gap:8px; overflow-x:auto; padding:10px 12px; margin:18px 0 4px; border:1px solid var(--line); border-radius:12px; background:var(--panel); box-shadow:var(--shadow); scrollbar-width:thin; }
-.topic-local-label { flex-shrink:0; padding:0 8px 0 2px; color:var(--muted); font-size:11px; letter-spacing:.08em; }
-.topic-local-nav a { flex-shrink:0; padding:7px 10px; border-radius:999px; color:var(--soft); font-size:12px; text-decoration:none; }
-.topic-local-nav a:hover,.topic-local-nav a:focus-visible { background:var(--surface); color:var(--accent); outline-offset:2px; }
+.topic-visual-panel { position:relative; height:clamp(136px,20vw,220px); margin:18px 0 26px; overflow:hidden; border:1px solid var(--line); border-radius:15px; background:#07131d; box-shadow:var(--shadow); }
+.topic-visual-panel::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(90deg,rgba(4,14,22,.08),transparent 45%,rgba(4,14,22,.18)); }
+.topic-visual-panel img { display:block; width:100%; height:100%; object-fit:cover; object-position:center; }
+.topic-visual-panel figcaption { position:absolute; right:12px; bottom:10px; z-index:1; padding:5px 8px; border:1px solid rgba(160,220,232,.24); border-radius:6px; background:rgba(3,13,21,.72); color:#d2e8ec; font-size:10px; letter-spacing:.04em; }
+.topic-reading-layout { display:grid; grid-template-columns:220px minmax(0,1fr); align-items:start; gap:clamp(24px,3vw,40px); margin-top:4px; }
+.topic-sidebar { position:sticky; top:18px; align-self:start; max-height:calc(100vh - 36px); overflow-y:auto; overscroll-behavior:contain; padding:12px; border:1px solid var(--line); border-radius:14px; background:var(--panel); box-shadow:var(--shadow); scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
+.topic-sidebar-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 8px 12px; border-bottom:1px solid var(--line); }
+.topic-sidebar-kicker { color:var(--muted); font-size:10px; letter-spacing:.13em; }
+.topic-sidebar-toggle { display:none; }
+.topic-local-nav { display:flex; flex-direction:column; gap:3px; padding-top:10px; }
+.topic-local-nav a { display:grid; grid-template-columns:22px minmax(0,1fr); align-items:start; gap:7px; padding:9px 8px; border-left:2px solid transparent; border-radius:7px; color:var(--soft); font-size:12px; line-height:1.55; text-decoration:none; transition:background .16s ease,color .16s ease,border-color .16s ease; }
+.topic-nav-index { padding-top:1px; color:var(--muted); font-family:var(--mono,ui-monospace,monospace); font-size:10px; }
+.topic-local-nav a:hover,.topic-local-nav a:focus-visible,.topic-local-nav a.is-active { background:var(--surface); color:var(--accent); outline-offset:2px; }
+.topic-local-nav a.is-active { border-left-color:var(--accent); }
+.topic-local-nav a.is-active .topic-nav-index { color:var(--accent); }
+.topic-content-column { min-width:0; }
 .topic-section { padding:44px 0; border-bottom:1px solid var(--line); scroll-margin-top:28px; }
 .topic-section h2 { margin:10px 0 18px; font-family:var(--serif); font-size:clamp(26px,3vw,34px); font-weight:400; }
 .topic-section h2[id] { scroll-margin-top:28px; }
@@ -332,6 +413,35 @@ onMounted(() => {
 .topic-not-found { padding:64px 0; }
 .topic-not-found h1 { margin:16px 0; font-family:var(--serif); font-weight:400; font-size:clamp(32px,5vw,48px); }
 .topic-not-found>p:not(.eyebrow) { margin-bottom:24px; color:var(--muted); }
-@media(max-width:760px) { .physics-card-grid,.interpretation-grid,.relation-grid,.assumption-grid { grid-template-columns:1fr; } .research-question-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .topic-source-grid { grid-template-columns:1fr; } .topic-resource-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }  }
-@media(max-width:600px) { .research-topic-page { width:calc(100% - 36px); padding-top:18px; } .topic-hero-actions { align-items:stretch; flex-direction:column; } .topic-hero-actions .button { justify-content:space-between; } .topic-all-guides { padding:8px 2px; } .research-question-grid { grid-template-columns:1fr; } .relation-card { padding:18px; } .relation-formula { font-size:11px; } .topic-breadcrumb { margin-bottom:28px; } .topic-hero { padding:26px 22px; } .topic-intro,.topic-section>p:not(.eyebrow) { font-size:14px; } .topic-publications li { gap:12px; } .topic-local-nav { gap:2px; margin:12px 0 0; } .topic-local-label { display:none; } .topic-local-nav a { padding:7px 9px; } .physics-card,.interpretation-card { padding:18px; } .topic-resource-grid { grid-template-columns:1fr; } .topic-workflow li { grid-template-columns:36px minmax(0,1fr); gap:10px; } .workflow-step { width:32px; height:32px; } }
+@media(max-width:980px) {
+  .topic-reading-layout { grid-template-columns:1fr; gap:12px; }
+  .topic-sidebar { top:8px; z-index:20; max-height:calc(100vh - 16px); padding:8px 10px; background:color-mix(in srgb,var(--panel) 90%,transparent); backdrop-filter:blur(14px); }
+  .topic-sidebar-heading { padding:0; border:0; }
+  .topic-sidebar-kicker { padding-left:4px; }
+  .topic-sidebar-toggle { display:flex; align-items:center; gap:18px; min-height:38px; padding:6px 10px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text); font:inherit; font-size:12px; cursor:pointer; }
+  .topic-local-nav { display:none; max-height:58vh; overflow-y:auto; padding-top:10px; }
+  .topic-local-nav.is-open { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px; }
+  .topic-local-nav a { padding:8px; }
+}
+@media(max-width:760px) { .physics-card-grid,.interpretation-grid,.relation-grid,.assumption-grid { grid-template-columns:1fr; } .research-question-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .topic-source-grid { grid-template-columns:1fr; } .topic-resource-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:600px) {
+  .research-topic-page { width:calc(100% - 36px); padding-top:18px; }
+  .topic-hero-actions { align-items:stretch; flex-direction:column; }
+  .topic-hero-actions .button { justify-content:space-between; }
+  .topic-all-guides { padding:8px 2px; }
+  .research-question-grid { grid-template-columns:1fr; }
+  .relation-card { padding:18px; }
+  .relation-formula { font-size:11px; }
+  .topic-breadcrumb { margin-bottom:28px; }
+  .topic-hero { padding:26px 22px; }
+  .topic-intro,.topic-section>p:not(.eyebrow) { font-size:14px; }
+  .topic-publications li { gap:12px; }
+  .topic-local-nav.is-open { grid-template-columns:1fr; }
+  .topic-local-nav a { padding:8px; }
+  .physics-card,.interpretation-card { padding:18px; }
+  .topic-resource-grid { grid-template-columns:1fr; }
+  .topic-workflow li { grid-template-columns:36px minmax(0,1fr); gap:10px; }
+  .workflow-step { width:32px; height:32px; }
+  .topic-visual-panel { height:150px; margin-top:12px; }
+}
 </style>
