@@ -520,67 +520,60 @@ function destroyVantaFog() {
   }
 }
 
-// Freeze the current WebGL frame to a local data URL, then release the renderer.
-// The frame never leaves this browser; resuming recreates the animation engine.
-function freezeDynamicBackground() {
-  if (!isBgVideoPaused.value) return
-  if (currentBgType.value !== 'galaxy' && currentBgType.value !== 'vanta-fog') return
-
-  const canvas = containerRef.value?.querySelector('canvas')
-  let captured = false
-  if (canvas) {
-    try {
-      frozenBackgroundFrame.value = canvas.toDataURL('image/png')
-      captured = Boolean(frozenBackgroundFrame.value)
-    } catch (err) {
-      console.warn('Could not snapshot the current background frame:', err)
-    }
+// Load the snapshot/restart controller only when a dynamic background is paused or resumed.
+let backgroundFrameControllerPromise
+function loadBackgroundFrameController() {
+  if (!backgroundFrameControllerPromise) {
+    backgroundFrameControllerPromise = import('../utils/backgroundFrameController.js').catch((error) => {
+      console.warn('Could not load background frame controller:', error)
+      backgroundFrameControllerPromise = null
+      return null
+    })
   }
-
-  if (currentBgType.value === 'galaxy') {
-    if (captured) {
-      destroyGalaxy()
-    } else if (animateId) {
-      cancelAnimationFrame(animateId)
-      animateId = null
-    }
-    return
-  }
-
-  if (captured) {
-    destroyVantaFog()
-  } else if (vantaEffect && typeof vantaEffect.setOptions === 'function') {
-    // Best-effort fallback if the canvas cannot be snapshotted.
-    vantaEffect.setOptions({ speed: 0 })
-  } else if (vantaEffect && typeof vantaEffect.pause === 'function') {
-    vantaEffect.pause()
-  }
+  return backgroundFrameControllerPromise
 }
 
-function resumeDynamicBackground() {
+const backgroundFrameState = {
+  get paused() { return isBgVideoPaused.value },
+  get type() { return currentBgType.value },
+  get canvas() { return containerRef.value?.querySelector('canvas') },
+  get frozenFrame() { return frozenBackgroundFrame.value },
+  set frozenFrame(value) { frozenBackgroundFrame.value = value },
+  get animateId() { return animateId },
+  set animateId(value) { animateId = value },
+  get renderer() { return renderer },
+  get mesh() { return mesh },
+  get lastTimestamp() { return lastTimestamp },
+  set lastTimestamp(value) { lastTimestamp = value },
+  get vantaEffect() { return vantaEffect },
+  get path() { return route.path },
+  destroyGalaxy,
+  destroyVantaFog,
+  initGalaxy,
+  initVantaFog,
+  onMediaLoaded,
+  update,
+  cancelAnimationFrame: id => cancelAnimationFrame(id),
+  requestAnimationFrame: callback => requestAnimationFrame(callback),
+  now: () => performance.now()
+}
+
+async function freezeDynamicBackground() {
+  if (!isBgVideoPaused.value) return
+  const type = currentBgType.value
+  if (type !== 'galaxy' && type !== 'vanta-fog') return
+  const controller = await loadBackgroundFrameController()
+  if (!controller || !isBgVideoPaused.value || currentBgType.value !== type) return
+  controller.freezeDynamicBackground(backgroundFrameState)
+}
+
+async function resumeDynamicBackground() {
   if (isBgVideoPaused.value) return
-  const hadFrozenFrame = Boolean(frozenBackgroundFrame.value)
-  frozenBackgroundFrame.value = null
-
-  if (currentBgType.value === 'galaxy') {
-    if (hadFrozenFrame || !renderer || !mesh) {
-      initGalaxy().catch(() => onMediaLoaded())
-    } else if (!animateId) {
-      lastTimestamp = performance.now()
-      animateId = requestAnimationFrame(update)
-    }
-    return
-  }
-
-  if (currentBgType.value === 'vanta-fog') {
-    if (hadFrozenFrame || !vantaEffect) {
-      initVantaFog().catch(() => onMediaLoaded())
-    } else if (typeof vantaEffect.play === 'function') {
-      vantaEffect.play()
-    } else if (typeof vantaEffect.setOptions === 'function') {
-      vantaEffect.setOptions({ speed: route.path === '/login' ? 2.0 : 0.4 })
-    }
-  }
+  const type = currentBgType.value
+  if (type !== 'galaxy' && type !== 'vanta-fog') return
+  const controller = await loadBackgroundFrameController()
+  if (!controller || isBgVideoPaused.value || currentBgType.value !== type) return
+  controller.resumeDynamicBackground(backgroundFrameState)
 }
 
 // ==========================================
@@ -749,13 +742,13 @@ function startAtmosphere(bgType) {
     } else if (bgType === 'vanta-fog') {
       destroyGalaxy()
       initVantaFog()
-        .then(() => { if (isBgVideoPaused.value && currentBgType.value === 'vanta-fog') freezeDynamicBackground() })
-        .catch(() => onMediaLoaded())
+        .then(freezeDynamicBackground)
+        .catch(onMediaLoaded)
     } else if (bgType === 'galaxy') {
       destroyVantaFog()
       initGalaxy()
-        .then(() => { if (isBgVideoPaused.value && currentBgType.value === 'galaxy') freezeDynamicBackground() })
-        .catch(() => onMediaLoaded())
+        .then(freezeDynamicBackground)
+        .catch(onMediaLoaded)
     } else if (bgType === 'custom-local') {
       destroyGalaxy()
       destroyVantaFog()
