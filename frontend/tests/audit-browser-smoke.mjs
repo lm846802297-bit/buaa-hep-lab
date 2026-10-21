@@ -188,6 +188,30 @@ try {
   check(new URL(page.url()).hash === '#physics-resources' && await page.getByRole('button', { name: '菜单', exact: true }).getAttribute('aria-expanded') === 'false', 'mobile resource navigation reaches its section and closes the menu')
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 900 })
+    await page.goto(base, { waitUntil: 'networkidle' })
+    const firstGuideLink = page.locator('.research-guide-open').first()
+    await firstGuideLink.scrollIntoViewIfNeeded()
+    const previousScrollY = await page.evaluate(() => window.scrollY)
+    check(previousScrollY > 100, `research guide navigation regression starts from a scrolled homepage at ${width}px`)
+    await firstGuideLink.click()
+    await page.locator('.research-topic-page').waitFor()
+    await page.waitForFunction(() => window.scrollY < 5)
+    check(await page.evaluate(() => window.scrollY < 5), `opening a research topic resets reading position to the top at ${width}px`)
+    check(await page.locator('.topic-local-nav').evaluate(el => getComputedStyle(el).position === 'static'), `topic navigation scrolls with content instead of sticking in the viewport at ${width}px`)
+    await page.locator('.topic-local-nav').getByRole('link', { name: '适用条件', exact: true }).click()
+    await page.waitForFunction(() => location.hash === '#topic-assumptions')
+    check(await page.locator('#topic-assumptions').evaluate(el => {
+      const top = el.getBoundingClientRect().top
+      return top >= 0 && top < 120
+    }), `in-page navigation aligns the selected section near the top at ${width}px`)
+    check(await page.locator('.topic-local-nav').evaluate(el => el.getBoundingClientRect().bottom < 0), `topic navigation does not remain pinned after jumping to a later section at ${width}px`)
+    await page.locator('.topic-all-guides').click()
+    await page.locator('#research-guides').waitFor()
+    await page.waitForFunction(() => location.hash === '#research-guides')
+    check(await page.locator('#research-guides').evaluate(el => {
+      const top = el.getBoundingClientRect().top
+      return top >= 0 && top < 200
+    }), `returning to all guides honors the destination fragment at ${width}px`)
     for (const topic of ['dark', 'neutrino', 'collider', 'phase', 'precision']) {
       await page.goto(`${base}/research/${topic}`, { waitUntil: 'networkidle' })
       await page.locator('.research-topic-page').waitFor()
