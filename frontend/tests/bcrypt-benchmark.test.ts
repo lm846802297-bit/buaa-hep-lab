@@ -10,8 +10,8 @@ const call = (path, { token = TEST_TOKEN, envToken = TEST_TOKEN, method = 'GET' 
 }
 
 describe('isolated public bcrypt benchmark', () => {
-  it('exercises hashing and matching and mismatching compares at the byte boundary', async () => {
-    for (const operation of ['hash', 'compare-match', 'compare-mismatch']) {
+  it('exercises control, hashing, and matching/mismatching compares at the byte boundary', async () => {
+    for (const operation of ['control', 'hash', 'compare-match', 'compare-mismatch']) {
       const response = await call(`/benchmark?sample=test&cost=6&bytes=72&operation=${operation}`)
       expect(response.status).toBe(200)
       const result = await response.json()
