@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted } from 'vue'
-import { directions, publications, publicContentReviewedAt } from '../content/lab'
+import { directions, publications, publicContentIndexCheckedAt } from '../content/lab'
 import { publicationReviewStatus } from '../utils/publicationReview'
 
 const props = defineProps({ topic: { type: String, default: '' } })
@@ -8,7 +8,7 @@ const topic = computed(() => directions.find(item => item.id === props.topic) ||
 const relatedPapers = computed(() => topic.value
   ? topic.value.references.map(id => publications.find(paper => paper.id === id)).filter(Boolean)
   : [])
-const contentReview = computed(() => publicationReviewStatus(publicContentReviewedAt))
+const contentReview = computed(() => publicationReviewStatus(publicContentIndexCheckedAt))
 onMounted(() => {
   document.title = topic.value
     ? `${topic.value.title} | BUAA HEP Hub`
@@ -36,7 +36,7 @@ onMounted(() => {
         <div class="topic-tags">
           <span v-for="tag in topic.tags" :key="tag">{{ tag }}</span>
         </div>
-        <p class="topic-review" :class="{ 'is-stale': contentReview.status !== 'current' }">内容审核：{{ publicContentReviewedAt }} · {{ contentReview.status === 'current' ? '处于 180 天复核周期内' : contentReview.label }} · 关联论文为选读索引，不代表计算已独立复现</p>
+        <p class="topic-review" :class="{ 'is-stale': contentReview.status !== 'current' }">资料核查：{{ publicContentIndexCheckedAt }} · {{ contentReview.status === 'current' ? '处于 180 天复核周期内' : contentReview.label }} · 本页为研究方向概述，不等同于独立学术审稿或论文计算复现</p>
       </header>
 
       <section class="topic-section" aria-labelledby="topic-question">
