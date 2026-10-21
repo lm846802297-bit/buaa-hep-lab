@@ -2456,6 +2456,7 @@ html[data-bg-style="clouds-static"] body {
   background-attachment: fixed;
 }
 :root[data-color-scheme="worldline-console"][data-bg-style="paper"] ::selection { background: color-mix(in srgb, var(--worldline-cyan) 16%, #FFFFFF); color: var(--text); }
+:root[data-color-scheme="worldline-console"]:not([data-bg-style="paper"]) ::selection { background: color-mix(in srgb, var(--worldline-cyan) 34%, transparent); color: #fff8ea; }
 :root[data-color-scheme="worldline-console"] input:focus,
 :root[data-color-scheme="worldline-console"] select:focus,
 :root[data-color-scheme="worldline-console"] textarea:focus {
