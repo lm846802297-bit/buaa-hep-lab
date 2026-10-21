@@ -2769,6 +2769,11 @@ onMounted(() => {
   color: var(--accent);
   font-weight: 600;
 }
+.bg-freeze-badge.is-unavailable {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--muted);
+}
 .bg-freeze-desc {
   font-size: 13px;
   line-height: 1.55;
