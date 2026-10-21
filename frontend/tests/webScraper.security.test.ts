@@ -78,7 +78,7 @@ describe('public web scraper URL boundary', () => {
         headers: { 'content-type': 'text/html; charset=utf-8', 'content-length': String(new TextEncoder().encode(html).length) }
       }));
 
-    const result = await scrapeUrlDeep('https://events.example.edu/');
+    const result = await scrapeUrlDeep('https://events.example.edu/', ['events.example.edu']);
     expect(result.success).toBe(true);
     expect(result.title).toBe('Workshop');
     expect(upstream).toHaveBeenCalledTimes(2);
@@ -92,7 +92,7 @@ describe('public web scraper URL boundary', () => {
       })
     );
 
-    const result = await scrapeUrlDeep('https://events.example.edu/');
+    const result = await scrapeUrlDeep('https://events.example.edu/', ['events.example.edu']);
     expect(result.success).toBe(false);
     expect(result.error).toContain('1 MB');
     expect(upstream).toHaveBeenCalledTimes(1);
