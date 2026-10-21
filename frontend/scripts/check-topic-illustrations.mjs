@@ -60,6 +60,17 @@ for (const topic of terms.topics) {
     topic.visibleText,
     `${topic.file}: visible SVG text must match the manually reviewed whitelist exactly.`,
   )
+  // The desktop hero uses object-fit: cover in a wide frame. Keep every text baseline
+  // within the conservative visible vertical band so labels cannot be cropped away.
+  const textBaselines = [...svg.matchAll(/<text\\b([^>]*)>/g)].map(match => {
+    const y = match[1].match(/\\by="([0-9.]+)"/)
+    assert.ok(y, `${topic.file}: every visible text element must have an explicit y coordinate.`)
+    return Number(y[1])
+  })
+  for (const y of textBaselines) {
+    assert.ok(y >= 65 && y <= 335, `${topic.file}: text baseline y=${y} is outside the responsive crop-safe band (65–335).`)
+  }
+
   for (const snippet of topic.requiredMarkup) {
     assert.ok(svg.includes(snippet), `${topic.file}: required typographic markup is missing: ${snippet}`)
   }
