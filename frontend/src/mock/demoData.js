@@ -20,11 +20,11 @@ export const DEMO_SITE_CONFIG = {
 }
 const seminarIds = [101, 102, 103, 100, 99]
 const seminarTopics = [
-  '纯非弹性标量暗物质：热共湮灭、相变与长寿命粒子信号',
-  '标量介导惰性中微子：相变引力波与位移顶点',
-  '太阳中微子源的轴矢量轻子第五力',
-  '对撞机量子精度极限：可达条件与案例分析',
-  '未来 μ 子对撞机中的长寿命惰性中微子搜索',
+  '非弹性标量暗物质：热共湮灭、相变与长寿命信号',
+  '标量介导惰性中微子：引力波与位移顶点',
+  '太阳中微子诱导的轻子第五力',
+  '对撞机量子精度极限',
+  '未来 μ 子对撞机的长寿命惰性中微子',
 ]
 const seminarPaperIds = ['2508.13276', '2509.23925', '2510.20672', '2506.10673', '2409.17243']
 const seminarPresenterIds = [2, 3, 4, 1, 4]
@@ -45,7 +45,7 @@ export const DEMO_SEMINARS = [2, 9, 16, -5, -12].map((offset, i) => {
     presentations: [{ id: 201 + i, seminar_id: seminarIds[i], position: 0, presenter_id: presenterId, presenter_name: DEMO_MEMBERS[presenterId - 1].name, arxiv_id: seminarPaperIds[i], slides_url: '' }],
   }
 })
-const DEMO_PAPER_IDS = ['2508.13276', '2509.23925', '2510.20672', '2506.10673', '2409.17243', '2603.17237', '2610.04971']
+const DEMO_PAPER_IDS = [...seminarPaperIds, '2603.17237', '2610.04971']
 export const DEMO_PAPER_CATALOG = DEMO_PAPER_IDS
   .map(id => publications.find(paper => paper.id === id))
   .filter(Boolean)
@@ -62,11 +62,11 @@ export const DEMO_RESOURCES_CATEGORIES = [
   { id: 3, name: '综述与数据', is_default: true },
 ]
 export const DEMO_BOOKS = [
-  { title: 'Modern Particle Physics', authors: 'Mark Thomson', category: '教材', description: '粒子物理教材：散射、衰变、标准模型与新物理。', url: 'https://www.cambridge.org/cc/titles/modern-particle-physics' },
-  { title: 'Quantum Field Theory and the Standard Model', authors: 'Matthew D. Schwartz', category: '教材', description: '量子场论、规范理论、重整化与有效场论。', url: 'https://www.cambridge.org/highereducation/books/quantum-field-theory-and-the-standard-model/A4CD66B998F2C696DCC75B984A7D5799' },
-  { title: 'Review of Particle Physics (2026)', authors: 'Particle Data Group', category: '综述与数据', description: '粒子性质与实验限制；引用时记录版本和勘误。', url: 'https://pdg.lbl.gov/2026/' },
-  { title: 'FeynCalc Documentation', authors: 'FeynCalc Collaboration', category: '工具', description: 'Mathematica 符号计算：Dirac/颜色代数、迹与圈图。', url: 'https://feyncalc.github.io/' },
-  { title: 'FeynRules', authors: 'FeynRules Collaboration', category: '工具', description: '从拉格朗日量导出费曼规则并生成模型文件。', url: 'https://feynrules.irmp.ucl.ac.be/' },
+  { title: 'Modern Particle Physics', authors: 'Mark Thomson', category: '教材', description: '粒子物理：散射、衰变与标准模型。', url: 'https://www.cambridge.org/cc/titles/modern-particle-physics' },
+  { title: 'Quantum Field Theory and the Standard Model', authors: 'Matthew D. Schwartz', category: '教材', description: '量子场论、重整化、规范理论与 EFT。', url: 'https://www.cambridge.org/highereducation/books/quantum-field-theory-and-the-standard-model/A4CD66B998F2C696DCC75B984A7D5799' },
+  { title: 'Review of Particle Physics (2026)', authors: 'Particle Data Group', category: '综述与数据', description: '粒子性质、标准模型综述与实验限制。', url: 'https://pdg.lbl.gov/2026/' },
+  { title: 'FeynCalc Documentation', authors: 'FeynCalc Collaboration', category: '工具', description: 'Mathematica 符号计算：Dirac/颜色代数与圈图。', url: 'https://feyncalc.github.io/' },
+  { title: 'FeynRules', authors: 'FeynRules Collaboration', category: '工具', description: '拉格朗日量到费曼规则与模型文件。', url: 'https://feynrules.irmp.ucl.ac.be/' },
 ].map((book, i) => ({ ...book, id: i + 1, original_title: book.title, tutorial_url: book.url, exercise_url: '', github_url: '', download_url: '', cover_url: '', favorite_count: 0, is_favorited: i < 3, created_at: formatOffsetDate(-10) + 'T10:00:00Z' }))
 const DEMO_SEMINAR_BY_PAPER = Object.fromEntries(seminarPaperIds.map((arxivId, i) => [arxivId, seminarIds[i]]))
 export const DEMO_LIBRARY_PAPERS = DEMO_PAPER_CATALOG.map((p, i) => ({
@@ -85,4 +85,4 @@ export const DEMO_FEEDBACK_ITEMS = [
   { id: 1, title: '日历导出提醒建议（演示）', content: '希望能够设置提醒时间。', author: DEMO_MEMBERS[1].name, author_id: 2, page: '/seminars', resolved: true, created_at: formatOffsetDate(-3) + 'T10:00:00', replies: [] },
   { id: 2, title: '文献讨论使用建议（演示）', content: '希望在组会上讨论参考文献。', author: DEMO_MEMBERS[3].name, author_id: 4, page: '/arxiv', resolved: false, created_at: formatOffsetDate(-1) + 'T10:00:00', replies: [] },
 ]
-export const DEMO_FAVORITES = [{ kind: 'paper', target: '2508.13276', saved_at: formatOffsetDate(-1), item: DEMO_ARXIV_PAPERS.find(p => p.arxiv_id === '2508.13276') }, ...[0, 1, 2, 5].map(i => ({ kind: 'book', target: String(i + 1), saved_at: formatOffsetDate(-1), item: DEMO_BOOKS[i] }))]
+export const DEMO_FAVORITES = [{ kind: 'paper', target: '2508.13276', saved_at: formatOffsetDate(-1), item: DEMO_ARXIV_PAPERS.find(p => p.arxiv_id === '2508.13276') }, ...[0, 1, 2].map(i => ({ kind: 'book', target: String(i + 1), saved_at: formatOffsetDate(-1), item: DEMO_BOOKS[i] }))]
