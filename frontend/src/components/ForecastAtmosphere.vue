@@ -520,60 +520,41 @@ function destroyVantaFog() {
   }
 }
 
-// Load the snapshot/restart controller only when a dynamic background is paused or resumed.
-let backgroundFrameControllerPromise
-function loadBackgroundFrameController() {
-  if (!backgroundFrameControllerPromise) {
-    backgroundFrameControllerPromise = import('../utils/backgroundFrameController.js').catch((error) => {
-      console.warn('Could not load background frame controller:', error)
-      backgroundFrameControllerPromise = null
-      return null
-    })
-  }
-  return backgroundFrameControllerPromise
-}
-
-const backgroundFrameState = {
-  get paused() { return isBgVideoPaused.value },
-  get type() { return currentBgType.value },
-  get canvas() { return containerRef.value?.querySelector('canvas') },
-  get frozenFrame() { return frozenBackgroundFrame.value },
-  set frozenFrame(value) { frozenBackgroundFrame.value = value },
-  get animateId() { return animateId },
-  set animateId(value) { animateId = value },
-  get renderer() { return renderer },
-  get mesh() { return mesh },
-  get lastTimestamp() { return lastTimestamp },
-  set lastTimestamp(value) { lastTimestamp = value },
-  get vantaEffect() { return vantaEffect },
-  get path() { return route.path },
-  destroyGalaxy,
-  destroyVantaFog,
-  initGalaxy,
-  initVantaFog,
-  onMediaLoaded,
-  update,
-  cancelAnimationFrame: id => cancelAnimationFrame(id),
-  requestAnimationFrame: callback => requestAnimationFrame(callback),
-  now: () => performance.now()
-}
-
-async function freezeDynamicBackground() {
+// Keep the last visible frame locally while stopping the expensive animation loop.
+function freezeDynamicBackground() {
   if (!isBgVideoPaused.value) return
   const type = currentBgType.value
   if (type !== 'galaxy' && type !== 'vanta-fog') return
-  const controller = await loadBackgroundFrameController()
-  if (!controller || !isBgVideoPaused.value || currentBgType.value !== type) return
-  controller.freezeDynamicBackground(backgroundFrameState)
+
+  try {
+    frozenBackgroundFrame.value = containerRef.value?.querySelector('canvas')?.toDataURL() || null
+  } catch {
+    frozenBackgroundFrame.value = null
+  }
+
+  if (type === 'galaxy' && animateId) {
+    cancelAnimationFrame(animateId)
+    animateId = null
+  } else if (type === 'vanta-fog') {
+    if (typeof vantaEffect?.setOptions === 'function') vantaEffect.setOptions({ speed: 0 })
+    else vantaEffect?.pause?.()
+  }
 }
 
-async function resumeDynamicBackground() {
-  if (isBgVideoPaused.value) return
-  const type = currentBgType.value
-  if (type !== 'galaxy' && type !== 'vanta-fog') return
-  const controller = await loadBackgroundFrameController()
-  if (!controller || isBgVideoPaused.value || currentBgType.value !== type) return
-  controller.resumeDynamicBackground(backgroundFrameState)
+function resumeDynamicBackground() {
+  frozenBackgroundFrame.value = null
+  if (currentBgType.value === 'galaxy') {
+    if (!animateId && renderer && mesh) {
+      lastTimestamp = performance.now()
+      animateId = requestAnimationFrame(update)
+    }
+  } else if (currentBgType.value === 'vanta-fog') {
+    if (typeof vantaEffect?.setOptions === 'function') {
+      vantaEffect.setOptions({ speed: route.path === '/login' ? 2.0 : 0.4 })
+    } else {
+      vantaEffect?.play?.()
+    }
+  }
 }
 
 // ==========================================
