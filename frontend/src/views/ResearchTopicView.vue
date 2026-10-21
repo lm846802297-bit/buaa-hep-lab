@@ -73,10 +73,10 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 <template>
   <main class="research-topic-page">
     <nav class="topic-breadcrumb" aria-label="面包屑">
-      <router-link to="/" class="topic-breadcrumb-home">
+      <a href="/" class="topic-breadcrumb-home">
         <span aria-hidden="true">⌂</span>
         <span>返回课题组首页</span>
-      </router-link>
+      </a>
       <span aria-hidden="true">/</span>
       <a href="/#research">研究方向</a>
       <span aria-hidden="true">/</span>
@@ -113,11 +113,11 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 
       <div class="topic-reading-layout">
         <aside v-if="topicDetail" class="topic-sidebar" aria-label="专题目录">
-          <router-link to="/" class="topic-sidebar-home">
+          <a href="/" class="topic-sidebar-home">
             <span class="topic-sidebar-home-icon" aria-hidden="true">⌂</span>
             <span>返回课题组首页</span>
             <span class="topic-sidebar-home-arrow" aria-hidden="true">↗</span>
-          </router-link>
+          </a>
           <div class="topic-sidebar-heading">
             <span class="topic-sidebar-kicker">FIELD INDEX</span>
             <button
