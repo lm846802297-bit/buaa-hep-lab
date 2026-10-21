@@ -8,7 +8,6 @@ on:
       - 'AGENTS.md'
       - 'docs/PARALLEL_DEVELOPMENT_WORKFLOW.md'
       - 'docs/GPT_FIRST_DEVELOPMENT_WORKFLOW.md'
-      - 'docs/GPT_FIRST_DEVELOPMENT_WORKFLOW.md'
       - '.agents/skills/vibe-coding-lab-orbit/SKILL.md'
       - 'skills/vibe-coding-lab-orbit/SKILL.md'
   push:
@@ -38,4 +37,3 @@ jobs:
           node-version: 22
       - name: Test path normalization and overlap decisions
         run: node scripts/agent-preflight.mjs --self-test
-
