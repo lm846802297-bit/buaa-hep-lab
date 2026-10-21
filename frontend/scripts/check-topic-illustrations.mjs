@@ -62,8 +62,8 @@ for (const topic of terms.topics) {
   )
   // The desktop hero uses object-fit: cover in a wide frame. Keep every text baseline
   // within the conservative visible vertical band so labels cannot be cropped away.
-  const textBaselines = [...svg.matchAll(/<text\\b([^>]*)>/g)].map(match => {
-    const y = match[1].match(/\\by="([0-9.]+)"/)
+  const textBaselines = [...svg.matchAll(/<text\b([^>]*)>/g)].map(match => {
+    const y = match[1].match(/\by="([0-9.]+)"/)
     assert.ok(y, `${topic.file}: every visible text element must have an explicit y coordinate.`)
     return Number(y[1])
   })
