@@ -259,9 +259,9 @@ export const GLASS_OPTIONS = [
   {
     id: 'liquid',
     name: '液态玻璃设计',
-    subtitle: '原版晶莹 · WebGL 拟真光感折射与液态质感',
-    description: '原封还原基于 ybouane/liquidglass 调试完美的 WebGL 实时光学折射、菲涅尔高光与微光质感，晶莹通透，极具未来感。',
-    tag: '默认推荐'
+    subtitle: '桌面工作台 WebGL 折射 · 其他页面兼容回退',
+    description: '桌面工作台科研卡片启用 WebGL 实时折射；其他页面、移动设备或不支持 WebGL 的环境使用 CSS 玻璃回退，不影响内容和交互。',
+    tag: '桌面优先'
   },
   {
     id: 'frosted',
