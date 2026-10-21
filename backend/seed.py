@@ -94,13 +94,13 @@ def init_clean_db(reset: bool = False):
                     order_num=2,
                 ),
                 ResourceBook(
-                    title="粒子物理评论 (Review of Particle Physics, 2025)",
-                    original_title="Review of Particle Physics (2025)",
+                    title="粒子物理评论 (Review of Particle Physics, 2026)",
+                    original_title="Review of Particle Physics (2026)",
                     authors="Particle Data Group",
                     category="实验数据与综述",
                     description="粒子性质、标准模型综述、实验方法和新粒子搜索的权威入口。引用数值或限制时必须记录具体版本、条目和勘误；旧版数据不自动代表当前限制。",
                     cover_url="",
-                    tutorial_url="https://pdg.lbl.gov/2025/",
+                    tutorial_url="https://pdg.lbl.gov/2026/",
                     exercise_url="",
                     github_url="",
                     download_url=None,
@@ -139,6 +139,7 @@ def _seed_default_invite_codes(db: Session) -> None:
 
 
 def _seed_demo_data(db: Session) -> None:
+    """Create synthetic demo users/events, while keeping paper metadata tied to real sources."""
     print("开始初始化课题组基础演示数据 (SEED_DEMO_DATA=1)...")
     try:
         # 1. 成员与老师用户
@@ -225,24 +226,24 @@ def _seed_demo_data(db: Session) -> None:
 
         # 3. 组会排期
         seminar1 = SeminarSchedule(
-            date="2026-09-18",
+            date="2026-10-23",
             time="14:30",
-            location="物理楼 302 研讨室 / 腾讯会议 892-123-456",
+            location="物理楼 302 研讨室（演示数据，实际安排需确认）",
             presenter_name="张明 (博士生)",
             presenter_id=student1.id,
             topic="纯非弹性标量暗物质：热共湮灭、相变与对撞机信号",
             paper_id=paper1.id,
-            slides_url="https://example.com/slides-jwst-galaxies.pdf",
+            slides_url=None,
             notes="请提前阅读 arXiv:2508.13276，梳理暗物质质量分裂、热共湮灭条件、一阶电弱相变和长寿命粒子搜索的关联，并区分基准点与完整参数空间。",
             status="upcoming",
         )
         seminar2 = SeminarSchedule(
-            date="2026-09-11",
+            date="2026-10-16",
             time="14:30",
             location="物理楼 302 研讨室",
             presenter_name="李航 (硕士生)",
             topic="标量介导的惰性中微子：引力波与对撞机位移顶点",
-            slides_url="https://example.com/lightcurve-ml.pdf",
+            slides_url=None,
             paper_id=paper2.id,
             notes="演示讨论重点：Higgs-标量混合、惰性中微子寿命、相变完成条件及引力波/位移顶点的互补性。所有灵敏度结论均依赖论文给定的模型与实验假设。",
             status="completed",
@@ -278,13 +279,13 @@ def _seed_demo_data(db: Session) -> None:
                 order_num=2,
             ),
             ResourceBook(
-                title="粒子物理评论 (Review of Particle Physics, 2025)",
-                original_title="Review of Particle Physics (2025)",
+                title="粒子物理评论 (Review of Particle Physics, 2026)",
+                original_title="Review of Particle Physics (2026)",
                 authors="Particle Data Group",
                 category="实验数据与综述",
                 description="粒子性质、标准模型综述、实验方法和新粒子搜索的权威入口。引用数值或限制时必须记录具体版本、条目和勘误；旧版数据不自动代表当前限制。",
                 cover_url="",
-                tutorial_url="https://pdg.lbl.gov/2025/",
+                tutorial_url="https://pdg.lbl.gov/2026/",
                 exercise_url="",
                 github_url="",
                 download_url=None,
