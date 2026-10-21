@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { filterPublications, publicationBibtex, citationText } from './publications'
 import { publications, publicationCategories, directions } from '../content/lab'
+import { DEMO_ARXIV_PAPERS } from '../mock/demoData'
 
 describe('approved public bibliography', () => {
   it('publishes exactly the group-approved 16 papers, 6 categories and 5 directions', () => {
@@ -20,6 +21,13 @@ describe('approved public bibliography', () => {
       expect(paper.categories.every(id => publicationCategories.some(c => c.id === id))).toBe(true)
       if (paper.status === 'published') { expect(paper.doi).toMatch(/^10\./); expect(paper.journal).toBeTruthy() }
       else { expect(paper.journal).toBe(''); expect(paper.doi).toBe('') }
+    }
+  })
+  it('preserves arXiv submission dates in the static demo feed', () => {
+    expect(DEMO_ARXIV_PAPERS).toHaveLength(publications.length)
+    for (const paper of DEMO_ARXIV_PAPERS) {
+      expect(paper.published_date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(paper.published_date).toBe(publications.find(p => p.id === paper.arxiv_id).arxivSubmitted)
     }
   })
   it('distinguishes arXiv submission date from journal citation year', () => {
