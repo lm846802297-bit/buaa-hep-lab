@@ -271,7 +271,7 @@ try {
   await expect(sidebar).toHaveClass(/is-floating/)
   await stylePage.locator('#tour-pin-sidebar').click()
   await expect(sidebar).not.toHaveClass(/is-collapsed/)
-  check(await stylePage.evaluate(() => localStorage.getItem('sidebar_pinned') === 'true'), 'pinning the compact rail persists the user's choice')
+  check(await stylePage.evaluate(() => localStorage.getItem('sidebar_pinned') === 'true'), 'pinning the compact rail persists the selected state')
 
   // All five color cards must change the root scheme and active card state.
   const schemeIds = ['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'custom']
