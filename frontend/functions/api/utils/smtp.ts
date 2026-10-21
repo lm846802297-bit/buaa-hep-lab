@@ -95,7 +95,7 @@ export class CloudflareSmtpClient {
   }
 
   async connect(hostname: string, port: number = 465, useSsl: boolean = true, timeoutMs: number = 10000): Promise<string> {
-    this.socket = connect({ hostname, port }, { secureTransport: useSsl ? 'on' : 'off' });
+    this.socket = connect({ hostname, port }, { secureTransport: useSsl ? ('on' as const) : ('off' as const) });
     this.reader = this.socket.readable.getReader();
     this.writer = this.socket.writable.getWriter();
 
