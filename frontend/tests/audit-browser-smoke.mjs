@@ -143,7 +143,7 @@ try {
   check(await particleCanvas.evaluate(el => el.width > 0 && el.height > 0), 'ambient particle canvas has a real drawing surface')
   check(await particleCanvas.evaluate(el => el.width <= innerWidth * 1.5 + 1 && el.height <= innerHeight * 1.5 + 1), 'particle canvas caps device-pixel-ratio at 1.5x for performance')
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
-  check(!(await technicalBackdrop.evaluate(el => el.classList.contains('is-shifting'))), 'technical backdrop returns to its idle state after the worldline transition')
+  check(!(await page.locator('.worldline-technical-backdrop').evaluate(el => el.classList.contains('is-shifting'))), 'technical backdrop returns to its idle state after the worldline transition')
   const phaseLog = await page.evaluate(() => {
     if (window.__worldlinePhaseListener) window.removeEventListener('worldline:phase', window.__worldlinePhaseListener)
     delete window.__worldlinePhaseListener
