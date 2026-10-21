@@ -49,7 +49,9 @@ onMounted(() => {
         <a href="#topic-question">科学问题</a>
         <a href="#topic-mechanisms">核心物理机制</a>
         <a href="#topic-framework">研究方法</a>
+        <a href="#topic-workflow">分析流程</a>
         <a href="#topic-observables">可观测量</a>
+        <a href="#topic-interpretation">结果判读</a>
         <a href="#topic-papers">代表论文</a>
         <a href="#topic-resources">专业资源</a>
       </nav>
@@ -77,7 +79,7 @@ onMounted(() => {
       </section>
 
       <section class="topic-section" aria-labelledby="topic-framework">
-        <p class="eyebrow">02 / FRAMEWORK & METHODS</p>
+        <p class="eyebrow">03 / FRAMEWORK & METHODS</p>
         <h2 id="topic-framework">理论框架与研究方法</h2>
         <p>{{ topic.methods }}</p>
       </section>
@@ -95,14 +97,14 @@ onMounted(() => {
       </section>
 
       <section class="topic-section" aria-labelledby="topic-observables">
-        <p class="eyebrow">03 / OBSERVABLES</p>
+        <p class="eyebrow">05 / OBSERVABLES</p>
         <h2 id="topic-observables">可观测量与实验联系</h2>
         <p>{{ topic.probes }}</p>
         <p class="topic-caveat">{{ topic.detail }}</p>
       </section>
 
       <section v-if="topicDetail" class="topic-section" aria-labelledby="topic-interpretation">
-        <p class="eyebrow">05 / HOW TO READ THE RESULTS</p>
+        <p class="eyebrow">06 / HOW TO READ THE RESULTS</p>
         <h2 id="topic-interpretation">结果应该如何判读</h2>
         <div class="interpretation-grid">
           <article v-for="item in topicDetail.interpretation" :key="item.tag" class="interpretation-card">
@@ -112,7 +114,7 @@ onMounted(() => {
       </section>
 
       <section class="topic-section topic-publications" aria-labelledby="topic-papers">
-        <p class="eyebrow">06 / SELECTED PAPERS</p>
+        <p class="eyebrow">07 / SELECTED PAPERS</p>
         <h2 id="topic-papers">相关代表论文</h2>
         <p class="section-intro">以下关联来自网站维护的公开专题与论文索引。具体模型假设、数值结果和实验限制应以原始论文为准；此页面不声称独立复现论文计算。</p>
         <ul>
@@ -128,7 +130,7 @@ onMounted(() => {
       </section>
 
       <section v-if="topicDetail" class="topic-section topic-resource-section" aria-labelledby="topic-resources">
-        <p class="eyebrow">07 / RESEARCH LINKS</p>
+        <p class="eyebrow">08 / RESEARCH LINKS</p>
         <h2 id="topic-resources">本方向常用的专业资源</h2>
         <p class="section-intro">优先链接实验合作组、学术数据库和官方软件文档。外部资源用于追溯原始论文、公开数据和工具说明，不代表本课题组对其所有结论背书。</p>
         <div class="topic-resource-grid">
