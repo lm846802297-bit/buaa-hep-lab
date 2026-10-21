@@ -32,9 +32,11 @@ function check(value, message) { assert(value, message); checks.push(message) }
 try {
   const anonymous = await browser.newContext()
   const page = await anonymous.newPage()
-  const requested = [], errors = []
+  const requested = [], errors = [], consoleErrors = [], failedRequests = []
   page.on('request', req => requested.push(req.url()))
   page.on('pageerror', err => errors.push(err.message))
+  page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()) })
+  page.on('requestfailed', req => failedRequests.push(`${req.url()}: ${req.failure()?.errorText || 'request failed'}`))
   for (const width of [320, 360, 390, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto(base, { waitUntil: 'networkidle' })
@@ -93,7 +95,10 @@ try {
   const hoverShadow = await firstResourceCard.evaluate(el => getComputedStyle(el).boxShadow)
   check(hoverShadow !== 'none', 'worldline mode provides visible hover feedback on resource cards')
   await page.getByRole('navigation', { name: '官网导航' }).getByRole('link', { name: '团队' }).click()
-  await page.getByRole('heading', { name: '团队与学术指导' }).waitFor()
+  await page.getByRole('heading', { name: '团队与学术指导' }).waitFor({ timeout: 10000 }).catch(async error => {
+    const bodyText = (await page.locator('body').innerText()).slice(0, 300)
+    throw new Error(`public people route did not render; url=${page.url()}; pageErrors=${errors.slice(-5).join(' | ')}; consoleErrors=${consoleErrors.slice(-5).join(' | ')}; failedRequests=${failedRequests.slice(-5).join(' | ')}; body=${bodyText}; cause=${error.message}`)
+  })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'worldline skin carries across public route navigation')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await page.waitForTimeout(950)
@@ -188,6 +193,39 @@ try {
   check(new URL(page.url()).hash === '#physics-resources' && await page.getByRole('button', { name: '菜单', exact: true }).getAttribute('aria-expanded') === 'false', 'mobile resource navigation reaches its section and closes the menu')
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 900 })
+    await page.goto(base, { waitUntil: 'networkidle' })
+    const firstGuideLink = page.locator('.topic-guide-entry')
+    await firstGuideLink.scrollIntoViewIfNeeded()
+    const previousScrollY = await page.evaluate(() => window.scrollY)
+    check(previousScrollY > 100, `research guide navigation regression starts from a scrolled homepage at ${width}px`)
+    check(await firstGuideLink.getAttribute('href') === '/research/dark', `homepage topic entry targets the expected research route at ${width}px`)
+    await firstGuideLink.click()
+    await page.waitForURL(url => url.pathname === '/research/dark', { timeout: 10000 })
+    await page.locator('.research-topic-page').waitFor({ timeout: 10000 }).catch(async error => {
+      const bodyText = (await page.locator('body').innerText()).slice(0, 300)
+      throw new Error(`topic route did not render; url=${page.url()}; pageErrors=${errors.slice(-5).join(' | ')}; consoleErrors=${consoleErrors.slice(-5).join(' | ')}; failedRequests=${failedRequests.slice(-5).join(' | ')}; body=${bodyText}; cause=${error.message}`)
+    })
+    await page.waitForFunction(() => window.scrollY < 5)
+    check(await page.evaluate(() => window.scrollY < 5), `opening a research topic resets reading position to the top at ${width}px`)
+    check(await page.locator('.topic-local-nav').evaluate(el => getComputedStyle(el).position === 'static'), `topic navigation scrolls with content instead of sticking in the viewport at ${width}px`)
+    await page.locator('.topic-local-nav').getByRole('link', { name: '适用条件', exact: true }).click()
+    await page.waitForFunction(() => location.hash === '#topic-assumptions')
+    check(await page.locator('#topic-assumptions').evaluate(el => {
+      const top = el.getBoundingClientRect().top
+      return top >= 0 && top < 120
+    }), `in-page navigation aligns the selected section near the top at ${width}px`)
+    check(await page.locator('.topic-local-nav').evaluate(el => el.getBoundingClientRect().bottom < 0), `topic navigation does not remain pinned after jumping to a later section at ${width}px`)
+    await page.locator('.topic-all-guides').click()
+    await page.locator('#research-guides').waitFor()
+    await page.waitForFunction(() => location.hash === '#research-guides')
+    await page.waitForFunction(() => {
+      const top = document.querySelector('#research-guides')?.getBoundingClientRect().top
+      return top != null && top >= 0 && top < 200
+    })
+    check(await page.locator('#research-guides').evaluate(el => {
+      const top = el.getBoundingClientRect().top
+      return top >= 0 && top < 200
+    }), `returning to all guides honors the destination fragment at ${width}px`)
     for (const topic of ['dark', 'neutrino', 'collider', 'phase', 'precision']) {
       await page.goto(`${base}/research/${topic}`, { waitUntil: 'networkidle' })
       await page.locator('.research-topic-page').waitFor()

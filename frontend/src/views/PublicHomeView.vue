@@ -37,7 +37,16 @@ const relatedResearchPapers = computed(() => activeDirection.value.references.ma
 const resourceCategory = ref('all')
 const resourceCategories = [...new Set(publicResources.map(resource => resource.category))]
 const visibleResources = computed(() => publicResources.filter(resource => resourceCategory.value === 'all' || resource.category === resourceCategory.value))
-onMounted(() => { document.title = `${lab.name}${lab.provisional ? '（暂定）' : ''} | ${lab.field}` })
+onMounted(() => {
+  document.title = `${lab.name}${lab.provisional ? '（暂定）' : ''} | ${lab.field}`
+
+  // A cross-page hash link can arrive before Vue has rendered the target section.
+  // Re-apply the fragment after mount so links such as /#research-guides land correctly.
+  const hash = window.location.hash
+  if (hash) {
+    nextTick(() => document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView())
+  }
+})
 function downloadBibtex() {
   const entries = publicationBibtex(visiblePapers.value)
   const url = URL.createObjectURL(new Blob([entries], { type: 'text/plain;charset=utf-8' }))
@@ -96,10 +105,10 @@ function downloadBibtex() {
           <dl class="research-explainer"><div><dt>研究问题</dt><dd>{{ activeDirection.question }}</dd></div><div><dt>主要方法</dt><dd>{{ activeDirection.methods }}</dd></div><div><dt>实验联系</dt><dd>{{ activeDirection.probes }}</dd></div></dl>
           <p class="research-scope">{{ activeDirection.detail }}</p>
           <div class="topic-tags"><span v-for="tag in activeDirection.tags" :key="tag">{{ tag }}</span></div>
-          <router-link class="topic-guide-entry" :to="`/research/${activeDirection.id}`" :aria-label="`阅读${activeDirection.title}专题导读`">
+          <a class="topic-guide-entry" :href="`/research/${activeDirection.id}`" :aria-label="`阅读${activeDirection.title}专题导读`">
             <div><span>RESEARCH GUIDE / 深入阅读</span><strong>进入{{ activeDirection.title }}专题导读</strong><small>关键关系式 · 适用条件 · 分析流程 · 专业资源</small></div>
             <span class="topic-guide-arrow" aria-hidden="true">↗</span>
-          </router-link>
+          </a>
           <div class="research-evidence"><h4>相关研究选读</h4><ul><li v-for="paper in relatedResearchPapers" :key="paper.id"><a :href="paper.source_url" target="_blank" rel="noopener noreferrer">{{ paper.title }} <span aria-hidden="true">↗</span></a><small>arXiv:{{ paper.id }}</small></li></ul></div>
           <button class="button secondary related-papers" @click="showRelatedPapers(activeDirection.id)">查看相关论文 <span aria-hidden="true">↓</span></button>
         </article>
@@ -120,7 +129,7 @@ function downloadBibtex() {
           <p class="research-guide-summary">{{ direction.text }}</p>
           <div class="research-guide-question"><span>核心问题</span><p>{{ direction.question }}</p></div>
           <div class="research-guide-tags"><span v-for="tag in direction.tags.slice(0, 3)" :key="tag">{{ tag }}</span></div>
-          <router-link :to="'/research/' + direction.id" class="button primary research-guide-open">打开专题导读 <span aria-hidden="true">↗</span></router-link>
+          <a :href="'/research/' + direction.id" class="button primary research-guide-open">打开专题导读 <span aria-hidden="true">↗</span></a>
         </article>
       </div>
       <p class="research-guides-note">导读用于建立概念地图与追溯原始来源；不替代论文原文、独立计算或实验分析复现。</p>

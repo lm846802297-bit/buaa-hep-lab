@@ -47,7 +47,7 @@ onMounted(() => {
         <div class="topic-hero-actions">
           <a href="#topic-relations" class="button primary">从关键关系式开始 <span aria-hidden="true">↓</span></a>
           <a href="#topic-papers" class="button secondary">查看代表论文 <span aria-hidden="true">↗</span></a>
-          <router-link to="/#research-guides" class="topic-all-guides">浏览全部专题导读 ↗</router-link>
+          <a href="/#research-guides" class="topic-all-guides">浏览全部专题导读 ↗</a>
         </div>
       </header>
 
@@ -238,13 +238,13 @@ onMounted(() => {
 .topic-hero-actions .button { min-height:46px; }
 .topic-all-guides { color:var(--accent); font-size:13px; text-underline-offset:4px; }
 .topic-all-guides:hover { text-decoration:underline; }
- .topic-local-nav { position:sticky; top:72px; z-index:4; display:flex; align-items:center; gap:8px; overflow-x:auto; padding:10px 12px; margin:18px 0 4px; border:1px solid var(--line); border-radius:12px; background:var(--panel); box-shadow:var(--shadow); scrollbar-width:thin; }
+.topic-local-nav { display:flex; align-items:center; gap:8px; overflow-x:auto; padding:10px 12px; margin:18px 0 4px; border:1px solid var(--line); border-radius:12px; background:var(--panel); box-shadow:var(--shadow); scrollbar-width:thin; }
 .topic-local-label { flex-shrink:0; padding:0 8px 0 2px; color:var(--muted); font-size:11px; letter-spacing:.08em; }
 .topic-local-nav a { flex-shrink:0; padding:7px 10px; border-radius:999px; color:var(--soft); font-size:12px; text-decoration:none; }
 .topic-local-nav a:hover,.topic-local-nav a:focus-visible { background:var(--surface); color:var(--accent); outline-offset:2px; }
-.topic-section { padding:44px 0; border-bottom:1px solid var(--line); scroll-margin-top:138px; }
+.topic-section { padding:44px 0; border-bottom:1px solid var(--line); scroll-margin-top:28px; }
 .topic-section h2 { margin:10px 0 18px; font-family:var(--serif); font-size:clamp(26px,3vw,34px); font-weight:400; }
-.topic-section h2[id] { scroll-margin-top:138px; }
+.topic-section h2[id] { scroll-margin-top:28px; }
 .topic-section>p:not(.eyebrow) { max-width:800px; color:var(--soft); font-size:16px; line-height:1.95; }
 .topic-section .topic-caveat { margin-top:22px; padding:16px 18px; border-left:3px solid var(--accent); background:var(--surface); font-size:14px; }
  .section-intro { margin-bottom:22px; font-size:14px!important; }
@@ -306,6 +306,6 @@ onMounted(() => {
 .topic-not-found { padding:64px 0; }
 .topic-not-found h1 { margin:16px 0; font-family:var(--serif); font-weight:400; font-size:clamp(32px,5vw,48px); }
 .topic-not-found>p:not(.eyebrow) { margin-bottom:24px; color:var(--muted); }
-@media(max-width:760px) { .physics-card-grid,.interpretation-grid,.relation-grid,.assumption-grid { grid-template-columns:1fr; } .research-question-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .topic-source-grid { grid-template-columns:1fr; } .topic-resource-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .topic-local-nav { top:64px; } }
-@media(max-width:600px) { .research-topic-page { width:calc(100% - 36px); padding-top:18px; } .topic-hero-actions { align-items:stretch; flex-direction:column; } .topic-hero-actions .button { justify-content:space-between; } .topic-all-guides { padding:8px 2px; } .research-question-grid { grid-template-columns:1fr; } .relation-card { padding:18px; } .relation-formula { font-size:11px; } .topic-breadcrumb { margin-bottom:28px; } .topic-hero { padding:26px 22px; } .topic-intro,.topic-section>p:not(.eyebrow) { font-size:14px; } .topic-publications li { gap:12px; } .topic-local-nav { top:56px; gap:2px; margin:12px 0 0; } .topic-local-label { display:none; } .topic-local-nav a { padding:7px 9px; } .physics-card,.interpretation-card { padding:18px; } .topic-resource-grid { grid-template-columns:1fr; } .topic-workflow li { grid-template-columns:36px minmax(0,1fr); gap:10px; } .workflow-step { width:32px; height:32px; } }
+@media(max-width:760px) { .physics-card-grid,.interpretation-grid,.relation-grid,.assumption-grid { grid-template-columns:1fr; } .research-question-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .topic-source-grid { grid-template-columns:1fr; } .topic-resource-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }  }
+@media(max-width:600px) { .research-topic-page { width:calc(100% - 36px); padding-top:18px; } .topic-hero-actions { align-items:stretch; flex-direction:column; } .topic-hero-actions .button { justify-content:space-between; } .topic-all-guides { padding:8px 2px; } .research-question-grid { grid-template-columns:1fr; } .relation-card { padding:18px; } .relation-formula { font-size:11px; } .topic-breadcrumb { margin-bottom:28px; } .topic-hero { padding:26px 22px; } .topic-intro,.topic-section>p:not(.eyebrow) { font-size:14px; } .topic-publications li { gap:12px; } .topic-local-nav { gap:2px; margin:12px 0 0; } .topic-local-label { display:none; } .topic-local-nav a { padding:7px 9px; } .physics-card,.interpretation-card { padding:18px; } .topic-resource-grid { grid-template-columns:1fr; } .topic-workflow li { grid-template-columns:36px minmax(0,1fr); gap:10px; } .workflow-step { width:32px; height:32px; } }
 </style>
