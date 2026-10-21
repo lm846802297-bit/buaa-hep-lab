@@ -63,7 +63,7 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
 
   it('allows dynamic and local backgrounds when Quiet Research is selected', () => {
     const appVue = readFileSync(resolve(__dirname, '../App.vue'), 'utf-8')
-    expect(appVue).toContain("['galaxy', 'vanta-fog', 'custom-local', 'earth-orbit'].includes(currentBgType)")
+    expect(appVue).toContain("currentBgType !== 'paper'")
     expect(appVue).not.toContain("currentColorScheme !== 'quiet-research'")
     expect(styleViewVue).toContain('{{ bg.description || bg.subtitle }}')
   })
@@ -138,7 +138,7 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
   })
   it('keeps the compact sidebar and background controls independent of Quiet Research', () => {
     expect(indexCss).toContain('--sidebar: 88px;')
-    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="solid"] .glass-card')
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="solid"] .app-shell .glass-card')
     expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="frosted"] .glass-card')
     expect(indexCss).not.toContain(':root[data-color-scheme="quiet-research"] .forecast-atmosphere {\\n  display: none !important;')
     expect(indexHtml).toContain("if (bgType === 'clouds-static' && doc.dataset.publicPage !== 'true')")
@@ -156,6 +156,14 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(appVue).toContain('<WorldlineEffects />')
     expect(worldlineEffects).toContain('prefers-reduced-motion: reduce')
     expect(worldlineEffects).toContain('世界线变动')
+    const worldlinePaperPalette = indexCss.match(/:root\[data-color-scheme="worldline-console"\]\[data-bg-style="paper"\]\s*\{([^}]+)\}/)?.[1]
+    expect(worldlinePaperPalette).toContain('color-scheme: light;')
+    expect(worldlinePaperPalette).toContain('--bg: #F4F1E9;')
+    expect(worldlinePaperPalette).toContain('--accent: #29415D;')
+    expect(indexHtml).toContain("scheme === 'worldline-console' ? (bgType === 'paper' ? '#F4F1E9' : '#07111d')")
+    expect(indexCss).toContain('mix-blend-mode: multiply')
+    expect(worldlineEffects).toContain('stroke="var(--worldline-blue)"')
+    expect(worldlineEffects).not.toContain('#83a9ff')
   })
 
 })

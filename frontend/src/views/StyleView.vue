@@ -862,11 +862,11 @@ onMounted(() => {
         <div class="font-preview-body">
           <div class="font-preview-row">
             <span class="preview-tag muted">中文排版</span>
-            <p class="font-preview-line-title">天体物理与交叉科学课题组</p>
+            <p class="font-preview-line-title">北航粒子物理研究组</p>
           </div>
           <div class="font-preview-row">
             <span class="preview-tag muted">西文排版</span>
-            <p class="font-preview-line-en">Astrophysics and Interdisciplinary Science Research Group</p>
+            <p class="font-preview-line-en">Beihang University Particle Physics Phenomenology Group</p>
           </div>
           <div class="font-preview-row">
             <span class="preview-tag muted">科学数字与符号</span>
