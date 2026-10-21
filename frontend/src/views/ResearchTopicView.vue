@@ -121,6 +121,37 @@ onMounted(() => {
         </ol>
       </section>
 
+      <section v-if="topicDeepGuide && topicDeepGuide.analysisBlueprint" class="topic-section topic-analysis-blueprint" aria-labelledby="topic-blueprint">
+        <p class="eyebrow">05A / TOPIC-SPECIFIC RESEARCH BLUEPRINT</p>
+        <h2 id="topic-blueprint">{{ topicSectionTitles['topic-blueprint'] || topicDeepGuide.analysisBlueprint.title }}</h2>
+        <p class="section-intro">{{ topicDeepGuide.analysisBlueprint.question }}</p>
+        <p>{{ topicDeepGuide.analysisBlueprint.scope }}</p>
+        <ol class="topic-workflow">
+          <li v-for="item in topicDeepGuide.analysisBlueprint.steps" :key="item.step">
+            <span class="workflow-step">{{ item.step }}</span>
+            <div>
+              <h3>{{ item.title }}</h3>
+              <p>{{ item.detail }}</p>
+              <p class="blueprint-output"><strong>阶段产物：</strong>{{ item.output }}</p>
+            </div>
+          </li>
+        </ol>
+        <h3 class="blueprint-subheading">必须通过的物理与数值检查</h3>
+        <div class="interpretation-grid">
+          <article v-for="item in topicDeepGuide.analysisBlueprint.validationChecks" :key="item.title" class="interpretation-card">
+            <span>VALIDATION</span>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.detail }}</p>
+          </article>
+        </div>
+        <div class="prerequisite-panel">
+          <strong>最终报告必须保留</strong>
+          <ul>
+            <li v-for="item in topicDeepGuide.analysisBlueprint.reportingChecklist" :key="item">{{ item }}</li>
+          </ul>
+        </div>
+      </section>
+
       <section class="topic-section" aria-labelledby="topic-observables">
         <p class="eyebrow">06 / OBSERVABLES</p>
         <h2 id="topic-observables">{{ topicSectionTitles['topic-observables'] || '可观测量与实验联系' }}</h2>
@@ -274,6 +305,8 @@ onMounted(() => {
 .physics-formula { display:block; margin:14px 0 10px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text); font-family:var(--mono,ui-monospace,monospace); font-size:12px; line-height:1.7; white-space:normal; overflow-wrap:anywhere; }
 .physics-card>p:not(.physics-card-label),.interpretation-card p,.topic-workflow li p { color:var(--soft); font-size:14px; line-height:1.9; }
 .physics-card ul { margin:14px 0 0; padding-left:18px; color:var(--muted); font-size:12px; line-height:1.9; }
+.blueprint-output { margin:8px 0 0!important; padding-left:12px; border-left:2px solid var(--line); color:var(--muted)!important; font-size:13px!important; }
+.blueprint-subheading { margin:28px 0 0; font-size:17px; font-weight:600; line-height:1.6; }
 .topic-workflow { display:grid; gap:0; list-style:none; padding:0; margin:22px 0 0; }
 .topic-workflow li { display:grid; grid-template-columns:48px minmax(0,1fr); gap:16px; padding:20px 0; border-bottom:1px solid var(--line); }
 .workflow-step { display:grid; place-items:center; width:38px; height:38px; border:1px solid var(--line); border-radius:50%; color:var(--accent); font-size:12px; }
