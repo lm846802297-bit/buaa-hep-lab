@@ -52,8 +52,8 @@ def test_demo_seminars_link_to_the_matching_phenomenology_papers():
         seminars = db.query(SeminarSchedule).filter(
             SeminarSchedule.paper_id.in_([paper.id for paper in papers.values()])
         ).all()
-        linked = {papers_by_id.arxiv_id: seminar for seminar in seminars
-                  for papers_by_id in papers.values() if papers_by_id.id == seminar.paper_id}
+        papers_by_pk = {paper.id: paper for paper in papers.values()}
+        linked = {papers_by_pk[seminar.paper_id].arxiv_id: seminar for seminar in seminars}
         assert set(linked) == set(expected)
         for arxiv_id, (date, topic_prefix) in expected.items():
             assert linked[arxiv_id].date == date
