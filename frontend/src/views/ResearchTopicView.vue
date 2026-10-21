@@ -47,7 +47,7 @@ onMounted(() => {
         <div class="topic-hero-actions">
           <a href="#topic-relations" class="button primary">从关键关系式开始 <span aria-hidden="true">↓</span></a>
           <a href="#topic-papers" class="button secondary">查看代表论文 <span aria-hidden="true">↗</span></a>
-          <router-link to="/#research-guides" class="topic-all-guides">浏览全部专题导读 ↗</router-link>
+          <a href="/#research-guides" class="topic-all-guides">浏览全部专题导读 ↗</a>
         </div>
       </header>
 
