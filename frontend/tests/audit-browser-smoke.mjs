@@ -93,7 +93,10 @@ try {
   const hoverShadow = await firstResourceCard.evaluate(el => getComputedStyle(el).boxShadow)
   check(hoverShadow !== 'none', 'worldline mode provides visible hover feedback on resource cards')
   await page.getByRole('navigation', { name: '官网导航' }).getByRole('link', { name: '团队' }).click()
-  await page.getByRole('heading', { name: '团队与学术指导' }).waitFor()
+  await page.getByRole('heading', { name: '团队与学术指导' }).waitFor({ timeout: 10000 }).catch(async error => {
+    const bodyText = (await page.locator('body').innerText()).slice(0, 300)
+    throw new Error(`public people route did not render; url=${page.url()}; pageErrors=${errors.slice(-5).join(' | ')}; body=${bodyText}; cause=${error.message}`)
+  })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'worldline skin carries across public route navigation')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await page.waitForTimeout(950)
