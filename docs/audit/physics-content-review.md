@@ -3,7 +3,7 @@
 - 日期：2026-10-21
 - 范围：公开研究方向、代表论文索引、登录后的五个学习专题、两体衰变教学脚本。
 - 状态：已完成一轮源码与公开来源核查；**不等于课题组学术委员会审核，也不等于对列出论文的独立复现**。
-- 主要内容文件：`frontend/src/content/lab.js`、`frontend/src/content/learning.js`、`frontend/public/learning/two_body_decay.py`。
+- 主要内容文件：`frontend/src/content/lab.js`、`frontend/src/content/learning.js`、`frontend/public/learning/two_body_decay.py`、`backend/seed.py`（仅用于自建后端的初始化/演示数据）。
 
 ## 本轮已修正
 
@@ -18,6 +18,10 @@
    并说明正质量平方只检验该方向的局部稳定性，不能单独证明真空为全局最低点。
 6. **标准模型规范动能项写法过于压缩。** 已把 (SU(3)_C)、(SU(2)_L) 和 (U(1)_Y) 的规范场强分别写出，避免把群指标求和藏在不明确的总和符号中。
 7. **FeynCalc 示例的失败路径不明确。** 已把二矩阵迹测试改为不一致时明确报错，并增加四矩阵迹恒等式。该示例仍标注为“待在本机 Mathematica/FeynCalc 环境实测”，没有将预期输出冒充实测结果。
+
+6. **演示种子数据的论文元数据错配。** 原 `backend/seed.py` 将 arXiv:2301.07094（实际为计算机视觉论文）与虚构的 JWST 星系巡天标题/作者绑定，并将 arXiv:2402.08654（实际为 3D 词元图像生成论文）与虚构的天文图像去噪标题/作者绑定。已将两条演示推荐改为课题组可追溯的真实论文 arXiv:2508.13276 与 arXiv:2509.23925，并同步更新演示组会主题与摘要。原始记录可在 [arXiv:2301.07094](https://arxiv.org/abs/2301.07094) 与 [arXiv:2402.08654](https://arxiv.org/abs/2402.08654) 核对。
+7. **自建后端的默认教材方向不匹配。** 空数据库初始化和演示初始化原先默认写入天体物理、星系形成和宇宙学教材。已改为粒子物理教材、量子场论/标准模型教材及 PDG 综述，并使用出版社或官方资源链接：[Modern Particle Physics](https://www.cambridge.org/cc/titles/modern-particle-physics)、[Quantum Field Theory and the Standard Model](https://www.cambridge.org/highereducation/books/quantum-field-theory-and-the-standard-model/A4CD66B998F2C696DCC75B984A7D5799)、[PDG 2025](https://pdg.lbl.gov/2025/)。
+8. **既有数据库的限制。** 上述 `backend/seed.py` 变更只影响空数据库初始化或显式启用的演示初始化，不会自动改写已经存在的数据库记录；当前 Cloudflare Pages/D1 生产数据也不会被此 Python seed 文件直接修改。若要清理既有线上资料，必须另行检查当前 D1 内容并设计有备份/回滚的迁移。
 
 ## 已核对的公式与适用范围
 
