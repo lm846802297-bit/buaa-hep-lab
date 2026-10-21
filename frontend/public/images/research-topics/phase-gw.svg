@@ -8,4 +8,12 @@
 <circle cx="530" cy="203" r="58" fill="url(#hot)"/><circle cx="530" cy="203" r="5" fill="#fff3cf"/>
 <g fill="none" stroke="#65d9ef" stroke-width="2.4"><path d="M735 203C755 157 775 249 795 203S835 157 855 203 895 249 915 203 955 157 975 203"/></g><g fill="none" stroke="#ffc477" stroke-opacity=".8"><path d="M0 203C18 173 36 233 54 203S90 173 108 203 144 233 162 203"/></g>
 <g transform="translate(745 285)" fill="none"><path d="M0 0H230M0 0V-48" stroke="#a5becb" stroke-opacity=".5"/><path d="M0 -2C18 -3 30 -12 44 -22S70 -41 88 -31 112 -8 130 -14 158 -36 176 -28 206 -4 230 -3" stroke="#ffc477" stroke-width="2"/><path d="M0 -2C20 -5 33 -17 46 -26S71 -36 89 -24 113 -13 131 -21 160 -31 179 -20 208 -4 230 -2" stroke="#65d9ef" stroke-width="1.5" stroke-opacity=".8"/></g>
+
+<g font-family="Arial, Helvetica, sans-serif" font-weight="500" paint-order="stroke" stroke="#07111c" stroke-width="3" stroke-linejoin="round">
+<text x="34" y="34" fill="#d9f7ff" font-size="16" font-weight="700" stroke="#07111c" stroke-width="3">COSMOLOGICAL PHASE TRANSITION</text>
+<text x="45" y="380" fill="#a8eafa" font-size="13" stroke="#07111c" stroke-width="3">Bubble Nucleation</text>
+<text x="270" y="380" fill="#a8eafa" font-size="13" stroke="#07111c" stroke-width="3">Bubble Expansion</text>
+<text x="493" y="380" fill="#ffd18b" font-size="13" stroke="#07111c" stroke-width="3">Bubble Collision</text>
+<text x="760" y="70" fill="#a8eafa" font-size="13" stroke="#07111c" stroke-width="3">Gravitational Waves</text>
+</g>
 </svg>
