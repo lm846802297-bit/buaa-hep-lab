@@ -16,7 +16,7 @@ function isWorldlineActive() {
 
 function triggerShift() {
   if (typeof window === 'undefined') return
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return
 
   shiftKey.value += 1
   isShifting.value = true
