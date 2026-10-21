@@ -28,19 +28,13 @@ const seminarTopics = [
 ]
 const seminarPaperIds = ['2508.13276', '2509.23925', '2510.20672', '2506.10673', '2409.17243']
 const seminarPresenterIds = [2, 3, 4, 1, 4]
-const seminarAbstracts = [
-  '讨论热共湮灭、质量分裂、相变与长寿命粒子信号，区分基准点和完整参数空间。',
-  '比较惰性中微子位移顶点与相变引力波；灵敏度预测不等于观测。',
-  '讨论太阳中微子源的轻子第五力及其对缪子 g−2 昼夜信号的影响。',
-  '比较量子 Fisher 信息界与可观测量实际可达精度。',
-  '讨论长寿命惰性中微子搜索对质量、混合、寿命与探测器接受度的依赖。',
-]
+const seminarAbstract = '演示讨论：梳理模型假设、参数范围、可观测信号与实验限制。'
 export const DEMO_SEMINARS = [2, 9, 16, -5, -12].map((offset, i) => {
   const presenterId = seminarPresenterIds[i]
   return {
     id: seminarIds[i], date: formatOffsetDate(offset), time: '14:30', location: '待确认（虚构演示排期）',
     presenter_id: presenterId, presenter_name: DEMO_MEMBERS[presenterId - 1].name,
-    topic: `${seminarTopics[i]}（演示）`, abstract: seminarAbstracts[i],
+    topic: `${seminarTopics[i]}（演示）`, abstract: seminarAbstract,
     slides_url: '', status: offset > 0 ? 'upcoming' : 'completed', created_at: formatOffsetDate(-14) + 'T10:00:00Z',
     presentations: [{ id: 201 + i, seminar_id: seminarIds[i], position: 0, presenter_id: presenterId, presenter_name: DEMO_MEMBERS[presenterId - 1].name, arxiv_id: seminarPaperIds[i], slides_url: '' }],
   }
@@ -53,7 +47,7 @@ export const DEMO_ARXIV_PAPERS = DEMO_PAPER_CATALOG.map((p, i) => ({
   id: 301 + i, arxiv_id: p.id, title: p.title, authors: p.authors.join(', '), journal: p.journal, primary_category: 'hep-ph',
   published_date: p.arxivSubmitted, source_url: `https://arxiv.org/abs/${p.id}`, pdf_url: `https://arxiv.org/pdf/${p.id}`,
   abstract: `演示用中文导读（非原文逐字摘要）：${p.summary}`, recommender: DEMO_MEMBERS[i % 2], recommended_by: DEMO_MEMBERS[i % 2].name,
-  recommended_at: formatOffsetDate(-2 - i), notes: '演示推荐记录；摘要为课题组中文导读而非原文逐字摘要。论文来自公开文献，推荐人与互动为虚构。',
+  recommended_at: formatOffsetDate(-2 - i), notes: '演示推荐；摘要为中文导读，推荐人与互动为虚构。',
   likes_count: 0, user_liked: false, is_liked_by_me: false, read: false, is_read_by_me: false, comments: [],
 }))
 export const DEMO_NOTICES = [{ id: 1, title: '欢迎体验粒子物理科研工作台', content: '组员、组会和交流记录均为演示。真实部署请使用管理员初始化向导。', is_pinned: true, created_by: DEMO_MEMBERS[0].name, created_at: formatOffsetDate(-1), priority: 'normal' }]
@@ -66,7 +60,6 @@ export const DEMO_BOOKS = [
   { title: 'Quantum Field Theory and the Standard Model', authors: 'Matthew D. Schwartz', category: '教材', description: '量子场论、重整化、规范理论与 EFT。', url: 'https://www.cambridge.org/highereducation/books/quantum-field-theory-and-the-standard-model/A4CD66B998F2C696DCC75B984A7D5799' },
   { title: 'Review of Particle Physics (2026)', authors: 'Particle Data Group', category: '综述与数据', description: '粒子性质、标准模型综述与实验限制。', url: 'https://pdg.lbl.gov/2026/' },
   { title: 'FeynCalc Documentation', authors: 'FeynCalc Collaboration', category: '工具', description: 'Mathematica 符号计算：Dirac/颜色代数与圈图。', url: 'https://feyncalc.github.io/' },
-  { title: 'FeynRules', authors: 'FeynRules Collaboration', category: '工具', description: '拉格朗日量到费曼规则与模型文件。', url: 'https://feynrules.irmp.ucl.ac.be/' },
 ].map((book, i) => ({ ...book, id: i + 1, original_title: book.title, tutorial_url: book.url, exercise_url: '', github_url: '', download_url: '', cover_url: '', favorite_count: 0, is_favorited: i < 3, created_at: formatOffsetDate(-10) + 'T10:00:00Z' }))
 const DEMO_SEMINAR_BY_PAPER = Object.fromEntries(seminarPaperIds.map((arxivId, i) => [arxivId, seminarIds[i]]))
 export const DEMO_LIBRARY_PAPERS = DEMO_PAPER_CATALOG.map((p, i) => ({
