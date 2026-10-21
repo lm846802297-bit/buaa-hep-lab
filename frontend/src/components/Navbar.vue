@@ -56,16 +56,7 @@ watch([() => showTutorial.value, () => currentSubStep.value?.id, () => props.pin
   }
 }, { immediate: true })
 
-// 退出或跳过新手引导时，确保边栏处于锁定状态
-watch(() => showTutorial.value, (active, prevActive) => {
-  if (prevActive && !active && !props.pinned) {
-    emit('update:pinned', true)
-    try {
-      localStorage.setItem('sidebar_pinned', 'true')
-    } catch {}
-  }
-})
-
+// Closing or skipping the tutorial must not overwrite the user's sidebar preference.
 function getInitialUser() {
   try {
     const raw = localStorage.getItem('labhub_user')
