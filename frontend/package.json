@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/prerender-public.mjs",
+    "build": "node scripts/check-topic-illustrations.mjs && vite build && node scripts/prerender-public.mjs",
     "build:demo": "node scripts/build-demo.mjs",
-    "test": "vitest run",
+    "test": "node scripts/check-topic-illustrations.mjs && vitest run",
     "preview": "vite preview",
     "preview:demo": "vite preview --outDir dist-demo --base /lab-orbit/ --port 4173",
     "pages:dev": "wrangler pages dev ./dist",

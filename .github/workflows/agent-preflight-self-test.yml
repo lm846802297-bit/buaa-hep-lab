@@ -1,0 +1,39 @@
+name: Agent preflight utility tests
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/agent-preflight.mjs'
+      - '.github/workflows/agent-preflight-self-test.yml'
+      - 'AGENTS.md'
+      - 'docs/PARALLEL_DEVELOPMENT_WORKFLOW.md'
+      - 'docs/GPT_FIRST_DEVELOPMENT_WORKFLOW.md'
+      - '.agents/skills/vibe-coding-lab-orbit/SKILL.md'
+      - 'skills/vibe-coding-lab-orbit/SKILL.md'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/agent-preflight.mjs'
+      - '.github/workflows/agent-preflight-self-test.yml'
+      - 'AGENTS.md'
+      - 'docs/PARALLEL_DEVELOPMENT_WORKFLOW.md'
+      - 'docs/GPT_FIRST_DEVELOPMENT_WORKFLOW.md'
+      - '.agents/skills/vibe-coding-lab-orbit/SKILL.md'
+      - 'skills/vibe-coding-lab-orbit/SKILL.md'
+
+permissions:
+  contents: read
+
+jobs:
+  self-test:
+    name: Verify overlap detection logic
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test path normalization and overlap decisions
+        run: node scripts/agent-preflight.mjs --self-test

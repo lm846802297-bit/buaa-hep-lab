@@ -372,9 +372,12 @@ dialog:not([open]),
 
   /* 移动端锁死水平横向晃动 */
   html, body, .app-shell {
-    overflow-x: hidden;
+    overflow-x: clip;
     width: 100%;
     max-width: 100%;
+  }
+  @supports not (overflow-x: clip) {
+    html, body, .app-shell { overflow-x: hidden; }
   }
 
   /* 输入框字号强制保持 >= 16px 杜绝 iOS Safari 唤起软键盘时强行放大页面 */
@@ -3174,14 +3177,14 @@ html[data-bg-style="clouds-static"] body {
   animation-duration: 1.10s;
   animation-delay: .16s;
 }
-/* Pause all shift-specific keyframes until the overlay is present in a rendered frame. */
+/* Remove shift keyframes until Vue has rendered the overlay, then re-add from frame zero. Browser acceptance checks the timeline contract rather than a timing-sensitive opacity sample. */
 .worldline-shift-overlay:not(.is-timeline-active),
 .worldline-shift-overlay:not(.is-timeline-active)::before,
 .worldline-shift-overlay:not(.is-timeline-active)::after,
 .worldline-shift-overlay:not(.is-timeline-active) *,
 .worldline-technical-backdrop.is-shifting:not(.is-timeline-active) .worldline-backdrop-shift-wave,
 .worldline-technical-backdrop.is-shifting:not(.is-timeline-active) .worldline-backdrop-shift-wave * {
-  animation-play-state: paused !important;
+  animation: none !important;
 }
 
 @media (max-width: 639px) {
@@ -3265,7 +3268,20 @@ html[data-bg-style="clouds-static"] body {
   box-shadow: 0 12px 32px rgb(32 43 56 / 14%), inset 0 0 0 1px rgba(255, 255, 255, .70);
   text-shadow: none;
 }
-:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-shift-overlay__meter > span { background: linear-gradient(90deg, var(--worldline-cyan), var(--worldline-blue), var(--worldline-device-coral)); box-shadow: none; }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] /* Pin the HUD to the semantic readout phase instead of relying on wall-clock animation progress. */
+.worldline-shift-overlay[data-phase="readout"] .worldline-shift-overlay__hud {
+  animation: none;
+  opacity: 1;
+}
+.worldline-shift-overlay[data-phase="decay"] .worldline-shift-overlay__hud {
+  animation: worldline-hud-decay .58s ease-out both;
+}
+@keyframes worldline-hud-decay {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, -50%) scale(.985); }
+}
+
+.worldline-shift-overlay__meter > span { background: linear-gradient(90deg, var(--worldline-cyan), var(--worldline-blue), var(--worldline-device-coral)); box-shadow: none; }
 @media (hover: hover) and (pointer: fine) {
   :root[data-color-scheme="worldline-console"][data-bg-style="paper"] .panel:hover,
   :root[data-color-scheme="worldline-console"][data-bg-style="paper"] .glass-card:hover,
