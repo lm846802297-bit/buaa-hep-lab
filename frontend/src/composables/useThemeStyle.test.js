@@ -271,4 +271,13 @@ describe('useThemeStyle', () => {
     expect(isBgVideoPaused.value).toBe(false)
     expect(localStorage.setItem).toHaveBeenCalledWith('laborbit_bg_video_paused', 'false')
   })
+  it('provides a visible description for every theme card and a readable wallpaper dim default', async () => {
+    const { colorSchemes, bgOptions, glassOptions, DEFAULT_BG_DIM } = await import('./useThemeStyle')
+    for (const option of [...colorSchemes, ...bgOptions, ...glassOptions]) {
+      expect(typeof option.description).toBe('string')
+      expect(option.description.trim().length).toBeGreaterThan(0)
+    }
+    expect(DEFAULT_BG_DIM).toBe(35)
+  })
+
 })

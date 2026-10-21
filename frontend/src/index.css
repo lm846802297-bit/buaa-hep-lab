@@ -2313,48 +2313,93 @@ html[data-bg-style="clouds-static"] body {
   }
 }
 
+
+/* Shared appearance-tuner tokens: SVG colors follow the active theme rather than hard-coded values. */
+:root {
+  --theme-tuner-ring: color-mix(in srgb, var(--text) 74%, var(--accent) 26%);
+  --theme-tuner-axis: color-mix(in srgb, var(--text) 42%, transparent);
+  --theme-tuner-core: var(--accent);
+  --theme-tuner-core-fill: color-mix(in srgb, var(--accent) 16%, transparent);
+  --theme-tuner-core-hover-fill: color-mix(in srgb, var(--accent) 25%, transparent);
+  --theme-tuner-node: var(--accent);
+  --theme-tuner-node-stroke: var(--surface);
+  --theme-tuner-button-border: color-mix(in srgb, var(--line) 70%, var(--accent) 30%);
+  --theme-tuner-button-background: linear-gradient(145deg, color-mix(in srgb, var(--surface) 92%, var(--accent) 8%), var(--surface));
+  --theme-tuner-button-shadow: 0 6px 18px rgb(0 0 0 / 12%), inset 0 1px 0 rgb(255 255 255 / 8%);
+  --theme-tuner-button-hover-shadow: 0 8px 24px rgb(0 0 0 / 16%), 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent), inset 0 1px 0 rgb(255 255 255 / 10%);
+}
+
 /* Worldline Console: an original, optional sci-fi research skin inspired by retro lab terminals. */
 :root[data-color-scheme="worldline-console"] {
   color-scheme: dark;
-  --bg: #100d08;
-  --panel: rgba(29, 23, 15, .90);
-  --panel-solid: #1d170f;
-  --surface: rgba(24, 18, 10, .84);
-  --raised: rgba(255, 179, 71, .10);
-  --glass: rgba(255, 179, 71, .14);
-  --text: #f5efe2;
-  --soft: #e0d2b8;
-  --muted: #ac9875;
-  --accent: #ffb347;
-  --accent-strong: #ffd28a;
-  --accent-ink: #1b1205;
-  --line: rgba(255, 179, 71, .24);
-  --warning: #ffd28a;
-  --warning-bg: rgba(255, 179, 71, .12);
-  --danger: #ff7a59;
-  --danger-bg: rgba(255, 122, 89, .12);
-  --danger-border: rgba(255, 122, 89, .30);
-  --success: #b7dba6;
-  --focus: #ffd28a;
+  /* Original palette: cold blue-black, cyan phosphor and electric-blue worldline signals. */
+  --bg: #07111d;
+  --panel: rgba(12, 27, 42, .92);
+  --panel-solid: #102436;
+  --surface: rgba(10, 28, 44, .90);
+  --raised: rgba(85, 230, 242, .10);
+  --glass: rgba(85, 230, 242, .13);
+  --text: #e8f5ff;
+  --soft: #bed5e4;
+  --muted: #88a6bc;
+  --accent: #55e6f2;
+  --accent-strong: #c5fbff;
+  --accent-ink: #03141c;
+  --line: rgba(85, 197, 225, .24);
+  --warning: #ffc979;
+  --warning-bg: rgba(255, 201, 121, .12);
+  --danger: #ff5c8a;
+  --danger-bg: rgba(255, 92, 138, .12);
+  --danger-border: rgba(255, 92, 138, .34);
+  --success: #6de4ce;
+  --focus: #9df6ff;
   --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
-  --radius: 14px;
-  --shadow: 0 16px 48px -8px rgba(0, 0, 0, .55), 0 0 24px rgba(255, 179, 71, .035);
+  --radius: 8px;
+  --shadow: 0 16px 48px -8px rgba(0, 0, 0, .55), 0 0 24px color-mix(in srgb, var(--worldline-cyan) 4%, transparent);
+  --worldline-screen: #07111d;
+  --worldline-cyan: #55e6f2;
+  --worldline-cyan-hot: #c5fbff;
+  --worldline-blue: #83a9ff;
+  --worldline-anomaly: #ff4d86;
+  --worldline-hardware: #87928d;
+  --worldline-hardware-text: #aab6b5;
+  --worldline-device-coral: #e98278;
+  --worldline-cyan-ambient: color-mix(in srgb, var(--worldline-cyan) 13%, transparent);
+  --worldline-blue-ambient: color-mix(in srgb, var(--worldline-blue) 10%, transparent);
+  --worldline-screenline: color-mix(in srgb, var(--worldline-cyan) 2.5%, transparent);
+  --theme-tuner-ring: color-mix(in srgb, var(--text) 42%, var(--worldline-blue) 58%);
+  --theme-tuner-axis: color-mix(in srgb, var(--worldline-cyan) 68%, transparent);
+  --theme-tuner-core: var(--worldline-cyan);
+  --theme-tuner-core-fill: color-mix(in srgb, var(--worldline-cyan) 20%, transparent);
+  --theme-tuner-core-hover-fill: color-mix(in srgb, var(--worldline-cyan-hot) 32%, transparent);
+  --theme-tuner-node: var(--worldline-anomaly);
+  --theme-tuner-node-stroke: var(--panel-solid);
+  --theme-tuner-button-border: color-mix(in srgb, var(--worldline-blue) 35%, var(--line) 65%);
+  --theme-tuner-button-background: linear-gradient(145deg, color-mix(in srgb, var(--panel-solid) 88%, var(--worldline-blue) 12%), color-mix(in srgb, var(--surface) 94%, var(--worldline-cyan) 6%));
+  --theme-tuner-button-shadow: 0 6px 18px rgb(0 0 0 / 22%), inset 0 1px 0 color-mix(in srgb, var(--text) 7%, transparent);
+  --theme-tuner-button-hover-shadow: 0 8px 24px rgb(0 0 0 / 26%), 0 0 0 3px color-mix(in srgb, var(--worldline-cyan) 24%, transparent), 0 0 18px color-mix(in srgb, var(--worldline-blue) 8%, transparent), inset 0 1px 0 color-mix(in srgb, var(--text) 9%, transparent);
 }
 :root[data-color-scheme="worldline-console"][data-bg-style="paper"] body {
   background-color: var(--bg);
-  background-image: radial-gradient(ellipse at 18% 0%, rgba(255, 179, 71, .07), transparent 38%), repeating-linear-gradient(0deg, rgba(255, 179, 71, .014) 0, rgba(255, 179, 71, .014) 1px, transparent 1px, transparent 4px);
+  background-image:
+    radial-gradient(ellipse at 16% 0%, var(--worldline-cyan-ambient), transparent 38%),
+    radial-gradient(ellipse at 88% 14%, var(--worldline-blue-ambient), transparent 34%),
+    repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 6px);
   background-attachment: fixed;
 }
 :root[data-color-scheme="worldline-console"][data-public-page="true"] .lab-public {
-  background-image: radial-gradient(ellipse at 18% 0%, rgba(255, 179, 71, .07), transparent 38%), repeating-linear-gradient(0deg, rgba(255, 179, 71, .014) 0, rgba(255, 179, 71, .014) 1px, transparent 1px, transparent 4px);
+  background-image:
+    radial-gradient(ellipse at 16% 0%, var(--worldline-cyan-ambient), transparent 38%),
+    radial-gradient(ellipse at 88% 14%, var(--worldline-blue-ambient), transparent 34%),
+    repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 6px);
   background-attachment: fixed;
 }
-:root[data-color-scheme="worldline-console"] ::selection { background: rgba(255, 179, 71, .34); color: #fff8ea; }
+:root[data-color-scheme="worldline-console"] ::selection { background: color-mix(in srgb, var(--worldline-cyan) 34%, transparent); color: #fff8ea; }
 :root[data-color-scheme="worldline-console"] input:focus,
 :root[data-color-scheme="worldline-console"] select:focus,
 :root[data-color-scheme="worldline-console"] textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 179, 71, .18);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--worldline-cyan) 24%, transparent);
 }
 :root[data-color-scheme="worldline-console"] .eyebrow,
 :root[data-color-scheme="worldline-console"] .badge,
@@ -2378,15 +2423,15 @@ html[data-bg-style="clouds-static"] body {
   :root[data-color-scheme="worldline-console"] .public-paper:hover,
   :root[data-color-scheme="worldline-console"] .research-detail:hover,
   :root[data-color-scheme="worldline-console"] .physics-resource-card:hover {
-    border-color: rgba(255, 179, 71, .58);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .24), 0 0 18px rgba(255, 179, 71, .10);
+    border-color: color-mix(in srgb, var(--worldline-cyan) 56%, var(--worldline-blue) 12%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .24), 0 0 18px color-mix(in srgb, var(--worldline-cyan) 10%, transparent), 0 0 24px color-mix(in srgb, var(--worldline-blue) 6%, transparent);
   }
   :root[data-color-scheme="worldline-console"] .theme-card:hover,
   :root[data-color-scheme="worldline-console"] .public-paper:hover,
   :root[data-color-scheme="worldline-console"] .research-detail:hover,
   :root[data-color-scheme="worldline-console"] .physics-resource-card:hover { transform: translateY(-2px); }
   :root[data-color-scheme="worldline-console"] .button.primary:hover:not(:disabled),
-  :root[data-color-scheme="worldline-console"] .button-primary:hover:not(:disabled) { box-shadow: 0 0 20px rgba(255, 179, 71, .18); }
+  :root[data-color-scheme="worldline-console"] .button-primary:hover:not(:disabled) { box-shadow: 0 0 20px color-mix(in srgb, var(--worldline-cyan) 14%, transparent), 0 0 24px color-mix(in srgb, var(--worldline-blue) 6%, transparent); }
   :root[data-color-scheme="worldline-console"] .collision-figure:hover .collision-tracks path {
     stroke-dasharray: 5 7;
     animation: worldline-track-flow 2.8s linear infinite;
@@ -2397,64 +2442,707 @@ html[data-bg-style="clouds-static"] body {
   filter: brightness(1.08);
   transform: translateY(1px) scale(.99);
 }
+/* Worldline Console public-site art direction: cold CRT instrumentation with vivid, time-bounded worldline signals. */
+:root[data-color-scheme="worldline-console"] .lab-public .public-header {
+  position: relative;
+  border-bottom-color: color-mix(in srgb, var(--worldline-blue) 20%, var(--line));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-solid) 26%, transparent), transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: clamp(44px, 8vw, 96px);
+  height: 1px;
+  background: linear-gradient(90deg, var(--worldline-cyan), color-mix(in srgb, var(--worldline-blue) 48%, transparent));
+  opacity: .82;
+  pointer-events: none;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-header nav > a {
+  position: relative;
+  transition: color .18s ease;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-header nav > a::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 5px;
+  left: 0;
+  height: 1px;
+  background: var(--worldline-cyan);
+  opacity: .72;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .18s ease;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-header nav > a:hover,
+:root[data-color-scheme="worldline-console"] .lab-public .public-header nav > a.router-link-active {
+  color: var(--text);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-header nav > a:hover::after,
+:root[data-color-scheme="worldline-console"] .lab-public .public-header nav > a.router-link-active::after {
+  transform: scaleX(1);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-header .nav-hub {
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--worldline-blue) 5%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .hero-eyebrow {
+  color: var(--worldline-blue);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .hero-eyebrow .status-dot {
+  background: var(--worldline-cyan);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--worldline-cyan) 22%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure .detector-rings {
+  stroke: var(--worldline-blue);
+  stroke-opacity: .20;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-strip {
+  border-color: color-mix(in srgb, var(--worldline-blue) 22%, var(--line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-blue) 3%, transparent), transparent 68%);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .section-top .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--worldline-blue);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .section-top .eyebrow::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  flex: 0 0 5px;
+  background: var(--worldline-cyan);
+  box-shadow: 0 0 7px color-mix(in srgb, var(--worldline-cyan) 24%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-tabs button {
+  position: relative;
+  border-bottom-color: color-mix(in srgb, var(--worldline-blue) 16%, var(--line));
+  transition: color .18s ease, border-color .18s ease, background .18s ease;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-tabs button:hover {
+  color: var(--text);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-blue) 5%, transparent), transparent 76%);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-tabs button.active {
+  border-bottom-color: color-mix(in srgb, var(--worldline-cyan) 38%, var(--line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-cyan) 7%, transparent), transparent 78%);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-tabs button.active::before {
+  content: "";
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  left: 0;
+  width: 2px;
+  background: var(--worldline-cyan);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--worldline-cyan) 12%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-detail,
+:root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card {
+  border-radius: 8px;
+  border-color: color-mix(in srgb, var(--worldline-blue) 18%, var(--line));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--panel-solid) 90%, var(--worldline-blue) 4%), color-mix(in srgb, var(--surface) 96%, var(--worldline-cyan) 4%));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 3%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-detail::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--worldline-cyan), transparent);
+  opacity: .82;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-symbol {
+  color: var(--worldline-blue);
+  opacity: .10;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .topic-tags span {
+  border-radius: 4px;
+  border-color: color-mix(in srgb, var(--worldline-blue) 24%, var(--line));
+  background: color-mix(in srgb, var(--worldline-blue) 4%, transparent);
+  color: var(--soft);
+  font-family: var(--font-mono);
+  letter-spacing: .025em;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .publications-section {
+  border-top-color: color-mix(in srgb, var(--worldline-blue) 20%, var(--line));
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-paper {
+  border-bottom-color: color-mix(in srgb, var(--worldline-blue) 15%, var(--line));
+  transition: background .18s ease, border-color .18s ease;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-paper:hover {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-cyan) 4%, transparent), transparent 70%);
+  border-bottom-color: color-mix(in srgb, var(--worldline-cyan) 24%, var(--line));
+  box-shadow: none;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .paper-tag {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid color-mix(in srgb, var(--worldline-cyan) 28%, var(--line));
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--worldline-cyan) 6%, transparent);
+  color: var(--worldline-cyan-hot);
+  font-family: var(--font-mono);
+  letter-spacing: .035em;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card > span {
+  color: var(--worldline-blue);
+  font-family: var(--font-mono);
+  letter-spacing: .04em;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card h3 a {
+  color: var(--worldline-cyan);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card h3 a:hover {
+  color: var(--worldline-cyan-hot);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--worldline-cyan) 10%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .about-details > div,
+:root[data-color-scheme="worldline-console"] .lab-public .hub-module-list > span {
+  border-bottom-color: color-mix(in srgb, var(--worldline-blue) 16%, var(--line));
+}
+:root[data-color-scheme="worldline-console"] .lab-public .hub-module-list > span {
+  transition: background .18s ease;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .hub-module-list > span:hover {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-blue) 5%, transparent), transparent 78%);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-footer {
+  border-top-color: color-mix(in srgb, var(--worldline-blue) 20%, var(--line));
+}
+:root[data-color-scheme="worldline-console"] .lab-public .button.primary {
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--worldline-cyan-hot), var(--worldline-cyan));
+  border-color: var(--worldline-cyan);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 10%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .button.primary:hover {
+  background: var(--worldline-cyan-hot);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--worldline-cyan) 12%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .button.ghost {
+  border-radius: 6px;
+  border-color: color-mix(in srgb, var(--worldline-blue) 30%, var(--line));
+}
+:root[data-color-scheme="worldline-console"] .lab-public .button.ghost:hover {
+  background: color-mix(in srgb, var(--worldline-blue) 7%, transparent);
+  border-color: var(--worldline-blue);
+}
+@keyframes worldline-backdrop-wave {
+  0% { opacity: 0; }
+  12% { opacity: .92; }
+  28% { opacity: .62; }
+  64% { opacity: .24; }
+  100% { opacity: 0; }
+}
+@keyframes worldline-wave-ring {
+  0% { transform: scale(.12); opacity: 0; }
+  18% { opacity: .9; }
+  72% { opacity: .48; }
+  100% { transform: scale(4.2); opacity: 0; }
+}
+@keyframes worldline-wave-ring-inner {
+  0% { transform: scale(.18); opacity: 0; }
+  16% { opacity: .95; }
+  54% { opacity: .42; }
+  100% { transform: scale(3.1); opacity: 0; }
+}
 @keyframes worldline-track-flow { to { stroke-dashoffset: -48; } }
+@keyframes worldline-gear-drift { to { transform: rotate(360deg); } }
+@keyframes worldline-reticle-breathe { 0%, 100% { opacity: .42; } 50% { opacity: .82; } }
+@keyframes worldline-orbit-breathe { from { opacity: .28; } to { opacity: .62; } }
 
-/* Brief, pointer-transparent worldline transition used only by the optional skin. */
+/* Worldline Console: clockwork/blueprint layer, animated particles, then page content. */
+.worldline-technical-backdrop { position: fixed; inset: 0; display: block; width: 100vw; height: 100vh; z-index: 0; opacity: .32; overflow: hidden; pointer-events: none; color: var(--worldline-blue, #83a9ff); mix-blend-mode: screen; }
+.worldline-technical-backdrop .worldline-backdrop-gear { color: var(--worldline-hardware, #87928d); opacity: .8; }
+.worldline-technical-backdrop .worldline-backdrop-gear--mobile-anchor { color: var(--worldline-blue, #83a9ff); opacity: 1; }
+.worldline-technical-backdrop .worldline-backdrop-gear-rotor { transform-box: fill-box; transform-origin: center; animation: worldline-gear-drift 150s linear infinite; }
+.worldline-technical-backdrop .worldline-backdrop-gear-rotor--reverse { animation-direction: reverse; animation-duration: 210s; }
+.worldline-technical-backdrop .worldline-backdrop-reticle { color: var(--worldline-blue, #83a9ff); opacity: .7; }
+.worldline-technical-backdrop .worldline-backdrop-reticle--slow { animation: worldline-reticle-breathe 16s ease-in-out infinite; }
+.worldline-technical-backdrop .worldline-backdrop-orbit { color: var(--worldline-cyan, #55e6f2); opacity: .48; transform-origin: 1110px 515px; animation: worldline-orbit-breathe 24s ease-in-out infinite alternate; }
+.worldline-technical-backdrop .worldline-backdrop-instrument { color: var(--worldline-hardware-text, #aab6b5); opacity: .68; }
+.worldline-technical-backdrop .worldline-backdrop-instrument text,
+.worldline-technical-backdrop .worldline-backdrop-notes { font: 9px/1.4 var(--font-mono, ui-monospace, monospace); letter-spacing: .11em; fill: currentColor; }
+.worldline-technical-backdrop .worldline-backdrop-notes { opacity: .52; }
+.worldline-technical-backdrop .worldline-backdrop-drafting,
+.worldline-technical-backdrop .worldline-backdrop-crosshairs { opacity: .46; }
+.worldline-technical-backdrop.is-shifting { opacity: .56; }
+.worldline-technical-backdrop.is-shifting .worldline-backdrop-gear { color: var(--worldline-cyan-hot, #c5fbff); }
+.worldline-technical-backdrop.is-shifting .worldline-backdrop-reticle,
+.worldline-technical-backdrop.is-shifting .worldline-backdrop-orbit { opacity: .95; }
+.worldline-backdrop-shift-wave {
+  opacity: 0;
+  transform-box: view-box;
+  transform-origin: 800px 500px;
+  animation: worldline-backdrop-wave 1.8s ease-out both;
+  color: var(--worldline-cyan-hot, #c5fbff);
+}
+.worldline-backdrop-shift-wave__ring { transform-box: fill-box; transform-origin: center; }
+.worldline-backdrop-shift-wave__ring--outer {
+  animation: worldline-wave-ring 1.8s cubic-bezier(.1,.7,.2,1) both;
+  stroke: var(--worldline-blue, #83a9ff);
+}
+.worldline-backdrop-shift-wave__ring--inner {
+  animation: worldline-wave-ring-inner 1.8s cubic-bezier(.1,.7,.2,1) both;
+  stroke: var(--worldline-cyan-hot, #c5fbff);
+}
+.worldline-particle-canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  transition: opacity .22s ease;
+}
+.worldline-particle-canvas.is-visible { opacity: .50; }
+:root[data-color-scheme="worldline-console"] .app-shell > main {
+  position: relative;
+  z-index: 2;
+}
+:root[data-color-scheme="worldline-console"][data-public-page="true"] .lab-public {
+  background-color: transparent;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure {
+  isolation: isolate;
+  padding: 30px 14px 10px;
+  border: 1px solid color-mix(in srgb, var(--worldline-hardware) 24%, var(--line));
+  border-radius: 8px;
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--worldline-hardware) 6%, transparent), transparent 36%),
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-solid) 72%, transparent), color-mix(in srgb, var(--worldline-screen) 58%, transparent));
+  box-shadow:
+    inset 0 0 0 1px rgba(3, 9, 16, .72),
+    inset 0 0 44px rgba(0, 0, 0, .20),
+    0 18px 44px rgba(0, 0, 0, .14);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure::before {
+  content: "";
+  position: absolute;
+  inset: 4% 2.5% 8%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .72;
+  border: 1px solid color-mix(in srgb, var(--worldline-hardware) 14%, transparent);
+  background:
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--worldline-blue) 3%, transparent) 0 1px, transparent 1px 5px),
+    linear-gradient(var(--worldline-cyan) 0 0) left top / 26px 1px no-repeat,
+    linear-gradient(var(--worldline-cyan) 0 0) left top / 1px 26px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) right top / 26px 1px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) right top / 1px 26px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) left bottom / 26px 1px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) left bottom / 1px 26px no-repeat,
+    linear-gradient(var(--worldline-cyan) 0 0) right bottom / 26px 1px no-repeat,
+    linear-gradient(var(--worldline-cyan) 0 0) right bottom / 1px 26px no-repeat;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure::after {
+  content: "FIELD MONITOR // 01";
+  position: absolute;
+  top: 9px;
+  left: 18px;
+  z-index: 1;
+  padding: 2px 8px;
+  border-left: 2px solid var(--worldline-device-coral);
+  background: color-mix(in srgb, var(--worldline-screen) 88%, transparent);
+  color: var(--worldline-hardware-text);
+  font: 8px/1.5 var(--font-mono);
+  letter-spacing: .13em;
+  pointer-events: none;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure figcaption {
+  margin-top: 4px;
+  padding: 11px 10px 2px;
+  border-top: 1px solid color-mix(in srgb, var(--worldline-hardware) 28%, var(--line));
+  font-size: 8px;
+  letter-spacing: .11em;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure figcaption span:first-child::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin: 0 8px 1px 0;
+  border-radius: 1px;
+  background: var(--worldline-device-coral);
+  box-shadow: 0 0 7px color-mix(in srgb, var(--worldline-device-coral) 38%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .public-theme-trigger {
+  border-radius: 7px;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-detail,
+:root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card {
+  border-radius: 8px;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure .track-hits circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--worldline-cyan) 68%, transparent));
+  animation: worldline-hit-pulse 3.8s ease-in-out infinite;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure .track-hits circle:nth-child(2n) {
+  animation-delay: -1.1s;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure .track-hits circle:nth-child(3n) {
+  animation-delay: -2.2s;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-tracks path:nth-child(3n) {
+  stroke: var(--worldline-blue);
+  opacity: .84;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-annotations text:last-child {
+  fill: var(--worldline-cyan);
+}
+@keyframes worldline-hit-pulse {
+  0%, 100% { opacity: .58; }
+  50% { opacity: 1; }
+}
+
+/* Full worldline-shift event: scanline sweep, chromatic fault bands, rotating instrument dial and HUD. */
 .worldline-shift-overlay {
+  --worldline-screen: #07111d;
+  --worldline-cyan: #55e6f2;
+  --worldline-cyan-hot: #c5fbff;
+  --worldline-blue: #83a9ff;
+  --worldline-anomaly: #ff4d86;
   position: fixed;
   inset: 0;
   z-index: 10050;
   overflow: hidden;
+  isolation: isolate;
   pointer-events: none;
+  background: transparent;
+}
+.worldline-shift-overlay__flash {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   opacity: 0;
-  background: rgba(12, 9, 5, .10);
-  animation: worldline-shift-flash .9s steps(1, end) both;
+  background:
+    radial-gradient(ellipse at center, color-mix(in srgb, var(--worldline-cyan) 25%, transparent), transparent 64%),
+    linear-gradient(115deg, color-mix(in srgb, var(--worldline-screen) 44%, transparent), color-mix(in srgb, var(--worldline-blue) 18%, transparent));
+  animation: worldline-shift-flash 1.8s ease-out both;
 }
 .worldline-shift-overlay::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, rgba(255, 197, 113, .10) 0, rgba(255, 197, 113, .10) 1px, transparent 1px, transparent 4px);
-  animation: worldline-scanline .9s ease-out both;
+  inset: -8%;
+  z-index: 1;
+  background: repeating-linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--worldline-cyan-hot) 12%, transparent) 0,
+    color-mix(in srgb, var(--worldline-cyan-hot) 12%, transparent) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  mix-blend-mode: screen;
+  animation: worldline-scanline 1.8s ease-out both;
 }
 .worldline-shift-overlay::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 34%;
-  height: 16%;
+  left: -8%;
+  right: -8%;
+  top: 36%;
+  height: 18%;
+  z-index: 3;
   opacity: 0;
-  background: linear-gradient(180deg, transparent, rgba(255, 179, 71, .18), rgba(255, 179, 71, .03), transparent);
-  animation: worldline-signal-band .9s steps(2, end) both;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--worldline-cyan) 28%, transparent) 34%,
+    color-mix(in srgb, var(--worldline-anomaly) 12%, transparent) 52%,
+    color-mix(in srgb, var(--worldline-blue) 24%, transparent) 68%,
+    transparent
+  );
+  filter: saturate(1.3);
+  animation: worldline-signal-band 1.8s steps(1, end) both;
 }
+.worldline-shift-overlay__dial {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(78vw, 760px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(.7);
+  opacity: 0;
+  z-index: 2;
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--worldline-cyan) 22%, transparent));
+  animation: worldline-dial-ignite 1.8s cubic-bezier(.16, .72, .18, 1) both;
+}
+.worldline-shift-overlay__dial-ring,
+.worldline-shift-overlay__dial-ticks,
+.worldline-shift-overlay__dial-cross,
+.worldline-shift-overlay__dial-core {
+  position: absolute;
+  display: block;
+}
+.worldline-shift-overlay__dial-ring {
+  border-radius: 50%;
+  inset: 0;
+}
+.worldline-shift-overlay__dial-ring--outer {
+  border: 1px solid color-mix(in srgb, var(--worldline-cyan-hot) 76%, transparent);
+  box-shadow: inset 0 0 32px color-mix(in srgb, var(--worldline-cyan) 8%, transparent), 0 0 24px color-mix(in srgb, var(--worldline-cyan) 10%, transparent);
+}
+.worldline-shift-overlay__dial-ticks {
+  inset: 4%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--worldline-cyan-hot) 84%, transparent) 0deg .35deg,
+    transparent .35deg 5deg
+  );
+  -webkit-mask: radial-gradient(circle, transparent 63%, #000 63.5% 67%, transparent 67.5%);
+  mask: radial-gradient(circle, transparent 63%, #000 63.5% 67%, transparent 67.5%);
+  animation: worldline-dial-rotate 8s linear infinite;
+}
+.worldline-shift-overlay__dial-ring--inner {
+  inset: 22%;
+  border: 1px dashed color-mix(in srgb, var(--worldline-blue) 78%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--worldline-blue) 9%, transparent);
+}
+.worldline-shift-overlay__dial-cross {
+  inset: 12% 0;
+  background:
+    linear-gradient(90deg, transparent calc(50% - .5px), color-mix(in srgb, var(--worldline-cyan) 56%, transparent) calc(50% - .5px), color-mix(in srgb, var(--worldline-cyan) 56%, transparent) calc(50% + .5px), transparent calc(50% + .5px)),
+    linear-gradient(0deg, transparent calc(50% - .5px), color-mix(in srgb, var(--worldline-cyan) 56%, transparent) calc(50% - .5px), color-mix(in srgb, var(--worldline-cyan) 56%, transparent) calc(50% + .5px), transparent calc(50% + .5px));
+}
+.worldline-shift-overlay__dial-core {
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--worldline-cyan-hot);
+  border-radius: 50%;
+  background: var(--worldline-anomaly);
+  box-shadow: 0 0 12px var(--worldline-cyan), 0 0 28px color-mix(in srgb, var(--worldline-anomaly) 68%, transparent);
+  transform: translate(-50%, -50%);
+}
+.worldline-shift-overlay__glitch {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  z-index: 3;
+  height: 3.2%;
+  opacity: 0;
+  border-block: 1px solid color-mix(in srgb, var(--worldline-cyan-hot) 62%, transparent);
+  background: linear-gradient(90deg, transparent 8%, color-mix(in srgb, var(--worldline-cyan) 24%, transparent) 27%, color-mix(in srgb, var(--worldline-anomaly) 25%, transparent) 48%, color-mix(in srgb, var(--worldline-blue) 28%, transparent) 71%, transparent 94%);
+  mix-blend-mode: screen;
+}
+.worldline-shift-overlay__glitch--a { top: 24%; animation: worldline-glitch-a 1.8s steps(1, end) both; }
+.worldline-shift-overlay__glitch--b { top: 61%; height: 5.5%; animation: worldline-glitch-b 1.8s steps(1, end) both; }
+.worldline-shift-overlay__glitch--c { top: 43%; height: 1.5%; animation: worldline-glitch-c 1.8s steps(1, end) both; }
 .worldline-shift-overlay__hud {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: min(420px, calc(100vw - 36px));
-  padding: 18px 22px;
+  z-index: 4;
+  width: min(440px, calc(100vw - 36px));
+  padding: 22px 24px 20px;
   transform: translate(-50%, -50%);
-  border: 1px solid rgba(255, 179, 71, .62);
-  background: rgba(16, 13, 8, .88);
-  box-shadow: 0 0 30px rgba(255, 179, 71, .14), inset 0 0 24px rgba(255, 179, 71, .04);
-  color: #ffcf85;
+  border: 1px solid color-mix(in srgb, var(--worldline-cyan-hot) 82%, var(--worldline-blue) 10%);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--worldline-cyan) 7%, transparent), transparent 54%),
+    color-mix(in srgb, var(--worldline-screen) 96%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--worldline-cyan) 8%, transparent),
+    0 0 44px color-mix(in srgb, var(--worldline-cyan) 26%, transparent),
+    0 0 84px color-mix(in srgb, var(--worldline-blue) 16%, transparent),
+    inset 0 0 28px color-mix(in srgb, var(--worldline-cyan) 5%, transparent);
+  color: var(--worldline-cyan-hot);
   text-align: center;
   font-family: var(--font-mono, ui-monospace, monospace);
   letter-spacing: .10em;
-  animation: worldline-hud-fade .9s ease-out both;
+  animation: worldline-hud-fade 1.8s ease-out both;
+}
+.worldline-shift-overlay__hud::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--worldline-cyan-hot) 0 0) left top / 22px 1px no-repeat,
+    linear-gradient(var(--worldline-cyan-hot) 0 0) left top / 1px 22px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) right top / 22px 1px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) right top / 1px 22px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) left bottom / 22px 1px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) left bottom / 1px 22px no-repeat,
+    linear-gradient(var(--worldline-cyan-hot) 0 0) right bottom / 22px 1px no-repeat,
+    linear-gradient(var(--worldline-cyan-hot) 0 0) right bottom / 1px 22px no-repeat;
 }
 .worldline-shift-overlay__hud > span,
-.worldline-shift-overlay__hud > small { display: block; font-size: 10px; }
-.worldline-shift-overlay__hud > strong { display: block; margin: 8px 0; font-size: clamp(17px, 3vw, 23px); font-weight: 500; letter-spacing: .16em; }
-.worldline-shift-overlay__hud > small { color: rgba(255, 207, 133, .70); letter-spacing: .05em; }
-@keyframes worldline-shift-flash { 0%, 100% { opacity: 0; } 12% { opacity: .9; } 22% { opacity: .14; } 38% { opacity: .68; } 52% { opacity: .08; } 64% { opacity: .42; } 78% { opacity: .04; } }
-@keyframes worldline-scanline { 0% { opacity: 0; transform: translateY(-8%); } 18% { opacity: .8; } 70% { opacity: .32; transform: translateY(4%); } 100% { opacity: 0; transform: translateY(12%); } }
-@keyframes worldline-signal-band { 0%, 100% { opacity: 0; transform: translateY(-12%); } 24% { opacity: .75; transform: translateY(0); } 42% { opacity: .15; transform: translateY(12%); } 54% { opacity: .52; transform: translateY(-5%); } 72% { opacity: 0; transform: translateY(18%); } }
-@keyframes worldline-hud-fade { 0%, 100% { opacity: 0; } 18%, 70% { opacity: 1; } }
+.worldline-shift-overlay__hud > small {
+  display: block;
+  font-size: 10px;
+  line-height: 1.7;
+}
+.worldline-shift-overlay__hud > strong {
+  display: block;
+  margin: 10px 0 13px;
+  font-family: var(--font, system-ui, sans-serif);
+  font-size: clamp(19px, 3vw, 26px);
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-shadow: 0 0 16px color-mix(in srgb, var(--worldline-cyan) 46%, transparent);
+}
+.worldline-shift-overlay__meter {
+  height: 2px;
+  margin: 0 0 12px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--worldline-cyan) 12%, transparent);
+}
+.worldline-shift-overlay__meter > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--worldline-cyan), var(--worldline-blue), var(--worldline-anomaly));
+  box-shadow: 0 0 10px var(--worldline-cyan);
+  animation: worldline-meter-fill 1.08s cubic-bezier(.2, .7, .25, 1) .08s both;
+}
+.worldline-shift-overlay__hud > small {
+  color: color-mix(in srgb, var(--worldline-cyan-hot) 82%, transparent);
+  letter-spacing: .06em;
+}
+@keyframes worldline-shift-flash {
+  0%, 100% { opacity: 0; }
+  12% { opacity: .92; }
+  34% { opacity: .38; }
+  52% { opacity: .76; }
+  76% { opacity: .20; }
+}
+@keyframes worldline-scanline {
+  0% { opacity: 0; transform: translateY(-5%); }
+  18% { opacity: .72; }
+  68% { opacity: .28; transform: translateY(5%); }
+  100% { opacity: 0; transform: translateY(12%); }
+}
+@keyframes worldline-signal-band {
+  0%, 100% { opacity: 0; transform: translateY(-12%); }
+  23% { opacity: .82; transform: translateY(0); }
+  42% { opacity: .16; transform: translateY(12%); }
+  58% { opacity: .62; transform: translateY(-5%); }
+  76% { opacity: 0; transform: translateY(18%); }
+}
+@keyframes worldline-dial-ignite {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.72) rotate(-22deg); }
+  18% { opacity: .92; }
+  68% { opacity: .58; transform: translate(-50%, -50%) scale(1.02) rotate(6deg); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.12) rotate(14deg); }
+}
+@keyframes worldline-dial-rotate { to { transform: rotate(360deg); } }
+@keyframes worldline-glitch-a {
+  0%, 100% { opacity: 0; transform: translateX(-7%) skewX(-4deg); }
+  21% { opacity: .9; transform: translateX(2%) skewX(1deg); }
+  24% { opacity: .35; transform: translateX(-1%) skewX(-2deg); }
+  45% { opacity: 0; transform: translateX(5%) skewX(2deg); }
+}
+@keyframes worldline-glitch-b {
+  0%, 100% { opacity: 0; transform: translateX(6%) skewX(3deg); }
+  36% { opacity: 0; }
+  48% { opacity: .78; transform: translateX(-3%) skewX(-2deg); }
+  52% { opacity: .2; transform: translateX(1%) skewX(1deg); }
+  72% { opacity: 0; transform: translateX(-6%) skewX(-3deg); }
+}
+@keyframes worldline-glitch-c {
+  0%, 100% { opacity: 0; transform: translateX(-4%); }
+  56% { opacity: .7; transform: translateX(4%); }
+  61% { opacity: .15; transform: translateX(-2%); }
+  73% { opacity: 0; transform: translateX(2%); }
+}
+@keyframes worldline-hud-fade {
+  0%, 100% { opacity: 0; }
+  16%, 74% { opacity: 1; }
+}
+@keyframes worldline-meter-fill { to { transform: scaleX(1); } }
+
+/* One 1.8 s event timeline: propagation, bounded glitches, readable HUD, then cleanup. */
+.worldline-backdrop-shift-wave__ring--outer {
+  animation: worldline-wave-ring 1.35s cubic-bezier(.16, .72, .18, 1) both;
+}
+.worldline-backdrop-shift-wave__ring--inner {
+  animation: worldline-wave-ring 1.15s cubic-bezier(.16, .72, .18, 1) .13s both;
+}
+@keyframes worldline-wave-ring {
+  0% { opacity: 0; transform: scale(.42); }
+  18% { opacity: .92; }
+  100% { opacity: 0; transform: scale(3.5); }
+}
+.worldline-shift-overlay__dial {
+  animation-duration: 1.70s;
+  animation-delay: .08s;
+}
+.worldline-shift-overlay__glitch--a {
+  animation-duration: .42s;
+  animation-delay: .18s;
+}
+.worldline-shift-overlay__glitch--b {
+  animation-duration: .38s;
+  animation-delay: .42s;
+}
+.worldline-shift-overlay__glitch--c {
+  animation-duration: .34s;
+  animation-delay: .61s;
+}
+.worldline-shift-overlay__hud {
+  animation-duration: 1.55s;
+  animation-delay: .15s;
+}
+.worldline-shift-overlay__meter > span {
+  animation-duration: .95s;
+  animation-delay: .50s;
+}
+.worldline-shift-overlay::before {
+  animation-duration: 1.55s;
+  animation-delay: .06s;
+}
+.worldline-shift-overlay::after {
+  animation-duration: 1.10s;
+  animation-delay: .16s;
+}
+/* Pause all shift-specific keyframes until the overlay is present in a rendered frame. */
+.worldline-shift-overlay:not(.is-timeline-active),
+.worldline-shift-overlay:not(.is-timeline-active)::before,
+.worldline-shift-overlay:not(.is-timeline-active)::after,
+.worldline-shift-overlay:not(.is-timeline-active) *,
+.worldline-technical-backdrop.is-shifting:not(.is-timeline-active) .worldline-backdrop-shift-wave,
+.worldline-technical-backdrop.is-shifting:not(.is-timeline-active) .worldline-backdrop-shift-wave * {
+  animation-play-state: paused !important;
+}
+
+@media (max-width: 639px) {
+  .worldline-technical-backdrop { opacity: .20; }
+  .worldline-technical-backdrop .worldline-backdrop-instrument { opacity: .34; }
+  .worldline-technical-backdrop .worldline-backdrop-notes { opacity: .24; }
+  .worldline-particle-canvas.is-visible { opacity: .34; }
+  .worldline-shift-overlay__dial { width: min(104vw, 540px); }
+  .worldline-shift-overlay__hud { padding: 18px 16px 16px; }
+  .worldline-shift-overlay__hud > span,
+  .worldline-shift-overlay__hud > small { font-size: 8px; }
+}
 @media (prefers-reduced-motion: reduce) {
+  .worldline-technical-backdrop .worldline-backdrop-gear-rotor,
+  .worldline-technical-backdrop .worldline-backdrop-reticle--slow,
+  .worldline-technical-backdrop .worldline-backdrop-orbit,
+  .worldline-backdrop-shift-wave,
+  .worldline-backdrop-shift-wave * { animation: none !important; }
+  .worldline-particle-canvas { display: none !important; }
   .worldline-shift-overlay { display: none !important; animation: none !important; }
-  :root[data-color-scheme="worldline-console"] *, :root[data-color-scheme="worldline-console"] *::before, :root[data-color-scheme="worldline-console"] *::after {
+  :root[data-color-scheme="worldline-console"] *,
+  :root[data-color-scheme="worldline-console"] *::before,
+  :root[data-color-scheme="worldline-console"] *::after {
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;

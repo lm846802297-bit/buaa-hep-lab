@@ -68,7 +68,7 @@
             scheme === 'custom' ? 'custom' :
             bgType === 'vanta-fog' ? 'vanta-fog' : 'clouds-static';
           var bgHex = scheme === 'quiet-research' ? '#F7F5F0' :
-            scheme === 'worldline-console' ? '#100d08' :
+            scheme === 'worldline-console' ? '#07111d' :
             scheme === 'obsidian-gray' ? '#090d16' :
             scheme === 'nebula-purple' ? '#03020a' : '#081f28';
           var doc = document.documentElement;
@@ -102,7 +102,7 @@
 
           doc.style.backgroundColor = bgHex;
           var basePath = siteBase;
-          if (bgType === 'clouds-static' && scheme !== 'quiet-research' && doc.dataset.publicPage !== 'true') {
+          if (bgType === 'clouds-static' && doc.dataset.publicPage !== 'true') {
             doc.style.backgroundImage = "url('" + basePath + "/assets/forecast/forecast-clouds-drift-seamless.jpg')";
             doc.style.backgroundPosition = 'center center';
             doc.style.backgroundSize = 'cover';

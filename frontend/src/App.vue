@@ -128,7 +128,7 @@ function onUpdatePinned(val) {
     <WorkspaceSession v-if="showNavbar" />
     <WorldlineEffects />
     <PublicThemeSwitcher v-if="isPublic && route.path !== '/'" />
-    <ForecastAtmosphere v-if="!isPublic && ['galaxy', 'vanta-fog', 'custom-local', 'earth-orbit'].includes(currentBgType)" />
+    <ForecastAtmosphere v-if="!isPublic && currentBgType !== 'paper'" />
     <MidAutumnMooncakes v-if="!isPublic" />
     <NationalDayCelebration v-if="!isPublic" />
     <a href="#main-content" class="skip-link">跳到主要内容</a>

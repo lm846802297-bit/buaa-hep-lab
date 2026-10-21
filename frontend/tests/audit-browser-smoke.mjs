@@ -84,24 +84,129 @@ try {
   await page.keyboard.press('Escape')
   check(await publicSkin.count() === 0, 'Escape closes the public theme popover')
   await publicSkinTrigger.click()
+  await page.evaluate(() => {
+    window.__worldlinePhaseLog = []
+    window.__worldlinePhaseListener = event => {
+      window.__worldlinePhaseLog.push(event.detail)
+      if (event.detail !== 'readout') return
+      // The event fires before the browser's next style/paint pass. Sample after
+      // one animation frame so computed opacity reflects the painted HUD frame.
+      requestAnimationFrame(() => {
+        const overlay = document.querySelector('.worldline-shift-overlay')
+        const backdrop = document.querySelector('.worldline-technical-backdrop')
+        const hud = overlay?.querySelector('.worldline-shift-overlay__hud')
+        window.__worldlineReadoutSnapshot = {
+          backdropVisible: Boolean(backdrop && backdrop.getBoundingClientRect().width > 0),
+          backdropShifting: Boolean(backdrop?.classList.contains('is-shifting')),
+          ringCount: backdrop?.querySelectorAll('.worldline-backdrop-shift-wave__ring').length || 0,
+          hudVisible: Boolean(hud && hud.getBoundingClientRect().width > 0 && hud.getBoundingClientRect().height > 0),
+          hudOpacity: hud ? Number(getComputedStyle(hud).opacity) : null,
+          hudAnimationName: hud ? getComputedStyle(hud).animationName : '',
+          hudBackgroundColor: hud ? getComputedStyle(hud).backgroundColor : ''
+        }
+      })
+    }
+    window.addEventListener('worldline:phase', window.__worldlinePhaseListener)
+  })
   await publicSkin.selectOption('worldline-console')
-  check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
-  check(await page.evaluate(() => localStorage.getItem('labhub_public_color_scheme') === 'worldline-console' && localStorage.getItem('laborbit_color_scheme') !== 'worldline-console'), 'public theme persists separately from workspace preferences')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await page.waitForTimeout(950)
-  check(await page.locator('.worldline-shift-overlay').count() === 0, 'worldline transition overlay exits cleanly')
+  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout'), null, { timeout: 1200 })
+  check(await page.locator('.worldline-shift-overlay').evaluate(el => el.classList.contains('is-timeline-active')), 'worldline keyframes start only after the overlay has been rendered')
+  await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
+  const readoutSnapshot = await page.evaluate(() => window.__worldlineReadoutSnapshot || null)
+  check(Boolean(readoutSnapshot?.backdropVisible), 'Worldline Console enables the clockwork and scientific-drawing background')
+  check(Boolean(readoutSnapshot?.backdropShifting), 'worldline transition activates the technical backdrop during the readout phase')
+  check(readoutSnapshot?.ringCount === 2, 'worldline transition draws two expanding instrument-wave rings')
+  check(Boolean(readoutSnapshot?.hudVisible), 'worldline shift HUD is visible in the readout frame')
+  check(Boolean(readoutSnapshot?.hudAnimationName?.includes('worldline-hud-fade')), `worldline shift HUD has its own opacity timeline (computed animation: ${readoutSnapshot?.hudAnimationName || 'none'})`)
+  check(Number(readoutSnapshot?.hudOpacity) > 0.2, `worldline HUD remains visibly readable during readout (opacity: ${readoutSnapshot?.hudOpacity})`)
+  check(readoutSnapshot?.hudBackgroundColor !== 'rgba(0, 0, 0, 0)' && readoutSnapshot?.hudBackgroundColor !== 'transparent', 'worldline shift HUD uses a dark, high-contrast panel')
+  check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
+  const worldlineTuner = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement)
+    const icon = document.querySelector('.theme-tuner-icon')
+    const trigger = document.querySelector('.public-theme-trigger')
+    return {
+      accent: root.getPropertyValue('--accent').trim().toLowerCase(),
+      blue: root.getPropertyValue('--worldline-blue').trim().toLowerCase(),
+      coreStroke: getComputedStyle(icon.querySelector('.tuner-core')).stroke,
+      orbitStroke: getComputedStyle(icon.querySelector('.tuner-orbit')).stroke,
+      buttonShadow: getComputedStyle(trigger).boxShadow
+    }
+  })
+  check(worldlineTuner.accent === '#55e6f2', 'Worldline Console uses the cold cyan CRT signal')
+  check(worldlineTuner.blue === '#83a9ff', 'Worldline Console defines a electric-blue worldline signal')
+  check(worldlineTuner.coreStroke !== worldlineTuner.orbitStroke, 'Worldline tuner separates cyan core from electric-blue orbital lines')
+  check(worldlineTuner.buttonShadow !== 'none', 'Worldline tuner uses its cold phosphor device-like shadow')
+  const technicalBackdrop = page.locator('.worldline-technical-backdrop')
+  const particleCanvas = page.locator('.worldline-particle-canvas')
+  check(await particleCanvas.evaluate(el => el.classList.contains('is-visible')), 'worldline skin enables the ambient particle canvas')
+  check(await particleCanvas.evaluate(el => el.width > 0 && el.height > 0), 'ambient particle canvas has a real drawing surface')
+  check(await particleCanvas.evaluate(el => el.width <= innerWidth * 1.5 + 1 && el.height <= innerHeight * 1.5 + 1), 'particle canvas caps device-pixel-ratio at 1.5x for performance')
+  await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
+  check(!(await page.locator('.worldline-technical-backdrop').evaluate(el => el.classList.contains('is-shifting'))), 'technical backdrop returns to its idle state after the worldline transition')
+  const phaseLog = await page.evaluate(() => {
+    if (window.__worldlinePhaseListener) window.removeEventListener('worldline:phase', window.__worldlinePhaseListener)
+    delete window.__worldlinePhaseListener
+    return Array.isArray(window.__worldlinePhaseLog) ? window.__worldlinePhaseLog : []
+  })
+  const expectedPhases = ['ignite', 'propagate', 'disrupt', 'readout', 'decay', 'idle']
+  const phasePositions = expectedPhases.map(phase => phase === 'idle' ? phaseLog.lastIndexOf(phase) : phaseLog.indexOf(phase))
+  check(phasePositions.every((position, index) => position >= 0 && (index === 0 || position > phasePositions[index - 1])), `worldline timeline runs through the expected ordered phases (${phaseLog.join(' -> ')})`)
+  await page.screenshot({ path: resolve(output, 'worldline-1440-technical-backdrop.png') })
+  check(await particleCanvas.evaluate(el => el.classList.contains('is-visible')), 'ambient particles remain active after the shift event')
+  check(await particleCanvas.evaluate(el => Number(getComputedStyle(el).opacity) > 0.3), 'ambient particle field retains visible opacity after the shift event')
+  const terminalVisual = await page.evaluate(() => ({
+    heroSignal: getComputedStyle(document.querySelector('.hero-eyebrow')).color,
+    resourceRadius: getComputedStyle(document.querySelector('.physics-resource-card')).borderRadius,
+    monitorLabel: getComputedStyle(document.querySelector('.collision-figure'), '::after').content
+  }))
+  check(terminalVisual.heroSignal === 'rgb(131, 169, 255)', 'Worldline hero uses the electric-blue secondary signal')
+  check(terminalVisual.resourceRadius === '8px', 'Worldline resource cards use the compact instrument-panel radius')
+  check(terminalVisual.monitorLabel.includes('FIELD MONITOR'), 'Worldline hero is framed as an analog field monitor, not a generic neon panel')
+  await page.screenshot({ path: resolve(output, 'worldline-1440-first-screen.png') })
+  await page.mouse.move(700, 150)
+  await page.waitForTimeout(100)
+  await page.screenshot({ path: resolve(output, 'worldline-1440-cursor-field.png') })
+  await page.mouse.click(700, 150)
+  await page.waitForTimeout(80)
+  check(await particleCanvas.evaluate(el => getComputedStyle(el).pointerEvents === 'none'), 'particle field never intercepts real page clicks')
+  await page.screenshot({ path: resolve(output, 'worldline-1440-click-pulse.png') })
+  await page.setViewportSize({ width: 390, height: 900 })
+  check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline skin fits the 390px viewport without horizontal overflow')
+  check(await technicalBackdrop.isVisible(), 'clockwork background remains enabled on the narrow mobile viewport')
+  check(await technicalBackdrop.locator('.worldline-backdrop-gear--mobile-anchor').count() === 2, 'mobile viewport has dedicated central gear motifs')
+  check(await technicalBackdrop.evaluate(el => getComputedStyle(el).opacity <= 0.2), 'clockwork drawings reduce opacity on mobile to protect readability')
+  await page.screenshot({ path: resolve(output, 'worldline-390-first-screen.png') })
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.locator('#research').screenshot({ path: resolve(output, 'worldline-1440-research.png') })
+  await page.locator('#physics-resources').screenshot({ path: resolve(output, 'worldline-1440-resources.png') })
+  check(await page.evaluate(() => localStorage.getItem('labhub_public_color_scheme') === 'worldline-console' && localStorage.getItem('laborbit_color_scheme') !== 'worldline-console'), 'public theme persists separately from workspace preferences')
+  await publicSkinTrigger.click()
+  await publicSkin.selectOption('classic-cyan')
+  const classicTuner = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement)
+    const core = document.querySelector('.theme-tuner-icon .tuner-core')
+    return { accent: root.getPropertyValue('--accent').trim().toLowerCase(), coreStroke: getComputedStyle(core).stroke }
+  })
+  check(classicTuner.accent === '#c5e6df', 'classic cyan theme restores its own accent token')
+  check(classicTuner.coreStroke !== worldlineTuner.coreStroke, 'tuner core automatically follows the selected non-terminal skin')
+  await page.waitForTimeout(1450)
+  check(!(await particleCanvas.evaluate(el => el.classList.contains('is-visible'))), 'ambient particles stop after leaving the worldline skin')
+  await publicSkinTrigger.click()
+  await publicSkin.selectOption('worldline-console')
+  await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
+  await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
+  check(await page.locator('.worldline-shift-overlay').count() === 0, 'worldline transition overlay exits cleanly after restoring the terminal skin')
   const firstResourceCard = page.locator('.physics-resource-card').first()
   await firstResourceCard.hover()
   const hoverShadow = await firstResourceCard.evaluate(el => getComputedStyle(el).boxShadow)
   check(hoverShadow !== 'none', 'worldline mode provides visible hover feedback on resource cards')
   await page.getByRole('navigation', { name: '官网导航' }).getByRole('link', { name: '团队' }).click()
-  await page.getByRole('heading', { name: '团队与学术指导' }).waitFor({ timeout: 10000 }).catch(async error => {
-    const bodyText = (await page.locator('body').innerText()).slice(0, 300)
-    throw new Error(`public people route did not render; url=${page.url()}; pageErrors=${errors.slice(-5).join(' | ')}; consoleErrors=${consoleErrors.slice(-5).join(' | ')}; failedRequests=${failedRequests.slice(-5).join(' | ')}; body=${bodyText}; cause=${error.message}`)
-  })
-  check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'worldline skin carries across public route navigation')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await page.waitForTimeout(950)
+  await page.getByRole('heading', { name: '团队与学术指导' }).waitFor()
+  check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'worldline skin carries across public route navigation')
+  await page.waitForTimeout(1450)
   const peopleSkinTrigger = page.getByRole('button', { name: '切换官网风格' })
   check(await peopleSkinTrigger.isVisible(), 'public skin icon remains visible on the team directory')
   await peopleSkinTrigger.click()
@@ -110,16 +215,18 @@ try {
   await peopleSkin.selectOption('quiet-research')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'quiet-research', 'standard academic skin can be restored')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await page.waitForTimeout(950)
+  await page.waitForTimeout(1450)
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await peopleSkinTrigger.click()
   await page.getByRole('combobox', { name: '选择官网皮肤风格' }).selectOption('worldline-console')
   check(await page.locator('.worldline-shift-overlay').count() === 0, 'reduced-motion preference suppresses worldline transition animation')
+  check(!(await page.locator('.worldline-particle-canvas').evaluate(el => el.classList.contains('is-visible'))), 'reduced-motion preference also suppresses the ambient particle field')
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await peopleSkinTrigger.click()
   await page.getByRole('combobox', { name: '选择官网皮肤风格' }).selectOption('quiet-research')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await page.waitForTimeout(950)
+  await page.waitForTimeout(1450)
+
   await page.goto(base, { waitUntil: 'networkidle' })
   check(!requested.some(url => new URL(url).pathname.startsWith('/api/')), 'anonymous homepage does not access internal APIs')
   check(!await page.locator('.research-static').isVisible(), 'script-free research fallback stays hidden when interactive tabs are active')
@@ -376,6 +483,288 @@ try {
   await loginPage.waitForURL('**/login?redirect=**')
   check(loginPage.url().includes('/login?redirect=/learning/eft'), 'anonymous learning navigation redirects to login with its target preserved')
   await loggedOut.close()
+  {
+// Appearance compatibility audit: exercise every actionable theme card in Chromium.
+  const styleContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  await styleContext.addInitScript(() => {
+    if (localStorage.getItem('__appearance_audit_seeded') === '1') return
+    localStorage.setItem('labhub_force_demo', '1')
+    localStorage.setItem('labhub_token', 'demo_jwt_token_laborbit_experience')
+    localStorage.setItem('labhub_user', JSON.stringify({
+      id: 1, name: '李华（演示管理员）', email: 'admin@example.invalid',
+      role: 'admin', identity: 'teacher', tutorial_completed: true, is_tutorial_completed: true
+    }))
+    localStorage.setItem('sidebar_pinned', 'false')
+    localStorage.setItem('labhub_sidebar_peeked', 'true')
+    localStorage.setItem('labhub_pin_guided', 'true')
+    localStorage.setItem('laborbit_color_scheme', 'quiet-research')
+    localStorage.setItem('laborbit_bg_type', 'paper')
+    localStorage.setItem('laborbit_glass_style', 'solid')
+    localStorage.setItem('laborbit_bg_video_paused', 'false')
+    localStorage.setItem('laborbit_bg_dim_percent_v2', '100')
+    localStorage.setItem('laborbit_default_v20261021_quiet_research', '1')
+    localStorage.setItem('__appearance_audit_seeded', '1')
+  })
+  const stylePage = await styleContext.newPage()
+  stylePage.setDefaultTimeout(15000)
+  const styleErrors = []
+  stylePage.on('pageerror', e => styleErrors.push(e.message))
+  await stylePage.goto(base + '/style', { waitUntil: 'networkidle' })
+  await stylePage.locator('#section-color .theme-card').first().waitFor()
+
+  // Playwright starts the pointer at (0, 0), over the fixed rail. Move away and let its leave debounce settle before asserting the default collapsed state.
+  await stylePage.mouse.move(520, 400)
+  await stylePage.waitForTimeout(350)
+
+  // Capture initial state before asserting so a failure distinguishes app state from CSS sizing.
+  const sidebarState = await stylePage.evaluate(() => {
+    const nav = document.querySelector('.forecast-sidebar')
+    const shell = document.querySelector('.app-shell')
+    return {
+      scheme: document.documentElement.dataset.colorScheme,
+      pinned: localStorage.getItem('sidebar_pinned'),
+      navClasses: nav?.className || null,
+      navWidth: nav ? Math.round(nav.getBoundingClientRect().width) : null,
+      navCssWidth: nav ? getComputedStyle(nav).width : null,
+      shellClasses: shell?.className || null,
+      shellPaddingLeft: shell ? getComputedStyle(shell).paddingLeft : null,
+      pinWrapperDisplay: nav ? getComputedStyle(nav.querySelector('.pin-anchor-wrapper')).display : null
+    }
+  })
+  console.log('Appearance sidebar initial state: ' + JSON.stringify(sidebarState))
+  await stylePage.screenshot({ path: resolve(output, 'style-initial-1440.png'), fullPage: true })
+  check(sidebarState.scheme === 'quiet-research', 'Quiet Research scheme is active before sidebar checks')
+  check(sidebarState.navClasses?.includes('is-collapsed'), 'unpinned sidebar starts collapsed')
+  check(sidebarState.navWidth === 88, 'collapsed sidebar uses the 88px compact rail')
+  check(parseFloat(sidebarState.shellPaddingLeft) === 88, 'collapsed sidebar preserves the 88px workspace offset')
+  const sidebar = stylePage.locator('.forecast-sidebar')
+  await sidebar.hover()
+  await expect(sidebar).toHaveClass(/is-floating/)
+  check(await stylePage.evaluate(() => {
+    const nav = document.querySelector('.forecast-sidebar')
+    const shell = document.querySelector('.app-shell')
+    return Math.round(nav.getBoundingClientRect().width) === 248 &&
+      Math.round(parseFloat(getComputedStyle(shell).paddingLeft)) === 88
+  }), 'hover expands the sidebar without shifting the workspace')
+  const pinButton = stylePage.locator('#tour-pin-sidebar')
+  check(await pinButton.isVisible(), 'pin control remains visible after expanding Quiet Research sidebar')
+  await pinButton.click()
+  await expect(sidebar).not.toHaveClass(/is-collapsed/)
+  check(await stylePage.evaluate(() => localStorage.getItem('sidebar_pinned') === 'true'), 'pinning the sidebar persists the selected state')
+  await pinButton.click()
+  await stylePage.mouse.move(520, 400)
+  await stylePage.waitForTimeout(350)
+  await expect(sidebar).toHaveClass(/is-collapsed/)
+  check(await stylePage.evaluate(() => localStorage.getItem('sidebar_pinned') === 'false'), 'unpinning restores auto-collapse and persists the selected state')
+
+  // All five color cards must change the root scheme and active card state.
+  const schemeIds = ['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'worldline-console', 'custom']
+  const schemeCards = stylePage.locator('#section-color .theme-card[role="button"]')
+  check(await schemeCards.count() === schemeIds.length, 'all five color scheme cards render')
+  for (let i = 0; i < schemeIds.length; i++) {
+    await schemeCards.nth(i).click()
+    await expect(stylePage.locator('html')).toHaveAttribute('data-color-scheme', schemeIds[i])
+    check(await schemeCards.nth(i).getAttribute('aria-pressed') === 'true', `color scheme card ${schemeIds[i]} updates its active state`)
+    check(await stylePage.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().length > 0), `color scheme ${schemeIds[i]} supplies an accent color`)
+    if (schemeIds[i] === 'worldline-console') await stylePage.waitForTimeout(950)
+  }
+
+  // Custom theme presets, form editing, and save must all reach the real DOM/storage.
+  await stylePage.getByRole('button', { name: '编辑', exact: true }).click()
+  await stylePage.locator('.custom-theme-dialog-content').waitFor()
+  check(await stylePage.locator('.custom-templates-grid .custom-tpl-btn').count() > 0, 'custom theme presets are available')
+  await stylePage.locator('.custom-templates-grid .custom-tpl-btn').nth(1).click()
+  await stylePage.locator('.custom-name-input').fill('Audit Theme')
+  await stylePage.getByRole('button', { name: '保存并应用', exact: true }).click()
+  await expect(stylePage.locator('.custom-theme-dialog-content')).toBeHidden()
+  check(await stylePage.evaluate(() => {
+    const saved = JSON.parse(localStorage.getItem('laborbit_custom_color_scheme') || 'null')
+    return document.documentElement.dataset.colorScheme === 'custom' && saved?.name === 'Audit Theme'
+  }), 'custom theme preset and edited name persist and apply')
+  await schemeCards.nth(0).click()
+  await expect(stylePage.locator('html')).toHaveAttribute('data-color-scheme', 'quiet-research')
+
+  // The three glass cards must produce different, observable CSS behavior in Quiet Research.
+  const glassCards = stylePage.locator('#section-glass .theme-card[role="button"]')
+  const glassIds = ['solid', 'liquid', 'frosted']
+  check(await glassCards.count() === glassIds.length, 'all three glass style cards render')
+  await stylePage.evaluate(() => {
+    const probe = document.createElement('div')
+    probe.id = 'audit-glass-probe'
+    probe.className = 'glass-card'
+    probe.style.cssText = 'position:fixed;right:0;bottom:0;width:120px;height:80px;'
+    document.querySelector('.app-shell').appendChild(probe)
+  })
+  for (let i = 0; i < glassIds.length; i++) {
+    await glassCards.nth(i).click()
+    await expect(stylePage.locator('html')).toHaveAttribute('data-glass-style', glassIds[i])
+    check(await glassCards.nth(i).getAttribute('aria-pressed') === 'true', `glass style card ${glassIds[i]} updates its active state`)
+    const glass = await stylePage.evaluate(() => {
+      const el = document.querySelector('#audit-glass-probe')
+      const css = getComputedStyle(el)
+      return { backdrop: css.backdropFilter, background: css.backgroundColor }
+    })
+    if (glassIds[i] === 'solid') {
+      check(glass.backdrop === 'none' && glass.background !== 'rgba(0, 0, 0, 0)', 'solid glass mode uses an opaque surface without blur')
+    } else {
+      check(glass.backdrop.includes('blur'), `${glassIds[i]} glass mode has a visible CSS fallback instead of a no-op`)
+    }
+  }
+  await stylePage.evaluate(() => document.querySelector('#audit-glass-probe')?.remove())
+  // Verify the real HomeView path also initializes liquid glass or retains its CSS fallback.
+  await glassCards.nth(1).click()
+  await stylePage.goto(base + '/hub', { waitUntil: 'networkidle' })
+  await stylePage.locator('.forecast-right .glass-card').first().waitFor({ state: 'visible' })
+  await stylePage.waitForTimeout(1200)
+  const liquidHome = await stylePage.evaluate(() => {
+    const container = document.querySelector('.forecast-right')
+    const card = container?.querySelector('.glass-card')
+    return {
+      active: Boolean(container?.classList.contains('liquid-glass-active')),
+      backdrop: card ? getComputedStyle(card).backdropFilter : ''
+    }
+  })
+  check(liquidHome.active || liquidHome.backdrop.includes('blur'), 'liquid glass works on the HomeView or visibly falls back to CSS')
+  await stylePage.goto(base + '/style', { waitUntil: 'networkidle' })
+  await schemeCards.nth(0).click()
+
+  // Background cards must change the selected mode and render the corresponding effect.
+  const bgCards = stylePage.locator('#section-bg .theme-card[role="button"]')
+  check(await bgCards.count() === 5, 'all five background cards render')
+  await bgCards.nth(0).click()
+  check(await stylePage.locator('html').getAttribute('data-bg-type') === 'paper', 'paper background card applies')
+  check(await stylePage.locator('.forecast-atmosphere').count() === 0, 'paper mode does not mount the background renderer')
+
+  await bgCards.nth(1).click()
+  check(await stylePage.locator('html').getAttribute('data-bg-type') === 'clouds-static', 'static cloud background card applies')
+  check(await stylePage.evaluate(() => document.documentElement.style.backgroundImage.includes('forecast-clouds-drift-seamless.jpg')), 'static cloud background applies a real image')
+
+  await bgCards.nth(2).click()
+  check(await stylePage.locator('html').getAttribute('data-bg-type') === 'galaxy', 'galaxy background card applies')
+  await stylePage.locator('.galaxy-atmosphere-canvas canvas.is-rendered').waitFor({ state: 'visible', timeout: 20000 })
+  const dimSlider = stylePage.getByRole('slider', { name: '背景遮罩暗化程度' })
+  await dimSlider.focus()
+  await dimSlider.press('Home')
+  for (let i = 0; i < 20; i++) await dimSlider.press('ArrowRight')
+  await stylePage.waitForFunction(() => {
+    const shade = document.querySelector('.atmosphere-shade')
+    return shade && Math.abs(Number(getComputedStyle(shade).opacity) - 0.2) < 0.02
+  }, null, { timeout: 3000 }).catch(() => {})
+  const dimState = await stylePage.evaluate(() => {
+    const slider = document.querySelector('#bg-dim-slider')
+    const shade = document.querySelector('.atmosphere-shade')
+    return {
+      sliderValue: slider?.value ?? null,
+      rootInline: document.documentElement.style.getPropertyValue('--bg-dim'),
+      rootComputed: getComputedStyle(document.documentElement).getPropertyValue('--bg-dim'),
+      shadeOpacity: shade ? getComputedStyle(shade).opacity : null,
+      shadeClass: shade?.className ?? null,
+      bgType: document.documentElement.dataset.bgType
+    }
+  })
+  console.log('Background dim interaction state: ' + JSON.stringify(dimState))
+  check(Number(dimState.sliderValue) === 20 &&
+    Math.abs(Number(dimState.rootInline) - 0.2) < 0.02 &&
+    Math.abs(Number(dimState.shadeOpacity) - 0.2) < 0.02,
+    'background dim slider changes the visible overlay opacity')
+  await stylePage.locator('.bg-dim-reset-btn').click()
+  await stylePage.waitForFunction(() => {
+    const shade = document.querySelector('.atmosphere-shade')
+    return shade && Math.abs(Number(getComputedStyle(shade).opacity) - 0.35) < 0.02
+  }, null, { timeout: 3000 }).catch(() => {})
+  const dimResetState = await stylePage.evaluate(() => {
+    const shade = document.querySelector('.atmosphere-shade')
+    return {
+      rootInline: document.documentElement.style.getPropertyValue('--bg-dim'),
+      rootComputed: getComputedStyle(document.documentElement).getPropertyValue('--bg-dim'),
+      shadeVariable: shade ? getComputedStyle(shade).getPropertyValue('--bg-dim') : null,
+      parentVariable: shade?.parentElement ? getComputedStyle(shade.parentElement).getPropertyValue('--bg-dim') : null,
+      shadeOpacity: shade ? getComputedStyle(shade).opacity : null,
+      shadeInlineStyle: shade?.getAttribute('style') ?? null,
+      shadeTransition: shade ? getComputedStyle(shade).transition : null,
+      sliderValue: document.querySelector('#bg-dim-slider')?.value ?? null
+    }
+  })
+  console.log('Background dim reset state: ' + JSON.stringify(dimResetState))
+  check(Math.abs(Number(dimResetState.rootInline) - 0.35) < 0.02 &&
+    Math.abs(Number(dimResetState.shadeOpacity) - 0.35) < 0.02 &&
+    Number(dimResetState.sliderValue) === 35,
+    'background dim reset restores the configured default')
+
+  await bgCards.nth(3).click()
+  check(await stylePage.locator('html').getAttribute('data-bg-type') === 'vanta-fog', 'water-fog background card applies')
+  await stylePage.locator('.vanta-atmosphere-canvas canvas.is-rendered').waitFor({ state: 'visible', timeout: 20000 })
+
+  await bgCards.nth(0).click()
+  check(await stylePage.locator('html').getAttribute('data-bg-type') === 'paper', 'paper background can be restored after dynamic effects')
+  const bgPickerPromise = stylePage.waitForEvent('filechooser')
+  await bgCards.nth(4).click()
+  const bgPicker = await bgPickerPromise
+  await bgPicker.setFiles({
+    name: 'audit-background.svg',
+    mimeType: 'image/svg+xml',
+    buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#b85e3f"/></svg>')
+  })
+  check(await stylePage.locator('html').getAttribute('data-bg-type') === 'custom-local', 'local background upload selects the custom-local mode')
+  await stylePage.locator('.forecast-atmosphere img.custom-bg-media').waitFor({ state: 'visible', timeout: 10000 })
+  stylePage.once('dialog', dialog => dialog.accept())
+  await stylePage.locator('.local-bg-actions').getByRole('button', { name: '清除', exact: true }).click()
+  check(await stylePage.locator('html').getAttribute('data-bg-type') === 'clouds-static', 'clearing the local background restores the static background')
+  check(await stylePage.locator('#section-bg .theme-card').nth(4).textContent().then(t => t.includes('未选择本地文件')), 'clearing local background updates the card state')
+  await bgCards.nth(0).click()
+
+  // Test the font mode tabs and every local font slot with a real system font fixture.
+  const fontCandidates = [
+    '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+    '/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf',
+    '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+    '/usr/share/fonts/truetype/freefont/FreeSans.ttf'
+  ]
+  let fontFixture = null
+  for (const candidate of fontCandidates) {
+    try { fontFixture = await readFile(candidate); break } catch {}
+  }
+  check(Boolean(fontFixture), 'browser audit runner provides a local TTF fixture for testing font uploads')
+  await stylePage.getByRole('tab', { name: /分离模式/ }).click()
+  const splitFontCards = stylePage.locator('#section-font .split-font-card')
+  check(await splitFontCards.count() === 2, 'split font mode exposes both independent font slots')
+  for (const [index, filename] of [[0, 'audit-font-en.ttf'], [1, 'audit-font-zh.ttf']]) {
+    const fontPickerPromise = stylePage.waitForEvent('filechooser')
+    await splitFontCards.nth(index).locator('.slot-empty-box .upload-text').click()
+    const fontPicker = await fontPickerPromise
+    await fontPicker.setFiles({ name: filename, mimeType: 'font/ttf', buffer: fontFixture })
+    await splitFontCards.nth(index).locator('.slot-info-box').waitFor({ state: 'visible', timeout: 15000 })
+  }
+  await expect(stylePage.locator('html')).toHaveAttribute('data-custom-font', 'split', { timeout: 15000 })
+  check(await stylePage.evaluate(() => document.documentElement.dataset.customFont === 'split'), 'English and Chinese custom font slots both apply')
+  stylePage.once('dialog', dialog => dialog.accept())
+  await stylePage.getByRole('button', { name: '恢复系统默认字体方案', exact: true }).click()
+  await expect(stylePage.locator('html')).not.toHaveAttribute('data-custom-font', /.+/)
+  await stylePage.getByRole('tab', { name: /统一模式/ }).click()
+  check(await stylePage.locator('#section-font .font-option-card').first().getAttribute('aria-pressed') === 'true', 'system default font card remains selectable')
+  const unifiedFontPickerPromise = stylePage.waitForEvent('filechooser')
+  await stylePage.locator('#section-font .font-option-card').nth(1).getByRole('button', { name: '选择字体', exact: true }).click()
+  const unifiedFontPicker = await unifiedFontPickerPromise
+  await unifiedFontPicker.setFiles({ name: 'audit-font-unified.ttf', mimeType: 'font/ttf', buffer: fontFixture })
+  await expect(stylePage.locator('html')).toHaveAttribute('data-custom-font', 'unified')
+  await stylePage.locator('#section-font .font-option-card').nth(1).getByRole('button', { name: '清除', exact: true }).click()
+  await expect(stylePage.locator('html')).not.toHaveAttribute('data-custom-font', /.+/)
+  check(await stylePage.evaluate(() => !document.documentElement.style.getPropertyValue('--font').includes('CustomUnifiedFont')), 'clearing the unified font restores the system font stack')
+
+  // The homepage layout switch must route into a functioning editor and back out cleanly.
+  await stylePage.locator('#section-home-layout input[type="checkbox"]').check()
+  await stylePage.waitForURL('**/hub')
+  await expect(stylePage.getByRole('button', { name: '完成', exact: true })).toBeVisible()
+  check(await stylePage.locator('.edit-bar-info').textContent().then(t => t.includes('桌面排版编辑模式')), 'homepage layout switch opens the actual edit mode')
+  await stylePage.getByRole('button', { name: '完成', exact: true }).click()
+  await expect(stylePage.locator('.edit-bar-info')).toBeHidden()
+  await stylePage.goto(base + '/style', { waitUntil: 'networkidle' })
+  await stylePage.setViewportSize({ width: 390, height: 844 })
+  check(await stylePage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Quiet Research style page remains horizontally usable on mobile')
+  check(styleErrors.length === 0, `appearance settings produce no browser runtime errors: ${styleErrors.join('; ')}`)
+  await styleContext.close()
+  }
+
   await writeFile(resolve(output, 'browser-checks.json'), JSON.stringify({ checks, total: checks.length }, null, 2))
   console.log(`Browser verification: ${checks.length} checks passed.`)
 } finally { await browser.close(); server.close() }
