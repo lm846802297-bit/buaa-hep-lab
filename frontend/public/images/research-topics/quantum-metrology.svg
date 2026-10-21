@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" role="img" aria-labelledby="title desc">
 <title id="title">量子态、自旋关联与费舍尔信息</title><desc id="desc">左侧示意 Bloch 球上的量子态方向矢量，中部示意两个相关自旋，右侧为无定量刻度的测量分布曲线。图中不表示具体数据、费舍尔信息数值或量子费舍尔信息（QFI）的计算结果，也不能单凭示意图判定态是否纠缠。</desc>
 <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#050e19"/><stop offset="1" stop-color="#101d31"/></linearGradient><radialGradient id="sphere"><stop stop-color="#4cbadf" stop-opacity=".02"/><stop offset=".8" stop-color="#4c9fd5" stop-opacity=".12"/><stop offset="1" stop-color="#8feaf4" stop-opacity=".7"/></radialGradient><radialGradient id="state"><stop stop-color="#fff4d0"/><stop offset=".28" stop-color="#ffc46c"/><stop offset="1" stop-color="#ff9b4d" stop-opacity="0"/></radialGradient><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#63bddb" stroke-opacity=".08"/></pattern></defs>
+<style>@media (max-width: 600px) { text { display: none; } }</style>
 <rect width="1000" height="400" fill="url(#bg)"/><rect width="1000" height="400" fill="url(#grid)"/>
 <g transform="translate(300 202)">
 <circle r="132" fill="url(#sphere)" stroke="#6bdcf0" stroke-opacity=".65" stroke-width="2"/>
