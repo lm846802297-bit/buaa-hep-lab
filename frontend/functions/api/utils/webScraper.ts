@@ -36,6 +36,73 @@ const BROWSER_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Appl
 
 const FETCH_TIMEOUT_MS = 9000;
 const SUBPAGE_TIMEOUT_MS = 6000;
+const MAX_REDIRECTS = 3;
+const MAX_PAGE_BYTES = 1_000_000;
+
+const BLOCKED_HOST_SUFFIXES = [
+  '.localhost', '.local', '.internal', '.test', '.invalid', '.example', '.onion', '.home.arpa'
+];
+
+/**
+ * Accept only ordinary public web URLs. Workers cannot reliably inspect DNS
+ * resolution results here, so IP literals and local/reserved hostnames are
+ * rejected and every redirect is validated independently.
+ */
+export function validatePublicHttpUrl(input: string): URL {
+  let url: URL;
+  try {
+    url = new URL(input);
+  } catch {
+    throw new Error('请输入格式正确的公开网页网址');
+  }
+
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    throw new Error('仅支持 HTTP 或 HTTPS 协议链接');
+  }
+  if (url.username || url.password) {
+    throw new Error('不允许包含用户名或密码的网址');
+  }
+  if (url.port && !['80', '443'].includes(url.port)) {
+    throw new Error('仅允许标准 HTTP/HTTPS 端口');
+  }
+
+  const hostname = url.hostname.toLowerCase().replace(/\\.$/, '');
+  const isIpLiteral =
+    hostname.startsWith('[') ||
+    hostname.includes(':') ||
+    /^\\d+(?:\\.\\d+){0,3}$/.test(hostname);
+
+  if (isIpLiteral) {
+    throw new Error('不允许抓取 IP 字面量地址');
+  }
+  if (!hostname.includes('.') ||
+      hostname === 'localhost' ||
+      BLOCKED_HOST_SUFFIXES.some(suffix => hostname === suffix.slice(1) || hostname.endsWith(suffix))) {
+    throw new Error('不允许抓取本地、内部或保留域名');
+  }
+
+  const labels = hostname.split('.');
+  if (labels.some(label =>
+    !label ||
+    label.length > 63 ||
+    !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label)
+  )) {
+    throw new Error('网址主机名无效');
+  }
+
+  url.hostname = hostname;
+  url.hash = '';
+  return url;
+}
+
+async function discardResponseBody(response: Response): Promise<void> {
+  if (!response.body) return;
+  try {
+    await response.body.cancel();
+  } catch {
+    // Best-effort cancellation for rejected responses.
+  }
+}
 
 export function decodeHtmlEntities(str: string): string {
   if (!str) return '';
@@ -452,18 +519,72 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<string>
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': BROWSER_USER_AGENT,
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
+    let currentUrl = validatePublicHttpUrl(url);
+
+    for (let redirects = 0; ; redirects++) {
+      const res = await fetch(currentUrl.href, {
+        redirect: 'manual',
+        signal: controller.signal,
+        headers: {
+          'User-Agent': BROWSER_USER_AGENT,
+          'Accept': 'text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.1',
+          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
+        }
+      });
+
+      if ([301, 302, 303, 307, 308].includes(res.status)) {
+        const location = res.headers.get('location');
+        await discardResponseBody(res);
+        if (!location) throw new Error('上游重定向缺少 Location');
+        if (redirects >= MAX_REDIRECTS) throw new Error('网页重定向次数超过限制');
+        currentUrl = validatePublicHttpUrl(new URL(location, currentUrl).href);
+        continue;
       }
-    });
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status} ${res.statusText}`);
+
+      if (!res.ok) {
+        await discardResponseBody(res);
+        throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      }
+
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType && !/(?:text\\/html|application\\/xhtml\\+xml|text\\/plain)/i.test(contentType)) {
+        await discardResponseBody(res);
+        throw new Error('目标响应不是可读取的 HTML/文本页面');
+      }
+
+      const declaredSize = Number(res.headers.get('content-length') || 0);
+      if (Number.isFinite(declaredSize) && declaredSize > MAX_PAGE_BYTES) {
+        await discardResponseBody(res);
+        throw new Error('网页响应超过 1 MB 限制');
+      }
+      if (!res.body) return '';
+
+      const reader = res.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let totalBytes = 0;
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          totalBytes += value.byteLength;
+          if (totalBytes > MAX_PAGE_BYTES) {
+            await reader.cancel();
+            throw new Error('网页响应超过 1 MB 限制');
+          }
+          chunks.push(value);
+        }
+      } finally {
+        reader.releaseLock();
+      }
+
+      const bytes = new Uint8Array(totalBytes);
+      let offset = 0;
+      for (const chunk of chunks) {
+        bytes.set(chunk, offset);
+        offset += chunk.byteLength;
+      }
+      return new TextDecoder('utf-8').decode(bytes);
     }
-    return await res.text();
   } finally {
     clearTimeout(timer);
   }
@@ -472,22 +593,8 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<string>
 export async function scrapeUrlDeep(targetUrl: string): Promise<ScrapedResult> {
   let validUrl = '';
   try {
-    const u = new URL(targetUrl.trim());
-    if (u.protocol !== 'http:' && u.protocol !== 'https:') {
-      return {
-        success: false,
-        url: targetUrl,
-        title: '',
-        combined_text: '',
-        pages_scraped: [],
-        poster_candidates: [],
-        best_poster_url: '',
-        registration_url: '',
-        error: '仅支持 HTTP 或 HTTPS 协议链接'
-      };
-    }
-    validUrl = u.href;
-  } catch {
+    validUrl = validatePublicHttpUrl(targetUrl.trim()).href;
+  } catch (err: any) {
     return {
       success: false,
       url: targetUrl,
@@ -497,7 +604,7 @@ export async function scrapeUrlDeep(targetUrl: string): Promise<ScrapedResult> {
       poster_candidates: [],
       best_poster_url: '',
       registration_url: '',
-      error: '请输入格式正确的网址（如 https://...）'
+      error: err?.message || '请输入有效的公开 HTTP(S) 网页链接'
     };
   }
 
