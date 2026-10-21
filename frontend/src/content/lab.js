@@ -678,7 +678,7 @@ export const publications = [
 
 
 // Public profile review date. This is editorial review metadata, not a claim of a complete roster.
-export const publicContentIndexCheckedAt = '2026-10-20'
+export const publicContentIndexCheckedAt = '2026-10-21'
 // Backward-compatible alias; this date tracks index/source checking, not independent scientific peer review.
 export const publicContentReviewedAt = publicContentIndexCheckedAt
 
