@@ -86,32 +86,36 @@ try {
   await publicSkinTrigger.click()
   await page.evaluate(() => {
     window.__worldlinePhaseLog = []
-    window.__worldlinePhaseListener = event => window.__worldlinePhaseLog.push(event.detail)
+    window.__worldlinePhaseListener = event => {
+      window.__worldlinePhaseLog.push(event.detail)
+      if (event.detail !== 'readout') return
+      const overlay = document.querySelector('.worldline-shift-overlay')
+      const backdrop = document.querySelector('.worldline-technical-backdrop')
+      const hud = overlay?.querySelector('.worldline-shift-overlay__hud')
+      window.__worldlineReadoutSnapshot = {
+        backdropVisible: Boolean(backdrop && backdrop.getBoundingClientRect().width > 0),
+        backdropShifting: Boolean(backdrop?.classList.contains('is-shifting')),
+        ringCount: backdrop?.querySelectorAll('.worldline-backdrop-shift-wave__ring').length || 0,
+        hudVisible: Boolean(hud && hud.getBoundingClientRect().width > 0 && hud.getBoundingClientRect().height > 0),
+        hudOpacity: hud ? Number(getComputedStyle(hud).opacity) : null,
+        hudAnimationName: hud ? getComputedStyle(hud).animationName : '',
+        hudBackgroundColor: hud ? getComputedStyle(hud).backgroundColor : ''
+      }
+    }
     window.addEventListener('worldline:phase', window.__worldlinePhaseListener)
   })
   await publicSkin.selectOption('worldline-console')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout'), null, { timeout: 1200 })
-  const technicalBackdrop = page.locator('.worldline-technical-backdrop')
-  check(await technicalBackdrop.isVisible(), 'Worldline Console enables the clockwork and scientific-drawing background')
-  check(await technicalBackdrop.evaluate(el => el.classList.contains('is-shifting')), 'worldline transition activates the technical backdrop during the event')
-  check(await technicalBackdrop.locator('.worldline-backdrop-shift-wave__ring').count() === 2, 'worldline transition draws two expanding instrument-wave rings')
-  const shiftHud = page.locator('.worldline-shift-overlay__hud')
-  check(await shiftHud.isVisible(), 'worldline shift HUD remains visible in the late transition frame')
-  const hudStyle = await shiftHud.evaluate(el => {
-    const style = getComputedStyle(el)
-    return { animationName: style.animationName, backgroundColor: style.backgroundColor, opacity: Number(style.opacity) }
-  })
-  const hudTimelineDeclared = await page.evaluate(() => {
-    for (const sheet of document.styleSheets) {
-      try { for (const rule of sheet.cssRules) if (rule.selectorText === '.worldline-shift-overlay__hud' && rule.style.animation.includes('worldline-hud-fade')) return true } catch {}
-    }
-    return false
-  })
-  check(hudTimelineDeclared, `worldline shift HUD has its own opacity timeline (computed animation: ${hudStyle.animationName || 'none'})`)
-  check(hudStyle.opacity > 0.2, 'worldline HUD remains visibly readable during the late transition phase')
-  check(hudStyle.backgroundColor !== 'rgba(0, 0, 0, 0)' && hudStyle.backgroundColor !== 'transparent', 'worldline shift HUD uses a dark, high-contrast panel')
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
+  const readoutSnapshot = await page.evaluate(() => window.__worldlineReadoutSnapshot || null)
+  check(Boolean(readoutSnapshot?.backdropVisible), 'Worldline Console enables the clockwork and scientific-drawing background')
+  check(Boolean(readoutSnapshot?.backdropShifting), 'worldline transition activates the technical backdrop during the readout phase')
+  check(readoutSnapshot?.ringCount === 2, 'worldline transition draws two expanding instrument-wave rings')
+  check(Boolean(readoutSnapshot?.hudVisible), 'worldline shift HUD is visible in the readout frame')
+  check(Boolean(readoutSnapshot?.hudAnimationName?.includes('worldline-hud-fade')), `worldline shift HUD has its own opacity timeline (computed animation: ${readoutSnapshot?.hudAnimationName || 'none'})`)
+  check(Number(readoutSnapshot?.hudOpacity) > 0.2, `worldline HUD remains visibly readable during readout (opacity: ${readoutSnapshot?.hudOpacity})`)
+  check(readoutSnapshot?.hudBackgroundColor !== 'rgba(0, 0, 0, 0)' && readoutSnapshot?.hudBackgroundColor !== 'transparent', 'worldline shift HUD uses a dark, high-contrast panel')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
   const worldlineTuner = await page.evaluate(() => {
     const root = getComputedStyle(document.documentElement)
