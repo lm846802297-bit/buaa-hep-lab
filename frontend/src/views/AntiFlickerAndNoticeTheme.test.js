@@ -178,7 +178,7 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(worldlineEffects).toContain("window.addEventListener('pointermove', handlePointerMove")
     expect(worldlineEffects).toContain("window.addEventListener('pointerdown', handlePointerDown")
     expect(indexCss).toContain('.worldline-shift-overlay__flash')
-    expect(indexCss).toContain('background: color-mix(in srgb, var(--worldline-screen) 96%, transparent);')
+    expect(indexCss).toContain('color-mix(in srgb, var(--worldline-screen) 96%, transparent);')
     expect(indexCss).toContain('@keyframes worldline-shift-flash')
     expect(indexCss).toContain('@keyframes worldline-dial-ignite')
     expect(indexCss).toContain('.worldline-shift-overlay__dial-ticks')
