@@ -8,6 +8,7 @@
 <linearGradient id="track"><stop stop-color="#56dff5" stop-opacity="0"/><stop offset=".55" stop-color="#56dff5"/><stop offset="1" stop-color="#a4f5ff"/></linearGradient>
 <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#58bdd7" stroke-opacity=".09"/></pattern>
 </defs>
+<style>@media (max-width: 600px) { text { display: none; } }</style>
 <rect width="1000" height="400" fill="url(#bg)"/><rect width="1000" height="400" fill="url(#grid)"/>
 <ellipse cx="230" cy="168" rx="255" ry="150" fill="url(#halo)"/>
 <g fill="none" stroke="#62c7f1" stroke-opacity=".36"><ellipse cx="230" cy="168" rx="180" ry="68" transform="rotate(-22 230 168)"/><ellipse cx="230" cy="168" rx="145" ry="52" transform="rotate(-22 230 168)"/><ellipse cx="230" cy="168" rx="110" ry="36" transform="rotate(-22 230 168)"/><path d="M68 224C108 140 210 105 300 125S380 205 320 236 170 258 125 195 210 130 264 168" stroke="#a2eaff" stroke-opacity=".3"/></g>
