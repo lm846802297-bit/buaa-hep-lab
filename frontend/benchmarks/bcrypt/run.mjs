@@ -6,6 +6,7 @@ import os from 'node:os'
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { cases, costs, operations, runOperation } from './core.mjs'
+import worker from './worker.mjs'
 
 const { values } = parseArgs({ options: {
   runtime: { type: 'string', default: 'node' }, samples: { type: 'string', default: '50' },
@@ -47,7 +48,18 @@ if (values.runtime === 'cloudflare') {
     if (result.benchmark !== 'bcrypt-v1' || result.sampleId !== params.sample || result.cost !== Number(params.cost) || result.bytes !== Number(params.bytes) || result.operation !== params.operation || result.ok !== true) throw new Error('Invalid local runtime benchmark response')
   }
 } else {
-  invoke = params => runOperation({ cost: Number(params.cost), bytes: Number(params.bytes), operation: params.operation })
+  // Exercise the same Worker request/auth/validation/log/response path as workerd and Cloudflare.
+  // This is still a Node process measurement, not a Cloudflare CPU measurement.
+  const localToken = 'local-node-benchmark-token-do-not-use-externally-2026'
+  invoke = async params => {
+    const request = new Request(`http://benchmark.invalid/benchmark?${new URLSearchParams(params)}`, {
+      headers: { Authorization: `Bearer ${localToken}` },
+    })
+    const response = await worker.fetch(request, { BENCHMARK_TOKEN: localToken })
+    if (!response.ok) throw new Error(`Local Node Worker failure: ${response.status}`)
+    const result = await response.json()
+    if (result.benchmark !== 'bcrypt-v1' || result.sampleId !== params.sample || result.cost !== Number(params.cost) || result.bytes !== Number(params.bytes) || result.operation !== params.operation || result.ok !== true) throw new Error('Invalid benchmark response')
+  }
 }
 const percentile = (values, p) => values.length ? [...values].sort((a, b) => a - b)[Math.ceil(p * values.length) - 1] : null
 const distribution = values => ({ min: values.length ? Math.min(...values) : null, p50: percentile(values, .5), p95: percentile(values, .95), p99: percentile(values, .99), max: values.length ? Math.max(...values) : null })
