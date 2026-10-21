@@ -26,31 +26,25 @@
     },
     "previousDeployments": [
       {
-        "Id": "de9e48e6-446d-4860-9cc1-ddbf500f0fa4",
         "Environment": "Production",
         "Branch": "main",
         "Source": "4315c35",
         "Deployment": "https://de9e48e6.buaa-hep-hub.pages.dev",
-        "Status": "5 hours ago",
-        "Build": "https://dash.cloudflare.com/8a46c4c9521a2bd84c1350d69fead5d4/pages/view/buaa-hep-hub/de9e48e6-446d-4860-9cc1-ddbf500f0fa4"
+        "Status": "5 hours ago"
       },
       {
-        "Id": "1ae81bb6-c41e-4b66-bb3b-ab5d29f3838d",
         "Environment": "Production",
         "Branch": "main",
         "Source": "a84bcbb",
         "Deployment": "https://1ae81bb6.buaa-hep-hub.pages.dev",
-        "Status": "5 hours ago",
-        "Build": "https://dash.cloudflare.com/8a46c4c9521a2bd84c1350d69fead5d4/pages/view/buaa-hep-hub/1ae81bb6-c41e-4b66-bb3b-ab5d29f3838d"
+        "Status": "5 hours ago"
       },
       {
-        "Id": "409d179e-2756-4835-985e-b06a2ef508a3",
         "Environment": "Production",
         "Branch": "main",
         "Source": "8437c8b",
         "Deployment": "https://409d179e.buaa-hep-hub.pages.dev",
-        "Status": "5 hours ago",
-        "Build": "https://dash.cloudflare.com/8a46c4c9521a2bd84c1350d69fead5d4/pages/view/buaa-hep-hub/409d179e-2756-4835-985e-b06a2ef508a3"
+        "Status": "5 hours ago"
       }
     ],
     "projectSettings": {
@@ -64,14 +58,13 @@
       "bindings": {
         "D1": {
           "binding": "DB",
-          "databaseId": "3d563c1f-130b-4e66-b68b-42df31606674"
+          "configured": true
         },
         "R2": null
       },
       "secrets": "Production shows encrypted secrets; values were not opened or read"
     },
     "previousProductionDeployment": {
-      "id": "de9e48e6-446d-4860-9cc1-ddbf500f0fa4",
       "status": "success",
       "completedAtDisplay": "12:21 AM October 21, 2026 (console did not show timezone)",
       "productionAlias": "buaa-hep-hub.pages.dev",
@@ -101,7 +94,8 @@
       "No raw per-invocation CPU sample count or route labels were available in the view inspected.",
       "Dashboard deployment time was shown without a timezone.",
       "The dashboard showed production D1 binding DB and no R2 binding; Git repository control was unconnected."
-    ]
+    ],
+    "redactions": "Cloudflare dashboard account identifiers and the D1 database UUID are omitted from this evidence file; no secret values were read."
   },
   "interpretation": [
     "The Cloudflare dashboard snapshot predates GitHub Actions run 39529826480; its old deployment SHA is historical, not the current verified source.",
