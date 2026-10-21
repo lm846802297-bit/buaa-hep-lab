@@ -52,30 +52,35 @@ export const BG_OPTIONS = [
     id: 'paper',
     name: '纸白（推荐）',
     subtitle: '纯色背景 · 无动态特效 · 专注科研内容',
+    description: '使用纯色纸白背景，不启动动态背景组件。',
     type: 'static'
   },
   {
     id: 'clouds-static',
     name: '云山日光（静态）',
     subtitle: '静态日光云海 · 静谧清晰',
+    description: '使用本地静态云海壁纸，不需要 WebGL。',
     type: 'static'
   },
   {
     id: 'galaxy',
     name: '星际穿越（动态）',
     subtitle: '动态宇宙星空 · WebGL 粒子与引力交互',
+    description: '启用动态星空背景；在浅色和深色配色下均可使用。',
     type: 'dynamic'
   },
   {
     id: 'vanta-fog',
     name: '水波云雾（动态）',
     subtitle: '动态流体水雾 · WebGL 实时着色器',
+    description: '启用 Vanta FOG 动态背景；在浅色和深色配色下均可使用。',
     type: 'dynamic'
   },
   {
     id: 'custom-local',
     name: '自定义本地背景',
     subtitle: '支持本地高清图片与静音视频 · 纯本地加载不上云',
+    description: '只从当前浏览器本地加载图片或视频，不会上传到服务器。',
     type: 'custom'
   }
 ]
