@@ -1,6 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" role="img" aria-labelledby="title desc">
 <title id="title">中微子振荡、质量本征态与混合</title><desc id="desc">三种中微子味态沿传播方向演化，示意振荡与混合；右侧三乘三色块仅象征混合矩阵结构，不代表 PMNS 矩阵元的数值。曲线不对应指定振荡参数下的概率计算。</desc>
 <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#050d18"/><stop offset="1" stop-color="#101a30"/></linearGradient><linearGradient id="beam"><stop stop-color="#5ad7f0" stop-opacity="0"/><stop offset=".45" stop-color="#5ad7f0" stop-opacity=".8"/><stop offset="1" stop-color="#5ad7f0" stop-opacity="0"/></linearGradient><radialGradient id="node"><stop stop-color="#efffff"/><stop offset=".35" stop-color="#66dff4"/><stop offset="1" stop-color="#2876c2" stop-opacity=".1"/></radialGradient><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#7b9ce4" stroke-opacity=".09"/></pattern></defs>
+<g font-family="Arial, Helvetica, sans-serif" font-weight="600" paint-order="stroke" stroke="#07111c" stroke-width="3" stroke-linejoin="round">
+<text x="30" y="34" fill="#d9f7ff" font-size="16" font-weight="700">NEUTRINO OSCILLATION</text>
+<text x="30" y="61" fill="#a8eafa" font-size="13">FLAVOR STATES</text>
+</g>
 <rect width="1000" height="400" fill="url(#bg)"/><rect width="1000" height="400" fill="url(#grid)"/>
 <g fill="none" stroke-width="2.8" stroke-linecap="round">
 <path d="M20 105C55 44 91 44 126 105S197 166 232 105 303 44 338 105 409 166 444 105 515 44 550 105 621 166 656 105 727 44 762 105" stroke="#64c9ff"/>
@@ -12,7 +16,7 @@
 <g stroke="#7edff2" stroke-opacity=".48" fill="none"><path d="M800 100L850 145L900 100L950 145"/><path d="M800 190L850 145L900 190L950 145"/><path d="M800 280L850 235L900 280L950 235"/></g>
 <g transform="translate(845 135)"><rect x="0" y="0" width="33" height="33" rx="3" fill="#4cbef2" fill-opacity=".8"/><rect x="39" y="0" width="33" height="33" rx="3" fill="#9b85ff" fill-opacity=".65"/><rect x="78" y="0" width="33" height="33" rx="3" fill="#57e2c5" fill-opacity=".72"/><rect x="0" y="39" width="33" height="33" rx="3" fill="#ffc477" fill-opacity=".7"/><rect x="39" y="39" width="33" height="33" rx="3" fill="#4cbef2" fill-opacity=".5"/><rect x="78" y="39" width="33" height="33" rx="3" fill="#9b85ff" fill-opacity=".8"/><rect x="0" y="78" width="33" height="33" rx="3" fill="#57e2c5" fill-opacity=".58"/><rect x="39" y="78" width="33" height="33" rx="3" fill="#ffc477" fill-opacity=".76"/><rect x="78" y="78" width="33" height="33" rx="3" fill="#4cbef2" fill-opacity=".65"/></g>
 <g fill="#a6cfe3" font-family="sans-serif" font-size="10" opacity=".9">
-<text x="900" y="104" text-anchor="middle">U<tspan baseline-shift="sub" font-size="7">PMNS</tspan></text>
+<text x="900" y="104" text-anchor="middle" font-size="9">PMNS MIXING MATRIX</text>
 <text x="861" y="128" text-anchor="middle">ν<tspan baseline-shift="sub" font-size="7">1</tspan></text><text x="900" y="128" text-anchor="middle">ν<tspan baseline-shift="sub" font-size="7">2</tspan></text><text x="939" y="128" text-anchor="middle">ν<tspan baseline-shift="sub" font-size="7">3</tspan></text>
 <text x="837" y="156" text-anchor="end">ν<tspan baseline-shift="sub" font-size="7">e</tspan></text><text x="837" y="195" text-anchor="end">ν<tspan baseline-shift="sub" font-size="7">μ</tspan></text><text x="837" y="234" text-anchor="end">ν<tspan baseline-shift="sub" font-size="7">τ</tspan></text>
 </g>
