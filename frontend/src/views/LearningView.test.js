@@ -38,6 +38,10 @@ describe('Study guides and research provenance', () => {
     }
     expect(html).not.toContain('katex-error')
   })
+  it('pins kinematics formulas to the current PDG edition', () => {
+    expect(sourceById('pdg').url).toBe('https://pdg.lbl.gov/2026/')
+    expect(sourceById('kinematics').url).toBe('https://pdg.lbl.gov/2026/reviews/rpp2026-rev-kinematics.pdf')
+  })
   it('handles an unknown deep link without silently showing the wrong topic', async () => {
     const html = await renderTopic('missing-guide')
     expect(html).toContain('没有这个学习专题')
