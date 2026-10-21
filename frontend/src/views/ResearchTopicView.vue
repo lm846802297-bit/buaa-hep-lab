@@ -17,7 +17,6 @@ const topicResources = computed(() => topicDetail.value
   : [])
 const contentReview = computed(() => publicationReviewStatus(publicContentIndexCheckedAt))
 onMounted(() => {
-  window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   document.title = topic.value
     ? `${topic.value.title} | BUAA HEP Hub`
     : '研究专题不存在 | BUAA HEP Hub'
