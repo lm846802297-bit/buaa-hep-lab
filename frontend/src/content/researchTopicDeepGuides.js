@@ -36,7 +36,7 @@ export const researchTopicDeepGuides = {
       {
         "title": "UV 模型与 EFT 的边界",
         "label": "MATCHING AND VALIDITY",
-        "formula": "LEFT = LSM + Σi Ci(μ) Oi(μ) / Λ^(di−4)",
+        "formula": "L_EFT = L_SM + Σi Ci(μ) Oi(μ) / Λ^(di−4)",
         "meaning": "重媒介可在低能下被积分掉，生成带有 Wilson 系数的有效算符。完整分析应记录匹配尺度、算符基底、重整化方案和 RG 演化，并把 UV 参数映射到可比较的低能系数。",
         "conditions": "局域 EFT 展开要求过程的相关动量尺度低于被积掉的新粒子质量尺度，并且截断误差可控。",
         "doesNotMean": "当硬动量接近媒介质量、传播子极点或新粒子可被实际产生时，EFT 结果不能无条件代替完整 UV 模型。"
@@ -262,7 +262,7 @@ export const researchTopicDeepGuides = {
       {
         "title": "相变强度参数 α",
         "label": "ENERGY RELEASE",
-        "formula": "α = Δρ / ρrad,   ρ = Veff − T ∂Veff/∂T",
+        "formula": "α = (ρfalse − ρtrue) / ρrad,   ρ = Veff − T ∂Veff/∂T",
         "meaning": "α 比较相变释放的能量密度与辐射能量密度。能量密度来自自由能/有效势对温度的导数，因此不能简单把两个极小值的势能差在任意温度直接当作 Δρ。",
         "conditions": "必须明确 Δρ 是假真空与真真空能量密度之差、评估温度及有效势的重整化/热修正方案。",
         "doesNotMean": "α 不是与模型无关的输入常数；它受势能、成核温度、热史与定义约定影响。"
