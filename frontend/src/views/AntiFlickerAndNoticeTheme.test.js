@@ -14,7 +14,8 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
   it('uses Quiet Research on public routes and preserves the selected workspace theme', () => {
     expect(indexHtml).toContain("localStorage.getItem('laborbit_color_scheme')")
     expect(indexHtml).toContain("localStorage.getItem('labhub_color_scheme')")
-    expect(indexHtml).toContain("var scheme = isPublicRoute ? 'quiet-research' : (savedScheme ||")
+    expect(indexHtml).toContain("var publicScheme = validPublicSchemes.includes(savedPublicScheme) ? savedPublicScheme : 'quiet-research';")
+    expect(indexHtml).toContain("var scheme = isPublicRoute ? publicScheme : (savedScheme ||")
     expect(indexHtml).toContain("routePath === '/'")
     expect(indexHtml).toContain("routePath === '/people'")
     expect(indexHtml).toContain("routePath === '/events'")
@@ -36,6 +37,18 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(styleViewVue).toContain("scheme.id === 'quiet-research'")
     expect(styleViewVue).toContain('class="theme-default-badge">默认风格</span>')
     expect(styleViewVue).toContain('handleColorSchemeSelect(scheme)')
+  })
+
+  it('exposes an independent public skin selector on every public route', () => {
+    const appVue = readFileSync(resolve(__dirname, '../App.vue'), 'utf-8')
+    const themeSwitcher = readFileSync(resolve(__dirname, '../components/PublicThemeSwitcher.vue'), 'utf-8')
+    const themeModule = readFileSync(resolve(__dirname, '../composables/useThemeStyle.js'), 'utf-8')
+    expect(appVue).toContain('<PublicThemeSwitcher v-if="isPublic" />')
+    expect(themeSwitcher).toContain('选择官网皮肤风格')
+    expect(themeSwitcher).toContain('v-for="scheme in colorSchemes"')
+    expect(themeModule).toContain("export const PUBLIC_COLOR_SCHEME_KEY = 'labhub_public_color_scheme'")
+    expect(themeModule).toContain('actualScheme = publicColorScheme.value')
+    expect(themeModule).toContain('function setPublicColorScheme(scheme)')
   })
 
   it('preserves the original collapsed icon rail in Quiet Research', () => {
