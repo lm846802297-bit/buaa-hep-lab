@@ -483,6 +483,13 @@ try {
     const shade = document.querySelector('.atmosphere-shade')
     return shade && Math.abs(Number(getComputedStyle(shade).opacity) - 1) < 0.02
   }, null, { timeout: 3000 }).catch(() => {})
+  // The shade intentionally transitions opacity over 150 ms. Wait for the
+  // rendered value to settle before asserting the reset state; CSS variables
+  // update synchronously, but getComputedStyle(opacity) interpolates.
+  await stylePage.waitForFunction(() => {
+    const shade = document.querySelector('.atmosphere-shade')
+    return Boolean(shade && Math.abs(Number(getComputedStyle(shade).opacity) - 1) < 0.02)
+  }, null, { timeout: 1200 })
   const dimResetState = await stylePage.evaluate(() => {
     const shade = document.querySelector('.atmosphere-shade')
     return {
