@@ -2312,3 +2312,152 @@ html[data-bg-style="clouds-static"] body {
     transition-duration: .01ms !important;
   }
 }
+
+/* Worldline Console: an original, optional sci-fi research skin inspired by retro lab terminals. */
+:root[data-color-scheme="worldline-console"] {
+  color-scheme: dark;
+  --bg: #100d08;
+  --panel: rgba(29, 23, 15, .90);
+  --panel-solid: #1d170f;
+  --surface: rgba(24, 18, 10, .84);
+  --raised: rgba(255, 179, 71, .10);
+  --glass: rgba(255, 179, 71, .14);
+  --text: #f5efe2;
+  --soft: #e0d2b8;
+  --muted: #ac9875;
+  --accent: #ffb347;
+  --accent-strong: #ffd28a;
+  --accent-ink: #1b1205;
+  --line: rgba(255, 179, 71, .24);
+  --warning: #ffd28a;
+  --warning-bg: rgba(255, 179, 71, .12);
+  --danger: #ff7a59;
+  --danger-bg: rgba(255, 122, 89, .12);
+  --danger-border: rgba(255, 122, 89, .30);
+  --success: #b7dba6;
+  --focus: #ffd28a;
+  --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  --radius: 14px;
+  --shadow: 0 16px 48px -8px rgba(0, 0, 0, .55), 0 0 24px rgba(255, 179, 71, .035);
+}
+:root[data-color-scheme="worldline-console"] body {
+  background-color: var(--bg);
+  background-image: radial-gradient(ellipse at 18% 0%, rgba(255, 179, 71, .07), transparent 38%), repeating-linear-gradient(0deg, rgba(255, 179, 71, .014) 0, rgba(255, 179, 71, .014) 1px, transparent 1px, transparent 4px);
+  background-attachment: fixed;
+}
+:root[data-color-scheme="worldline-console"][data-public-page="true"] .lab-public {
+  background-image: radial-gradient(ellipse at 18% 0%, rgba(255, 179, 71, .07), transparent 38%), repeating-linear-gradient(0deg, rgba(255, 179, 71, .014) 0, rgba(255, 179, 71, .014) 1px, transparent 1px, transparent 4px);
+  background-attachment: fixed;
+}
+:root[data-color-scheme="worldline-console"] ::selection { background: rgba(255, 179, 71, .34); color: #fff8ea; }
+:root[data-color-scheme="worldline-console"] input:focus,
+:root[data-color-scheme="worldline-console"] select:focus,
+:root[data-color-scheme="worldline-console"] textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 179, 71, .18);
+}
+:root[data-color-scheme="worldline-console"] .eyebrow,
+:root[data-color-scheme="worldline-console"] .badge,
+:root[data-color-scheme="worldline-console"] .mono,
+:root[data-color-scheme="worldline-console"] .tex-tt {
+  font-family: var(--font-mono);
+  letter-spacing: .045em;
+}
+:root[data-color-scheme="worldline-console"] .panel,
+:root[data-color-scheme="worldline-console"] .glass-card,
+:root[data-color-scheme="worldline-console"] .theme-card,
+:root[data-color-scheme="worldline-console"] .public-paper,
+:root[data-color-scheme="worldline-console"] .research-detail,
+:root[data-color-scheme="worldline-console"] .physics-resource-card {
+  transition: border-color .22s ease, box-shadow .22s ease, background-color .22s ease, transform .22s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  :root[data-color-scheme="worldline-console"] .panel:hover,
+  :root[data-color-scheme="worldline-console"] .glass-card:hover,
+  :root[data-color-scheme="worldline-console"] .theme-card:hover,
+  :root[data-color-scheme="worldline-console"] .public-paper:hover,
+  :root[data-color-scheme="worldline-console"] .research-detail:hover,
+  :root[data-color-scheme="worldline-console"] .physics-resource-card:hover {
+    border-color: rgba(255, 179, 71, .58);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .24), 0 0 18px rgba(255, 179, 71, .10);
+  }
+  :root[data-color-scheme="worldline-console"] .theme-card:hover,
+  :root[data-color-scheme="worldline-console"] .public-paper:hover,
+  :root[data-color-scheme="worldline-console"] .research-detail:hover,
+  :root[data-color-scheme="worldline-console"] .physics-resource-card:hover { transform: translateY(-2px); }
+  :root[data-color-scheme="worldline-console"] .button.primary:hover:not(:disabled),
+  :root[data-color-scheme="worldline-console"] .button-primary:hover:not(:disabled) { box-shadow: 0 0 20px rgba(255, 179, 71, .18); }
+  :root[data-color-scheme="worldline-console"] .collision-figure:hover .collision-tracks path {
+    stroke-dasharray: 5 7;
+    animation: worldline-track-flow 2.8s linear infinite;
+  }
+}
+:root[data-color-scheme="worldline-console"] a:active,
+:root[data-color-scheme="worldline-console"] button:active:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(1px) scale(.99);
+}
+@keyframes worldline-track-flow { to { stroke-dashoffset: -48; } }
+
+/* Brief, pointer-transparent worldline transition used only by the optional skin. */
+.worldline-shift-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  background: rgba(12, 9, 5, .10);
+  animation: worldline-shift-flash .9s steps(1, end) both;
+}
+.worldline-shift-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(255, 197, 113, .10) 0, rgba(255, 197, 113, .10) 1px, transparent 1px, transparent 4px);
+  animation: worldline-scanline .9s ease-out both;
+}
+.worldline-shift-overlay::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 34%;
+  height: 16%;
+  opacity: 0;
+  background: linear-gradient(180deg, transparent, rgba(255, 179, 71, .18), rgba(255, 179, 71, .03), transparent);
+  animation: worldline-signal-band .9s steps(2, end) both;
+}
+.worldline-shift-overlay__hud {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(420px, calc(100vw - 36px));
+  padding: 18px 22px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255, 179, 71, .62);
+  background: rgba(16, 13, 8, .88);
+  box-shadow: 0 0 30px rgba(255, 179, 71, .14), inset 0 0 24px rgba(255, 179, 71, .04);
+  color: #ffcf85;
+  text-align: center;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  letter-spacing: .10em;
+  animation: worldline-hud-fade .9s ease-out both;
+}
+.worldline-shift-overlay__hud > span,
+.worldline-shift-overlay__hud > small { display: block; font-size: 10px; }
+.worldline-shift-overlay__hud > strong { display: block; margin: 8px 0; font-size: clamp(17px, 3vw, 23px); font-weight: 500; letter-spacing: .16em; }
+.worldline-shift-overlay__hud > small { color: rgba(255, 207, 133, .70); letter-spacing: .05em; }
+@keyframes worldline-shift-flash { 0%, 100% { opacity: 0; } 12% { opacity: .9; } 22% { opacity: .14; } 38% { opacity: .68; } 52% { opacity: .08; } 64% { opacity: .42; } 78% { opacity: .04; } }
+@keyframes worldline-scanline { 0% { opacity: 0; transform: translateY(-8%); } 18% { opacity: .8; } 70% { opacity: .32; transform: translateY(4%); } 100% { opacity: 0; transform: translateY(12%); } }
+@keyframes worldline-signal-band { 0%, 100% { opacity: 0; transform: translateY(-12%); } 24% { opacity: .75; transform: translateY(0); } 42% { opacity: .15; transform: translateY(12%); } 54% { opacity: .52; transform: translateY(-5%); } 72% { opacity: 0; transform: translateY(18%); } }
+@keyframes worldline-hud-fade { 0%, 100% { opacity: 0; } 18%, 70% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .worldline-shift-overlay { display: none !important; animation: none !important; }
+  :root[data-color-scheme="worldline-console"] *, :root[data-color-scheme="worldline-console"] *::before, :root[data-color-scheme="worldline-console"] *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
