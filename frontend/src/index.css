@@ -3112,7 +3112,7 @@ html[data-bg-style="clouds-static"] body {
   animation-duration: 1.10s;
   animation-delay: .16s;
 }
-/* Disable shift keyframes until the overlay is present in a rendered frame; re-adding them starts at frame zero. */
+/* Remove shift keyframes until Vue has rendered the overlay, then re-add from frame zero. Browser acceptance checks the timeline contract rather than a timing-sensitive opacity sample. */
 .worldline-shift-overlay:not(.is-timeline-active),
 .worldline-shift-overlay:not(.is-timeline-active)::before,
 .worldline-shift-overlay:not(.is-timeline-active)::after,
