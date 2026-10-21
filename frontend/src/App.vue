@@ -7,6 +7,7 @@ const MobileNavBar = defineAsyncComponent(() => import('./components/MobileNavBa
 const FeedbackHost = defineAsyncComponent(() => import('./components/FeedbackHost.vue'))
 const NoticeScanBanner = defineAsyncComponent(() => import('./components/NoticeScanBanner.vue'))
 const PublicThemeSwitcher = defineAsyncComponent(() => import('./components/PublicThemeSwitcher.vue'))
+const WorldlineEffects = defineAsyncComponent(() => import('./components/WorldlineEffects.vue'))
 const ForecastAtmosphere = defineAsyncComponent(() => import('./components/ForecastAtmosphere.vue'))
 const MidAutumnMooncakes = defineAsyncComponent(() => import('./components/MidAutumnMooncakes.vue'))
 const NationalDayCelebration = defineAsyncComponent(() => import('./components/NationalDayCelebration.vue'))
@@ -125,6 +126,7 @@ function onUpdatePinned(val) {
 <template>
   <div class="app-shell" :class="{ 'is-home': isHome, 'has-sidebar': showNavbar, 'sidebar-collapsed': !isPinned && showNavbar }">
     <WorkspaceSession v-if="showNavbar" />
+    <WorldlineEffects />
     <PublicThemeSwitcher v-if="isPublic" />
     <ForecastAtmosphere v-if="!isPublic && ['galaxy', 'vanta-fog', 'custom-local', 'earth-orbit'].includes(currentBgType)" />
     <MidAutumnMooncakes v-if="!isPublic" />
