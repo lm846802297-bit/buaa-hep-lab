@@ -240,7 +240,7 @@ function drawBurst(delta) {
   for (let i = shockwaves.length - 1; i >= 0; i -= 1) {
     const wave = shockwaves[i]
     wave.radius += wave.speed * delta
-    wave.life -= 0.012 * delta
+    wave.life -= 0.024 * delta
     if (wave.life <= 0) {
       shockwaves.splice(i, 1)
       continue

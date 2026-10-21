@@ -85,6 +85,9 @@ try {
   check(await publicSkin.count() === 0, 'Escape closes the public theme popover')
   await publicSkinTrigger.click()
   await publicSkin.selectOption('worldline-console')
+  await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
+  await page.waitForTimeout(280)
+  await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
   const worldlineTuner = await page.evaluate(() => {
     const root = getComputedStyle(document.documentElement)
@@ -105,11 +108,8 @@ try {
   const particleCanvas = page.locator('.worldline-particle-canvas')
   check(await particleCanvas.evaluate(el => el.classList.contains('is-visible')), 'worldline skin enables the ambient particle canvas')
   check(await particleCanvas.evaluate(el => el.width > 0 && el.height > 0), 'ambient particle canvas has a real drawing surface')
-  await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await page.waitForTimeout(360)
-  await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
-  await page.waitForTimeout(1090)
-  check(await page.locator('.worldline-shift-overlay').count() === 0, 'worldline transition overlay exits cleanly')
+  await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
+  check(await particleCanvas.evaluate(el => el.classList.contains('is-visible')), 'ambient particles remain active after the shift event')
   check(await particleCanvas.evaluate(el => el.classList.contains('is-visible')), 'ambient particles remain active after the shift event')
   const terminalVisual = await page.evaluate(() => ({
     heroSignal: getComputedStyle(document.querySelector('.hero-eyebrow')).color,
