@@ -25,7 +25,7 @@
 <text x="34" y="85" fill="#d9f7ff" font-size="16" font-weight="700" stroke="#07111c" stroke-width="3">QUANTUM METROLOGY</text>
 <text x="220" y="315" fill="#a8eafa" font-size="13" stroke="#07111c" stroke-width="3">Bloch Sphere</text>
 <text x="373" y="106" fill="#65e5ce" font-size="13" stroke="#07111c" stroke-width="3">Quantum State</text>
-<text x="605" y="254" fill="#ffd18b" font-size="13" stroke="#07111c" stroke-width="3">Spin Correlations</text>
+<text x="605" y="275" fill="#ffd18b" font-size="13" stroke="#07111c" stroke-width="3">Spin Correlations</text>
 <text x="690" y="300" fill="#a8eafa" font-size="12" stroke="#07111c" stroke-width="3">Measurement Distribution</text>
 <text x="610" y="315" fill="#ffd18b" font-size="12" stroke="#07111c" stroke-width="3">Fisher Information (conceptual)</text>
 </g>

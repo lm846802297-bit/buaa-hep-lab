@@ -38,7 +38,7 @@
 <text x="34" y="85" fill="#d9f7ff" font-size="16" font-weight="700" stroke="#07111c" stroke-width="3">DARK MATTER DIRECT DETECTION</text>
 <text x="42" y="105" fill="#a8eafa" font-size="13" stroke="#07111c" stroke-width="3">Dark Matter Halo</text>
 <text x="365" y="287" fill="#d9f7ff" font-size="13" stroke="#07111c" stroke-width="3">Target Nucleus</text>
-<text x="505" y="249" fill="#ffd18b" font-size="13" stroke="#07111c" stroke-width="3">Nuclear Recoil</text>
+<text x="505" y="210" fill="#ffd18b" font-size="13" stroke="#07111c" stroke-width="3">Nuclear Recoil</text>
 <text x="770" y="260" fill="#a8eafa" font-size="13" stroke="#07111c" stroke-width="3">Liquid Xenon Detector</text>
 </g>
 </svg>
