@@ -167,7 +167,7 @@ export const researchTopicDeepGuides = {
         {
           "step": "01",
           "title": "写清场内容与质量矩阵约定",
-          "detail": "例如取 −L ⊃ L̄ Yν Ĥ N_R + ½ N̄_R^c M_R N_R + h.c.，则 m_D = vYν/√2（v ≃ 246 GeV）。明确基底、复相位、Majorana/Dirac 约定和独立参数，避免混用转置与复共轭。",
+          "detail": "例如取 −L ⊃ L̄ Yν H̃ N_R + ½ N̄_R^c M_R N_R + h.c.，则 m_D = vYν/√2（v ≃ 246 GeV）。明确基底、复相位、Majorana/Dirac 约定和独立参数，避免混用转置与复共轭。",
           "output": "完整质量项、矩阵维度、基底定义和参数表。"
         },
         {
@@ -202,7 +202,7 @@ export const researchTopicDeepGuides = {
         },
         {
           "title": "三味振荡极限",
-          "detail": "在标准三中微子、单位ary PMNS 假设下检查概率非负、各末态概率求和为 1；令质量平方差消失时，振荡应消失。若轻—重混合不可忽略，不能继续强制使用有效 3×3 单位ary 矩阵。"
+          "detail": "在标准三中微子、幺正 PMNS 假设下检查概率非负、各末态概率求和为 1；令质量平方差消失时，振荡应消失。若轻—重混合不可忽略，不能继续强制使用有效 3×3 单位ary 矩阵。"
         },
         {
           "title": "矩阵与相位约定",
