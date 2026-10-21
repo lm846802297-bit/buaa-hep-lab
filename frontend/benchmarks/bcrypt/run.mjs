@@ -9,12 +9,14 @@ import { cases, costs, operations } from './core.mjs'
 import worker from './worker.mjs'
 
 const { values } = parseArgs({ options: {
-  runtime: { type: 'string', default: 'node' }, samples: { type: 'string', default: '50' },
-  warmup: { type: 'string', default: '5' }, out: { type: 'string' }, url: { type: 'string' },
+  runtime: { type: 'string', default: 'node' }, samples: { type: 'string' },
+  warmup: { type: 'string' }, out: { type: 'string' }, url: { type: 'string' },
 } })
-const samples = Number(values.samples), warmup = Number(values.warmup)
+// Cloudflare defaults to a small pilot to avoid accidentally issuing 1,320 remote requests.
+const samples = Number(values.samples ?? (values.runtime === 'cloudflare' ? '1' : '50'))
+const warmup = Number(values.warmup ?? (values.runtime === 'cloudflare' ? '1' : '5'))
 if (!['node', 'workerd', 'cloudflare'].includes(values.runtime) || !Number.isInteger(samples) || samples < 1 || samples > 1000 || !Number.isInteger(warmup) || warmup < 0 || warmup > 100 || !values.out) {
-  throw new Error('Use --runtime node|workerd|cloudflare --samples 1..1000 --warmup 0..100 --out file.json')
+  throw new Error('Use --runtime node|workerd|cloudflare --samples 1..1000 --warmup 0..100 --out file.json (defaults: node/workerd 50+5; cloudflare pilot 1+1)')
 }
 const here = dirname(fileURLToPath(import.meta.url))
 const frontend = resolve(here, '../..')
