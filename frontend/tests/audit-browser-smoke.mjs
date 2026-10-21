@@ -478,12 +478,25 @@ try {
     Math.abs(Number(dimState.rootInline) - 0.2) < 0.02 &&
     Math.abs(Number(dimState.shadeOpacity) - 0.2) < 0.02,
     'background dim slider changes the visible overlay opacity')
-  await stylePage.getByRole('button', { name: /恢复默认/ }).click()
-  check(await stylePage.evaluate(() => {
-    const expected = Number(getComputedStyle(document.documentElement).getPropertyValue('--bg-dim'))
-    const actual = Number(getComputedStyle(document.querySelector('.atmosphere-shade')).opacity)
-    return Number.isFinite(expected) && Math.abs(actual - expected) < 0.02
-  }), 'background dim reset restores the configured default')
+  await stylePage.locator('.bg-dim-reset-btn').click()
+  await stylePage.waitForFunction(() => {
+    const shade = document.querySelector('.atmosphere-shade')
+    return shade && Math.abs(Number(getComputedStyle(shade).opacity) - 1) < 0.02
+  }, null, { timeout: 3000 }).catch(() => {})
+  const dimResetState = await stylePage.evaluate(() => {
+    const shade = document.querySelector('.atmosphere-shade')
+    return {
+      rootInline: document.documentElement.style.getPropertyValue('--bg-dim'),
+      rootComputed: getComputedStyle(document.documentElement).getPropertyValue('--bg-dim'),
+      shadeOpacity: shade ? getComputedStyle(shade).opacity : null,
+      sliderValue: document.querySelector('#bg-dim-slider')?.value ?? null
+    }
+  })
+  console.log('Background dim reset state: ' + JSON.stringify(dimResetState))
+  check(Number(dimResetState.rootInline) === 1 &&
+    Math.abs(Number(dimResetState.shadeOpacity) - 1) < 0.02 &&
+    Number(dimResetState.sliderValue) === 100,
+    'background dim reset restores the configured default')
 
   await bgCards.nth(3).click()
   check(await stylePage.locator('html').getAttribute('data-bg-type') === 'vanta-fog', 'water-fog background card applies')
