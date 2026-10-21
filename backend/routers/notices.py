@@ -317,7 +317,7 @@ def delete_notice(notice_id: int, user: User = Depends(get_current_user), db: Se
         raise HTTPException(404, '通知不存在或已被删除')
 
     is_owner = item.created_by_id == user.id
-    is_admin_or_teacher = user.role == 'admin' or user.identity == 'teacher'
+    is_admin_or_teacher = user.role in ('admin', 'teacher')
     if not is_owner and not is_admin_or_teacher:
         raise HTTPException(403, '您无权删除此通知')
 
