@@ -14,6 +14,17 @@
     --font: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
     --serif: var(--font); --radius: 20px; --shadow: 0 16px 48px -8px rgba(0, 0, 0, .65);
     --sidebar: 88px;
+    --theme-tuner-ring: color-mix(in srgb, var(--text) 74%, var(--accent) 26%);
+    --theme-tuner-axis: color-mix(in srgb, var(--text) 42%, transparent);
+    --theme-tuner-core: var(--accent);
+    --theme-tuner-core-fill: color-mix(in srgb, var(--accent) 16%, transparent);
+    --theme-tuner-core-hover-fill: color-mix(in srgb, var(--accent) 25%, transparent);
+    --theme-tuner-node: var(--accent);
+    --theme-tuner-node-stroke: var(--surface);
+    --theme-tuner-button-border: color-mix(in srgb, var(--line) 70%, var(--accent) 30%);
+    --theme-tuner-button-background: linear-gradient(145deg, color-mix(in srgb, var(--surface) 92%, var(--accent) 8%), var(--surface));
+    --theme-tuner-button-shadow: 0 6px 18px rgb(0 0 0 / 12%), inset 0 1px 0 rgb(255 255 255 / 8%);
+    --theme-tuner-button-hover-shadow: 0 8px 24px rgb(0 0 0 / 16%), 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent), inset 0 1px 0 rgb(255 255 255 / 10%);
   }
   * { box-sizing: border-box; }
   body { margin:0; background-color:var(--bg); color:var(--text); font-family:var(--font); font-size:16px; line-height:1.65; -webkit-font-smoothing:antialiased; }
@@ -2316,45 +2327,71 @@ html[data-bg-style="clouds-static"] body {
 /* Worldline Console: an original, optional sci-fi research skin inspired by retro lab terminals. */
 :root[data-color-scheme="worldline-console"] {
   color-scheme: dark;
-  --bg: #100d08;
-  --panel: rgba(29, 23, 15, .90);
-  --panel-solid: #1d170f;
-  --surface: rgba(24, 18, 10, .84);
-  --raised: rgba(255, 179, 71, .10);
-  --glass: rgba(255, 179, 71, .14);
-  --text: #f5efe2;
-  --soft: #e0d2b8;
-  --muted: #ac9875;
-  --accent: #ffb347;
-  --accent-strong: #ffd28a;
-  --accent-ink: #1b1205;
-  --line: rgba(255, 179, 71, .24);
-  --warning: #ffd28a;
-  --warning-bg: rgba(255, 179, 71, .12);
-  --danger: #ff7a59;
-  --danger-bg: rgba(255, 122, 89, .12);
-  --danger-border: rgba(255, 122, 89, .30);
-  --success: #b7dba6;
-  --focus: #ffd28a;
+  /* Original palette: warm amber signal over muted olive-green lab shadows. */
+  --bg: #121510;
+  --panel: rgba(28, 33, 27, .92);
+  --panel-solid: #1c211b;
+  --surface: rgba(24, 29, 25, .88);
+  --raised: rgba(143, 170, 156, .10);
+  --glass: rgba(143, 170, 156, .12);
+  --text: #f0e9d9;
+  --soft: #d1c8b5;
+  --muted: #a5a28e;
+  --accent: #e6a64b;
+  --accent-strong: #ffd08a;
+  --accent-ink: #21180c;
+  --line: rgba(208, 181, 133, .22);
+  --warning: #ebc77e;
+  --warning-bg: rgba(235, 199, 126, .12);
+  --danger: #d5795e;
+  --danger-bg: rgba(213, 121, 94, .12);
+  --danger-border: rgba(213, 121, 94, .30);
+  --success: #a9b88e;
+  --focus: #ffd08a;
   --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
   --radius: 14px;
-  --shadow: 0 16px 48px -8px rgba(0, 0, 0, .55), 0 0 24px rgba(255, 179, 71, .035);
+  --shadow: 0 16px 48px -8px rgba(0, 0, 0, .55), 0 0 24px color-mix(in srgb, var(--worldline-amber) 4%, transparent);
+  --worldline-screen: #121510;
+  --worldline-amber: #e6a64b;
+  --worldline-amber-hot: #ffd08a;
+  --worldline-phosphor: #8faa9c;
+  --worldline-rust: #d5795e;
+  --worldline-warm-ambient: color-mix(in srgb, var(--worldline-amber) 8%, transparent);
+  --worldline-cool-ambient: color-mix(in srgb, var(--worldline-phosphor) 7%, transparent);
+  --worldline-screenline: color-mix(in srgb, var(--worldline-phosphor) 2%, transparent);
+  --theme-tuner-ring: color-mix(in srgb, var(--text) 46%, var(--worldline-phosphor) 54%);
+  --theme-tuner-axis: color-mix(in srgb, var(--worldline-phosphor) 65%, transparent);
+  --theme-tuner-core: var(--worldline-amber);
+  --theme-tuner-core-fill: color-mix(in srgb, var(--worldline-amber) 17%, transparent);
+  --theme-tuner-core-hover-fill: color-mix(in srgb, var(--worldline-amber-hot) 28%, transparent);
+  --theme-tuner-node: var(--worldline-amber);
+  --theme-tuner-node-stroke: var(--panel-solid);
+  --theme-tuner-button-border: color-mix(in srgb, var(--worldline-phosphor) 28%, var(--line) 72%);
+  --theme-tuner-button-background: linear-gradient(145deg, color-mix(in srgb, var(--panel-solid) 88%, var(--worldline-phosphor) 12%), color-mix(in srgb, var(--surface) 94%, var(--worldline-amber) 6%));
+  --theme-tuner-button-shadow: 0 6px 18px rgb(0 0 0 / 22%), inset 0 1px 0 color-mix(in srgb, var(--text) 7%, transparent);
+  --theme-tuner-button-hover-shadow: 0 8px 24px rgb(0 0 0 / 26%), 0 0 0 3px color-mix(in srgb, var(--worldline-amber) 18%, transparent), 0 0 18px color-mix(in srgb, var(--worldline-phosphor) 8%, transparent), inset 0 1px 0 color-mix(in srgb, var(--text) 9%, transparent);
 }
 :root[data-color-scheme="worldline-console"][data-bg-style="paper"] body {
   background-color: var(--bg);
-  background-image: radial-gradient(ellipse at 18% 0%, rgba(255, 179, 71, .07), transparent 38%), repeating-linear-gradient(0deg, rgba(255, 179, 71, .014) 0, rgba(255, 179, 71, .014) 1px, transparent 1px, transparent 4px);
+  background-image:
+    radial-gradient(ellipse at 16% 0%, var(--worldline-warm-ambient), transparent 38%),
+    radial-gradient(ellipse at 88% 14%, var(--worldline-cool-ambient), transparent 34%),
+    repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 5px);
   background-attachment: fixed;
 }
 :root[data-color-scheme="worldline-console"][data-public-page="true"] .lab-public {
-  background-image: radial-gradient(ellipse at 18% 0%, rgba(255, 179, 71, .07), transparent 38%), repeating-linear-gradient(0deg, rgba(255, 179, 71, .014) 0, rgba(255, 179, 71, .014) 1px, transparent 1px, transparent 4px);
+  background-image:
+    radial-gradient(ellipse at 16% 0%, var(--worldline-warm-ambient), transparent 38%),
+    radial-gradient(ellipse at 88% 14%, var(--worldline-cool-ambient), transparent 34%),
+    repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 5px);
   background-attachment: fixed;
 }
-:root[data-color-scheme="worldline-console"] ::selection { background: rgba(255, 179, 71, .34); color: #fff8ea; }
+:root[data-color-scheme="worldline-console"] ::selection { background: color-mix(in srgb, var(--worldline-amber) 34%, transparent); color: #fff8ea; }
 :root[data-color-scheme="worldline-console"] input:focus,
 :root[data-color-scheme="worldline-console"] select:focus,
 :root[data-color-scheme="worldline-console"] textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 179, 71, .18);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--worldline-amber) 18%, transparent);
 }
 :root[data-color-scheme="worldline-console"] .eyebrow,
 :root[data-color-scheme="worldline-console"] .badge,
@@ -2378,15 +2415,15 @@ html[data-bg-style="clouds-static"] body {
   :root[data-color-scheme="worldline-console"] .public-paper:hover,
   :root[data-color-scheme="worldline-console"] .research-detail:hover,
   :root[data-color-scheme="worldline-console"] .physics-resource-card:hover {
-    border-color: rgba(255, 179, 71, .58);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .24), 0 0 18px rgba(255, 179, 71, .10);
+    border-color: color-mix(in srgb, var(--worldline-amber) 56%, var(--worldline-phosphor) 12%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .24), 0 0 18px color-mix(in srgb, var(--worldline-amber) 10%, transparent), 0 0 24px color-mix(in srgb, var(--worldline-phosphor) 6%, transparent);
   }
   :root[data-color-scheme="worldline-console"] .theme-card:hover,
   :root[data-color-scheme="worldline-console"] .public-paper:hover,
   :root[data-color-scheme="worldline-console"] .research-detail:hover,
   :root[data-color-scheme="worldline-console"] .physics-resource-card:hover { transform: translateY(-2px); }
   :root[data-color-scheme="worldline-console"] .button.primary:hover:not(:disabled),
-  :root[data-color-scheme="worldline-console"] .button-primary:hover:not(:disabled) { box-shadow: 0 0 20px rgba(255, 179, 71, .18); }
+  :root[data-color-scheme="worldline-console"] .button-primary:hover:not(:disabled) { box-shadow: 0 0 20px color-mix(in srgb, var(--worldline-amber) 14%, transparent), 0 0 24px color-mix(in srgb, var(--worldline-phosphor) 6%, transparent); }
   :root[data-color-scheme="worldline-console"] .collision-figure:hover .collision-tracks path {
     stroke-dasharray: 5 7;
     animation: worldline-track-flow 2.8s linear infinite;
@@ -2407,14 +2444,14 @@ html[data-bg-style="clouds-static"] body {
   overflow: hidden;
   pointer-events: none;
   opacity: 0;
-  background: rgba(12, 9, 5, .10);
+  background: color-mix(in srgb, var(--worldline-screen, #121510) 10%, transparent);
   animation: worldline-shift-flash .9s steps(1, end) both;
 }
 .worldline-shift-overlay::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(0deg, rgba(255, 197, 113, .10) 0, rgba(255, 197, 113, .10) 1px, transparent 1px, transparent 4px);
+  background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--worldline-amber-hot, #ffd08a) 10%, transparent) 0, color-mix(in srgb, var(--worldline-amber-hot, #ffd08a) 10%, transparent) 1px, transparent 1px, transparent 4px);
   animation: worldline-scanline .9s ease-out both;
 }
 .worldline-shift-overlay::after {
@@ -2425,7 +2462,7 @@ html[data-bg-style="clouds-static"] body {
   top: 34%;
   height: 16%;
   opacity: 0;
-  background: linear-gradient(180deg, transparent, rgba(255, 179, 71, .18), rgba(255, 179, 71, .03), transparent);
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--worldline-amber, #e6a64b) 18%, transparent), color-mix(in srgb, var(--worldline-amber, #e6a64b) 3%, transparent), transparent);
   animation: worldline-signal-band .9s steps(2, end) both;
 }
 .worldline-shift-overlay__hud {
@@ -2435,10 +2472,10 @@ html[data-bg-style="clouds-static"] body {
   width: min(420px, calc(100vw - 36px));
   padding: 18px 22px;
   transform: translate(-50%, -50%);
-  border: 1px solid rgba(255, 179, 71, .62);
-  background: rgba(16, 13, 8, .88);
-  box-shadow: 0 0 30px rgba(255, 179, 71, .14), inset 0 0 24px rgba(255, 179, 71, .04);
-  color: #ffcf85;
+  border: 1px solid color-mix(in srgb, var(--worldline-amber, #e6a64b) 62%, var(--worldline-phosphor, #8faa9c) 10%);
+  background: color-mix(in srgb, var(--worldline-screen, #121510) 88%, transparent);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--worldline-amber, #e6a64b) 14%, transparent), inset 0 0 24px color-mix(in srgb, var(--worldline-amber, #e6a64b) 4%, transparent);
+  color: var(--worldline-amber-hot, #ffd08a);
   text-align: center;
   font-family: var(--font-mono, ui-monospace, monospace);
   letter-spacing: .10em;
@@ -2447,7 +2484,7 @@ html[data-bg-style="clouds-static"] body {
 .worldline-shift-overlay__hud > span,
 .worldline-shift-overlay__hud > small { display: block; font-size: 10px; }
 .worldline-shift-overlay__hud > strong { display: block; margin: 8px 0; font-size: clamp(17px, 3vw, 23px); font-weight: 500; letter-spacing: .16em; }
-.worldline-shift-overlay__hud > small { color: rgba(255, 207, 133, .70); letter-spacing: .05em; }
+.worldline-shift-overlay__hud > small { color: color-mix(in srgb, var(--worldline-amber-hot, #ffd08a) 70%, transparent); letter-spacing: .05em; }
 @keyframes worldline-shift-flash { 0%, 100% { opacity: 0; } 12% { opacity: .9; } 22% { opacity: .14; } 38% { opacity: .68; } 52% { opacity: .08; } 64% { opacity: .42; } 78% { opacity: .04; } }
 @keyframes worldline-scanline { 0% { opacity: 0; transform: translateY(-8%); } 18% { opacity: .8; } 70% { opacity: .32; transform: translateY(4%); } 100% { opacity: 0; transform: translateY(12%); } }
 @keyframes worldline-signal-band { 0%, 100% { opacity: 0; transform: translateY(-12%); } 24% { opacity: .75; transform: translateY(0); } 42% { opacity: .15; transform: translateY(12%); } 54% { opacity: .52; transform: translateY(-5%); } 72% { opacity: 0; transform: translateY(18%); } }
