@@ -37,7 +37,7 @@ function observeTopicSections() {
       .filter(entry => entry.isIntersecting)
       .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
     if (visible[0]) activeTopicSection.value = visible[0].target.id
-  }, { rootMargin: '-14% 0px -72% 0px', threshold: [0, 0.15, 0.35] })
+  }, { rootMargin: '-5% 0px -70% 0px', threshold: [0, 0.15, 0.35] })
 
   for (const item of topicNavigation.value) {
     const section = document.getElementById(item.target)
