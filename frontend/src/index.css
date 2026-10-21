@@ -2349,13 +2349,16 @@ html[data-bg-style="clouds-static"] body {
   --success: #6de4ce;
   --focus: #9df6ff;
   --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
-  --radius: 14px;
+  --radius: 8px;
   --shadow: 0 16px 48px -8px rgba(0, 0, 0, .55), 0 0 24px color-mix(in srgb, var(--worldline-cyan) 4%, transparent);
   --worldline-screen: #07111d;
   --worldline-cyan: #55e6f2;
   --worldline-cyan-hot: #c5fbff;
   --worldline-blue: #83a9ff;
   --worldline-anomaly: #ff4d86;
+  --worldline-hardware: #87928d;
+  --worldline-hardware-text: #aab6b5;
+  --worldline-device-coral: #e98278;
   --worldline-cyan-ambient: color-mix(in srgb, var(--worldline-cyan) 13%, transparent);
   --worldline-blue-ambient: color-mix(in srgb, var(--worldline-blue) 10%, transparent);
   --worldline-screenline: color-mix(in srgb, var(--worldline-cyan) 4%, transparent);
@@ -2534,7 +2537,7 @@ html[data-bg-style="clouds-static"] body {
 }
 :root[data-color-scheme="worldline-console"] .lab-public .research-detail,
 :root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card {
-  border-radius: 14px;
+  border-radius: 8px;
   border-color: color-mix(in srgb, var(--worldline-blue) 18%, var(--line));
   background: linear-gradient(145deg, color-mix(in srgb, var(--panel-solid) 90%, var(--worldline-blue) 4%), color-mix(in srgb, var(--surface) 96%, var(--worldline-cyan) 4%));
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 3%, transparent);
@@ -2651,6 +2654,16 @@ html[data-bg-style="clouds-static"] body {
 }
 :root[data-color-scheme="worldline-console"] .lab-public .collision-figure {
   isolation: isolate;
+  padding: 30px 14px 10px;
+  border: 1px solid color-mix(in srgb, var(--worldline-hardware) 24%, var(--line));
+  border-radius: 8px;
+  background:
+    linear-gradient(140deg, color-mix(in srgb, var(--worldline-hardware) 6%, transparent), transparent 36%),
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-solid) 72%, transparent), color-mix(in srgb, var(--worldline-screen) 58%, transparent));
+  box-shadow:
+    inset 0 0 0 1px rgba(3, 9, 16, .72),
+    inset 0 0 44px rgba(0, 0, 0, .20),
+    0 18px 44px rgba(0, 0, 0, .14);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .collision-figure::before {
   content: "";
@@ -2658,8 +2671,10 @@ html[data-bg-style="clouds-static"] body {
   inset: 4% 2.5% 8%;
   z-index: -1;
   pointer-events: none;
-  opacity: .46;
+  opacity: .72;
+  border: 1px solid color-mix(in srgb, var(--worldline-hardware) 14%, transparent);
   background:
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--worldline-blue) 3%, transparent) 0 1px, transparent 1px 5px),
     linear-gradient(var(--worldline-cyan) 0 0) left top / 26px 1px no-repeat,
     linear-gradient(var(--worldline-cyan) 0 0) left top / 1px 26px no-repeat,
     linear-gradient(var(--worldline-blue) 0 0) right top / 26px 1px no-repeat,
@@ -2668,6 +2683,44 @@ html[data-bg-style="clouds-static"] body {
     linear-gradient(var(--worldline-blue) 0 0) left bottom / 1px 26px no-repeat,
     linear-gradient(var(--worldline-cyan) 0 0) right bottom / 26px 1px no-repeat,
     linear-gradient(var(--worldline-cyan) 0 0) right bottom / 1px 26px no-repeat;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure::after {
+  content: "FIELD MONITOR // 01";
+  position: absolute;
+  top: 9px;
+  left: 18px;
+  z-index: 1;
+  padding: 2px 8px;
+  border-left: 2px solid var(--worldline-device-coral);
+  background: color-mix(in srgb, var(--worldline-screen) 88%, transparent);
+  color: var(--worldline-hardware-text);
+  font: 8px/1.5 var(--font-mono);
+  letter-spacing: .13em;
+  pointer-events: none;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure figcaption {
+  margin-top: 4px;
+  padding: 11px 10px 2px;
+  border-top: 1px solid color-mix(in srgb, var(--worldline-hardware) 28%, var(--line));
+  font-size: 8px;
+  letter-spacing: .11em;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure figcaption span:first-child::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin: 0 8px 1px 0;
+  border-radius: 1px;
+  background: var(--worldline-device-coral);
+  box-shadow: 0 0 7px color-mix(in srgb, var(--worldline-device-coral) 38%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .public-theme-trigger {
+  border-radius: 7px;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-detail,
+:root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card {
+  border-radius: 8px;
 }
 :root[data-color-scheme="worldline-console"] .lab-public .collision-figure .track-hits circle {
   transform-box: fill-box;

@@ -86,7 +86,10 @@ try {
   await publicSkinTrigger.click()
   await publicSkin.selectOption('worldline-console')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await page.waitForTimeout(180)
+  await page.waitForTimeout(360)
+  const shiftHud = page.locator('.worldline-shift-overlay__hud')
+  check(await shiftHud.isVisible(), 'worldline shift HUD is visible at the visual peak')
+  check(await shiftHud.evaluate(el => Number(getComputedStyle(el).opacity) > 0.99), 'worldline shift HUD reaches full opacity instead of fading with the screen flash')
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
   const worldlineTuner = await page.evaluate(() => {
@@ -110,13 +113,15 @@ try {
   check(await particleCanvas.evaluate(el => el.width > 0 && el.height > 0), 'ambient particle canvas has a real drawing surface')
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
   check(await particleCanvas.evaluate(el => el.classList.contains('is-visible')), 'ambient particles remain active after the shift event')
-  check(await particleCanvas.evaluate(el => el.classList.contains('is-visible')), 'ambient particles remain active after the shift event')
+  check(await particleCanvas.evaluate(el => Number(getComputedStyle(el).opacity) > 0.3), 'ambient particle field retains visible opacity after the shift event')
   const terminalVisual = await page.evaluate(() => ({
     heroSignal: getComputedStyle(document.querySelector('.hero-eyebrow')).color,
-    resourceRadius: getComputedStyle(document.querySelector('.physics-resource-card')).borderRadius
+    resourceRadius: getComputedStyle(document.querySelector('.physics-resource-card')).borderRadius,
+    monitorLabel: getComputedStyle(document.querySelector('.collision-figure'), '::after').content
   }))
   check(terminalVisual.heroSignal === 'rgb(131, 169, 255)', 'Worldline hero uses the electric-blue secondary signal')
-  check(terminalVisual.resourceRadius === '14px', 'Worldline resource cards use the compact instrument-panel radius')
+  check(terminalVisual.resourceRadius === '8px', 'Worldline resource cards use the compact instrument-panel radius')
+  check(terminalVisual.monitorLabel.includes('FIELD MONITOR'), 'Worldline hero is framed as an analog field monitor, not a generic neon panel')
   await page.screenshot({ path: resolve(output, 'worldline-1440-first-screen.png') })
   await page.mouse.move(700, 150)
   await page.waitForTimeout(100)
