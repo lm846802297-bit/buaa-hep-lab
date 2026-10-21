@@ -35,6 +35,7 @@
 - 上传策略位于 `frontend/functions/api/utils/uploadPolicy.ts`。
 - `Env` 类型中已经定义可选的 `FILES_BUCKET?: R2Bucket`。
 - 文件接口已有可选 R2 路径；未绑定 R2 时，后端上传限制回退为 1 MiB。
+- 当前 Cloudflare 账户尚未开通/创建 R2 桶；为使 Pages 部署不依赖未创建资源，部署配置临时只声明 D1，不声明 `FILES_BUCKET`。这不会移除可选 R2 代码路径；未绑定时，较大的新附件应使用外部网盘链接。
 - 前端 `FileField.vue` 允许输入外部 URL，也提供文件上传控件。
 - 当前上传接口使用 `/api/files/:id` 形式的站内链接；下载路由已有登录中间件。
 - PR #1（“Configure Cloudflare R2 for larger attachments”）已于 2026-10-20 合并至 `main`，合并提交为 `94c54853d733565605a27eec032f7e9faf55ae83`。它把 R2 绑定配置与文档纳入仓库，但**不等于**已在 Cloudflare 生产账户创建桶、绑定生效或生产站点已部署该版本；这些状态仍须单独核验。
