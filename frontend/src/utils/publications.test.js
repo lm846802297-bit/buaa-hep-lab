@@ -28,6 +28,7 @@ describe('approved public bibliography', () => {
     for (const paper of DEMO_ARXIV_PAPERS) {
       expect(paper.published_date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
       expect(paper.published_date).toBe(publications.find(p => p.id === paper.arxiv_id).arxivSubmitted)
+      expect(paper.abstract).toMatch(/^演示用中文导读（非原文逐字摘要）：/)
     }
   })
   it('uses real group phenomenology papers for every demo seminar', () => {
