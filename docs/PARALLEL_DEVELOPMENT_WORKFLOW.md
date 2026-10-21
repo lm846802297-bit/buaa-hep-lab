@@ -25,6 +25,14 @@
 6. 开发中保持 Draft 是正常状态。功能未完成或 CI 失败时，继续修复与验证，不为“让 PR 变绿”而跳过有意义的测试，也不因 CI 失败而提前合并。
 7. 合并前检查最新 head SHA、CI、文件交集及分支是否落后/分叉；任何新提交都需要对应的新验证结果。
 
+开工前建议执行仓库内的只读预检工具（在任何源代码写入前）：
+
+```bash
+node scripts/agent-preflight.mjs --paths frontend/src/index.css frontend/tests/audit-browser-smoke.mjs
+```
+
+将示例路径替换为本任务计划修改的全部仓库相对路径。工具会刷新本地 `origin/main` 跟踪引用，核对 GitHub 上的最新 base SHA，并读取所有指向同一 base 的开放 PR 与 changed-files 列表；它不会修改源文件或远端分支。需要本地 Git、GitHub CLI (`gh`) 和有效的 `gh auth status`。退出码非零表示预检被阻止或无法完成：不要继续写入；先解决过期基线/路径交集，或在无法使用 CLI 时完成等价的只读检查并记录证据。`--allow-overlap` 与 `--allow-stale-base` 只能在用户明确授权后使用，不能用来绕过协作规则。
+
 ### 禁止默认执行的操作
 
 - 不直接向 `main` 推送提交。
