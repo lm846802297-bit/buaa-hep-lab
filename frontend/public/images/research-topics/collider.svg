@@ -10,4 +10,12 @@
 <g fill="#d8faff"><circle cx="685" cy="80" r="4"/><circle cx="298" cy="76" r="3"/><circle cx="612" cy="385" r="4"/><circle cx="284" cy="319" r="3"/></g>
 <g fill="#ffcb7b"><circle cx="720" cy="292" r="4"/><circle cx="448" cy="18" r="3"/><circle cx="866" cy="340" r="3"/></g>
 <g transform="translate(765 278)" fill="none"><path d="M0 0H185M0 0V-94" stroke="#9cb9c9" stroke-opacity=".5"/><path d="M0 -2L15 -5L24 -13L35 -9L47 -22L58 -16L70 -45L78 -67L86 -43L98 -21L111 -14L126 -8L140 -5L158 -4L185 -3" stroke="#63d7ec" stroke-width="2"/><path d="M0 -2L15 -3L24 -5L35 -3L47 -6L58 -4L70 -8L78 -10L86 -7L98 -4L111 -3L126 -2L140 -3L158 -2L185 -2" stroke="#ffc875" stroke-opacity=".65" stroke-width="1.5"/></g>
+
+<g font-family="Arial, Helvetica, sans-serif" font-weight="500" paint-order="stroke" stroke="#07111c" stroke-width="3" stroke-linejoin="round">
+<text x="34" y="34" fill="#d9f7ff" font-size="16" font-weight="700" stroke="#07111c" stroke-width="3">COLLIDER EVENT DISPLAY</text>
+<text x="68" y="74" fill="#a8eafa" font-size="13" stroke="#07111c" stroke-width="3">Detector Layers</text>
+<text x="650" y="52" fill="#d9f7ff" font-size="13" stroke="#07111c" stroke-width="3">Particle Tracks</text>
+<text x="512" y="236" fill="#ffd18b" font-size="13" stroke="#07111c" stroke-width="3">Interaction Vertex</text>
+<text x="618" y="159" fill="#a8eafa" font-size="12" stroke="#07111c" stroke-width="3">Missing Transverse Momentum</text>
+</g>
 </svg>
