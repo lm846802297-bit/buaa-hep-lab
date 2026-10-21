@@ -207,7 +207,8 @@ try {
     })
     await page.waitForFunction(() => window.scrollY < 5)
     check(await page.evaluate(() => window.scrollY < 5), `opening a research topic resets reading position to the top at ${width}px`)
-    check(await page.locator('.topic-sidebar').evaluate(el => getComputedStyle(el).position === 'sticky'), `topic directory uses sticky positioning at ${width}px`)
+    const stickyExpected = await page.evaluate(() => window.innerWidth > 760 || CSS.supports('overflow-x', 'clip'))
+    check(await page.locator('.topic-sidebar').evaluate(el => getComputedStyle(el).position) === (stickyExpected ? 'sticky' : 'static'), `topic directory uses a non-obstructing layout at ${width}px`)
     check(await page.locator('.topic-visual-panel img').evaluate(img => img.complete && img.naturalWidth > 0), `topic visual illustration loads at ${width}px`)
     if (width <= 980) {
       await page.locator('.topic-sidebar-toggle').click()
@@ -225,17 +226,21 @@ try {
     }), `in-page navigation aligns the selected section near the top at ${width}px`)
     await page.waitForFunction(() => document.querySelector('.topic-local-nav a[aria-current="location"]')?.getAttribute('href') === '#topic-assumptions')
     check(await page.locator('.topic-local-nav a[aria-current="location"]').getAttribute('href') === '#topic-assumptions', `topic directory highlights the selected section at ${width}px`)
-    const sidebarFitsViewport = await page.waitForFunction(() => {
-      const element = document.querySelector('.topic-sidebar')
-      if (!element) return false
-      const rect = element.getBoundingClientRect()
-      return rect.top >= 0 && rect.top < 100 && rect.bottom <= window.innerHeight + 1
-    }, null, { timeout: 10000 }).then(() => true).catch(() => false)
-    const sidebarMetrics = await page.locator('.topic-sidebar').evaluate(el => {
-      const rect = el.getBoundingClientRect()
-      return { top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height), viewport: window.innerHeight }
-    })
-    check(sidebarFitsViewport, `topic directory remains visible within the viewport while reading later sections at ${width}px: ${JSON.stringify(sidebarMetrics)}`)
+    if (stickyExpected) {
+      const sidebarFitsViewport = await page.waitForFunction(() => {
+        const element = document.querySelector('.topic-sidebar')
+        if (!element) return false
+        const rect = element.getBoundingClientRect()
+        return rect.top >= 0 && rect.top < 100 && rect.bottom <= window.innerHeight + 1
+      }, null, { timeout: 10000 }).then(() => true).catch(() => false)
+      const sidebarMetrics = await page.locator('.topic-sidebar').evaluate(el => {
+        const rect = el.getBoundingClientRect()
+        return { top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height), viewport: window.innerHeight }
+      })
+      check(sidebarFitsViewport, `topic directory remains visible within the viewport while reading later sections at ${width}px: ${JSON.stringify(sidebarMetrics)}`)
+    } else {
+      check(await page.locator('.topic-sidebar').evaluate(el => getComputedStyle(el).position === 'static'), `legacy mobile layout keeps the topic directory in document flow at ${width}px`)
+    }
     await page.locator('.topic-all-guides').click()
     await page.locator('#research-guides').waitFor()
     await page.waitForFunction(() => location.hash === '#research-guides')
