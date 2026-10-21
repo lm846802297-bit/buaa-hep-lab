@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" role="img" aria-labelledby="title desc">
-<title id="title">暗物质直接探测与核反冲</title><desc id="desc">暗物质粒子沿轨迹撞击原子核，核反冲在液氙探测器中留下信号；背景为星系晕与示意性的反冲谱。</desc>
+<title id="title">暗物质直接探测与核反冲</title><desc id="desc">左侧轨道线仅为暗物质晕的概念化视觉背景，中心展示入射粒子与靶核相互作用，右侧展示探测器及示意信号。底部曲线没有数值刻度，不代表实验数据或特定模型的定量预测。</desc>
 <defs>
 <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#040d16"/><stop offset=".55" stop-color="#0a1b29"/><stop offset="1" stop-color="#07111c"/></linearGradient>
 <radialGradient id="halo"><stop stop-color="#8bdcf4" stop-opacity=".26"/><stop offset=".48" stop-color="#3b83d0" stop-opacity=".12"/><stop offset="1" stop-color="#15314b" stop-opacity="0"/></radialGradient>
