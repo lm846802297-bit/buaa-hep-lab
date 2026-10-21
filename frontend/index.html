@@ -38,7 +38,7 @@
 
           // Public-site palette is independent from the signed-in workspace palette.
           var savedPublicScheme = localStorage.getItem('labhub_public_color_scheme');
-          var validPublicSchemes = ['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple'];
+          var validPublicSchemes = ['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'worldline-console'];
           var publicScheme = validPublicSchemes.includes(savedPublicScheme) ? savedPublicScheme : 'quiet-research';
           // Public pages default to Quiet Research but may restore a visitor's own choice.
           var scheme = isPublicRoute ? publicScheme : (savedScheme || (
@@ -46,7 +46,7 @@
             savedLegacy === 'vanta-fog' || savedLegacy === 'clouds-static' || savedLegacy === 'earth-orbit'
               ? 'classic-cyan' : 'quiet-research'
           ));
-          if (!['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'custom'].includes(scheme) ||
+          if (!['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'worldline-console', 'custom'].includes(scheme) ||
               (isPublicRoute && !validPublicSchemes.includes(scheme))) {
             scheme = 'quiet-research';
           }
@@ -62,11 +62,13 @@
             bgType = 'paper';
           }
 
-          var legacyStyle = scheme === 'quiet-research' && bgType === 'paper' ? 'paper' :
+          var legacyStyle = scheme === 'worldline-console' ? 'worldline-console' :
+            scheme === 'quiet-research' && bgType === 'paper' ? 'paper' :
             scheme === 'nebula-purple' ? 'galaxy' :
             scheme === 'custom' ? 'custom' :
             bgType === 'vanta-fog' ? 'vanta-fog' : 'clouds-static';
           var bgHex = scheme === 'quiet-research' ? '#F7F5F0' :
+            scheme === 'worldline-console' ? '#100d08' :
             scheme === 'obsidian-gray' ? '#090d16' :
             scheme === 'nebula-purple' ? '#03020a' : '#081f28';
           var doc = document.documentElement;
