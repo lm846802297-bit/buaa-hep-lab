@@ -96,10 +96,10 @@ function downloadBibtex() {
           <dl class="research-explainer"><div><dt>研究问题</dt><dd>{{ activeDirection.question }}</dd></div><div><dt>主要方法</dt><dd>{{ activeDirection.methods }}</dd></div><div><dt>实验联系</dt><dd>{{ activeDirection.probes }}</dd></div></dl>
           <p class="research-scope">{{ activeDirection.detail }}</p>
           <div class="topic-tags"><span v-for="tag in activeDirection.tags" :key="tag">{{ tag }}</span></div>
-          <router-link class="topic-guide-entry" :to="`/research/${activeDirection.id}`" :aria-label="`阅读${activeDirection.title}专题导读`">
+          <a class="topic-guide-entry" :href="`/research/${activeDirection.id}`" :aria-label="`阅读${activeDirection.title}专题导读`">
             <div><span>RESEARCH GUIDE / 深入阅读</span><strong>进入{{ activeDirection.title }}专题导读</strong><small>关键关系式 · 适用条件 · 分析流程 · 专业资源</small></div>
             <span class="topic-guide-arrow" aria-hidden="true">↗</span>
-          </router-link>
+          </a>
           <div class="research-evidence"><h4>相关研究选读</h4><ul><li v-for="paper in relatedResearchPapers" :key="paper.id"><a :href="paper.source_url" target="_blank" rel="noopener noreferrer">{{ paper.title }} <span aria-hidden="true">↗</span></a><small>arXiv:{{ paper.id }}</small></li></ul></div>
           <button class="button secondary related-papers" @click="showRelatedPapers(activeDirection.id)">查看相关论文 <span aria-hidden="true">↓</span></button>
         </article>
@@ -120,7 +120,7 @@ function downloadBibtex() {
           <p class="research-guide-summary">{{ direction.text }}</p>
           <div class="research-guide-question"><span>核心问题</span><p>{{ direction.question }}</p></div>
           <div class="research-guide-tags"><span v-for="tag in direction.tags.slice(0, 3)" :key="tag">{{ tag }}</span></div>
-          <router-link :to="'/research/' + direction.id" class="button primary research-guide-open">打开专题导读 <span aria-hidden="true">↗</span></router-link>
+          <a :href="'/research/' + direction.id" class="button primary research-guide-open">打开专题导读 <span aria-hidden="true">↗</span></a>
         </article>
       </div>
       <p class="research-guides-note">导读用于建立概念地图与追溯原始来源；不替代论文原文、独立计算或实验分析复现。</p>
