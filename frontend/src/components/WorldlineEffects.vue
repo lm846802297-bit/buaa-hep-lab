@@ -48,14 +48,10 @@ const particleTones = [
 ]
 
 function readThemeTone(variable, fallback) {
-  if (typeof window === 'undefined' || typeof document === 'undefined' || typeof window.getComputedStyle !== 'function') {
-    return fallback
-  }
-  const value = window.getComputedStyle(document.documentElement).getPropertyValue(variable).trim()
-  const match = value.match(/^#([0-9a-f]{6})$/i)
+  const match = getComputedStyle(document.documentElement).getPropertyValue(variable).trim().match(/^#([a-f\d]{6})$/i)
   if (!match) return fallback
-  const color = Number.parseInt(match[1], 16)
-  return `${(color >> 16) & 255}, ${(color >> 8) & 255}, ${color & 255}`
+  const color = parseInt(match[1], 16)
+  return `${color >> 16 & 255}, ${color >> 8 & 255}, ${color & 255}`
 }
 
 function pickTone() {
