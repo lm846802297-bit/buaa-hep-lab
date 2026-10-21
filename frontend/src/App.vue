@@ -34,6 +34,18 @@ const isAssistant = computed(() => route.path === '/assistant')
 const isDemo = computed(() => isDemoMode())
 const isExcludedRoute = computed(() => isPublic.value || ['/setup', '/login', '/quick-share'].includes(route.path))
 
+// Keep public reading routes immediate and deterministic. The custom out-in
+// animation can otherwise leave the old page detached while a long-page scroll
+// reset is happening during route navigation.
+function enterRoutePage(el, done) {
+  if (isPublic.value) { done(); return }
+  enterPage(el, done)
+}
+function leaveRoutePage(el, done) {
+  if (isPublic.value) { done(); return }
+  leavePage(el, done)
+}
+
 const isPinned = ref(localStorage.getItem('sidebar_pinned') === 'true')
 
 const { openTutorial, closeTutorial, showTutorial } = useTutorial()
@@ -136,7 +148,7 @@ function onUpdatePinned(val) {
     <Navbar v-if="showNavbar" :pinned="isPinned" @update:pinned="onUpdatePinned" />
     <main id="main-content" :class="!showNavbar ? 'public-workspace' : (isHome ? 'home-workspace' : (isAssistant ? 'assistant-workspace' : 'workspace'))">
       <router-view v-slot="{ Component }">
-        <Transition :css="false" mode="out-in" @enter="enterPage" @leave="leavePage">
+        <Transition :css="false" mode="out-in" @enter="enterRoutePage" @leave="leaveRoutePage">
           <KeepAlive include="AssistantView">
             <component :is="Component" :key="route.path" />
           </KeepAlive>
