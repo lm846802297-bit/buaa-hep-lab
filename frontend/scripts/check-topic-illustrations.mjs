@@ -43,6 +43,7 @@ for (const topic of terms.topics) {
   assert.ok(svg.includes(`<title id="title">${topic.title}</title>`), `${topic.file}: title differs from the reviewed whitelist.`)
   assert.ok(svg.includes(`<desc id="desc">${topic.description}</desc>`), `${topic.file}: description differs from the reviewed whitelist.`)
   assert.ok(svg.includes('role="img" aria-labelledby="title desc"'), `${topic.file}: accessible title/description references are missing.`)
+  assert.ok(svg.includes('@media (max-width: 600px) { text { display: none; } }'), `${topic.file}: mobile artwork must suppress tiny embedded labels; readable labels are provided in the page layout.`)
 
   const ids = [...svg.matchAll(/\bid="([^"]+)"/g)].map(match => match[1])
   assert.equal(new Set(ids).size, ids.length, `${topic.file}: SVG IDs must be unique.`)
