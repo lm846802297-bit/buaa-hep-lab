@@ -1,4 +1,4 @@
-const DEMO_LAB = { name: '北航粒子物理研究组', shortName: 'BUAA · HEP', institution: '北京航空航天大学物理学院' }
+import { lab, publications } from '../content/lab'
 
 // Fictional sandbox people and schedules; no actual private group data.
 export const DEMO_BASE_DATE_STR = '2026-10-21'
@@ -14,8 +14,8 @@ export const DEMO_MEMBERS = [
   { id: 4, name: '示例学生', real_name: '示例学生', email: 'student@example.invalid', role: 'member', identity: 'student', bio: '虚构学生账号：研究对撞机精密测量、位移顶点与暗物质唯象学。', can_manage_seminars: false, is_tutorial_completed: true, created_at: '2026-05-20T14:30:00Z' },
 ]
 export const DEMO_SITE_CONFIG = {
-  initialized: true, user_count: 4, lab_name: `${DEMO_LAB.name}（演示）`, lab_short_name: DEMO_LAB.shortName,
-  site_slogan: '高能粒子物理唯象学 · 科研协作', site_title: DEMO_LAB.name, institution: DEMO_LAB.institution,
+  initialized: true, user_count: 4, lab_name: `${lab.name}（演示）`, lab_short_name: lab.shortName,
+  site_slogan: '高能粒子物理唯象学 · 科研协作', site_title: lab.name, institution: lab.institution,
   default_location: '待确认（演示地点）', invite_code_enabled: true, public_feed_enabled: true, version: 'buaa-hep-demo-1',
 }
 const seminarIds = [101, 102, 103, 100, 99]
@@ -45,17 +45,12 @@ export const DEMO_SEMINARS = [2, 9, 16, -5, -12].map((offset, i) => {
     presentations: [{ id: 201 + i, seminar_id: seminarIds[i], position: 0, presenter_id: presenterId, presenter_name: DEMO_MEMBERS[presenterId - 1].name, arxiv_id: seminarPaperIds[i], slides_url: '' }],
   }
 })
-export const DEMO_PAPER_CATALOG = [
-  { id: '2508.13276', title: 'Probing Purely Inelastic Scalar Dark Matter Across Colliders and Gravitational Wave Observatories', authors: ['Jinhui Guo', 'Jia Liu', 'Chenhao Peng', 'Xiao-Ping Wang'], journal: 'Phys.Rev.D 112 (2025) 115014', primary_category: 'hep-ph', arxivSubmitted: '2025-08-18', summary: '研究纯非弹性标量暗物质模型在热遗迹、相变、引力波与对撞机长寿命粒子信号中的互补性。' },
-  { id: '2509.23925', title: 'Probing Scalar-Mediated Sterile Neutrinos with Gravitational Wave and Colliders Signals', authors: ['Qi Bi', 'Jinhui Guo', 'Jian Liao', 'Jia Liu', 'Xiao-Ping Wang'], journal: 'Phys.Rev.D 113 (2026) 095006', primary_category: 'hep-ph', arxivSubmitted: '2025-09-28', summary: '研究标量介导惰性中微子模型的相变引力波与对撞机位移顶点互补信号。' },
-  { id: '2510.20672', title: 'An Axial-Vector Leptophilic Fifth Force Sourced by Solar Neutrinos', authors: ['Rundong Fang', 'Ji-Heng Guo', 'Jia Liu', 'Xiao-Ping Wang', 'YanLi Zhao'], journal: 'Phys.Rev.D 113 (2026) 055041', primary_category: 'hep-ph', arxivSubmitted: '2025-10-23', summary: '研究太阳中微子作为源产生的轴矢量轻子第五力及其唯象学约束。' },
-  { id: '2506.10673', title: 'Ultimate Quantum Precision Limit at Colliders: Conditions and Case Studies', authors: ['Tengyu Ai', 'Qi Bi', 'Yuxin He', 'Jia Liu', 'Xiao-Ping Wang'], journal: 'Phys.Rev.Lett. 135 (2025) 241804', primary_category: 'hep-ph', arxivSubmitted: '2025-06-12', summary: '研究对撞机测量达到量子精度极限的条件，并通过案例讨论可用信息与可达精度。' },
-  { id: '2409.17243', title: 'Long-lived Sterile Neutrino Searches at Future Muon Colliders', authors: ['Qi Bi', 'Jinhui Guo', 'Jia Liu', 'Yan Luo', 'Xiao-Ping Wang'], journal: 'Phys.Rev.D 111 (2025) 075001', primary_category: 'hep-ph', arxivSubmitted: '2024-09-25', summary: '研究未来 μ 子对撞机中长寿命惰性中微子的搜索潜力。' },
-  { id: '2603.17237', title: 'Ultralight Scalar Dark Matter with Off-Diagonal Flavor Couplings', authors: ['Jinhui Guo', 'Jia Liu', 'Chenhao Peng', 'Xiao-Ping Wang', 'Hang Zhao'], journal: 'Phys.Rev.D 114 (2026) 015022', primary_category: 'hep-ph', arxivSubmitted: '2026-03-18', summary: '研究具有非对角味耦合的超轻标量暗物质，以及时域观测和味物理检验的互补性。' },
-  { id: '2610.04971', title: 'Probing anomalous Wtb couplings through bW spin correlations in top-quark pair production at the HL-LHC', authors: ['Qi Bi', 'Zekun Li', 'Chuntao Liu', 'Jia Liu', 'Xiao-Ping Wang'], journal: '', primary_category: 'hep-ph', arxivSubmitted: '2026-10-04', summary: '研究利用 b 夸克与 W 玻色子自旋关联检验异常 Wtb 耦合的方法，并估算 HL-LHC 条件下的统计灵敏度。' },
-]
+const DEMO_PAPER_IDS = ['2508.13276', '2509.23925', '2510.20672', '2506.10673', '2409.17243', '2603.17237', '2610.04971']
+export const DEMO_PAPER_CATALOG = DEMO_PAPER_IDS
+  .map(id => publications.find(paper => paper.id === id))
+  .filter(Boolean)
 export const DEMO_ARXIV_PAPERS = DEMO_PAPER_CATALOG.map((p, i) => ({
-  id: 301 + i, arxiv_id: p.id, title: p.title, authors: p.authors.join(', '), journal: p.journal, primary_category: p.primary_category,
+  id: 301 + i, arxiv_id: p.id, title: p.title, authors: p.authors.join(', '), journal: p.journal, primary_category: 'hep-ph',
   published_date: p.arxivSubmitted, source_url: `https://arxiv.org/abs/${p.id}`, pdf_url: `https://arxiv.org/pdf/${p.id}`,
   abstract: `演示用中文导读（非原文逐字摘要）：${p.summary}`, recommender: DEMO_MEMBERS[i % 2], recommended_by: DEMO_MEMBERS[i % 2].name,
   recommended_at: formatOffsetDate(-2 - i), notes: '演示推荐记录；摘要为课题组中文导读而非原文逐字摘要。论文来自公开文献，推荐人与互动为虚构。',
