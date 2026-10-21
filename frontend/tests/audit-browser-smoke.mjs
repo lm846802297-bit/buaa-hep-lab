@@ -90,9 +90,21 @@ try {
   if (!(await publicSkin.isVisible())) await publicSkinTrigger.click()
   await page.evaluate(() => {
     window.__worldlineReadoutSnapshot = null
+    window.__worldlineDecaySnapshot = null
     window.__worldlinePhaseLog = []
     window.__worldlinePhaseListener = event => {
       window.__worldlinePhaseLog.push(event.detail)
+      if (event.detail !== 'decay') return
+      // Vue queues the DOM patch before this microtask; capture the decay CSS state
+      // before screenshot tooling can stall the page past the end of the transition.
+      queueMicrotask(() => {
+        const overlay = document.querySelector('.worldline-shift-overlay')
+        const hud = overlay?.querySelector('.worldline-shift-overlay__hud')
+        window.__worldlineDecaySnapshot = {
+          phase: overlay?.getAttribute('data-phase') || '',
+          animationName: hud ? getComputedStyle(hud).animationName : ''
+        }
+      })
     }
     window.addEventListener('worldline:phase', window.__worldlinePhaseListener)
   })
@@ -128,8 +140,10 @@ try {
   check(Boolean(readoutSnapshot?.hudVisible), 'worldline shift HUD is visible in the readout frame')
   check(readoutSnapshot?.hudAnimationName === 'none', `worldline HUD is phase-locked and not racing a wall-clock fade during readout (animation: ${readoutSnapshot?.hudAnimationName || 'none'})`)
   check(Number(readoutSnapshot?.hudOpacity) >= 0.98, `worldline HUD is fully readable in the readout phase (opacity: ${readoutSnapshot?.hudOpacity})`)
-  await expect(page.locator('.worldline-shift-overlay')).toHaveAttribute('data-phase', 'decay', { timeout: 1500 })
-  await expect.poll(() => page.locator('.worldline-shift-overlay__hud').evaluate(el => getComputedStyle(el).animationName)).toBe('worldline-hud-decay')
+  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('decay') && window.__worldlineDecaySnapshot, null, { timeout: 1500 })
+  const decaySnapshot = await page.evaluate(() => window.__worldlineDecaySnapshot || null)
+  check(decaySnapshot?.phase === 'decay', `worldline HUD reaches the decay DOM phase (phase: ${decaySnapshot?.phase || 'missing'})`)
+  check(decaySnapshot?.animationName === 'worldline-hud-decay', `worldline HUD starts its dedicated decay animation (animation: ${decaySnapshot?.animationName || 'none'})`)
   check(readoutSnapshot?.hudBackgroundColor !== 'rgba(0, 0, 0, 0)' && readoutSnapshot?.hudBackgroundColor !== 'transparent', 'worldline shift HUD uses a dark, high-contrast panel')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
   const worldlineTuner = await page.evaluate(() => {
