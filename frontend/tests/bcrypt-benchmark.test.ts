@@ -6,12 +6,16 @@ const defaultPayload = { sample: 'test', cost: 6, bytes: 12, operation: 'hash' }
 const call = (path, { token = TEST_TOKEN, envToken = TEST_TOKEN, method = 'POST', payload = defaultPayload } = {}) => {
   const headers = method === 'POST' ? { 'Content-Type': 'application/json' } : {}
   let body
+  let requestPath = path
   if (method === 'POST') {
     const requestPayload = { ...payload }
+    const sample = requestPayload.sample
+    delete requestPayload.sample
+    if (typeof sample === 'string') requestPath += `${requestPath.includes('?') ? '&' : '?'}${new URLSearchParams({ sample })}`
     if (token !== null) requestPayload.token = token
     body = JSON.stringify(requestPayload)
   }
-  const request = new Request(`https://local.invalid${path}`, { method, headers, ...(body === undefined ? {} : { body }) })
+  const request = new Request(`https://local.invalid${requestPath}`, { method, headers, ...(body === undefined ? {} : { body }) })
   const env = envToken === null ? undefined : { BENCHMARK_TOKEN: envToken }
   return worker.fetch(request, env)
 }
@@ -58,8 +62,23 @@ describe('isolated public bcrypt benchmark', () => {
     expect((await call('/benchmark', { payload: { cost: 6, bytes: 12, operation: 'hash' } })).status).toBe(400)
   })
   it('rejects oversized request bodies before bcrypt', async () => {
-    const response = await call('/benchmark', { payload: { ...defaultPayload, sample: 'x'.repeat(1100) } })
+    const response = await call('/benchmark', { payload: { ...defaultPayload, padding: 'x'.repeat(1100) } })
     expect(response.status).toBe(413)
+  })
+  it('does not accept a token from request headers or URL query parameters', async () => {
+    const headerOnly = new Request('https://local.invalid/benchmark?sample=test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TEST_TOKEN}` },
+      body: JSON.stringify({ cost: 6, bytes: 12, operation: 'hash' }),
+    })
+    expect((await worker.fetch(headerOnly, { BENCHMARK_TOKEN: TEST_TOKEN })).status).toBe(404)
+
+    const urlToken = new Request(`https://local.invalid/benchmark?sample=test&token=${TEST_TOKEN}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cost: 6, bytes: 12, operation: 'hash' }),
+    })
+    expect((await worker.fetch(urlToken, { BENCHMARK_TOKEN: TEST_TOKEN })).status).toBe(400)
   })
   it('fails closed when the benchmark secret is missing or incorrect', async () => {
     expect((await call('/benchmark', { token: null })).status).toBe(404)

@@ -44,6 +44,10 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url)
     if (request.method !== 'POST' || url.pathname !== '/benchmark') return notFound()
+    if ([...url.searchParams.keys()].some(key => key !== 'sample')) return new Response('Invalid query parameters', { status: 400, headers: noStore })
+    const sampleValues = url.searchParams.getAll('sample')
+    const sampleId = sampleValues.length === 1 ? sampleValues[0] : ''
+    if (!/^[a-zA-Z0-9_-]{1,100}$/.test(sampleId)) return new Response('Invalid sample identifier', { status: 400, headers: noStore })
 
     // Fail closed before parsing a public request if the secret is not configured.
     const token = env?.BENCHMARK_TOKEN
@@ -60,9 +64,7 @@ export default {
       return new Response('Invalid JSON payload', { status: 400, headers: noStore })
     }
     if (!equalSecret(payload.token, token)) return notFound()
-
-    const sampleId = typeof payload.sample === 'string' ? payload.sample : ''
-    if (!/^[a-zA-Z0-9_-]{1,100}$/.test(sampleId)) return new Response('Invalid sample identifier', { status: 400, headers: noStore })
+    if (Object.keys(payload).some(key => !['token', 'cost', 'bytes', 'operation'].includes(key))) return new Response('Invalid payload fields', { status: 400, headers: noStore })
     const input = { cost: Number(payload.cost), bytes: Number(payload.bytes), operation: payload.operation }
     try {
       // Emit only allowlisted, non-secret metadata before bcrypt so CPU-limit terminations can be traced.

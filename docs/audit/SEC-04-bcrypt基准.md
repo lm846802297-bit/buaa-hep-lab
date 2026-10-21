@@ -122,7 +122,7 @@ frontend/tests/security.test.ts 已有基于 SQLite 的 D1 适配器测试，覆
 
 ### 访问控制与安全边界
 
-`workers.dev` 默认是公开入口，因此 Worker 在运行 bcrypt 前必须检查绑定的 `BENCHMARK_TOKEN`（至少 32 个字符）。缺少 secret 时 fail closed 并返回 404。由于 Cloudflare 实时请求日志可包含请求头，runner 不再通过 `Authorization` 头发送静态令牌，而改为 HTTPS POST 的受限 JSON 请求体（最大 1 KiB）；Worker 只记录白名单中的 sampleId、cost、bytes、operation 和事件类型，不记录令牌或原始请求体。Token 不得写入仓库、命令行参数、URL、日志或基准报告。隔离 pilot 还必须实际抽查平台日志，确认没有请求体/令牌泄露；若观察到泄露，停止扫描并重新设计。测试 Worker 不得绑定生产 D1/R2，也不得与 Pages Functions 合并。部署前先确认目标 Worker 名称、账号、套餐/CPU 限额及可能费用；测试结束后删除临时 Worker 与本地 token。
+`workers.dev` 默认是公开入口，因此 Worker 在运行 bcrypt 前必须检查绑定的 `BENCHMARK_TOKEN`（至少 32 个字符）。缺少 secret 时 fail closed 并返回 404。由于 Cloudflare 实时请求日志包含请求头字段，runner 不通过 `Authorization` 头发送静态令牌，而改为 HTTPS POST 的受限 JSON 请求体（最大 1 KiB）。URL 只包含非秘密的 `sampleId`，用于把 invocation CPU 日志与结构化自定义日志关联；Worker 拒绝其他查询参数，并只记录白名单中的 sampleId、cost、bytes、operation 和事件类型，不记录令牌或原始请求体。Token 不得写入仓库、命令行参数、URL、日志或基准报告。隔离 pilot 还必须实际抽查平台日志，确认没有请求体/令牌泄露；若观察到泄露，停止扫描并重新设计。测试 Worker 不得绑定生产 D1/R2，也不得与 Pages Functions 合并。部署前先确认目标 Worker 名称、账号、套餐/CPU 限额及可能费用；测试结束后删除临时 Worker 与本地 token。
 
 ### 由维护者批准后执行的独立 Worker 流程
 
@@ -168,7 +168,7 @@ try {
 ```
 
 Cloudflare 默认参数现为 pilot（1 次测量 + 1 次预热）；完整模式必须显式指定 `--samples 50 --warmup 5`。完整模式总计 1,320 次请求，若 Free CPU 限额导致 cost 7/8 超限，应保留失败证据并停止，不要循环重试。
-只使用自己创建并确认所有权的 Worker URL；URL 限制只是防止误用，不是对域名所有权的认证。runner 通过 HTTPS POST 的受限 JSON 请求体传递 token，不把它放入 URL、请求头或输出报告；Worker 日志仅写出白名单元数据。命令返回的 wall/RTT 包含网络开销，**不能直接当作 Worker CPU**。
+只使用自己创建并确认所有权的 Worker URL；URL 限制只是防止误用，不是对域名所有权的认证。runner 通过 HTTPS POST 的受限 JSON 请求体传递 token，不把它放入 URL、请求头或输出报告；URL 中只保留非秘密 sample ID，以关联 invocation CPU 与结构化日志。Worker 日志仅写出白名单元数据。命令返回的 wall/RTT 包含网络开销，**不能直接当作 Worker CPU**。
 
 Cloudflare invocation CPU 是整个 Worker 请求的 CPU 总量，包含 URL/令牌校验、bcrypt、日志与 JSON 响应开销，不是纯 bcrypt 指令时间。若要估计哈希的增量成本，应同时测量相同 Worker 的受保护 no-op/control 基线；否则把结果明确标记为“每次基准 invocation CPU”，不要称作纯 bcrypt CPU。
 
