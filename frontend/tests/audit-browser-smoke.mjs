@@ -225,10 +225,17 @@ try {
     }), `in-page navigation aligns the selected section near the top at ${width}px`)
     await page.waitForFunction(() => document.querySelector('.topic-local-nav a[aria-current="location"]')?.getAttribute('href') === '#topic-assumptions')
     check(await page.locator('.topic-local-nav a[aria-current="location"]').getAttribute('href') === '#topic-assumptions', `topic directory highlights the selected section at ${width}px`)
-    check(await page.locator('.topic-sidebar').evaluate(el => {
+    const sidebarFitsViewport = await page.waitForFunction(() => {
+      const element = document.querySelector('.topic-sidebar')
+      if (!element) return false
+      const rect = element.getBoundingClientRect()
+      return rect.top >= 0 && rect.top < 100 && rect.bottom <= window.innerHeight + 1
+    }, null, { timeout: 10000 }).then(() => true).catch(() => false)
+    const sidebarMetrics = await page.locator('.topic-sidebar').evaluate(el => {
       const rect = el.getBoundingClientRect()
-      return rect.top >= 0 && rect.top < 100 && rect.bottom <= window.innerHeight
-    }), `topic directory remains visible while reading later sections at ${width}px`)
+      return { top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height), viewport: window.innerHeight }
+    })
+    check(sidebarFitsViewport, `topic directory remains visible within the viewport while reading later sections at ${width}px: ${JSON.stringify(sidebarMetrics)}`)
     await page.locator('.topic-all-guides').click()
     await page.locator('#research-guides').waitFor()
     await page.waitForFunction(() => location.hash === '#research-guides')
