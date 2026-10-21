@@ -55,7 +55,7 @@ function downloadBibtex() {
       </a>
       <button class="menu-toggle button secondary" :aria-expanded="menuOpen" aria-controls="public-navigation" @click="menuOpen = !menuOpen">{{ menuOpen ? '关闭菜单' : '菜单' }}</button>
       <nav id="public-navigation" :class="{ open: menuOpen }" aria-label="官网导航">
-        <a href="#research" @click="menuOpen = false">研究方向</a><a href="#publications" @click="menuOpen = false">代表成果</a><a href="#physics-resources" @click="menuOpen = false">物理资源</a><a href="#about" @click="menuOpen = false">关于我们</a>
+        <a href="#research" @click="menuOpen = false">研究方向</a><a href="#research-guides" @click="menuOpen = false">专题导读</a><a href="#publications" @click="menuOpen = false">代表成果</a><a href="#physics-resources" @click="menuOpen = false">物理资源</a><a href="#about" @click="menuOpen = false">关于我们</a>
         <router-link to="/people" @click="menuOpen = false">团队</router-link><router-link to="/events" @click="menuOpen = false">学术活动</router-link>
         <router-link class="nav-hub" to="/hub">组内协作 <span aria-hidden="true">↗</span></router-link>
       </nav>
@@ -67,7 +67,7 @@ function downloadBibtex() {
         <div class="hero-eyebrow"><span class="status-dot"></span> {{ lab.english }}</div>
         <h1>从微观粒子，<br>探寻<span>物理的新边界。</span></h1>
         <p class="hero-intro">{{ lab.intro }}</p>
-        <div class="hero-actions"><a href="#research" class="button primary">探索研究方向 <span aria-hidden="true">↗</span></a><a href="#publications" class="button ghost">阅读代表论文 <span aria-hidden="true">↓</span></a></div>
+        <div class="hero-actions"><a href="#research" class="button primary">探索研究方向 <span aria-hidden="true">↗</span></a><a href="#research-guides" class="button secondary">专题导读 <span aria-hidden="true">↓</span></a><a href="#publications" class="button ghost">阅读代表论文 <span aria-hidden="true">↓</span></a></div>
         <div class="hero-affiliation"><span>BEIHANG UNIVERSITY</span><span>{{ lab.name }} <small v-if="lab.provisional">/ 暂定名称</small></span></div>
       </div>
       <figure class="collision-figure">
@@ -96,16 +96,38 @@ function downloadBibtex() {
           <dl class="research-explainer"><div><dt>研究问题</dt><dd>{{ activeDirection.question }}</dd></div><div><dt>主要方法</dt><dd>{{ activeDirection.methods }}</dd></div><div><dt>实验联系</dt><dd>{{ activeDirection.probes }}</dd></div></dl>
           <p class="research-scope">{{ activeDirection.detail }}</p>
           <div class="topic-tags"><span v-for="tag in activeDirection.tags" :key="tag">{{ tag }}</span></div>
+          <router-link class="topic-guide-entry" :to="`/research/${activeDirection.id}`" :aria-label="`阅读${activeDirection.title}专题导读`">
+            <div><span>RESEARCH GUIDE / 深入阅读</span><strong>进入{{ activeDirection.title }}专题导读</strong><small>关键关系式 · 适用条件 · 分析流程 · 专业资源</small></div>
+            <span class="topic-guide-arrow" aria-hidden="true">↗</span>
+          </router-link>
           <div class="research-evidence"><h4>相关研究选读</h4><ul><li v-for="paper in relatedResearchPapers" :key="paper.id"><a :href="paper.source_url" target="_blank" rel="noopener noreferrer">{{ paper.title }} <span aria-hidden="true">↗</span></a><small>arXiv:{{ paper.id }}</small></li></ul></div>
           <button class="button secondary related-papers" @click="showRelatedPapers(activeDirection.id)">查看相关论文 <span aria-hidden="true">↓</span></button>
-          <router-link class="button ghost topic-detail-link" :to="`/research/${activeDirection.id}`">阅读专题详情 <span aria-hidden="true">↗</span></router-link>
         </article>
       </div>
       <noscript><div class="research-static"><h3>全部研究方向</h3><article v-for="direction in directions" :key="direction.id"><h4>{{ direction.title }}</h4><p>{{ direction.text }}</p><dl><dt>研究问题</dt><dd>{{ direction.question }}</dd><dt>主要方法</dt><dd>{{ direction.methods }}</dd><dt>实验联系</dt><dd>{{ direction.probes }}</dd></dl><p>{{ direction.detail }}</p></article></div></noscript>
     </section>
 
+    <section id="research-guides" class="public-section research-guides-section" aria-labelledby="research-guides-title">
+      <div class="section-top">
+        <div><span class="eyebrow">02 / RESEARCH GUIDES</span><h2 id="research-guides-title">从概念出发，沿着证据深入。</h2></div>
+        <p>五个方向，各有一份可继续阅读的专题导读。<br>公式附带适用条件，结论标明模型与数据边界。</p>
+      </div>
+      <div class="research-guide-grid">
+        <article v-for="direction in directions" :key="direction.id" class="research-guide-card">
+          <div class="research-guide-top"><span>{{ direction.number }} / TOPIC GUIDE</span><span class="research-guide-symbol" aria-hidden="true">{{ direction.symbol }}</span></div>
+          <p class="research-guide-kicker">{{ direction.en }}</p>
+          <h3>{{ direction.title }}</h3>
+          <p class="research-guide-summary">{{ direction.text }}</p>
+          <div class="research-guide-question"><span>核心问题</span><p>{{ direction.question }}</p></div>
+          <div class="research-guide-tags"><span v-for="tag in direction.tags.slice(0, 3)" :key="tag">{{ tag }}</span></div>
+          <router-link :to="'/research/' + direction.id" class="button primary research-guide-open">打开专题导读 <span aria-hidden="true">↗</span></router-link>
+        </article>
+      </div>
+      <p class="research-guides-note">导读用于建立概念地图与追溯原始来源；不替代论文原文、独立计算或实验分析复现。</p>
+    </section>
+
     <section id="publications" class="public-section publications-section">
-      <div class="section-top"><div><span class="eyebrow">02 / SELECTED PUBLICATIONS</span><h2>以研究回应问题。</h2></div><button class="button secondary" :disabled="!visiblePapers.length" @click="downloadBibtex">导出 BibTeX <span aria-hidden="true">↓</span></button></div>
+      <div class="section-top"><div><span class="eyebrow">03 / SELECTED PUBLICATIONS</span><h2>以研究回应问题。</h2></div><button class="button secondary" :disabled="!visiblePapers.length" @click="downloadBibtex">导出 BibTeX <span aria-hidden="true">↓</span></button></div>
       <p class="section-description">以下为公开代表成果选录，非完整或最新论文列表。16 篇选录已由课题组确认，书目信息交叉核对至 arXiv 与 INSPIRE-HEP；最近核对：2026-10-20。</p>
       <div class="publication-controls"><div class="segmented" aria-label="论文主题筛选"><button v-for="item in [{ id: 'all', label: '全部成果' }, ...publicationCategories]" :key="item.id" :aria-pressed="filter === item.id" :class="{ selected: filter === item.id }" @click="filter = item.id">{{ item.label }}</button></div><label class="paper-search"><span class="sr-only">搜索论文标题、作者、编号、DOI、期刊或主题</span><input v-model="query" type="search" placeholder="搜索标题、作者、编号或 DOI"/></label></div>
       <div class="publication-options"><label>年份 <select v-model="selectedYear" aria-label="论文年份"><option value="all">全部年份</option><option v-for="year in years" :key="year" :value="year">{{ year }}</option></select></label><label>排序 <select v-model="sortOrder" aria-label="论文排序"><option value="newest">年份由新到旧</option><option value="oldest">年份由旧到新</option></select></label><p role="status">显示 {{ visiblePapers.length }} / {{ publications.length }} 篇</p></div>
@@ -128,7 +150,7 @@ function downloadBibtex() {
     </section>
 
     <section id="physics-resources" class="public-section physics-resources-section" aria-labelledby="physics-resources-title">
-      <div class="section-top"><div><span class="eyebrow">03 / PHYSICS RESOURCES</span><h2 id="physics-resources-title">让每一步探索，都有可靠的起点。</h2></div><p>文献、数据与计算工具，<br>从官方来源继续深入。</p></div>
+      <div class="section-top"><div><span class="eyebrow">04 / PHYSICS RESOURCES</span><h2 id="physics-resources-title">让每一步探索，都有可靠的起点。</h2></div><p>文献、数据与计算工具，<br>从官方来源继续深入。</p></div>
       <p class="section-description">精选常用物理网站，点击在新标签页打开。各站点的资料、软件和使用条件以原始来源为准。</p>
       <div class="physics-resource-controls" role="group" aria-label="物理资源分类"><button type="button" :aria-pressed="resourceCategory === 'all'" :class="{ selected: resourceCategory === 'all' }" @click="resourceCategory = 'all'">全部资源</button><button v-for="category in resourceCategories" :key="category" type="button" :aria-pressed="resourceCategory === category" :class="{ selected: resourceCategory === category }" @click="resourceCategory = category">{{ category }}</button></div>
       <p class="physics-resource-count" role="status">显示 {{ visibleResources.length }} / {{ publicResources.length }} 项资源</p>
@@ -137,7 +159,7 @@ function downloadBibtex() {
     </section>
 
     <section id="about" class="public-section about-section">
-      <div><span class="eyebrow">04 / ABOUT THE GROUP</span><h2>保持好奇，<br>一起探索基本规律。</h2><p>依托{{ lab.institution }}，聚焦{{ lab.field }}。我们在理论研究、文献研读与学术讨论中，探索新的物理可能性。</p></div>
+      <div><span class="eyebrow">05 / ABOUT THE GROUP</span><h2>保持好奇，<br>一起探索基本规律。</h2><p>依托{{ lab.institution }}，聚焦{{ lab.field }}。我们在理论研究、文献研读与学术讨论中，探索新的物理可能性。</p></div>
       <div class="about-details">
         <div class="academic-partner" role="group" :aria-label="advisorProfile.groupRole + '：' + advisorProfile.name">
           <span>{{ advisorProfile.groupRole }}</span>
@@ -172,6 +194,28 @@ function downloadBibtex() {
 .research-explainer dt { color:var(--accent); font-size:13px; margin-bottom:6px; }
 .research-explainer dd { margin:0; color:var(--soft); font-size:15px; line-height:1.85; }
 .research-detail .research-scope { padding-top:18px; border-top:1px solid var(--line); font-size:13px; color:var(--muted); }
+.topic-guide-entry { display:flex; justify-content:space-between; align-items:center; gap:18px; margin:24px 0 4px; padding:18px 20px; border:1px solid var(--accent); border-radius:14px; background:var(--raised); color:var(--text); text-decoration:none; transition:transform .18s ease,box-shadow .18s ease,background .18s ease; }
+.topic-guide-entry:hover { transform:translateY(-2px); box-shadow:var(--shadow); background:var(--surface); }
+.topic-guide-entry>div { display:flex; flex-direction:column; gap:6px; min-width:0; }
+.topic-guide-entry>div>span { color:var(--accent); font-size:9px; letter-spacing:.13em; }
+.topic-guide-entry strong { font-size:16px; font-weight:500; line-height:1.6; }
+.topic-guide-entry small { color:var(--muted); font-size:11px; line-height:1.7; }
+.topic-guide-arrow { flex-shrink:0; display:grid; place-items:center; width:38px; height:38px; border-radius:50%; background:var(--accent); color:var(--accent-ink); font-size:18px; }
+.research-guides-section { border-top:1px solid var(--line); }
+.research-guide-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.research-guide-card { position:relative; display:flex; flex-direction:column; min-width:0; overflow:hidden; padding:24px; border:1px solid var(--line); border-radius:17px; background:var(--surface); }
+.research-guide-top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; color:var(--accent); font-size:9px; letter-spacing:.13em; }
+.research-guide-symbol { margin-top:-15px; color:var(--accent); opacity:.14; font-family:var(--serif); font-size:70px; line-height:1; }
+.research-guide-kicker { margin-top:10px; color:var(--muted); font-size:9px; letter-spacing:.1em; line-height:1.7; }
+.research-guide-card h3 { margin:12px 0; font-size:21px; font-weight:400; line-height:1.45; }
+.research-guide-summary { color:var(--soft); font-size:13px; line-height:1.85; }
+.research-guide-question { margin-top:18px; padding:14px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.research-guide-question>span { color:var(--accent); font-size:11px; }
+.research-guide-question p { margin-top:7px; color:var(--soft); font-size:12px; line-height:1.8; }
+.research-guide-tags { display:flex; flex-wrap:wrap; gap:6px; margin:16px 0 22px; }
+.research-guide-tags span { padding:4px 8px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:10px; }
+.research-guide-open { display:flex; justify-content:space-between; width:100%; min-height:46px; margin-top:auto; }
+.research-guides-note { margin-top:18px; color:var(--muted); font-size:12px; line-height:1.8; }
 .research-evidence { position:relative; margin-top:26px; padding-top:20px; border-top:1px solid var(--line); }
 .research-evidence h4 { font-size:14px; font-weight:500; color:var(--soft); }
 .research-evidence ul { padding-left:18px; margin:14px 0 0; display:grid; gap:14px; }
@@ -235,7 +279,7 @@ function downloadBibtex() {
 nav { display:flex; align-items:center; gap:32px; font-size:14px; } nav>a { padding:12px 0; color:var(--soft); } nav>a:hover { color:var(--accent); }.nav-hub { border-left:1px solid var(--line); padding-left:28px; }.nav-hub span { margin-left:12px; }.menu-toggle { display:none; }
 .public-hero { display:grid; grid-template-columns:1.08fr 1fr; align-items:center; min-height:690px; gap:16px; padding:64px 0 56px; }
 .hero-eyebrow { color:var(--accent); font-size:11px; letter-spacing:.13em; text-transform:uppercase; display:flex; align-items:center; gap:10px; margin-bottom:28px; }.status-dot { width:6px; height:6px; background:var(--accent); border-radius:50%; }
-h1 { font-size:clamp(38px,4.5vw,68px); font-weight:400; line-height:1.35; letter-spacing:-.055em; margin:0 0 24px; }h1 span { color:var(--accent); }.hero-intro { max-width:480px; color:var(--muted); font-size:15px; line-height:1.95; }.hero-actions { display:flex; gap:12px; margin:32px 0 44px; }.hero-actions a { gap:24px; }.hero-affiliation { display:flex; flex-direction:column; gap:8px; font-size:12px; color:var(--soft); }.hero-affiliation>span:first-child { font-size:10px; color:var(--muted); letter-spacing:.19em; }.hero-affiliation small { color:var(--muted); font-size:11px; }
+h1 { font-size:clamp(38px,4.5vw,68px); font-weight:400; line-height:1.35; letter-spacing:-.055em; margin:0 0 24px; }h1 span { color:var(--accent); }.hero-intro { max-width:480px; color:var(--muted); font-size:15px; line-height:1.95; }.hero-actions { display:flex; flex-wrap:wrap; gap:12px; margin:32px 0 44px; }.hero-actions a { gap:24px; }.hero-affiliation { display:flex; flex-direction:column; gap:8px; font-size:12px; color:var(--soft); }.hero-affiliation>span:first-child { font-size:10px; color:var(--muted); letter-spacing:.19em; }.hero-affiliation small { color:var(--muted); font-size:11px; }
 .collision-figure { margin:0; color:var(--accent); position:relative; }.collision-figure>svg { display:block; width:100%; overflow:visible; }.detector-rings { stroke:currentColor; stroke-opacity:.17; stroke-width:.7; }.collision-tracks { stroke:currentColor; stroke-width:1.5; }.collision-tracks path:nth-child(3n) { stroke:var(--warning); stroke-width:1; opacity:.8; }.collision-tracks path:nth-child(2n) { opacity:.5; }.collision-annotations { font-family:var(--font); font-size:18px; }.collision-annotations text:last-child { font-size:7px; letter-spacing:.8px; opacity:.6; }.collision-figure figcaption { font-size:9px; letter-spacing:.12em; display:flex; justify-content:space-between; color:var(--muted); padding:0 28px; }
 .research-strip { border-top:1px solid var(--line); border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:20px; padding:24px 0; color:var(--muted); font-size:12px; }.research-strip span:first-child { color:var(--accent); }
 .public-section { padding:96px 0; scroll-margin-top:24px; }.section-top { display:flex; justify-content:space-between; align-items:flex-end; gap:28px; margin-bottom:36px; }.eyebrow { font-size:10px; letter-spacing:.17em; margin-bottom:16px; }h2 { font-size:clamp(28px,3.1vw,40px); font-weight:400; line-height:1.45; letter-spacing:-.03em; }.section-top>p,.section-description { font-size:14px; line-height:1.9; color:var(--muted); }
@@ -246,6 +290,6 @@ h1 { font-size:clamp(38px,4.5vw,68px); font-weight:400; line-height:1.35; letter
 .collaboration-section { display:grid; grid-template-columns:1.15fr 1fr; gap:72px; border-top:1px solid var(--line); }.collaboration-section h2 { font-size:30px; }.collaboration-section p { font-size:14px; color:var(--muted); margin:18px 0 28px; line-height:1.8; }.collaboration-section .button { gap:28px; }.hub-module-list>span { display:flex; gap:20px; align-items:center; padding:20px 0; border-bottom:1px solid var(--line); font-size:15px; }.hub-module-list i { font-size:11px; color:var(--muted); font-style:normal; }.hub-module-list small { margin-left:auto; font-size:9px; letter-spacing:.1em; color:var(--muted); }.hub-module-list>p { font-size:11px; }
 .public-footer { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:32px 0; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }.public-footer>span:first-child { font-size:15px; color:var(--text); letter-spacing:.05em; }.public-footer small { display:block; font-size:10px; color:var(--muted); margin-top:8px; }.public-footer a:hover { color:var(--accent); }.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }a,button,input { outline-offset:5px; }a:focus-visible,button:focus-visible,input:focus-visible { outline:2px solid var(--focus); }.button:disabled { opacity:.5; cursor:not-allowed; }
 @media(min-width:1600px) { .public-hero { min-height:760px; } }
-@media(max-width:1000px) { .public-header,.public-hero,.public-section,.public-footer,.research-strip { width:calc(100% - 56px); }.public-hero { min-height:620px; }nav { gap:20px; }.research-layout { gap:28px; }.about-section,.collaboration-section { gap:40px; }.public-hero h1 { font-size:44px; } }
-@media(max-width:700px) { .public-header,.public-hero,.public-section,.public-footer,.research-strip { width:calc(100% - 36px); }.public-header { min-height:84px; flex-wrap:wrap; gap:10px; }.public-brand strong { font-size:16px; }.public-brand small { font-size:10px; }.brand-mark { width:34px; height:34px; }.menu-toggle { display:flex; font-size:12px; min-height:40px; padding:8px 12px; }nav { display:none; width:100%; padding-bottom:20px; flex-wrap:wrap; gap:12px 22px; }nav.open { display:flex; }.nav-hub { border-left:0; padding-left:0; }.public-hero { grid-template-columns:1fr; padding-top:48px; gap:16px; min-height:0; }.public-hero h1 { font-size:clamp(33px,8vw,48px); }.hero-eyebrow { font-size:9px; letter-spacing:.08em; }.hero-actions { gap:4px; margin:28px 0 32px; }.hero-actions a { gap:12px; padding-inline:14px; font-size:12px; }.hero-intro { font-size:14px; }.collision-figure { width:min(100%,430px); margin-inline:auto; }.research-strip { flex-wrap:wrap; justify-content:flex-start; gap:14px 20px; font-size:10px; padding:20px 0; }.public-section { padding:56px 0; }.section-top { align-items:flex-start; flex-direction:column; gap:16px; }.section-top h2 { font-size:27px; }.section-top>p br { display:none; }.research-layout,.about-section,.collaboration-section { grid-template-columns:1fr; gap:28px; }.research-tabs strong { font-size:18px; }.research-tabs button { padding:22px 0; }.research-detail { padding:28px 24px; }.research-detail h3 { font-size:22px; }.research-detail p { font-size:14px; }.publication-controls { flex-direction:column; align-items:stretch; }.paper-search input { width:100%; box-sizing:border-box; }.segmented { align-self:flex-start; }.segmented button { padding:8px 12px; }.public-paper { grid-template-columns:50px 1fr; gap:16px; }.paper-year { font-size:22px; }.paper-content h3 { font-size:17px; }.paper-link { grid-column:2; padding:4px 0; }.public-footer { flex-wrap:wrap; gap:20px; }.public-footer>span:nth-child(2) { order:3; flex-basis:100%; }.collaboration-section h2 { font-size:26px; } }
+@media(max-width:1000px) { .research-guide-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .public-header,.public-hero,.public-section,.public-footer,.research-strip { width:calc(100% - 56px); }.public-hero { min-height:620px; }nav { gap:20px; }.research-layout { gap:28px; }.about-section,.collaboration-section { gap:40px; }.public-hero h1 { font-size:44px; } }
+@media(max-width:700px) { .research-guide-grid { grid-template-columns:1fr; } .research-guide-card { padding:22px; } .topic-guide-entry { padding:16px; } .public-header,.public-hero,.public-section,.public-footer,.research-strip { width:calc(100% - 36px); }.public-header { min-height:84px; flex-wrap:wrap; gap:10px; }.public-brand strong { font-size:16px; }.public-brand small { font-size:10px; }.brand-mark { width:34px; height:34px; }.menu-toggle { display:flex; font-size:12px; min-height:40px; padding:8px 12px; }nav { display:none; width:100%; padding-bottom:20px; flex-wrap:wrap; gap:12px 22px; }nav.open { display:flex; }.nav-hub { border-left:0; padding-left:0; }.public-hero { grid-template-columns:1fr; padding-top:48px; gap:16px; min-height:0; }.public-hero h1 { font-size:clamp(33px,8vw,48px); }.hero-eyebrow { font-size:9px; letter-spacing:.08em; }.hero-actions { gap:4px; margin:28px 0 32px; }.hero-actions a { gap:12px; padding-inline:14px; font-size:12px; }.hero-intro { font-size:14px; }.collision-figure { width:min(100%,430px); margin-inline:auto; }.research-strip { flex-wrap:wrap; justify-content:flex-start; gap:14px 20px; font-size:10px; padding:20px 0; }.public-section { padding:56px 0; }.section-top { align-items:flex-start; flex-direction:column; gap:16px; }.section-top h2 { font-size:27px; }.section-top>p br { display:none; }.research-layout,.about-section,.collaboration-section { grid-template-columns:1fr; gap:28px; }.research-tabs strong { font-size:18px; }.research-tabs button { padding:22px 0; }.research-detail { padding:28px 24px; }.research-detail h3 { font-size:22px; }.research-detail p { font-size:14px; }.publication-controls { flex-direction:column; align-items:stretch; }.paper-search input { width:100%; box-sizing:border-box; }.segmented { align-self:flex-start; }.segmented button { padding:8px 12px; }.public-paper { grid-template-columns:50px 1fr; gap:16px; }.paper-year { font-size:22px; }.paper-content h3 { font-size:17px; }.paper-link { grid-column:2; padding:4px 0; }.public-footer { flex-wrap:wrap; gap:20px; }.public-footer>span:nth-child(2) { order:3; flex-basis:100%; }.collaboration-section h2 { font-size:26px; } }
 </style>

@@ -44,6 +44,21 @@ describe('Public academic website', () => {
     expect(html).not.toContain('邮箱')
     expect(html).not.toContain('办公地点')
   })
+  it('makes all five detailed research guides easy to discover from the public homepage', async () => {
+    const app = createSSRApp(PublicHomeView)
+    app.component('router-link', { props: ['to'], setup: (props, { slots }) => () => h('a', { href: props.to }, slots.default?.()) })
+    const html = await renderToString(app)
+    expect(html).toContain('href="#research-guides"')
+    expect(html).toContain('id="research-guides"')
+    expect(html).toContain('专题导读')
+    expect(html).toContain('topic-guide-entry')
+    expect(html).toContain('进入暗物质与暗扇区专题导读')
+    expect(html).toContain('打开专题导读')
+    for (const direction of directions) {
+      expect(html).toContain('href="/research/' + direction.id + '"')
+      expect(html).toContain(direction.title)
+    }
+  })
   it('keeps the public content profile limited to approved academic fields', () => {
     expect(Object.keys(lab).sort()).toEqual(['name', 'provisional', 'shortName', 'institution', 'field', 'english', 'advisor', 'source', 'intro'].sort())
     expect(JSON.stringify(lab)).not.toMatch(/[\w.-]+@[\w.-]+/)

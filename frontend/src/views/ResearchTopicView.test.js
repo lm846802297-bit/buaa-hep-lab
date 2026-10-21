@@ -3,6 +3,7 @@ import { createSSRApp, h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { directions, publications } from '../content/lab'
 import { researchTopicDetails, researchTopicResources } from '../content/researchTopicDetails'
+import { researchTopicDeepGuides } from '../content/researchTopicDeepGuides'
 
 import ResearchTopicView from './ResearchTopicView.vue'
 
@@ -26,6 +27,10 @@ describe('public research topic pages', () => {
     expect(html).toContain('https://lz.lbl.gov/')
     expect(html).toContain('target="_blank" rel="noopener noreferrer"')
     expect(html).toContain('从理论模型到可检验结论')
+    expect(html).toContain('关键关系式：公式、含义与适用边界')
+    expect(html).toContain('研究中必须明确的假设与常见误判')
+    expect(html).toContain('如何从导读进入实际研究')
+    expect(html).toContain('关系式与方法的参考依据')
     expect(html).toContain('结果应该如何判读')
     expect(html).toContain('本方向常用的专业资源')
     expect(html).toContain('LUX-ZEPLIN (LZ)')
@@ -50,6 +55,8 @@ describe('public research topic pages', () => {
       expect(html).toContain(topic.title)
       expect(html).toContain(researchTopicDetails[topic.id].mechanisms[0].title)
       expect(html).toContain('从理论模型到可检验结论')
+      expect(html).toContain('关键关系式：公式、含义与适用边界')
+      expect(html).toContain('研究中必须明确的假设与常见误判')
       expect(html).toContain('本方向常用的专业资源')
       expect(html).toContain('href="#topic-resources"')
     }
@@ -66,6 +73,18 @@ describe('public research topic pages', () => {
       expect(guide.workflow.length).toBeGreaterThanOrEqual(3)
       expect(guide.interpretation.length).toBeGreaterThanOrEqual(3)
       expect(guide.resourceIds.length).toBeGreaterThanOrEqual(5)
+      const deepGuide = researchTopicDeepGuides[topic.id]
+      expect(deepGuide, `missing deep guide for ${topic.id}`).toBeTruthy()
+      expect(deepGuide.keyRelations.length).toBeGreaterThanOrEqual(3)
+      expect(deepGuide.assumptions.length).toBeGreaterThanOrEqual(3)
+      expect(deepGuide.researchQuestions.length).toBeGreaterThanOrEqual(3)
+      expect(deepGuide.references.length).toBeGreaterThanOrEqual(2)
+      for (const relation of deepGuide.keyRelations) {
+        expect(relation.formula.length).toBeGreaterThanOrEqual(12)
+        expect(relation.conditions.length).toBeGreaterThanOrEqual(20)
+        expect(relation.doesNotMean.length).toBeGreaterThanOrEqual(20)
+      }
+      for (const reference of deepGuide.references) expect(new URL(reference.url).protocol).toBe('https:')
       for (const id of guide.resourceIds) expect(resourceIds.has(id), `unknown resource ${id} in ${topic.id}`).toBe(true)
     }
     for (const resource of researchTopicResources) {
