@@ -12,7 +12,7 @@ function parseDiagnostic(line) {
   const match = line.match(/^(.+?)\((\d+),(\d+)\): error (TS\d+): (.+)$/);
   if (!match) return null;
   return {
-    file: match[1].replaceAll('\\\\', '/'),
+    file: match[1].replaceAll(String.fromCharCode(92), '/'),
     line: Number(match[2]),
     column: Number(match[3]),
     code: match[4],
