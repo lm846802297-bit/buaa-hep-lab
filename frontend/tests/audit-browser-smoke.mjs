@@ -91,13 +91,30 @@ try {
     window.__worldlinePhaseLog = []
     window.__worldlinePhaseListener = event => {
       window.__worldlinePhaseLog.push(event.detail)
-      if (event.detail !== 'decay') return
+      if (event.detail !== 'readout' && event.detail !== 'decay') return
+      // The reactive phase update is queued before this listener runs. Sample the
+      // matching DOM/CSS state in the next microtask, before later test work/screenshots.
       queueMicrotask(() => {
         const overlay = document.querySelector('.worldline-shift-overlay')
         const hud = overlay?.querySelector('.worldline-shift-overlay__hud')
-        window.__worldlineDecaySnapshot = {
-          phase: overlay?.getAttribute('data-phase') || '',
-          animationName: hud ? getComputedStyle(hud).animationName : ''
+        const hudStyle = hud ? getComputedStyle(hud) : null
+        if (event.detail === 'readout') {
+          const backdrop = document.querySelector('.worldline-technical-backdrop')
+          window.__worldlineReadoutSnapshot = {
+            phase: overlay?.getAttribute('data-phase') || '',
+            backdropVisible: Boolean(backdrop && backdrop.getBoundingClientRect().width > 0),
+            backdropShifting: Boolean(backdrop?.classList.contains('is-shifting')),
+            ringCount: backdrop?.querySelectorAll('.worldline-backdrop-shift-wave__ring').length || 0,
+            hudVisible: Boolean(hud && hud.getBoundingClientRect().width > 0 && hud.getBoundingClientRect().height > 0),
+            hudOpacity: hudStyle ? Number(hudStyle.opacity) : null,
+            hudAnimationName: hudStyle ? hudStyle.animationName : '',
+            hudBackgroundColor: hudStyle ? hudStyle.backgroundColor : ''
+          }
+        } else {
+          window.__worldlineDecaySnapshot = {
+            phase: overlay?.getAttribute('data-phase') || '',
+            animationName: hudStyle ? hudStyle.animationName : ''
+          }
         }
       })
     }
@@ -109,24 +126,11 @@ try {
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await expect(page.locator('.worldline-shift-overlay')).toHaveClass(/is-timeline-active/, { timeout: 1500 })
   check(await page.locator('.worldline-shift-overlay').evaluate(el => el.classList.contains('is-timeline-active')), 'worldline keyframes start only after the overlay has been rendered')
-  // Sample the readout DOM before screenshot capture; encoding can outlast the 1.8 s transition.
-  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout'), null, { timeout: 1500 })
-  await expect(page.locator('.worldline-shift-overlay')).toHaveAttribute('data-phase', 'readout', { timeout: 1500 })
-  const readoutSnapshot = await page.evaluate(() => {
-    const overlay = document.querySelector('.worldline-shift-overlay')
-    const backdrop = document.querySelector('.worldline-technical-backdrop')
-    const hud = overlay?.querySelector('.worldline-shift-overlay__hud')
-    const hudStyle = hud ? getComputedStyle(hud) : null
-    return {
-      backdropVisible: Boolean(backdrop && backdrop.getBoundingClientRect().width > 0),
-      backdropShifting: Boolean(backdrop?.classList.contains('is-shifting')),
-      ringCount: backdrop?.querySelectorAll('.worldline-backdrop-shift-wave__ring').length || 0,
-      hudVisible: Boolean(hud && hud.getBoundingClientRect().width > 0 && hud.getBoundingClientRect().height > 0),
-      hudOpacity: hudStyle ? Number(hudStyle.opacity) : null,
-      hudAnimationName: hudStyle ? hudStyle.animationName : '',
-      hudBackgroundColor: hudStyle ? hudStyle.backgroundColor : ''
-    }
-  })
+  // Read the phase-locked snapshot captured at the event boundary; later screenshots
+  // must not be able to advance the live DOM past readout before assertions run.
+  await page.waitForFunction(() => window.__worldlineReadoutSnapshot, null, { timeout: 1500 })
+  const readoutSnapshot = await page.evaluate(() => window.__worldlineReadoutSnapshot || null)
+  check(readoutSnapshot?.phase === 'readout', 'worldline HUD snapshot belongs to the readout DOM phase: ' + readoutSnapshot?.phase)
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-readout.png') })
   check(Boolean(readoutSnapshot.backdropVisible), 'Worldline Console enables the clockwork and scientific-drawing background')
   check(Boolean(readoutSnapshot.backdropShifting), 'worldline transition activates the technical backdrop during readout')
