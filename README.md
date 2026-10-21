@@ -6,7 +6,7 @@
 - 使用与部署说明：[北航课题组使用说明](北航课题组使用说明.md)
 - 成员注册仅邮箱、密码和有效邀请码必填，真实姓名与昵称选填。
 - 公开页将王小平老师列为导师、刘佳老师列为学术指导；展示单位、职称、研究简介与方向等核对过的公开学术信息。
-- 线上使用 Cloudflare Pages + D1。代码已支持可选 R2 附件存储：绑定 `FILES_BUCKET` 后上传上限为 15 MiB；需先在 Cloudflare 创建 `buaa-hep-hub-files` 桶并部署更新后的 Wrangler 配置。R2 未完成绑定前，线上仍按原有 D1 附件路径运行，超过 1 MiB 的新附件无法上传。
+- 当前生产部署目标为 Cloudflare Pages + D1，暂不启用 R2；`frontend/wrangler.json` 因此不声明 `FILES_BUCKET` 绑定，避免部署依赖尚未创建的桶。代码保留可选 R2 适配，但未绑定时附件走 D1，单文件上限为 1 MiB；超过上限请使用外部网盘链接。未来只有在 Cloudflare 创建 `buaa-hep-hub-files` 桶、配置 `FILES_BUCKET` 并通过上传/下载验收后，才可将 R2 视为启用，届时上限可提高至 15 MiB。
 - 本仓库不包含生产数据库、用户账号数据、初始化码或登录凭据。部署密钥需要在自己的环境单独配置。
 - 从 GitHub 下载源码后，本地运行前需安装前端依赖并构建：`npm --prefix frontend ci`、`npm --prefix frontend run build`，然后运行 `start-windows.cmd`。
 - 此次仅保存源码，未配置 GitHub 到 Cloudflare 的自动发布凭据。
@@ -43,7 +43,7 @@
   <img src="https://img.shields.io/badge/Python-3.11+-3776AB.svg?logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Vue.js-3.x-4FC08D.svg?logo=vuedotjs&logoColor=white" alt="Vue 3">
   <img src="https://img.shields.io/badge/FastAPI-0.110+-009688.svg?logo=fastapi&logoColor=white" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Cloudflare-D1%20%7C%20R2%20%7C%20Pages-F38020.svg?logo=cloudflare&logoColor=white" alt="Cloudflare">
+  <img src="https://img.shields.io/badge/Cloudflare-D1%20%7C%20Pages-F38020.svg?logo=cloudflare&logoColor=white" alt="Cloudflare">
   <img src="https://img.shields.io/badge/Vibe--Coding-AI--Assisted-8A2BE2.svg" alt="Vibe Coding">
   <img src="https://img.shields.io/badge/Non--Profit-Open%20Source-ff69b4.svg" alt="Non-Profit">
 </p>

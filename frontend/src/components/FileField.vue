@@ -5,7 +5,7 @@ import { notify } from '../composables/feedback'
 import WaveInput from './WaveInput.vue'
 import { useSiteConfig } from '../composables/useSiteConfig'
 const { siteConfig } = useSiteConfig()
-const maxBytes = computed(() => siteConfig.maxUploadBytes || 15 * 1024 * 1024)
+const maxBytes = computed(() => siteConfig.maxUploadBytes || 1 * 1024 * 1024)
 const maxLabel = computed(() => `${maxBytes.value / 1024 / 1024} MB`)
 
 const props = defineProps({ modelValue: String, label: { type: String, default: 'Slides' }, poster: Boolean, pdfOnly: Boolean, imageOnly: Boolean, allowAny: Boolean })
