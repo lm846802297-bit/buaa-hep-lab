@@ -39,6 +39,22 @@ describe('public research topic pages', () => {
     expect(html).toContain('返回课题组首页')
   })
 
+  it('renders the detail and resource sections for all five topics', async () => {
+    for (const topic of directions) {
+      const app = createSSRApp(ResearchTopicView, { topic: topic.id })
+      app.component('router-link', {
+        props: ['to'],
+        setup: (props, { slots }) => () => h('a', { href: props.to }, slots.default?.()),
+      })
+      const html = await renderToString(app)
+      expect(html).toContain(topic.title)
+      expect(html).toContain(researchTopicDetails[topic.id].mechanisms[0].title)
+      expect(html).toContain('从理论模型到可检验结论')
+      expect(html).toContain('本方向常用的专业资源')
+      expect(html).toContain('href="#topic-resources"')
+    }
+  })
+
   it('provides valid physics guidance and curated external resources for every public topic', () => {
     const resourceIds = new Set(researchTopicResources.map(resource => resource.id))
     expect(researchTopicResources.length).toBeGreaterThanOrEqual(15)
