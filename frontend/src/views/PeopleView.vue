@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted } from 'vue'
-import { publicContentReviewedAt, publicPeople } from '../content/lab'
+import { publicContentIndexCheckedAt, publicPeople } from '../content/lab'
 import { publicationReviewStatus } from '../utils/publicationReview'
 
 const people = computed(() => publicPeople.filter(person => person.visibility === 'public'))
@@ -17,7 +17,7 @@ onMounted(() => { document.title = '团队与学术指导 | BUAA HEP Hub' })
       <p class="eyebrow">PEOPLE & ACADEMIC GUIDANCE</p>
       <h1>团队与学术指导</h1>
       <p>展示已经确认可公开的学术人员信息与官方来源。此页面不是完整人员名册；未获确认的学生和成员资料不会被自动公开。</p>
-      <p class="review-note">页面内容审核日期：{{ publicContentReviewedAt }}</p>
+      <p class="review-note">人员与专题资料核查日期：{{ publicContentIndexCheckedAt }}</p>
     </header>
 
     <section class="people-grid" aria-label="已确认公开的人员资料">
