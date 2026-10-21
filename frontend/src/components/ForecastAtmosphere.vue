@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { currentThemeStyle, currentBgType, isBgVideoPaused } from '../composables/useThemeStyle'
 import { getLocalBackground } from '../utils/localBgStorage'
@@ -15,6 +15,7 @@ const defaultVideoRef = ref(null)
 const localVideoRef = ref(null)
 const isLogin = computed(() => route.path === '/login')
 const localMedia = ref(null)
+const frozenBackgroundFrame = ref(null)
 const rawOrbitUrl = ref(getImmediateRawOrbitVideoUrl())
 const isOrbitPlaying = ref(false)
 
@@ -519,6 +520,69 @@ function destroyVantaFog() {
   }
 }
 
+// Freeze the current WebGL frame to a local data URL, then release the renderer.
+// The frame never leaves this browser; resuming recreates the animation engine.
+function freezeDynamicBackground() {
+  if (!isBgVideoPaused.value) return
+  if (currentBgType.value !== 'galaxy' && currentBgType.value !== 'vanta-fog') return
+
+  const canvas = containerRef.value?.querySelector('canvas')
+  let captured = false
+  if (canvas) {
+    try {
+      frozenBackgroundFrame.value = canvas.toDataURL('image/png')
+      captured = Boolean(frozenBackgroundFrame.value)
+    } catch (err) {
+      console.warn('Could not snapshot the current background frame:', err)
+    }
+  }
+
+  if (currentBgType.value === 'galaxy') {
+    if (captured) {
+      destroyGalaxy()
+    } else if (animateId) {
+      cancelAnimationFrame(animateId)
+      animateId = null
+    }
+    return
+  }
+
+  if (captured) {
+    destroyVantaFog()
+  } else if (vantaEffect && typeof vantaEffect.setOptions === 'function') {
+    // Best-effort fallback if the canvas cannot be snapshotted.
+    vantaEffect.setOptions({ speed: 0 })
+  } else if (vantaEffect && typeof vantaEffect.pause === 'function') {
+    vantaEffect.pause()
+  }
+}
+
+function resumeDynamicBackground() {
+  if (isBgVideoPaused.value) return
+  const hadFrozenFrame = Boolean(frozenBackgroundFrame.value)
+  frozenBackgroundFrame.value = null
+
+  if (currentBgType.value === 'galaxy') {
+    if (hadFrozenFrame || !renderer || !mesh) {
+      initGalaxy().catch(() => onMediaLoaded())
+    } else if (!animateId) {
+      lastTimestamp = performance.now()
+      animateId = requestAnimationFrame(update)
+    }
+    return
+  }
+
+  if (currentBgType.value === 'vanta-fog') {
+    if (hadFrozenFrame || !vantaEffect) {
+      initVantaFog().catch(() => onMediaLoaded())
+    } else if (typeof vantaEffect.play === 'function') {
+      vantaEffect.play()
+    } else if (typeof vantaEffect.setOptions === 'function') {
+      vantaEffect.setOptions({ speed: route.path === '/login' ? 2.0 : 0.4 })
+    }
+  }
+}
+
 // ==========================================
 // 3. 统一调度与生命周期
 // ==========================================
@@ -684,10 +748,14 @@ function startAtmosphere(bgType) {
       }
     } else if (bgType === 'vanta-fog') {
       destroyGalaxy()
-      initVantaFog().catch(() => onMediaLoaded())
+      initVantaFog()
+        .then(() => { if (isBgVideoPaused.value && currentBgType.value === 'vanta-fog') freezeDynamicBackground() })
+        .catch(() => onMediaLoaded())
     } else if (bgType === 'galaxy') {
       destroyVantaFog()
-      initGalaxy().catch(() => onMediaLoaded())
+      initGalaxy()
+        .then(() => { if (isBgVideoPaused.value && currentBgType.value === 'galaxy') freezeDynamicBackground() })
+        .catch(() => onMediaLoaded())
     } else if (bgType === 'custom-local') {
       destroyGalaxy()
       destroyVantaFog()
@@ -717,6 +785,7 @@ function stopAtmosphere() {
 }
 
 watch(currentBgType, (newBg) => {
+  frozenBackgroundFrame.value = null
   startAtmosphere(newBg)
   nextTick(() => {
     onMediaLoaded()
@@ -726,8 +795,10 @@ watch(currentBgType, (newBg) => {
 watch(isBgVideoPaused, (paused) => {
   if (paused) {
     pauseVideoForPowerSaving()
+    freezeDynamicBackground()
   } else {
     resumeVideoPlayback()
+    resumeDynamicBackground()
   }
 })
 
@@ -789,6 +860,7 @@ onBeforeUnmount(() => {
   <div class="forecast-atmosphere" aria-hidden="true">
     <!-- 默认深空轨道 4K 视频背景（原版无损，持久保活，秒切秒播） -->
     <div
+      v-if="currentBgType === 'earth-orbit'"
       class="earth-orbit-media-layer"
       :class="{ 'is-active': currentBgType === 'earth-orbit' }"
     >
@@ -845,6 +917,13 @@ onBeforeUnmount(() => {
       ref="containerRef"
       class="galaxy-atmosphere-canvas vanta-atmosphere-canvas atmosphere-canvas"
     ></div>
+    <img
+      v-if="frozenBackgroundFrame && (currentBgType === 'galaxy' || currentBgType === 'vanta-fog')"
+      :src="frozenBackgroundFrame"
+      class="custom-bg-media frozen-atmosphere-frame"
+      alt=""
+      decoding="async"
+    />
     <div class="atmosphere-shade" :class="{ 'is-login': isLogin }"></div>
   </div>
 </template>
