@@ -103,6 +103,8 @@ try {
   check(worldlineTuner.coreStroke !== worldlineTuner.orbitStroke, 'Worldline tuner separates amber core from cool orbital lines')
   check(worldlineTuner.buttonShadow !== 'none', 'Worldline tuner uses its restrained device-like button shadow')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
+  await page.waitForTimeout(950)
+  check(await page.locator('.worldline-shift-overlay').count() === 0, 'worldline transition overlay exits cleanly')
   const terminalVisual = await page.evaluate(() => ({
     heroSignal: getComputedStyle(document.querySelector('.hero-eyebrow')).color,
     resourceRadius: getComputedStyle(document.querySelector('.physics-resource-card')).borderRadius
@@ -117,8 +119,6 @@ try {
   await page.locator('#research').screenshot({ path: resolve(output, 'worldline-1440-research.png') })
   await page.locator('#physics-resources').screenshot({ path: resolve(output, 'worldline-1440-resources.png') })
   check(await page.evaluate(() => localStorage.getItem('labhub_public_color_scheme') === 'worldline-console' && localStorage.getItem('laborbit_color_scheme') !== 'worldline-console'), 'public theme persists separately from workspace preferences')
-  await page.waitForTimeout(950)
-  check(await page.locator('.worldline-shift-overlay').count() === 0, 'worldline transition overlay exits cleanly')
   await publicSkinTrigger.click()
   await publicSkin.selectOption('classic-cyan')
   const classicTuner = await page.evaluate(() => {
