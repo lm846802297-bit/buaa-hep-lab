@@ -4,12 +4,16 @@ import fixtures from './fixtures.json' with { type: 'json' }
 // Public synthetic inputs only. Never accept passwords or hashes from requests.
 export const cases = [12, 72]
 export const costs = [6, 7, 8]
-export const operations = ['hash', 'compare-match', 'compare-mismatch']
+export const operations = ['control', 'hash', 'compare-match', 'compare-mismatch']
 export const passwordFor = bytes => 'Benchmark-only-public-input!'.repeat(3).slice(0, bytes)
 
 export async function runOperation({ cost, bytes, operation }) {
   if (!costs.includes(cost) || !cases.includes(bytes) || !operations.includes(operation)) {
     throw new Error('Unsupported benchmark case')
+  }
+  if (operation === 'control') {
+    // Authenticated no-bcrypt request baseline: retains the same validation/response/log path.
+    return { cost, bytes, operation, ok: true }
   }
   const password = passwordFor(bytes)
   const fixture = fixtures[`${cost}:${bytes}`]
