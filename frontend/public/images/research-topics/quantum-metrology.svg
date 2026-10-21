@@ -1,9 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" role="img" aria-labelledby="title desc">
-<title id="title">量子计量与自旋关联概念图</title><desc id="desc">两个球形量子态通过交织的光带相连，旁边显示波形和测量分布的抽象曲线。</desc>
-<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#06121d"/><stop offset="1" stop-color="#132438"/></linearGradient><radialGradient id="b"><stop stop-color="#72dfff" stop-opacity=".6"/><stop offset="1" stop-color="#2d81b8" stop-opacity=".04"/></radialGradient><radialGradient id="g"><stop stop-color="#ffd18a" stop-opacity=".6"/><stop offset="1" stop-color="#a86d30" stop-opacity=".04"/></radialGradient></defs>
-<rect width="1000" height="400" fill="url(#bg)"/><g stroke="#5dc9e8" stroke-opacity=".12"><path d="M0 80H1000M0 160H1000M0 240H1000M0 320H1000"/><path d="M100 0V400M200 0V400M300 0V400M400 0V400M500 0V400M600 0V400M700 0V400M800 0V400M900 0V400"/></g>
-<g fill="url(#b)" stroke="#67d8f1" stroke-width="2"><circle cx="350" cy="190" r="105"/></g><g fill="url(#g)" stroke="#ffc875" stroke-width="2"><circle cx="590" cy="190" r="105"/></g>
-<g fill="none" stroke-width="2" stroke-opacity=".65"><ellipse cx="350" cy="190" rx="38" ry="105" stroke="#a3edff"/><ellipse cx="350" cy="190" rx="105" ry="38" stroke="#a3edff"/><path d="M245 190H455M350 85V295" stroke="#a3edff"/><ellipse cx="590" cy="190" rx="38" ry="105" stroke="#ffdfa4"/><ellipse cx="590" cy="190" rx="105" ry="38" stroke="#ffdfa4"/><path d="M485 190H695M590 85V295" stroke="#ffdfa4"/></g>
-<g fill="none" stroke-width="4"><path d="M350 190C415 70 525 310 590 190" stroke="#6edff1"/><path d="M350 190C415 310 525 70 590 190" stroke="#ffc875"/></g><circle cx="350" cy="190" r="6" fill="#e5fbff"/><circle cx="590" cy="190" r="6" fill="#fff0cf"/>
-<g fill="none" stroke-width="2"><path d="M740 105C760 105 770 280 790 280S820 105 840 105 870 280 890 280 920 105 940 105 970 280 990 280" stroke="#6edff1"/><path d="M740 325C770 325 780 305 800 275S830 205 850 205 880 275 900 305 930 325 960 325" stroke="#ffc875" stroke-opacity=".9"/></g><g fill="#e5fbff"><circle cx="790" cy="280" r="4"/><circle cx="890" cy="280" r="4"/><circle cx="850" cy="205" r="4"/></g>
+<title id="title">量子态、自旋关联与 Fisher 信息</title><desc id="desc">Bloch 球上的量子态方向矢量连接到纠缠自旋对，右侧展示测量分布与精度界的示意曲线。</desc>
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#050e19"/><stop offset="1" stop-color="#101d31"/></linearGradient><radialGradient id="sphere"><stop stop-color="#4cbadf" stop-opacity=".02"/><stop offset=".8" stop-color="#4c9fd5" stop-opacity=".12"/><stop offset="1" stop-color="#8feaf4" stop-opacity=".7"/></radialGradient><radialGradient id="state"><stop stop-color="#fff4d0"/><stop offset=".28" stop-color="#ffc46c"/><stop offset="1" stop-color="#ff9b4d" stop-opacity="0"/></radialGradient><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#63bddb" stroke-opacity=".08"/></pattern></defs>
+<rect width="1000" height="400" fill="url(#bg)"/><rect width="1000" height="400" fill="url(#grid)"/>
+<g transform="translate(300 202)">
+<circle r="132" fill="url(#sphere)" stroke="#6bdcf0" stroke-opacity=".65" stroke-width="2"/>
+<ellipse rx="132" ry="43" fill="none" stroke="#70d9ef" stroke-opacity=".55"/><ellipse rx="132" ry="43" transform="rotate(60)" fill="none" stroke="#70d9ef" stroke-opacity=".35"/><ellipse rx="132" ry="43" transform="rotate(-60)" fill="none" stroke="#70d9ef" stroke-opacity=".35"/><ellipse rx="45" ry="132" fill="none" stroke="#70d9ef" stroke-opacity=".35"/>
+<path d="M-145 0H155M0 145V-155" stroke="#a6d4e8" stroke-opacity=".5" stroke-width="1.5"/>
+<path d="M0 0L67 -85" stroke="#5ce5ce" stroke-width="4" stroke-linecap="round"/><path d="M67 -85L55 -77M67 -85L65 -69" stroke="#5ce5ce" stroke-width="3" stroke-linecap="round"/>
+<circle cx="67" cy="-85" r="27" fill="url(#state)"/><circle cx="67" cy="-85" r="5" fill="#fff5d7"/>
+<path d="M0 0L-72 82" stroke="#8fa9ff" stroke-width="2" stroke-dasharray="5 6"/><circle cx="-72" cy="82" r="4" fill="#8fa9ff"/>
+</g>
+<g transform="translate(615 150)">
+<circle cx="0" cy="50" r="44" fill="url(#sphere)" stroke="#63d8ed" stroke-opacity=".7" stroke-width="2"/><circle cx="150" cy="50" r="44" fill="url(#sphere)" stroke="#ffc477" stroke-opacity=".7" stroke-width="2"/>
+<path d="M0 5V92M-42 50H42M150 5V92M108 50H192" stroke="#9ac7d9" stroke-opacity=".45"/>
+<path d="M0 50L17 18M150 50L132 18" stroke="#ffc477" stroke-width="3" stroke-linecap="round"/>
+<path d="M40 50C55 18 70 82 85 50S115 18 130 50" fill="none" stroke="#6bdcf0" stroke-width="2.5"/>
+<g fill="#b9e9f5" fill-opacity=".65"><circle cx="0" cy="50" r="3"/><circle cx="150" cy="50" r="3"/></g>
+</g>
+<g transform="translate(570 285)" fill="none"><path d="M0 0H390M0 0V-90" stroke="#9ab8c9" stroke-opacity=".5"/><path d="M0 -3C35 -5 55 -18 80 -46S120 -85 150 -59 200 -12 235 -29 285 -68 315 -45 360 -7 390 -3" stroke="#63d7ec" stroke-width="2.4"/><path d="M0 -3C35 -4 55 -13 80 -35S120 -68 150 -48 200 -11 235 -24 285 -52 315 -37 360 -6 390 -3" stroke="#ffc477" stroke-opacity=".8" stroke-width="1.6" stroke-dasharray="5 4"/></g>
+<g fill="#9bddec" font-family="sans-serif" font-size="13" opacity=".8"><text x="150" y="48">z</text><text x="455" y="210">x</text><text x="290" y="365">y</text><text x="800" y="365">θ</text></g>
 </svg>
