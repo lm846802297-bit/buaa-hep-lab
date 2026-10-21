@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { filterPublications, publicationBibtex, citationText } from './publications'
 import { publications, publicationCategories, directions } from '../content/lab'
-import { DEMO_ARXIV_PAPERS, DEMO_BASE_DATE_STR, DEMO_BOOKS, DEMO_LIBRARY_PAPERS, DEMO_RESOURCES_CATEGORIES, DEMO_SEMINARS } from '../mock/demoData'
+import { DEMO_ARXIV_PAPERS, DEMO_BASE_DATE_STR, DEMO_BOOKS, DEMO_LIBRARY_PAPERS, DEMO_PAPER_CATALOG, DEMO_RESOURCES_CATEGORIES, DEMO_SEMINARS } from '../mock/demoData'
 
 describe('approved public bibliography', () => {
   it('publishes exactly the group-approved 16 papers, 6 categories and 5 directions', () => {
@@ -23,11 +23,15 @@ describe('approved public bibliography', () => {
       else { expect(paper.journal).toBe(''); expect(paper.doi).toBe('') }
     }
   })
-  it('preserves arXiv submission dates in the static demo feed', () => {
-    expect(DEMO_ARXIV_PAPERS).toHaveLength(publications.length)
+  it('keeps a compact demo catalogue aligned with the approved public bibliography', () => {
+    expect(DEMO_ARXIV_PAPERS).toHaveLength(DEMO_PAPER_CATALOG.length)
+    expect(DEMO_PAPER_CATALOG).toHaveLength(7)
     for (const paper of DEMO_ARXIV_PAPERS) {
+      const source = publications.find(p => p.id === paper.arxiv_id)
+      expect(source).toBeTruthy()
+      expect(paper.title).toBe(source.title)
       expect(paper.published_date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
-      expect(paper.published_date).toBe(publications.find(p => p.id === paper.arxiv_id).arxivSubmitted)
+      expect(paper.published_date).toBe(source.arxivSubmitted)
       expect(paper.abstract).toMatch(/^演示用中文导读（非原文逐字摘要）：/)
     }
   })
