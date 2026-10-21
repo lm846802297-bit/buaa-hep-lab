@@ -15,6 +15,10 @@ const topicDeepGuide = computed(() => topic.value ? researchTopicDeepGuides[topi
 const topicResources = computed(() => topicDetail.value
   ? topicDetail.value.resourceIds.map(id => researchTopicResources.find(resource => resource.id === id)).filter(Boolean)
   : [])
+const topicNavigation = computed(() => topicDetail.value?.navigation || [])
+const topicSectionTitles = computed(() => Object.fromEntries(
+  topicNavigation.value.map(item => [item.target, item.heading]),
+))
 const contentReview = computed(() => publicationReviewStatus(publicContentIndexCheckedAt))
 onMounted(() => {
   document.title = topic.value
@@ -52,30 +56,19 @@ onMounted(() => {
       </header>
 
       <nav v-if="topicDetail" class="topic-local-nav" aria-label="专题内导航">
-        <span class="topic-local-label">本页导航</span>
-        <a href="#topic-question">科学问题</a>
-        <a href="#topic-mechanisms">核心物理机制</a>
-        <a href="#topic-relations">关键关系式</a>
-        <a href="#topic-framework">研究方法</a>
-        <a href="#topic-workflow">分析流程</a>
-        <a href="#topic-observables">可观测量</a>
-        <a href="#topic-interpretation">结果判读</a>
-        <a href="#topic-assumptions">适用条件</a>
-        <a href="#topic-questions">研究切入点</a>
-        <a href="#topic-source-notes">参考依据</a>
-        <a href="#topic-papers">代表论文</a>
-        <a href="#topic-resources">专业资源</a>
+        <span class="topic-local-label">{{ topic?.title }} · 目录</span>
+        <a v-for="item in topicNavigation" :key="item.target" :href="'#' + item.target">{{ item.label }}</a>
       </nav>
 
       <section class="topic-section" aria-labelledby="topic-question">
         <p class="eyebrow">01 / MOTIVATION</p>
-        <h2 id="topic-question">科学问题</h2>
+        <h2 id="topic-question">{{ topicSectionTitles['topic-question'] || '科学问题' }}</h2>
         <p>{{ topic.question }}</p>
       </section>
 
       <section v-if="topicDetail" class="topic-section" aria-labelledby="topic-mechanisms">
         <p class="eyebrow">02 / PHYSICS IN FOCUS</p>
-        <h2 id="topic-mechanisms">核心物理机制与研究对象</h2>
+        <h2 id="topic-mechanisms">{{ topicSectionTitles['topic-mechanisms'] || '核心物理机制与研究对象' }}</h2>
         <p class="section-intro">{{ topicDetail.lead }}</p>
         <div class="physics-card-grid">
           <article v-for="item in topicDetail.mechanisms" :key="item.title" class="physics-card">
@@ -92,7 +85,7 @@ onMounted(() => {
 
       <section v-if="topicDeepGuide" class="topic-section" aria-labelledby="topic-relations">
         <p class="eyebrow">03 / KEY RELATIONS & VALIDITY</p>
-        <h2 id="topic-relations">关键关系式：公式、含义与适用边界</h2>
+        <h2 id="topic-relations">{{ topicSectionTitles['topic-relations'] || '关键关系式：公式、含义与适用边界' }}</h2>
         <p class="section-intro">{{ topicDeepGuide.framing }}</p>
         <div class="relation-grid">
           <article v-for="item in topicDeepGuide.keyRelations" :key="item.title" class="relation-card">
@@ -112,13 +105,13 @@ onMounted(() => {
 
       <section class="topic-section" aria-labelledby="topic-framework">
         <p class="eyebrow">04 / FRAMEWORK & METHODS</p>
-        <h2 id="topic-framework">理论框架与研究方法</h2>
+        <h2 id="topic-framework">{{ topicSectionTitles['topic-framework'] || '理论框架与研究方法' }}</h2>
         <p>{{ topic.methods }}</p>
       </section>
 
       <section v-if="topicDetail" class="topic-section" aria-labelledby="topic-workflow">
         <p class="eyebrow">05 / FROM MODEL TO EVIDENCE</p>
-        <h2 id="topic-workflow">从理论模型到可检验结论</h2>
+        <h2 id="topic-workflow">{{ topicSectionTitles['topic-workflow'] || '从理论模型到可检验结论' }}</h2>
         <p class="section-intro">每一步都应保留输入、假设、软件/数据版本与可追溯证据；不能用一张灵敏度曲线替代完整的理论和实验核查。</p>
         <ol class="topic-workflow">
           <li v-for="item in topicDetail.workflow" :key="item.step">
@@ -130,14 +123,14 @@ onMounted(() => {
 
       <section class="topic-section" aria-labelledby="topic-observables">
         <p class="eyebrow">06 / OBSERVABLES</p>
-        <h2 id="topic-observables">可观测量与实验联系</h2>
+        <h2 id="topic-observables">{{ topicSectionTitles['topic-observables'] || '可观测量与实验联系' }}</h2>
         <p>{{ topic.probes }}</p>
         <p class="topic-caveat">{{ topic.detail }}</p>
       </section>
 
       <section v-if="topicDetail" class="topic-section" aria-labelledby="topic-interpretation">
         <p class="eyebrow">07 / HOW TO READ THE RESULTS</p>
-        <h2 id="topic-interpretation">结果应该如何判读</h2>
+        <h2 id="topic-interpretation">{{ topicSectionTitles['topic-interpretation'] || '结果应该如何判读' }}</h2>
         <div class="interpretation-grid">
           <article v-for="item in topicDetail.interpretation" :key="item.tag" class="interpretation-card">
             <span>{{ item.tag }}</span><h3>{{ item.title }}</h3><p>{{ item.detail }}</p>
@@ -147,7 +140,7 @@ onMounted(() => {
 
       <section v-if="topicDeepGuide" class="topic-section" aria-labelledby="topic-assumptions">
         <p class="eyebrow">08 / ASSUMPTIONS & FAILURE MODES</p>
-        <h2 id="topic-assumptions">研究中必须明确的假设与常见误判</h2>
+        <h2 id="topic-assumptions">{{ topicSectionTitles['topic-assumptions'] || '研究中必须明确的假设与常见误判' }}</h2>
         <p class="section-intro">这些检查不是形式上的免责声明，而是决定公式能否用于具体模型、数据和参数空间的条件。</p>
         <div class="assumption-grid">
           <article v-for="item in topicDeepGuide.assumptions" :key="item.title" class="assumption-card">
@@ -158,7 +151,7 @@ onMounted(() => {
 
       <section v-if="topicDeepGuide" class="topic-section" aria-labelledby="topic-questions">
         <p class="eyebrow">09 / RESEARCH ENTRY POINTS</p>
-        <h2 id="topic-questions">如何从导读进入实际研究</h2>
+        <h2 id="topic-questions">{{ topicSectionTitles['topic-questions'] || '如何从导读进入实际研究' }}</h2>
         <div class="research-question-grid">
           <article v-for="(item, index) in topicDeepGuide.researchQuestions" :key="item.title" class="research-question-card">
             <span class="question-index">{{ String(index + 1).padStart(2, '0') }}</span><h3>{{ item.title }}</h3><p>{{ item.detail }}</p>
@@ -168,7 +161,7 @@ onMounted(() => {
 
       <section v-if="topicDeepGuide" class="topic-section topic-source-notes" aria-labelledby="topic-source-notes">
         <p class="eyebrow">10 / SOURCE NOTES</p>
-        <h2 id="topic-source-notes">关系式与方法的参考依据</h2>
+        <h2 id="topic-source-notes">{{ topicSectionTitles['topic-source-notes'] || '关系式与方法的参考依据' }}</h2>
         <p class="section-intro">以下是进入原始资料的起点。正式研究时应继续核对具体章节、定义、版本和原始论文，而不是只引用本页概述。</p>
         <div class="topic-source-grid">
           <a v-for="item in topicDeepGuide.references" :key="item.url" :href="item.url" target="_blank" rel="noopener noreferrer" class="topic-source-card">
@@ -179,7 +172,7 @@ onMounted(() => {
 
       <section class="topic-section topic-publications" aria-labelledby="topic-papers">
         <p class="eyebrow">11 / SELECTED PAPERS</p>
-        <h2 id="topic-papers">相关代表论文</h2>
+        <h2 id="topic-papers">{{ topicSectionTitles['topic-papers'] || '相关代表论文' }}</h2>
         <p class="section-intro">以下关联来自网站维护的公开专题与论文索引。具体模型假设、数值结果和实验限制应以原始论文为准；此页面不声称独立复现论文计算。</p>
         <ul>
           <li v-for="paper in relatedPapers" :key="paper.id">
@@ -195,7 +188,7 @@ onMounted(() => {
 
       <section v-if="topicDetail" class="topic-section topic-resource-section" aria-labelledby="topic-resources">
         <p class="eyebrow">12 / RESEARCH LINKS</p>
-        <h2 id="topic-resources">本方向常用的专业资源</h2>
+        <h2 id="topic-resources">{{ topicSectionTitles['topic-resources'] || '本方向常用的专业资源' }}</h2>
         <p class="section-intro">优先链接实验合作组、学术数据库和官方软件文档。外部资源用于追溯原始论文、公开数据和工具说明，不代表本课题组对其所有结论背书。</p>
         <div class="topic-resource-grid">
           <a v-for="resource in topicResources" :key="resource.id" class="topic-resource-card" :href="resource.url" target="_blank" rel="noopener noreferrer">
