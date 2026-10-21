@@ -730,7 +730,7 @@ export function applyThemeToDOM(scheme = currentColorScheme.value, bg = currentB
           doc.style.removeProperty(v)
         }
       })
-      const baseBg = actualScheme === 'quiet-research' ? '#F7F5F0' : (actualScheme === 'worldline-console' ? '#100d08' : (actualScheme === 'obsidian-gray' ? '#090d16' : (actualScheme === 'nebula-purple' ? '#03020a' : '#081f28')))
+      const baseBg = actualScheme === 'quiet-research' ? '#F7F5F0' : (actualScheme === 'worldline-console' ? '#07111d' : (actualScheme === 'obsidian-gray' ? '#090d16' : (actualScheme === 'nebula-purple' ? '#03020a' : '#081f28')))
       doc.style.backgroundColor = baseBg
     }
 

@@ -153,6 +153,7 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(indexCss).toContain(':root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card {')
     expect(themeModule).toContain("colors: ['#07111d', '#55e6f2', '#102436']")
     expect(indexHtml).toContain("scheme === 'worldline-console' ? '#07111d'")
+    expect(themeModule).toContain("actualScheme === 'worldline-console' ? '#07111d'")
     expect(themeSwitcher).toContain('stroke: var(--theme-tuner-ring')
     expect(themeSwitcher).toContain('stroke: var(--theme-tuner-core')
   })
