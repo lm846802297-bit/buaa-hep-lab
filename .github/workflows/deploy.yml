@@ -56,6 +56,18 @@ jobs:
           retention-days: 14
       - name: Isolated Pages runtime security smoke checks
         run: node scripts/verify-cloudflare.mjs
+      - name: Reproducible bcrypt benchmark (local evidence only)
+        run: |
+          node frontend/benchmarks/bcrypt/run.mjs --runtime node --samples 50 --warmup 5 --out benchmark-results/node.json
+          node frontend/benchmarks/bcrypt/run.mjs --runtime workerd --samples 50 --warmup 5 --out benchmark-results/workerd.json
+      - name: Retain benchmark samples and environment
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bcrypt-local-evidence
+          path: benchmark-results/*.json
+          if-no-files-found: warn
+          retention-days: 14
       - uses: actions/upload-artifact@v4
         with:
           name: production-build
@@ -90,8 +102,9 @@ jobs:
           if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
             echo 'ready=true' >> "$GITHUB_OUTPUT"
           else
-            echo '::warning::Validation completed; deployment is not configured. Add both Cloudflare repository secrets to enable automatic publishing.'
-            echo 'Validation passed. No deployment performed: Cloudflare repository secrets are missing.' >> "$GITHUB_STEP_SUMMARY"
+            echo '::error::Publication blocked: one or more required Cloudflare credentials are missing. Review docs/RELEASE_AUTHORITY.md.'
+            echo 'Deployment was requested by a main-branch workflow, but required Cloudflare credentials are missing. No deployment performed.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
           fi
       - name: Deploy verified build
         if: steps.credentials.outputs.ready == 'true'
@@ -99,7 +112,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npm run pages:deploy
+        run: npm run pages:deploy -- --commit-hash="${{ github.sha }}" --commit-dirty=false
       - name: Published site health and authorization checks
         if: steps.credentials.outputs.ready == 'true'
         run: node scripts/verify-live.mjs https://buaa-hep-hub.pages.dev

@@ -1,0 +1,112 @@
+{
+  "observedAt": "2026-10-21T01:56:10Z",
+  "repository": "lm846802297-bit/buaa-hep-lab",
+  "sourceOfTruth": "GitHub Actions workflow run; Cloudflare dashboard snapshot below is historical",
+  "latestVerifiedMainBeforeSec04Update": {
+    "commit": "fb287b4fac1a7c45e02ee3d1e276ebdabf476269",
+    "runId": 39529826480,
+    "runUrl": "https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39529826480",
+    "trigger": "push",
+    "validateJob": "success",
+    "deployJob": "success",
+    "deploymentUrl": "https://2d105688.buaa-hep-hub.pages.dev",
+    "productionAlias": "https://buaa-hep-hub.pages.dev",
+    "deploymentLog": "Deployment complete",
+    "postDeployCheck": "success: health, public HTML/metadata, anonymous authorization and internal-route noindex checks",
+    "credentialHandling": "required credential variables were present; values remained masked in logs and were not inspected"
+  },
+  "historicalCloudflareDashboardSnapshot": {
+    "observedAt": "2026-10-20T21:43:25Z",
+    "project": {
+      "name": "buaa-hep-hub",
+      "domains": [
+        "buaa-hep-hub.pages.dev"
+      ],
+      "gitProvider": "No"
+    },
+    "previousDeployments": [
+      {
+        "Id": "de9e48e6-446d-4860-9cc1-ddbf500f0fa4",
+        "Environment": "Production",
+        "Branch": "main",
+        "Source": "4315c35",
+        "Deployment": "https://de9e48e6.buaa-hep-hub.pages.dev",
+        "Status": "5 hours ago",
+        "Build": "https://dash.cloudflare.com/8a46c4c9521a2bd84c1350d69fead5d4/pages/view/buaa-hep-hub/de9e48e6-446d-4860-9cc1-ddbf500f0fa4"
+      },
+      {
+        "Id": "1ae81bb6-c41e-4b66-bb3b-ab5d29f3838d",
+        "Environment": "Production",
+        "Branch": "main",
+        "Source": "a84bcbb",
+        "Deployment": "https://1ae81bb6.buaa-hep-hub.pages.dev",
+        "Status": "5 hours ago",
+        "Build": "https://dash.cloudflare.com/8a46c4c9521a2bd84c1350d69fead5d4/pages/view/buaa-hep-hub/1ae81bb6-c41e-4b66-bb3b-ab5d29f3838d"
+      },
+      {
+        "Id": "409d179e-2756-4835-985e-b06a2ef508a3",
+        "Environment": "Production",
+        "Branch": "main",
+        "Source": "8437c8b",
+        "Deployment": "https://409d179e.buaa-hep-hub.pages.dev",
+        "Status": "5 hours ago",
+        "Build": "https://dash.cloudflare.com/8a46c4c9521a2bd84c1350d69fead5d4/pages/view/buaa-hep-hub/409d179e-2756-4835-985e-b06a2ef508a3"
+      }
+    ],
+    "projectSettings": {
+      "connectedGitRepository": false,
+      "gitRepositoryControl": "Connect button; no connected repository",
+      "productionBranch": "main",
+      "compatibilityDate": "2026-09-17",
+      "compatibilityFlags": [
+        "nodejs_compat"
+      ],
+      "bindings": {
+        "D1": {
+          "binding": "DB",
+          "databaseId": "3d563c1f-130b-4e66-b68b-42df31606674"
+        },
+        "R2": null
+      },
+      "secrets": "Production shows encrypted secrets; values were not opened or read"
+    },
+    "previousProductionDeployment": {
+      "id": "de9e48e6-446d-4860-9cc1-ddbf500f0fa4",
+      "status": "success",
+      "completedAtDisplay": "12:21 AM October 21, 2026 (console did not show timezone)",
+      "productionAlias": "buaa-hep-hub.pages.dev",
+      "deploymentUrl": "https://de9e48e6.buaa-hep-hub.pages.dev",
+      "sourceSha": "4315c35b91305be8ccceaf930bf9b92f94226f83",
+      "sourceTitle": "Expand public research descriptions and add curated physics resources",
+      "mainShaAtInspection": "94c54853d733565605a27eec032f7e9faf55ae83",
+      "note": "Production is behind main. Repository main has R2 binding configuration; production Settings shows no R2 binding."
+    },
+    "aggregatePagesFunctionsMetrics": {
+      "window": "Previous 24 hours at observation time",
+      "successfulInvocations": 2058,
+      "errors": 0,
+      "subrequests": 25,
+      "cpuLimitExceeded": 0,
+      "cpuTimeMs": {
+        "p50": 2.209,
+        "p75": 2.854,
+        "p99": 11.222,
+        "p999": 23.375
+      },
+      "limitation": "Project-wide Pages Functions aggregate; no route, operation, or bcrypt cost dimension; not attributable to password hashing.",
+      "sampling": "Cloudflare dashboard quantiles; per-invocation raw sample count/identities were not exposed in this view."
+    },
+    "limitations": [
+      "Dashboard CPU quantiles are project-wide Pages Functions aggregates and cannot isolate bcrypt or auth routes.",
+      "No raw per-invocation CPU sample count or route labels were available in the view inspected.",
+      "Dashboard deployment time was shown without a timezone.",
+      "The dashboard showed production D1 binding DB and no R2 binding; Git repository control was unconnected."
+    ]
+  },
+  "interpretation": [
+    "The Cloudflare dashboard snapshot predates GitHub Actions run 39529826480; its old deployment SHA is historical, not the current verified source.",
+    "The current repository wrangler config declares D1 only and no R2 binding. Do not claim R2 is active.",
+    "Project-wide CPU quantiles cannot isolate bcrypt operations, costs or authentication routes.",
+    "The current SEC-04 PR is not production-deployed until its merge SHA's main workflow succeeds."
+  ]
+}

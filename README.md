@@ -4,12 +4,13 @@
 
 - 线上网站：https://buaa-hep-hub.pages.dev/
 - 使用与部署说明：[北航课题组使用说明](北航课题组使用说明.md)
+- 发布方式与验收证据：[发布权威记录](docs/RELEASE_AUTHORITY.md)。生产发布以 `main` 上的 GitHub Actions 部署 job 和发布后检查为准。
 - 成员注册仅邮箱、密码和有效邀请码必填，真实姓名与昵称选填。
 - 公开页将王小平老师列为导师、刘佳老师列为学术指导；展示单位、职称、研究简介与方向等核对过的公开学术信息。
 - 当前生产部署目标为 Cloudflare Pages + D1，暂不启用 R2；`frontend/wrangler.json` 因此不声明 `FILES_BUCKET` 绑定，避免部署依赖尚未创建的桶。代码保留可选 R2 适配，但未绑定时附件走 D1，单文件上限为 1 MiB；超过上限请使用外部网盘链接。未来只有在 Cloudflare 创建 `buaa-hep-hub-files` 桶、配置 `FILES_BUCKET` 并通过上传/下载验收后，才可将 R2 视为启用，届时上限可提高至 15 MiB。
 - 本仓库不包含生产数据库、用户账号数据、初始化码或登录凭据。部署密钥需要在自己的环境单独配置。
 - 从 GitHub 下载源码后，本地运行前需安装前端依赖并构建：`npm --prefix frontend ci`、`npm --prefix frontend run build`，然后运行 `start-windows.cmd`。
-- 此次仅保存源码，未配置 GitHub 到 Cloudflare 的自动发布凭据。
+- Cloudflare Pages 生产发布由 GitHub Actions 的 `.github/workflows/deploy.yml` 执行；功能分支仅验证，合并到 `main` 后才进入生产发布流程。
 
 本轮已按审计修复资料/组会权限与 Token 撤销，加入登录限速；公开页采用课题组确认的 16 篇论文、6 类与 5 个研究方向。
 
@@ -17,7 +18,7 @@
 
 登录后的资料库与工作台现提供“学习与计算”入口（`/learning`）：五个基础学习专题、权威资源索引、公式源码、笔记导出和复现记录模板。内容为非保密学习初稿，学术维护者待指定；两体衰变 Python 基准可本地执行，FeynCalc 示例尚未在 Mathematica 中实测。静态学习资料不适合存放保密内容。
 
-验证方法、性能基线和运行时边界见 [实施与验收报告](docs/audit/实施与验收报告.md)。CI 对前端与 API 执行自动化测试、生产构建、入口预算检查、浏览器和本地 Pages 运行时检查。GitHub Pages 演示发布改为手动且需启用变量；Cloudflare 自动发布仍需设置专用仓库 Secrets。
+验证方法、性能基线和运行时边界见 [实施与验收报告](docs/audit/实施与验收报告.md)。CI 对前端与 API 执行自动化测试、生产构建、入口预算检查、浏览器和本地 Pages 运行时检查。GitHub Pages 演示发布改为手动且需启用变量；Cloudflare Pages 发布通过 GitHub Actions 执行；所需凭据缺失时部署 job 必须失败，不得把验证通过等同于发布成功。
 
 以下保留原项目说明与来源信息。
 
