@@ -191,6 +191,8 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(indexCss).toContain('color-mix(in srgb, var(--worldline-screen) 96%, transparent);')
     expect(indexCss).toContain('@keyframes worldline-shift-flash')
     expect(indexCss).toContain('@keyframes worldline-dial-ignite')
+    expect(indexCss).toContain('.worldline-backdrop-shift-wave__ring--outer')
+    expect(indexCss).toContain('@keyframes worldline-backdrop-wave')
     expect(indexCss).toContain('.worldline-shift-overlay__dial-ticks')
     expect(indexCss).toContain('.worldline-shift-overlay__glitch--a')
     expect(worldlineEffects).toContain('世界线变动')

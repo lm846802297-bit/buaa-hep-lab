@@ -2629,6 +2629,25 @@ html[data-bg-style="clouds-static"] body {
   background: color-mix(in srgb, var(--worldline-blue) 7%, transparent);
   border-color: var(--worldline-blue);
 }
+@keyframes worldline-backdrop-wave {
+  0% { opacity: 0; }
+  12% { opacity: .92; }
+  28% { opacity: .62; }
+  64% { opacity: .24; }
+  100% { opacity: 0; }
+}
+@keyframes worldline-wave-ring {
+  0% { transform: scale(.12); opacity: 0; }
+  18% { opacity: .9; }
+  72% { opacity: .48; }
+  100% { transform: scale(4.2); opacity: 0; }
+}
+@keyframes worldline-wave-ring-inner {
+  0% { transform: scale(.18); opacity: 0; }
+  16% { opacity: .95; }
+  54% { opacity: .42; }
+  100% { transform: scale(3.1); opacity: 0; }
+}
 @keyframes worldline-track-flow { to { stroke-dashoffset: -48; } }
 @keyframes worldline-gear-drift { to { transform: rotate(360deg); } }
 @keyframes worldline-reticle-breathe { 0%, 100% { opacity: .42; } 50% { opacity: .82; } }
@@ -2649,6 +2668,26 @@ html[data-bg-style="clouds-static"] body {
 .worldline-technical-backdrop .worldline-backdrop-notes { opacity: .52; }
 .worldline-technical-backdrop .worldline-backdrop-drafting,
 .worldline-technical-backdrop .worldline-backdrop-crosshairs { opacity: .46; }
+.worldline-technical-backdrop.is-shifting { opacity: .56; }
+.worldline-technical-backdrop.is-shifting .worldline-backdrop-gear { color: var(--worldline-cyan-hot, #c5fbff); }
+.worldline-technical-backdrop.is-shifting .worldline-backdrop-reticle,
+.worldline-technical-backdrop.is-shifting .worldline-backdrop-orbit { opacity: .95; }
+.worldline-backdrop-shift-wave {
+  opacity: 0;
+  transform-box: view-box;
+  transform-origin: 800px 500px;
+  animation: worldline-backdrop-wave 1.32s ease-out both;
+  color: var(--worldline-cyan-hot, #c5fbff);
+}
+.worldline-backdrop-shift-wave__ring { transform-box: fill-box; transform-origin: center; }
+.worldline-backdrop-shift-wave__ring--outer {
+  animation: worldline-wave-ring 1.32s cubic-bezier(.1,.7,.2,1) both;
+  stroke: var(--worldline-blue, #83a9ff);
+}
+.worldline-backdrop-shift-wave__ring--inner {
+  animation: worldline-wave-ring-inner 1.32s cubic-bezier(.1,.7,.2,1) both;
+  stroke: var(--worldline-cyan-hot, #c5fbff);
+}
 .worldline-particle-canvas {
   position: fixed;
   inset: 0;
@@ -3037,7 +3076,9 @@ html[data-bg-style="clouds-static"] body {
 @media (prefers-reduced-motion: reduce) {
   .worldline-technical-backdrop .worldline-backdrop-gear-rotor,
   .worldline-technical-backdrop .worldline-backdrop-reticle--slow,
-  .worldline-technical-backdrop .worldline-backdrop-orbit { animation: none !important; }
+  .worldline-technical-backdrop .worldline-backdrop-orbit,
+  .worldline-backdrop-shift-wave,
+  .worldline-backdrop-shift-wave * { animation: none !important; }
   .worldline-particle-canvas { display: none !important; }
   .worldline-shift-overlay { display: none !important; animation: none !important; }
   :root[data-color-scheme="worldline-console"] *,

@@ -478,7 +478,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <svg v-if="isWorldlineActive" class="worldline-technical-backdrop" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+  <svg v-if="isWorldlineActive" class="worldline-technical-backdrop" :class="{ 'is-shifting': isShifting }" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
     <defs>
       <pattern id="worldline-draft-grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#83a9ff" stroke-opacity=".24" stroke-width=".55"/><path d="M16 0V32M0 16H32" fill="none" stroke="#55e6f2" stroke-opacity=".12" stroke-width=".35"/></pattern>
       <radialGradient id="worldline-backdrop-glow"><stop offset="0" stop-color="#55e6f2" stop-opacity=".12"/><stop offset="1" stop-color="#55e6f2" stop-opacity="0"/></radialGradient>
@@ -486,6 +486,12 @@ onBeforeUnmount(() => {
       <g id="worldline-drafting-reticle" fill="none" stroke="currentColor"><circle r="84" stroke-width=".8"/><circle r="68" stroke-width=".6" stroke-dasharray="2 5"/><circle r="36" stroke-width=".7"/><path d="M-112 0H112M0-112V112M-79-79L79 79M79-79L-79 79" stroke-width=".55"/><path d="M0-96L-5-84H5ZM96 0L84-5V5ZM0 96L-5 84H5ZM-96 0L-84-5V5Z" stroke-width=".8"/><circle r="4" stroke-width="1.2"/></g>
     </defs>
     <rect width="1600" height="1000" fill="url(#worldline-draft-grid)"/><ellipse cx="1180" cy="350" rx="390" ry="300" fill="url(#worldline-backdrop-glow)"/>
+    <g v-if="isShifting" class="worldline-backdrop-shift-wave" fill="none" stroke="currentColor" aria-hidden="true">
+      <circle class="worldline-backdrop-shift-wave__ring worldline-backdrop-shift-wave__ring--outer" cx="800" cy="500" r="72" stroke-width="1.2" stroke-dasharray="3 9"/>
+      <circle class="worldline-backdrop-shift-wave__ring worldline-backdrop-shift-wave__ring--inner" cx="800" cy="500" r="48" stroke-width="1.8"/>
+      <path d="M800 360V430M800 570V640M660 500H730M870 500H940M701 401L750 450M850 550L899 599M899 401L850 450M750 550L701 599" stroke-width=".9" stroke-dasharray="5 6"/>
+      <circle cx="800" cy="500" r="5" fill="#ff4d86" stroke="none"/>
+    </g>
     <g class="worldline-backdrop-drafting"><path d="M0 170H1600M0 500H1600M0 820H1600M240 0V1000M800 0V1000M1370 0V1000" stroke="currentColor" stroke-width=".5" stroke-dasharray="2 9"/><path d="M70 90H430V390M1150 95H1515V420M75 690V920H450M1050 680H1515V930" fill="none" stroke="currentColor" stroke-width=".7"/><path d="M70 90h22m-22 0v22M430 390h-22m22 0v-22M1150 95h22m-22 0v22M1515 420h-22m22 0v-22M75 690h22m-22 0v22M450 920h-22m22 0v-22" stroke="currentColor" stroke-width="1.5"/></g>
     <g class="worldline-backdrop-gear" transform="translate(260 190) scale(1.18)"><g class="worldline-backdrop-gear-rotor"><use href="#worldline-gear-drawing"/></g></g>
     <g class="worldline-backdrop-gear" transform="translate(510 110) scale(.56)"><g class="worldline-backdrop-gear-rotor worldline-backdrop-gear-rotor--reverse"><use href="#worldline-gear-drawing"/></g></g>
