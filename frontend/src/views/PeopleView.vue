@@ -2,16 +2,17 @@
 import { computed, onMounted } from 'vue'
 import { publicContentIndexCheckedAt, publicPeople } from '../content/lab'
 import { publicationReviewStatus } from '../utils/publicationReview'
+import { publicBrandIdentity } from '../content/brandIdentity'
 
 const people = computed(() => publicPeople.filter(person => person.visibility === 'public'))
 const reviewStatus = person => publicationReviewStatus(person.last_verified_at)
-onMounted(() => { document.title = '团队与学术指导 | BUAA HEP Hub' })
+onMounted(() => { document.title = `团队与学术指导 | ${publicBrandIdentity.name}` })
 </script>
 
 <template>
   <main class="people-page">
     <nav class="breadcrumb" aria-label="面包屑">
-      <router-link to="/">BUAA HEP Hub</router-link><span aria-hidden="true">/</span><span aria-current="page">团队与学术指导</span>
+      <router-link to="/">{{ publicBrandIdentity.name }}</router-link><span aria-hidden="true">/</span><span aria-current="page">团队与学术指导</span>
     </nav>
     <header class="page-hero">
       <p class="eyebrow">PEOPLE & ACADEMIC GUIDANCE</p>

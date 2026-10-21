@@ -2,6 +2,8 @@
 import { computed, onMounted, ref, nextTick } from 'vue'
 import PublicThemeSwitcher from '../components/PublicThemeSwitcher.vue'
 import PublicSectionNav from '../components/PublicSectionNav.vue'
+import PublicBrand from '../components/PublicBrand.vue'
+import { publicBrandIdentity } from '../content/brandIdentity'
 import { lab, advisorProfile, collaborators, directions, publications, publicationCategories, publicResources, publicResourceCheckedAt } from '../content/lab'
 const menuOpen = ref(false)
 const filter = ref('all')
@@ -38,7 +40,7 @@ const resourceCategory = ref('all')
 const resourceCategories = [...new Set(publicResources.map(resource => resource.category))]
 const visibleResources = computed(() => publicResources.filter(resource => resourceCategory.value === 'all' || resource.category === resourceCategory.value))
 onMounted(() => {
-  document.title = `${lab.name}${lab.provisional ? '（暂定）' : ''} | ${lab.field}`
+  document.title = `${publicBrandIdentity.name} | ${lab.field}`
 
   // A cross-page hash link can arrive before Vue has rendered the target section.
   // Re-apply the fragment after mount so links such as /#research-guides land correctly.
@@ -58,10 +60,7 @@ function downloadBibtex() {
   <div class="lab-public">
     <PublicSectionNav />
     <header class="public-header">
-      <a href="#top" class="public-brand" aria-label="课题组首页" @click="menuOpen = false">
-        <svg class="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="24" cy="24" r="17"/><ellipse cx="24" cy="24" rx="9" ry="22" transform="rotate(45 24 24)"/><path d="M3 24h42"/><circle cx="24" cy="24" r="3" fill="currentColor"/></svg>
-        <span><strong>{{ lab.shortName }}</strong><small>北京航空航天大学 · 物理学院</small></span>
-      </a>
+      <PublicBrand to="/#top" @click="menuOpen = false" />
       <button class="menu-toggle button secondary" :aria-expanded="menuOpen" aria-controls="public-navigation" @click="menuOpen = !menuOpen">{{ menuOpen ? '关闭菜单' : '菜单' }}</button>
       <nav id="public-navigation" :class="{ open: menuOpen }" aria-label="官网导航">
         <a href="#research" @click="menuOpen = false">研究方向</a><a href="#research-guides" @click="menuOpen = false">专题导读</a><a href="#publications" @click="menuOpen = false">代表成果</a><a href="#physics-resources" @click="menuOpen = false">物理资源</a><a href="#about" @click="menuOpen = false">关于我们</a>
@@ -73,7 +72,7 @@ function downloadBibtex() {
 
     <section id="top" class="public-hero">
       <div class="hero-copy">
-        <div class="hero-eyebrow"><span class="status-dot"></span> {{ lab.english }}</div>
+        <div class="hero-eyebrow"><span class="status-dot"></span> {{ publicBrandIdentity.englishDescriptor }}</div>
         <h1>从微观粒子，<br>探寻<span>物理的新边界。</span></h1>
         <p class="hero-intro">{{ lab.intro }}</p>
         <div class="hero-actions"><a href="#research" class="button primary">探索研究方向 <span aria-hidden="true">↗</span></a><a href="#research-guides" class="button secondary">专题导读 <span aria-hidden="true">↓</span></a><a href="#publications" class="button ghost">阅读代表论文 <span aria-hidden="true">↓</span></a></div>
@@ -282,9 +281,6 @@ function downloadBibtex() {
 .lab-public { background:var(--bg); color:var(--text); position:relative; overflow:hidden; font-family:var(--font); }
 .public-header,.public-hero,.public-section,.public-footer,.research-strip { width:min(1280px,calc(100% - 96px)); margin-inline:auto; }
 .public-header { min-height:104px; display:flex; align-items:center; justify-content:space-between; gap:24px; border-bottom:1px solid var(--line); }
-.public-brand { display:flex; align-items:center; gap:14px; text-decoration:none; }
-.brand-mark { width:42px; height:42px; color:var(--accent); stroke:currentColor; stroke-width:1; }
-.public-brand strong { display:block; font-size:20px; font-weight:500; letter-spacing:.08em; }.public-brand small { display:block; font-size:11px; color:var(--muted); letter-spacing:.08em; margin-top:4px; }
 nav { display:flex; align-items:center; gap:32px; font-size:14px; } nav>a { padding:12px 0; color:var(--soft); } nav>a:hover { color:var(--accent); }.nav-hub { border-left:1px solid var(--line); padding-left:28px; }.nav-hub span { margin-left:12px; }.menu-toggle { display:none; }
 .public-hero { display:grid; grid-template-columns:1.08fr 1fr; align-items:center; min-height:690px; gap:16px; padding:64px 0 56px; }
 .hero-eyebrow { color:var(--accent); font-size:11px; letter-spacing:.13em; text-transform:uppercase; display:flex; align-items:center; gap:10px; margin-bottom:28px; }.status-dot { width:6px; height:6px; background:var(--accent); border-radius:50%; }
@@ -300,5 +296,5 @@ h1 { font-size:clamp(38px,4.5vw,68px); font-weight:400; line-height:1.35; letter
 .public-footer { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:32px 0; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }.public-footer>span:first-child { font-size:15px; color:var(--text); letter-spacing:.05em; }.public-footer small { display:block; font-size:10px; color:var(--muted); margin-top:8px; }.public-footer a:hover { color:var(--accent); }.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }a,button,input { outline-offset:5px; }a:focus-visible,button:focus-visible,input:focus-visible { outline:2px solid var(--focus); }.button:disabled { opacity:.5; cursor:not-allowed; }
 @media(min-width:1600px) { .public-hero { min-height:760px; } }
 @media(max-width:1000px) { .research-guide-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .public-header,.public-hero,.public-section,.public-footer,.research-strip { width:calc(100% - 56px); }.public-hero { min-height:620px; }nav { gap:20px; }.research-layout { gap:28px; }.about-section,.collaboration-section { gap:40px; }.public-hero h1 { font-size:44px; } }
-@media(max-width:700px) { .research-guide-grid { grid-template-columns:1fr; } .research-guide-card { padding:22px; } .topic-guide-entry { padding:16px; } .public-header,.public-hero,.public-section,.public-footer,.research-strip { width:calc(100% - 36px); }.public-header { min-height:84px; flex-wrap:wrap; gap:10px; }.public-brand strong { font-size:16px; }.public-brand small { font-size:10px; }.brand-mark { width:34px; height:34px; }.menu-toggle { display:flex; font-size:12px; min-height:40px; padding:8px 12px; }nav { display:none; width:100%; padding-bottom:20px; flex-wrap:wrap; gap:12px 22px; }nav.open { display:flex; }.nav-hub { border-left:0; padding-left:0; }.public-hero { grid-template-columns:1fr; padding-top:48px; gap:16px; min-height:0; }.public-hero h1 { font-size:clamp(33px,8vw,48px); }.hero-eyebrow { font-size:9px; letter-spacing:.08em; }.hero-actions { gap:4px; margin:28px 0 32px; }.hero-actions a { gap:12px; padding-inline:14px; font-size:12px; }.hero-intro { font-size:14px; }.collision-figure { width:min(100%,430px); margin-inline:auto; }.research-strip { flex-wrap:wrap; justify-content:flex-start; gap:14px 20px; font-size:10px; padding:20px 0; }.public-section { padding:56px 0; }.section-top { align-items:flex-start; flex-direction:column; gap:16px; }.section-top h2 { font-size:27px; }.section-top>p br { display:none; }.research-layout,.about-section,.collaboration-section { grid-template-columns:1fr; gap:28px; }.research-tabs strong { font-size:18px; }.research-tabs button { padding:22px 0; }.research-detail { padding:28px 24px; }.research-detail h3 { font-size:22px; }.research-detail p { font-size:14px; }.publication-controls { flex-direction:column; align-items:stretch; }.paper-search input { width:100%; box-sizing:border-box; }.segmented { align-self:flex-start; }.segmented button { padding:8px 12px; }.public-paper { grid-template-columns:50px 1fr; gap:16px; }.paper-year { font-size:22px; }.paper-content h3 { font-size:17px; }.paper-link { grid-column:2; padding:4px 0; }.public-footer { flex-wrap:wrap; gap:20px; }.public-footer>span:nth-child(2) { order:3; flex-basis:100%; }.collaboration-section h2 { font-size:26px; } }
+@media(max-width:700px) { .research-guide-grid { grid-template-columns:1fr; } .research-guide-card { padding:22px; } .topic-guide-entry { padding:16px; } .public-header,.public-hero,.public-section,.public-footer,.research-strip { width:calc(100% - 36px); }.public-header { min-height:84px; flex-wrap:wrap; gap:10px; }.menu-toggle { display:flex; font-size:12px; min-height:40px; padding:8px 12px; }nav { display:none; width:100%; padding-bottom:20px; flex-wrap:wrap; gap:12px 22px; }nav.open { display:flex; }.nav-hub { border-left:0; padding-left:0; }.public-hero { grid-template-columns:1fr; padding-top:48px; gap:16px; min-height:0; }.public-hero h1 { font-size:clamp(33px,8vw,48px); }.hero-eyebrow { font-size:9px; letter-spacing:.08em; }.hero-actions { gap:4px; margin:28px 0 32px; }.hero-actions a { gap:12px; padding-inline:14px; font-size:12px; }.hero-intro { font-size:14px; }.collision-figure { width:min(100%,430px); margin-inline:auto; }.research-strip { flex-wrap:wrap; justify-content:flex-start; gap:14px 20px; font-size:10px; padding:20px 0; }.public-section { padding:56px 0; }.section-top { align-items:flex-start; flex-direction:column; gap:16px; }.section-top h2 { font-size:27px; }.section-top>p br { display:none; }.research-layout,.about-section,.collaboration-section { grid-template-columns:1fr; gap:28px; }.research-tabs strong { font-size:18px; }.research-tabs button { padding:22px 0; }.research-detail { padding:28px 24px; }.research-detail h3 { font-size:22px; }.research-detail p { font-size:14px; }.publication-controls { flex-direction:column; align-items:stretch; }.paper-search input { width:100%; box-sizing:border-box; }.segmented { align-self:flex-start; }.segmented button { padding:8px 12px; }.public-paper { grid-template-columns:50px 1fr; gap:16px; }.paper-year { font-size:22px; }.paper-content h3 { font-size:17px; }.paper-link { grid-column:2; padding:4px 0; }.public-footer { flex-wrap:wrap; gap:20px; }.public-footer>span:nth-child(2) { order:3; flex-basis:100%; }.collaboration-section h2 { font-size:26px; } }
 </style>
