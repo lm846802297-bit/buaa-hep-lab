@@ -12,12 +12,25 @@ describe('approved public bibliography', () => {
     for (const paper of publications) {
       expect(paper.source_url).toBe(`https://arxiv.org/abs/${paper.id}`)
       expect(paper.last_verified_at).toBe('2026-10-20')
+      expect(paper.arxivSubmitted).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(paper).not.toHaveProperty('published')
       expect(paper.inspire_url).toMatch(/^https:\/\/inspirehep.net\/literature\/\d+$/)
       expect(paper.authors).toContain('Xiao-Ping Wang')
       expect(paper.categories).toContain(paper.category)
       expect(paper.categories.every(id => publicationCategories.some(c => c.id === id))).toBe(true)
       if (paper.status === 'published') { expect(paper.doi).toMatch(/^10\./); expect(paper.journal).toBeTruthy() }
       else { expect(paper.journal).toBe(''); expect(paper.doi).toBe('') }
+    }
+  })
+  it('distinguishes arXiv submission date from journal citation year', () => {
+    const paper = publications.find(p => p.id === '2510.20672')
+    expect(paper.year).toBe('2026')
+    expect(paper.arxivSubmitted).toBe('2025-10-23')
+  })
+  it('keeps every research direction linked to existing bibliography records', () => {
+    for (const direction of directions) {
+      expect(direction.references.length).toBeGreaterThanOrEqual(2)
+      for (const id of direction.references) expect(publications.some(paper => paper.id === id)).toBe(true)
     }
   })
   it('searches identifiers, authors, DOI, journal and topics', () => {
