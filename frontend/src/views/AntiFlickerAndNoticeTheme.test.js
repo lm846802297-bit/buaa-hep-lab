@@ -140,6 +140,7 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(themeModule).toContain("id: 'worldline-console'")
     expect(indexHtml).toContain("'worldline-console'")
     expect(indexCss).toContain(':root[data-color-scheme="worldline-console"]')
+    expect(indexCss).toContain(':root[data-color-scheme="worldline-console"][data-bg-style="paper"] body')
     expect(indexCss).toContain(':root[data-color-scheme="worldline-console"] button:active:not(:disabled)')
     expect(appVue).toContain('<WorldlineEffects />')
     expect(worldlineEffects).toContain('prefers-reduced-motion: reduce')
