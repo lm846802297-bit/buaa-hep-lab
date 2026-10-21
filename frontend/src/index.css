@@ -2357,7 +2357,7 @@ html[data-bg-style="clouds-static"] body {
   --worldline-khaki: #a79a7d;
   --worldline-rust: #c87555;
   --worldline-warm-ambient: color-mix(in srgb, var(--worldline-amber) 8%, transparent);
-  --worldline-khaki-ambient: color-mix(in srgb, var(--worldline-khaki) 7%, transparent);
+  --worldline-khaki-ambient: color-mix(in srgb, var(--worldline-khaki) 5%, transparent);
   --worldline-screenline: color-mix(in srgb, var(--worldline-khaki) 2%, transparent);
   --theme-tuner-ring: color-mix(in srgb, var(--text) 46%, var(--worldline-khaki) 54%);
   --theme-tuner-axis: color-mix(in srgb, var(--worldline-khaki) 65%, transparent);
