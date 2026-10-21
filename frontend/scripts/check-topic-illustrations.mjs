@@ -85,7 +85,7 @@ for (const candidate of pythonCommands) {
   })
   if (result.error?.code === 'ENOENT') continue
   if (result.error) throw result.error
-  assert.equal(result.status, 0, `SVG XML parsing failed:\\n${result.stderr || result.stdout}`)
+  assert.equal(result.status, 0, `SVG XML parsing failed:\n${result.stderr || result.stdout}`)
   parsed = true
   break
 }
