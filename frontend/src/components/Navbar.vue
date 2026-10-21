@@ -56,7 +56,25 @@ watch([() => showTutorial.value, () => currentSubStep.value?.id, () => props.pin
   }
 }, { immediate: true })
 
-// Closing or skipping the tutorial must not overwrite the user's sidebar preference.
+// The tutorial temporarily changes pinning to expose the controls. Restore the
+// user's original preference when the tutorial finishes or is skipped.
+let tutorialPreviousPinned = null
+watch(() => showTutorial.value, (active, wasActive) => {
+  if (active && !wasActive) {
+    tutorialPreviousPinned = props.pinned
+    return
+  }
+  if (!active && wasActive && tutorialPreviousPinned !== null) {
+    const restorePinned = tutorialPreviousPinned
+    tutorialPreviousPinned = null
+    if (props.pinned !== restorePinned) {
+      emit('update:pinned', restorePinned)
+      try {
+        localStorage.setItem('sidebar_pinned', String(restorePinned))
+      } catch {}
+    }
+  }
+})
 function getInitialUser() {
   try {
     const raw = localStorage.getItem('labhub_user')
