@@ -92,7 +92,7 @@ try {
     const trigger = document.querySelector('.public-theme-trigger')
     return {
       accent: root.getPropertyValue('--accent').trim().toLowerCase(),
-      phosphor: root.getPropertyValue('--worldline-khaki').trim().toLowerCase(),
+      khaki: root.getPropertyValue('--worldline-khaki').trim().toLowerCase(),
       coreStroke: getComputedStyle(icon.querySelector('.tuner-core')).stroke,
       orbitStroke: getComputedStyle(icon.querySelector('.tuner-orbit')).stroke,
       buttonShadow: getComputedStyle(trigger).boxShadow
@@ -100,7 +100,7 @@ try {
   })
   check(worldlineTuner.accent === '#e6a24a', 'Worldline Console uses the warm amber primary signal')
   check(worldlineTuner.khaki === '#a79a7d', 'Worldline Console defines a washed khaki/olive instrument tone')
-  check(worldlineTuner.coreStroke !== worldlineTuner.orbitStroke, 'Worldline tuner separates amber core from cool orbital lines')
+  check(worldlineTuner.coreStroke !== worldlineTuner.orbitStroke, 'Worldline tuner separates amber core from washed khaki/olive orbital lines')
   check(worldlineTuner.buttonShadow !== 'none', 'Worldline tuner uses its restrained device-like button shadow')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await page.waitForTimeout(950)
