@@ -26,7 +26,7 @@ const server = createServer(async (req, res) => {
 })
 await new Promise(r => server.listen(0, '127.0.0.1', r))
 const base = `http://127.0.0.1:${server.address().port}`
-const browser = await chromium.launch()
+const browser = await chromium.launch({ args: ['--enable-webgl', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] })
 const checks = []
 function check(value, message) { assert(value, message); checks.push(message) }
 try {
@@ -216,6 +216,237 @@ try {
   await privatePage.screenshot({ path: resolve(output, 'learning-390-first-screen.png') })
   check(privateErrors.length === 0, `no learning page runtime errors: ${privateErrors.join('; ')}`)
   await privateContext.close()
+
+
+  // Appearance compatibility audit: exercise every actionable theme card in Chromium.
+  const styleContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  await styleContext.addInitScript(() => {
+    localStorage.setItem('labhub_force_demo', '1')
+    localStorage.setItem('labhub_token', 'demo_jwt_token_laborbit_experience')
+    localStorage.setItem('labhub_user', JSON.stringify({
+      id: 9001, name: 'Style Audit', email: 'style-audit@example.invalid',
+      role: 'admin', identity: 'teacher', tutorial_completed: true, is_tutorial_completed: true
+    }))
+    localStorage.setItem('sidebar_pinned', 'true')
+    localStorage.setItem('laborbit_color_scheme', 'quiet-research')
+    localStorage.setItem('laborbit_bg_type', 'paper')
+    localStorage.setItem('laborbit_glass_style', 'solid')
+    localStorage.setItem('laborbit_bg_video_paused', 'false')
+    localStorage.setItem('laborbit_bg_dim_percent_v2', '100')
+    localStorage.setItem('laborbit_default_v20261021_quiet_research', '1')
+  })
+  const stylePage = await styleContext.newPage()
+  stylePage.setDefaultTimeout(15000)
+  const styleErrors = []
+  stylePage.on('pageerror', e => styleErrors.push(e.message))
+  await stylePage.goto(base + '/style', { waitUntil: 'networkidle' })
+  await stylePage.locator('#section-color .theme-card').first().waitFor()
+
+  // Quiet Research must respect the legacy compact 88px rail and pin state.
+  const sidebar = stylePage.locator('.forecast-sidebar')
+  check(await stylePage.evaluate(() => {
+    const nav = document.querySelector('.forecast-sidebar')
+    const shell = document.querySelector('.app-shell')
+    return Math.round(nav.getBoundingClientRect().width) === 88 &&
+      Math.round(parseFloat(getComputedStyle(shell).paddingLeft)) === 88 &&
+      getComputedStyle(document.querySelector('.sidebar-brand-text')).display !== 'none'
+  }), 'Quiet Research uses the original 88px compact sidebar when pinned')
+  check(await stylePage.locator('#tour-pin-sidebar').isVisible(), 'pin control remains available in Quiet Research')
+  check(await stylePage.evaluate(() => {
+    const label = document.querySelector('.sidebar-link .iso-text')
+    return label && getComputedStyle(label).opacity === '0'
+  }), 'compact navigation labels remain tooltips rather than permanently expanded text')
+  await stylePage.screenshot({ path: resolve(output, 'style-quiet-research-compact-sidebar.png'), fullPage: true })
+  await stylePage.locator('#tour-pin-sidebar').click()
+  await stylePage.mouse.move(520, 400)
+  await expect(sidebar).toHaveClass(/is-collapsed/)
+  check(await stylePage.evaluate(() => {
+    const nav = document.querySelector('.forecast-sidebar')
+    const shell = document.querySelector('.app-shell')
+    return Math.round(nav.getBoundingClientRect().width) === 88 &&
+      Math.round(parseFloat(getComputedStyle(shell).paddingLeft)) === 0 &&
+      getComputedStyle(nav).transform !== 'none'
+  }), 'unpinning restores the original auto-collapse behavior')
+  await stylePage.locator('.sidebar-edge-trigger').hover()
+  await expect(sidebar).toHaveClass(/is-floating/)
+  await stylePage.locator('#tour-pin-sidebar').click()
+  await expect(sidebar).not.toHaveClass(/is-collapsed/)
+  check(await stylePage.evaluate(() => localStorage.getItem('sidebar_pinned') === 'true'), 'pinning the compact rail persists the user's choice')
+
+  // All five color cards must change the root scheme and active card state.
+  const schemeIds = ['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'custom']
+  const schemeCards = stylePage.locator('#section-color .theme-card[role="button"]')
+  check(await schemeCards.count() === schemeIds.length, 'all five color scheme cards render')
+  for (let i = 0; i < schemeIds.length; i++) {
+    await schemeCards.nth(i).click()
+    await expect(stylePage.locator('html')).toHaveAttribute('data-color-scheme', schemeIds[i])
+    check(await schemeCards.nth(i).getAttribute('aria-pressed') === 'true', `color scheme card ${schemeIds[i]} updates its active state`)
+    check(await stylePage.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().length > 0), `color scheme ${schemeIds[i]} supplies an accent color`)
+  }
+
+  // Custom theme presets, form editing, and save must all reach the real DOM/storage.
+  await stylePage.getByRole('button', { name: '编辑', exact: true }).click()
+  await stylePage.locator('.custom-theme-dialog-content').waitFor()
+  check(await stylePage.locator('.custom-templates-grid .custom-tpl-btn').count() > 0, 'custom theme presets are available')
+  await stylePage.locator('.custom-templates-grid .custom-tpl-btn').nth(1).click()
+  await stylePage.locator('.custom-name-input').fill('Audit Theme')
+  await stylePage.getByRole('button', { name: '保存并应用', exact: true }).click()
+  await expect(stylePage.locator('.custom-theme-dialog-content')).toBeHidden()
+  check(await stylePage.evaluate(() => {
+    const saved = JSON.parse(localStorage.getItem('laborbit_custom_color_scheme') || 'null')
+    return document.documentElement.dataset.colorScheme === 'custom' && saved?.name === 'Audit Theme'
+  }), 'custom theme preset and edited name persist and apply')
+  await schemeCards.nth(0).click()
+  await expect(stylePage.locator('html')).toHaveAttribute('data-color-scheme', 'quiet-research')
+
+  // The three glass cards must produce different, observable CSS behavior in Quiet Research.
+  const glassCards = stylePage.locator('#section-glass .theme-card[role="button"]')
+  const glassIds = ['solid', 'liquid', 'frosted']
+  check(await glassCards.count() === glassIds.length, 'all three glass style cards render')
+  await stylePage.evaluate(() => {
+    const probe = document.createElement('div')
+    probe.id = 'audit-glass-probe'
+    probe.className = 'glass-card'
+    probe.style.cssText = 'position:fixed;right:0;bottom:0;width:120px;height:80px;'
+    document.querySelector('.app-shell').appendChild(probe)
+  })
+  for (let i = 0; i < glassIds.length; i++) {
+    await glassCards.nth(i).click()
+    await expect(stylePage.locator('html')).toHaveAttribute('data-glass-style', glassIds[i])
+    check(await glassCards.nth(i).getAttribute('aria-pressed') === 'true', `glass style card ${glassIds[i]} updates its active state`)
+    const glass = await stylePage.evaluate(() => {
+      const el = document.querySelector('#audit-glass-probe')
+      const css = getComputedStyle(el)
+      return { backdrop: css.backdropFilter, background: css.backgroundColor }
+    })
+    if (glassIds[i] === 'solid') {
+      check(glass.backdrop === 'none' && glass.background !== 'rgba(0, 0, 0, 0)', 'solid glass mode uses an opaque surface without blur')
+    } else {
+      check(glass.backdrop.includes('blur'), `${glassIds[i]} glass mode has a visible CSS fallback instead of a no-op`)
+    }
+  }
+  await stylePage.evaluate(() => document.querySelector('#audit-glass-probe')?.remove())
+  // Verify the real HomeView path also initializes liquid glass or retains its CSS fallback.
+  await glassCards.nth(1).click()
+  await stylePage.goto(base + '/hub', { waitUntil: 'networkidle' })
+  await stylePage.locator('.forecast-right .glass-card').first().waitFor({ state: 'visible' })
+  await stylePage.waitForTimeout(1200)
+  const liquidHome = await stylePage.evaluate(() => {
+    const container = document.querySelector('.forecast-right')
+    const card = container?.querySelector('.glass-card')
+    return {
+      active: Boolean(container?.classList.contains('liquid-glass-active')),
+      backdrop: card ? getComputedStyle(card).backdropFilter : ''
+    }
+  })
+  check(liquidHome.active || liquidHome.backdrop.includes('blur'), 'liquid glass works on the HomeView or visibly falls back to CSS')
+  await stylePage.goto(base + '/style', { waitUntil: 'networkidle' })
+  await schemeCards.nth(0).click()
+
+  // Background cards are independent of color scheme. Dynamic effects must render and freeze/resume.
+  const bgCards = stylePage.locator('#section-bg .theme-card[role="button"]')
+  check(await bgCards.count() === 5, 'all five background cards render')
+  await bgCards.nth(1).click()
+  await expect(stylePage.locator('html')).toHaveAttribute('data-bg-type', 'clouds-static')
+  await stylePage.locator('.forecast-atmosphere').waitFor({ state: 'visible' })
+  check(await stylePage.locator('.forecast-atmosphere').evaluate(el => getComputedStyle(el).backgroundImage !== 'none'), 'static cloud background is visible under Quiet Research')
+  const dimSlider = stylePage.getByRole('slider', { name: '背景遮罩暗化程度' })
+  await dimSlider.evaluate(el => { el.value = '35'; el.dispatchEvent(new Event('input', { bubbles: true })) })
+  check(await stylePage.evaluate(() => Math.abs(Number(getComputedStyle(document.querySelector('.atmosphere-shade')).opacity) - 0.35) < 0.02), 'background dim slider changes the actual overlay opacity')
+  await stylePage.getByRole('button', { name: /恢复默认 \(100%\)/ }).click()
+  check(await stylePage.evaluate(() => Math.abs(Number(getComputedStyle(document.querySelector('.atmosphere-shade')).opacity) - 1) < 0.02), 'background dim reset restores the default overlay')
+  
+  await bgCards.nth(2).click()
+  await expect(stylePage.locator('html')).toHaveAttribute('data-bg-type', 'galaxy')
+  await stylePage.locator('.galaxy-atmosphere-canvas canvas.is-rendered').waitFor({ state: 'visible', timeout: 20000 })
+  await stylePage.getByRole('button', { name: '定格为静态壁纸', exact: true }).click()
+  await stylePage.locator('.frozen-atmosphere-frame').waitFor({ state: 'visible', timeout: 10000 })
+  check(await stylePage.locator('.galaxy-atmosphere-canvas canvas').count() === 0, 'freezing galaxy captures a static frame and releases its WebGL renderer')
+  await stylePage.getByRole('button', { name: '恢复动态播放', exact: true }).click()
+  await stylePage.locator('.galaxy-atmosphere-canvas canvas.is-rendered').waitFor({ state: 'visible', timeout: 20000 })
+  check(await stylePage.evaluate(() => localStorage.getItem('laborbit_bg_video_paused') === 'false'), 'resuming galaxy clears the persisted freeze state')
+
+  await bgCards.nth(3).click()
+  await expect(stylePage.locator('html')).toHaveAttribute('data-bg-type', 'vanta-fog')
+  await stylePage.locator('.vanta-atmosphere-canvas canvas.is-rendered').waitFor({ state: 'visible', timeout: 20000 })
+  await stylePage.getByRole('button', { name: '定格为静态壁纸', exact: true }).click()
+  await stylePage.locator('.frozen-atmosphere-frame').waitFor({ state: 'visible', timeout: 10000 })
+  check(await stylePage.locator('.vanta-atmosphere-canvas canvas').count() === 0, 'freezing water fog captures a static frame and releases its WebGL renderer')
+  await stylePage.getByRole('button', { name: '恢复动态播放', exact: true }).click()
+  await stylePage.locator('.vanta-atmosphere-canvas canvas.is-rendered').waitFor({ state: 'visible', timeout: 20000 })
+
+  await bgCards.nth(0).click()
+  await expect(stylePage.locator('html')).toHaveAttribute('data-bg-type', 'paper')
+  await expect(stylePage.locator('.forecast-atmosphere')).toHaveCount(0)
+  check(await dimSlider.isDisabled(), 'background dim control is disabled when the plain paper background has no overlay')
+  // Choosing a local background without an existing file must open the picker; a real file applies it.
+  const bgPickerPromise = stylePage.waitForEvent('filechooser')
+  await bgCards.nth(4).click()
+  const bgPicker = await bgPickerPromise
+  await bgPicker.setFiles({
+    name: 'audit-background.svg',
+    mimeType: 'image/svg+xml',
+    buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#b85e3f"/></svg>')
+  })
+  await expect(stylePage.locator('html')).toHaveAttribute('data-bg-type', 'custom-local')
+  await stylePage.locator('.forecast-atmosphere img.custom-bg-media').waitFor({ state: 'visible', timeout: 10000 })
+  check(await stylePage.getByRole('button', { name: '当前背景无需暂停', exact: true }).isDisabled(), 'local image background correctly disables the irrelevant freeze control')
+  stylePage.once('dialog', dialog => dialog.accept())
+  await stylePage.locator('.local-bg-actions').getByRole('button', { name: '清除', exact: true }).click()
+  await expect(stylePage.locator('html')).toHaveAttribute('data-bg-type', 'clouds-static')
+  check(await stylePage.locator('#section-bg .theme-card').nth(4).textContent().then(t => t.includes('未选择本地文件')), 'clearing local background updates the card and storage state')
+  await bgCards.nth(0).click()
+  check(await dimSlider.isDisabled(), 'paper mode disables background dimming after switching back')
+  
+  // Test the font mode tabs and every local font slot with a real system font fixture.
+  const fontCandidates = [
+    '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+    '/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf',
+    '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+    '/usr/share/fonts/truetype/freefont/FreeSans.ttf'
+  ]
+  let fontFixture = null
+  for (const candidate of fontCandidates) {
+    try { fontFixture = await readFile(candidate); break } catch {}
+  }
+  check(Boolean(fontFixture), 'browser audit runner provides a local TTF fixture for testing font uploads')
+  await stylePage.getByRole('tab', { name: /分离模式/ }).click()
+  const splitFontCards = stylePage.locator('#section-font .split-font-card')
+  check(await splitFontCards.count() === 2, 'split font mode exposes both independent font slots')
+  for (const [index, filename] of [[0, 'audit-font-en.ttf'], [1, 'audit-font-zh.ttf']]) {
+    const fontPickerPromise = stylePage.waitForEvent('filechooser')
+    await splitFontCards.nth(index).locator('.slot-empty-box').click()
+    const fontPicker = await fontPickerPromise
+    await fontPicker.setFiles({ name: filename, mimeType: 'font/ttf', buffer: fontFixture })
+    await splitFontCards.nth(index).locator('.slot-info-box').waitFor({ state: 'visible', timeout: 15000 })
+  }
+  check(await stylePage.evaluate(() => document.documentElement.dataset.customFont === 'split'), 'English and Chinese custom font slots both apply')
+  stylePage.once('dialog', dialog => dialog.accept())
+  await stylePage.getByRole('button', { name: '恢复系统默认字体方案', exact: true }).click()
+  await expect(stylePage.locator('html')).not.toHaveAttribute('data-custom-font', /.+/)
+  await stylePage.getByRole('tab', { name: /统一模式/ }).click()
+  check(await stylePage.locator('#section-font .font-option-card').first().getAttribute('aria-pressed') === 'true', 'system default font card remains selectable')
+  const unifiedFontPickerPromise = stylePage.waitForEvent('filechooser')
+  await stylePage.locator('#section-font .font-option-card').nth(1).getByRole('button', { name: '选择字体', exact: true }).click()
+  const unifiedFontPicker = await unifiedFontPickerPromise
+  await unifiedFontPicker.setFiles({ name: 'audit-font-unified.ttf', mimeType: 'font/ttf', buffer: fontFixture })
+  await expect(stylePage.locator('html')).toHaveAttribute('data-custom-font', 'unified')
+  await stylePage.locator('#section-font .font-option-card').nth(1).getByRole('button', { name: '清除', exact: true }).click()
+  await expect(stylePage.locator('html')).not.toHaveAttribute('data-custom-font', /.+/)
+  check(await stylePage.evaluate(() => !document.documentElement.style.getPropertyValue('--font').includes('CustomUnifiedFont')), 'clearing the unified font restores the system font stack')
+
+  // The homepage layout switch must route into a functioning editor and back out cleanly.
+  await stylePage.locator('#section-home-layout input[type="checkbox"]').check()
+  await stylePage.waitForURL('**/hub')
+  await expect(stylePage.getByRole('button', { name: '完成', exact: true })).toBeVisible()
+  check(await stylePage.locator('.edit-bar-info').textContent().then(t => t.includes('桌面排版编辑模式')), 'homepage layout switch opens the actual edit mode')
+  await stylePage.getByRole('button', { name: '完成', exact: true }).click()
+  await expect(stylePage.locator('.edit-bar-info')).toBeHidden()
+  await stylePage.goto(base + '/style', { waitUntil: 'networkidle' })
+  await stylePage.setViewportSize({ width: 390, height: 844 })
+  check(await stylePage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Quiet Research style page remains horizontally usable on mobile')
+  check(styleErrors.length === 0, `appearance settings produce no browser runtime errors: ${styleErrors.join('; ')}`)
+  await styleContext.close()
 
   const loggedOut = await browser.newContext()
   const loginPage = await loggedOut.newPage()
