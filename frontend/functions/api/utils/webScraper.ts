@@ -66,11 +66,11 @@ export function validatePublicHttpUrl(input: string): URL {
     throw new Error('仅允许标准 HTTP/HTTPS 端口');
   }
 
-  const hostname = url.hostname.toLowerCase().replace(/\\.$/, '');
+  const hostname = url.hostname.toLowerCase().replace(/\.$/, '');
   const isIpLiteral =
     hostname.startsWith('[') ||
     hostname.includes(':') ||
-    /^\\d+(?:\\.\\d+){0,3}$/.test(hostname);
+    /^\d+(?:\.\d+){0,3}$/.test(hostname);
 
   if (isIpLiteral) {
     throw new Error('不允许抓取 IP 字面量地址');
@@ -547,7 +547,7 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<string>
       }
 
       const contentType = res.headers.get('content-type') || '';
-      if (contentType && !/(?:text\\/html|application\\/xhtml\\+xml|text\\/plain)/i.test(contentType)) {
+      if (contentType && !/(?:text\/html|application\/xhtml\+xml|text\/plain)/i.test(contentType)) {
         await discardResponseBody(res);
         throw new Error('目标响应不是可读取的 HTML/文本页面');
       }
