@@ -4,6 +4,7 @@ import { directions, publications, publicContentIndexCheckedAt } from '../conten
 import { publicationReviewStatus } from '../utils/publicationReview'
 import { researchTopicDetails, researchTopicResources } from '../content/researchTopicDetails'
 import { researchTopicDeepGuides } from '../content/researchTopicDeepGuides'
+import { scrollToResearchTopicSection } from '../utils/researchTopicNavigation'
 
 const props = defineProps({ topic: { type: String, default: '' } })
 const topic = computed(() => directions.find(item => item.id === props.topic) || null)
@@ -44,6 +45,11 @@ function observeTopicSections() {
     if (section) topicSectionObserver.observe(section)
   }
 }
+function navigateToTopicSection(target) {
+  if (!scrollToResearchTopicSection(target)) return
+  activeTopicSection.value = target
+  isTopicNavOpen.value = false
+}
 const topicSectionTitles = computed(() => Object.fromEntries(
   topicNavigation.value.map(item => [item.target, item.heading]),
 ))
@@ -67,7 +73,10 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 <template>
   <main class="research-topic-page">
     <nav class="topic-breadcrumb" aria-label="面包屑">
-      <router-link to="/">BUAA HEP Hub</router-link>
+      <a href="/" class="topic-breadcrumb-home">
+        <span aria-hidden="true">⌂</span>
+        <span>返回课题组首页</span>
+      </a>
       <span aria-hidden="true">/</span>
       <a href="/#research">研究方向</a>
       <span aria-hidden="true">/</span>
@@ -86,8 +95,8 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
         </div>
         <p class="topic-review" :class="{ 'is-stale': contentReview.status !== 'current' }">资料核查：{{ publicContentIndexCheckedAt }} · {{ contentReview.status === 'current' ? '处于 180 天复核周期内' : contentReview.label }} · 本页为带适用条件的研究导读，不等同于独立学术审稿或论文计算复现</p>
         <div class="topic-hero-actions">
-          <a href="#topic-relations" class="button primary">从关键关系式开始 <span aria-hidden="true">↓</span></a>
-          <a href="#topic-papers" class="button secondary">查看代表论文 <span aria-hidden="true">↗</span></a>
+          <a href="#topic-relations" class="button primary" @click.prevent="navigateToTopicSection('topic-relations')">从关键关系式开始 <span aria-hidden="true">↓</span></a>
+          <a href="#topic-papers" class="button secondary" @click.prevent="navigateToTopicSection('topic-papers')">查看代表论文 <span aria-hidden="true">↗</span></a>
           <a href="/#research-guides" class="topic-all-guides">浏览全部专题导读 ↗</a>
         </div>
       </header>
@@ -104,6 +113,11 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 
       <div class="topic-reading-layout">
         <aside v-if="topicDetail" class="topic-sidebar" aria-label="专题目录">
+          <a href="/" class="topic-sidebar-home">
+            <span class="topic-sidebar-home-icon" aria-hidden="true">⌂</span>
+            <span>返回课题组首页</span>
+            <span class="topic-sidebar-home-arrow" aria-hidden="true">↗</span>
+          </a>
           <div class="topic-sidebar-heading">
             <span class="topic-sidebar-kicker">FIELD INDEX</span>
             <button
@@ -123,7 +137,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
               :href="'#' + item.target"
               :class="{ 'is-active': activeTopicSection === item.target }"
               :aria-current="activeTopicSection === item.target ? 'location' : undefined"
-              @click="isTopicNavOpen = false"
+              @click.prevent="navigateToTopicSection(item.target)"
             >
               <span class="topic-nav-index">{{ String(index + 1).padStart(2, '0') }}</span>
               <span>{{ item.label }}</span>
@@ -322,6 +336,9 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 .research-topic-page { width:min(1280px,calc(100% - 48px)); margin:0 auto; padding:28px 0 80px; color:var(--text); }
 .topic-breadcrumb { display:flex; flex-wrap:wrap; gap:10px; align-items:center; color:var(--muted); font-size:13px; margin-bottom:52px; }
 .topic-breadcrumb a { color:var(--accent); }
+.topic-breadcrumb .topic-breadcrumb-home { display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:10px 14px; border:1px solid var(--accent); border-radius:10px; background:var(--accent); color:var(--accent-ink); font-size:13px; font-weight:600; text-decoration:none; transition:background .16s ease,border-color .16s ease,transform .16s ease; }
+.topic-breadcrumb .topic-breadcrumb-home:hover { background:var(--accent-strong); border-color:var(--accent-strong); transform:translateY(-1px); }
+.topic-breadcrumb .topic-breadcrumb-home:focus-visible { outline:2px solid var(--focus); outline-offset:3px; }
 .topic-hero { position:relative; overflow:hidden; padding:clamp(28px,6vw,64px); border:1px solid var(--line); border-radius:18px; background:var(--panel); box-shadow:var(--shadow); }
 .eyebrow,.topic-kicker { color:var(--accent); font-size:11px; letter-spacing:.14em; text-transform:uppercase; }
 .topic-symbol { position:absolute; right:28px; top:6px; font-family:var(--serif); font-size:clamp(120px,24vw,230px); line-height:1; color:var(--accent); opacity:.09; pointer-events:none; }
@@ -343,6 +360,11 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 .topic-visual-labels { display:none; }
 .topic-reading-layout { display:grid; grid-template-columns:220px minmax(0,1fr); align-items:start; gap:clamp(24px,3vw,40px); margin-top:4px; }
 .topic-sidebar { position:sticky; top:18px; align-self:start; box-sizing:border-box; max-height:calc(100vh - 36px); overflow-y:auto; overscroll-behavior:contain; padding:12px; border:1px solid var(--line); border-radius:14px; background:var(--panel); box-shadow:var(--shadow); scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
+.topic-sidebar-home { display:flex; align-items:center; gap:9px; min-height:44px; margin:0 0 12px; padding:10px 12px; border:1px solid var(--accent); border-radius:10px; background:var(--accent); color:var(--accent-ink); font-size:12px; font-weight:600; line-height:1.4; text-decoration:none; transition:background .16s ease,border-color .16s ease,transform .16s ease; }
+.topic-sidebar-home:hover { background:var(--accent-strong); border-color:var(--accent-strong); transform:translateY(-1px); }
+.topic-sidebar-home:focus-visible { outline:2px solid var(--focus); outline-offset:3px; }
+.topic-sidebar-home-icon { flex-shrink:0; font-size:18px; line-height:1; }
+.topic-sidebar-home-arrow { margin-left:auto; font-size:14px; }
 .topic-sidebar-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 8px 12px; border-bottom:1px solid var(--line); }
 .topic-sidebar-kicker { color:var(--muted); font-size:10px; letter-spacing:.13em; }
 .topic-sidebar-toggle { display:none; }
@@ -465,5 +487,9 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
   @media(max-width:760px) {
     .topic-sidebar { position:static; max-height:none; overflow:visible; }
   }
+}
+@media (prefers-reduced-motion: reduce) {
+  :global(html) { scroll-behavior:auto; }
+  .topic-breadcrumb .topic-breadcrumb-home,.topic-sidebar-home { transition:none; }
 }
 </style>
