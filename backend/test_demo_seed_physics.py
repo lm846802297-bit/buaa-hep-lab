@@ -18,7 +18,7 @@ def test_demo_seed_uses_real_hep_phenomenology_records_and_sources():
         papers = {
             paper.arxiv_id: paper
             for paper in db.query(ArxivPaper).filter(
-                ArxivPaper.arxiv_id.in_(EXPECTED_PAPERS.keys())
+                ArxivPaper.arxiv_id.in_(list(EXPECTED_PAPERS))
             ).all()
         }
         assert set(papers) == set(EXPECTED_PAPERS)
@@ -47,7 +47,7 @@ def test_demo_seminars_link_to_the_matching_phenomenology_papers():
         papers = {
             paper.arxiv_id: paper
             for paper in db.query(ArxivPaper).filter(
-                ArxivPaper.arxiv_id.in_(expected.keys())
+                ArxivPaper.arxiv_id.in_(list(expected))
             ).all()
         }
         seminars = db.query(SeminarSchedule).filter(
