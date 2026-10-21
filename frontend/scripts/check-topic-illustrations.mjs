@@ -77,7 +77,7 @@ for (const topic of terms.topics) {
   }
 
   const mapping = new RegExp(
-    `${topic.id}:\\s*\\{\\s*src:\\s*'${escapeRegExp(`/images/research-topics/${topic.file}`)}',\\s*alt:\\s*'${escapeRegExp(topic.alt)}'\\s*\\}`,
+    `${topic.id}:\\s*\\{\\s*src:\\s*'${escapeRegExp(`/images/research-topics/${topic.file}`)}',\\s*alt:\\s*'${escapeRegExp(topic.alt)}'[^}]*\\}`,
   )
   assert.ok(mapping.test(topicView), `${topic.id}: page image path or alt text differs from the reviewed whitelist.`)
 }
