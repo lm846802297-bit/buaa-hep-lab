@@ -32,9 +32,11 @@ function check(value, message) { assert(value, message); checks.push(message) }
 try {
   const anonymous = await browser.newContext()
   const page = await anonymous.newPage()
-  const requested = [], errors = []
+  const requested = [], errors = [], consoleErrors = [], failedRequests = []
   page.on('request', req => requested.push(req.url()))
   page.on('pageerror', err => errors.push(err.message))
+  page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()) })
+  page.on('requestfailed', req => failedRequests.push(`${req.url()}: ${req.failure()?.errorText || 'request failed'}`))
   for (const width of [320, 360, 390, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto(base, { waitUntil: 'networkidle' })
@@ -95,7 +97,7 @@ try {
   await page.getByRole('navigation', { name: '官网导航' }).getByRole('link', { name: '团队' }).click()
   await page.getByRole('heading', { name: '团队与学术指导' }).waitFor({ timeout: 10000 }).catch(async error => {
     const bodyText = (await page.locator('body').innerText()).slice(0, 300)
-    throw new Error(`public people route did not render; url=${page.url()}; pageErrors=${errors.slice(-5).join(' | ')}; body=${bodyText}; cause=${error.message}`)
+    throw new Error(`public people route did not render; url=${page.url()}; pageErrors=${errors.slice(-5).join(' | ')}; consoleErrors=${consoleErrors.slice(-5).join(' | ')}; failedRequests=${failedRequests.slice(-5).join(' | ')}; body=${bodyText}; cause=${error.message}`)
   })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'worldline skin carries across public route navigation')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
