@@ -260,13 +260,21 @@ try {
   await stylePage.locator('#tour-pin-sidebar').click()
   await stylePage.mouse.move(520, 400)
   await expect(sidebar).toHaveClass(/is-collapsed/)
-  check(await stylePage.evaluate(() => {
+  // Allow the existing sidebar slide-out transition to finish before measuring geometry.
+  await stylePage.waitForTimeout(700)
+  const collapseInfo = await stylePage.evaluate(() => {
     const nav = document.querySelector('.forecast-sidebar')
     const shell = document.querySelector('.app-shell')
-    return Math.round(nav.getBoundingClientRect().width) === 88 &&
-      Math.round(parseFloat(getComputedStyle(shell).paddingLeft)) === 0 &&
-      getComputedStyle(nav).transform !== 'none'
-  }), 'unpinning restores the original auto-collapse behavior')
+    return {
+      width: Math.round(nav.getBoundingClientRect().width),
+      shellPadding: Math.round(parseFloat(getComputedStyle(shell).paddingLeft)),
+      transform: getComputedStyle(nav).transform,
+      sidebarClass: nav.className,
+      shellClass: shell.className
+    }
+  })
+  check(collapseInfo.width === 88 && collapseInfo.shellPadding === 0 && collapseInfo.transform !== 'none',
+    `unpinning restores the original auto-collapse behavior: ${JSON.stringify(collapseInfo)}`)
   await stylePage.locator('.sidebar-edge-trigger').hover()
   await expect(sidebar).toHaveClass(/is-floating/)
   await stylePage.locator('#tour-pin-sidebar').click()
