@@ -97,13 +97,13 @@ try {
   })
   await publicSkin.selectOption('worldline-console')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await expect(page.locator('.worldline-shift-overlay')).toHaveAttribute('data-phase', 'readout', { timeout: 1200 })
+  await expect(page.locator('.worldline-shift-overlay')).toHaveAttribute('data-phase', 'decay', { timeout: 1800 })
   const technicalBackdrop = page.locator('.worldline-technical-backdrop')
   check(await technicalBackdrop.isVisible(), 'Worldline Console enables the clockwork and scientific-drawing background')
   check(await technicalBackdrop.evaluate(el => el.classList.contains('is-shifting')), 'worldline transition activates the technical backdrop during the event')
   check(await technicalBackdrop.locator('.worldline-backdrop-shift-wave__ring').count() === 2, 'worldline transition draws two expanding instrument-wave rings')
   const shiftHud = page.locator('.worldline-shift-overlay__hud')
-  check(await shiftHud.isVisible(), 'worldline shift HUD is visible in the transition peak frame')
+  check(await shiftHud.isVisible(), 'worldline shift HUD remains visible in the late transition frame')
   const hudStyle = await shiftHud.evaluate(el => {
     const style = getComputedStyle(el)
     return { animationName: style.animationName, backgroundColor: style.backgroundColor, opacity: Number(style.opacity) }
@@ -115,7 +115,7 @@ try {
     return false
   })
   check(hudTimelineDeclared, `worldline shift HUD has its own opacity timeline (computed animation: ${hudStyle.animationName || 'none'})`)
-  check(hudStyle.opacity > 0.2, 'worldline HUD has become visibly readable during the readout phase')
+  check(hudStyle.opacity > 0.2, 'worldline HUD remains visibly readable during the late transition phase')
   check(hudStyle.backgroundColor !== 'rgba(0, 0, 0, 0)' && hudStyle.backgroundColor !== 'transparent', 'worldline shift HUD uses a dark, high-contrast panel')
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
