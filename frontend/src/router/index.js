@@ -86,11 +86,10 @@ const router = createRouter({
 
 let publicRouteScrollResetTimer = null
 
-// The app's public-page out-in transition lasts about 180 ms (60 ms leave +
-// 120 ms enter). Reset after it finishes so the route transition is not
-// interrupted by a scroll operation while Vue is replacing the page component.
+// Reset research reading pages after the out-in transition completes. Scrolling
+// during the transition can interrupt Vue while it replaces the previous page.
 router.afterEach((to, from, failure) => {
-  if (failure || !to.meta.public || to.path === from.path || to.hash || typeof window === 'undefined') return
+  if (failure || to.name !== 'ResearchTopic' || to.path === from.path || to.hash || typeof window === 'undefined') return
   window.clearTimeout(publicRouteScrollResetTimer)
   publicRouteScrollResetTimer = window.setTimeout(() => window.scrollTo(0, 0), 220)
 })
