@@ -52,30 +52,35 @@ export const BG_OPTIONS = [
     id: 'paper',
     name: '纸白（推荐）',
     subtitle: '纯色背景 · 无动态特效 · 专注科研内容',
+    description: '使用纯色纸白背景，不启动动态背景组件。',
     type: 'static'
   },
   {
     id: 'clouds-static',
     name: '云山日光（静态）',
     subtitle: '静态日光云海 · 静谧清晰',
+    description: '使用本地静态云海壁纸，不需要 WebGL。',
     type: 'static'
   },
   {
     id: 'galaxy',
     name: '星际穿越（动态）',
     subtitle: '动态宇宙星空 · WebGL 粒子与引力交互',
+    description: '启用动态星空背景；在浅色和深色配色下均可使用。',
     type: 'dynamic'
   },
   {
     id: 'vanta-fog',
     name: '水波云雾（动态）',
     subtitle: '动态流体水雾 · WebGL 实时着色器',
+    description: '启用 Vanta FOG 动态背景；在浅色和深色配色下均可使用。',
     type: 'dynamic'
   },
   {
     id: 'custom-local',
     name: '自定义本地背景',
     subtitle: '支持本地高清图片与静音视频 · 纯本地加载不上云',
+    description: '只从当前浏览器本地加载图片或视频，不会上传到服务器。',
     type: 'custom'
   }
 ]
@@ -118,6 +123,18 @@ export const THEME_STYLES = [
 
 const COLOR_SCHEME_KEY = 'laborbit_color_scheme'
 const BG_TYPE_KEY = 'laborbit_bg_type'
+export const PUBLIC_COLOR_SCHEME_KEY = 'labhub_public_color_scheme'
+const PUBLIC_COLOR_SCHEME_IDS = new Set(COLOR_SCHEMES.map(({ id }) => id))
+
+function getInitialPublicColorScheme() {
+  try {
+    const saved = localStorage.getItem(PUBLIC_COLOR_SCHEME_KEY)
+    if (PUBLIC_COLOR_SCHEME_IDS.has(saved)) return saved
+  } catch (e) {
+    console.warn('Failed to read public color scheme from localStorage:', e)
+  }
+  return DEFAULT_COLOR_SCHEME
+}
 const LEGACY_STORAGE_KEY = 'laborbit_theme_style'
 export const DEFAULT_MIGRATION_KEY = 'laborbit_default_v20261021_quiet_research'
 export const CUSTOM_COLOR_SCHEME_KEY = 'laborbit_custom_color_scheme'
@@ -592,6 +609,8 @@ function getInitialBgType() {
 
 export const currentColorScheme = ref(getInitialColorScheme())
 export const currentBgType = ref(getInitialBgType())
+// Public-site appearance is persisted separately and never overwrites workspace preferences.
+export const publicColorScheme = ref(getInitialPublicColorScheme())
 
 // 兼容器：保留 currentThemeStyle 响应式对象
 function resolveLegacyTheme(scheme, bg) {
@@ -644,9 +663,10 @@ export function applyThemeToDOM(scheme = currentColorScheme.value, bg = currentB
     if (!bg || bg === 'clouds-static' || bg === 'earth-orbit') actualBg = 'clouds-static'
   }
 
-  // Public routes use the site brand without mutating the saved workspace preference.
+  // Public routes use their own saved palette and keep the quiet paper background.
+  // This state is independent from the signed-in workspace preference.
   if (doc.getAttribute?.('data-public-page') === 'true' || doc.dataset?.publicPage === 'true') {
-    actualScheme = 'quiet-research'
+    actualScheme = publicColorScheme.value
     actualBg = 'paper'
   }
 
@@ -755,6 +775,22 @@ export function useThemeStyle() {
     }
   }
 
+  function setPublicColorScheme(scheme) {
+    if (!PUBLIC_COLOR_SCHEME_IDS.has(scheme)) return
+    publicColorScheme.value = scheme
+    try {
+      localStorage.setItem(PUBLIC_COLOR_SCHEME_KEY, scheme)
+    } catch (e) {
+      console.warn('Failed to save public color scheme to localStorage:', e)
+    }
+    if (typeof document !== 'undefined' && (
+      document.documentElement?.getAttribute?.('data-public-page') === 'true' ||
+      document.documentElement?.dataset?.publicPage === 'true'
+    )) {
+      applyThemeToDOM(currentColorScheme.value, currentBgType.value)
+    }
+  }
+
   function setBgType(bgType) {
     if (bgType !== 'paper' && bgType !== 'galaxy' && bgType !== 'vanta-fog' && bgType !== 'clouds-static' && bgType !== 'custom-local') return
     currentBgType.value = bgType
@@ -788,6 +824,8 @@ export function useThemeStyle() {
   return {
     currentColorScheme,
     currentBgType,
+    publicColorScheme,
+    setPublicColorScheme,
     isBgVideoPaused,
     setBgVideoPaused,
     toggleBgVideoPaused,

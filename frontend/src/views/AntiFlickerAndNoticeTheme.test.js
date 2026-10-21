@@ -14,7 +14,8 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
   it('uses Quiet Research on public routes and preserves the selected workspace theme', () => {
     expect(indexHtml).toContain("localStorage.getItem('laborbit_color_scheme')")
     expect(indexHtml).toContain("localStorage.getItem('labhub_color_scheme')")
-    expect(indexHtml).toContain("var scheme = isPublicRoute ? 'quiet-research' : (savedScheme ||")
+    expect(indexHtml).toContain("var publicScheme = validPublicSchemes.includes(savedPublicScheme) ? savedPublicScheme : 'quiet-research';")
+    expect(indexHtml).toContain("var scheme = isPublicRoute ? publicScheme : (savedScheme ||")
     expect(indexHtml).toContain("routePath === '/'")
     expect(indexHtml).toContain("routePath === '/people'")
     expect(indexHtml).toContain("routePath === '/events'")
@@ -36,6 +37,45 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(styleViewVue).toContain("scheme.id === 'quiet-research'")
     expect(styleViewVue).toContain('class="theme-default-badge">默认风格</span>')
     expect(styleViewVue).toContain('handleColorSchemeSelect(scheme)')
+  })
+
+  it('exposes an independent public skin selector on every public route', () => {
+    const appVue = readFileSync(resolve(__dirname, '../App.vue'), 'utf-8')
+    const themeSwitcher = readFileSync(resolve(__dirname, '../components/PublicThemeSwitcher.vue'), 'utf-8')
+    const themeModule = readFileSync(resolve(__dirname, '../composables/useThemeStyle.js'), 'utf-8')
+    expect(appVue).toContain('<PublicThemeSwitcher v-if="isPublic" />')
+    expect(themeSwitcher).toContain('选择官网皮肤风格')
+    expect(themeSwitcher).toContain('v-for="scheme in colorSchemes"')
+    expect(themeModule).toContain("export const PUBLIC_COLOR_SCHEME_KEY = 'labhub_public_color_scheme'")
+    expect(themeModule).toContain('actualScheme = publicColorScheme.value')
+    expect(themeModule).toContain('function setPublicColorScheme(scheme)')
+  })
+
+  it('preserves the original collapsed icon rail in Quiet Research', () => {
+    expect(indexCss).toMatch(/:root\[data-color-scheme="quiet-research"\] \.app-shell\.has-sidebar\.sidebar-collapsed\s*\{\s*padding-left:\s*88px;/)
+    expect(indexCss).toMatch(/:root\[data-color-scheme="quiet-research"\] \.forecast-sidebar\.is-collapsed\s*\{\s*width:\s*88px;/)
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"] .forecast-sidebar.is-floating,')
+    expect(indexCss).toMatch(/:root\[data-color-scheme="quiet-research"\] \.forecast-sidebar\.is-collapsed \.iso-pro \.iso-text\s*\{\s*display:\s*none;/)
+  })
+
+  it('allows dynamic and local backgrounds when Quiet Research is selected', () => {
+    const appVue = readFileSync(resolve(__dirname, '../App.vue'), 'utf-8')
+    expect(appVue).toContain("['galaxy', 'vanta-fog', 'custom-local', 'earth-orbit'].includes(currentBgType)")
+    expect(appVue).not.toContain("currentColorScheme !== 'quiet-research'")
+    expect(styleViewVue).toContain('{{ bg.description || bg.subtitle }}')
+  })
+
+  it('keeps the glass-style overlay active under Quiet Research theme specificity', () => {
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="frosted"] .app-shell .glass-card')
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="liquid"] .app-shell .glass-card')
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="solid"] .app-shell .glass-card')
+  })
+
+  it('uses BUAA HEP group branding in the font preview', () => {
+    expect(styleViewVue).toContain('北航粒子物理研究组')
+    expect(styleViewVue).toContain('Beihang University Particle Physics Phenomenology Group')
+    expect(styleViewVue).not.toContain('天体物理与交叉科学课题组')
+    expect(styleViewVue).not.toContain('Astrophysics and Interdisciplinary Science Research Group')
   })
 
   it('defines --panel-solid in :root and classic-cyan', () => {

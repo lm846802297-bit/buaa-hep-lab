@@ -22,9 +22,11 @@ describe('Navbar Sidebar Tour Pinning Integration', () => {
     expect(script).toContain("localStorage.setItem('sidebar_pinned', 'true')")
   })
 
-  it('ensures sidebar stays pinned when exiting or skipping tutorial', () => {
-    expect(script).toContain('prevActive && !active && !props.pinned')
-    expect(script).toContain("emit('update:pinned', true)")
+  it("restores the user's original sidebar preference after the tutorial closes", () => {
+    expect(script).toContain('let tutorialPreviousPinned = null')
+    expect(script).toContain('tutorialPreviousPinned = props.pinned')
+    expect(script).toContain('const restorePinned = tutorialPreviousPinned')
+    expect(script).toContain("localStorage.setItem('sidebar_pinned', String(restorePinned))")
   })
 
   it('binds isTourPinStep to sidebar classes so it floats expanded during step 1', () => {

@@ -88,6 +88,40 @@ describe('useThemeStyle', () => {
     expect(document.documentElement.setAttribute).toHaveBeenCalledWith('data-bg-type', 'galaxy')
   })
 
+  it('applies every appearance card option and persists its selected ID', async () => {
+    const {
+      useThemeStyle,
+      colorSchemes,
+      bgOptions,
+      glassOptions,
+      currentColorScheme,
+      currentBgType,
+      currentGlassStyle
+    } = await import('./useThemeStyle')
+    const { setColorScheme, setBgType, setGlassStyle } = useThemeStyle()
+
+    for (const scheme of colorSchemes) {
+      setColorScheme(scheme.id)
+      expect(currentColorScheme.value).toBe(scheme.id)
+      expect(store['laborbit_color_scheme']).toBe(scheme.id)
+      expect(attrs['data-color-scheme']).toBe(scheme.id)
+    }
+
+    for (const bg of bgOptions) {
+      setBgType(bg.id)
+      expect(currentBgType.value).toBe(bg.id)
+      expect(store['laborbit_bg_type']).toBe(bg.id)
+      expect(attrs['data-bg-type']).toBe(bg.id)
+    }
+
+    for (const glass of glassOptions) {
+      setGlassStyle(glass.id)
+      expect(currentGlassStyle.value).toBe(glass.id)
+      expect(store['laborbit_glass_style']).toBe(glass.id)
+      expect(attrs['data-glass-style']).toBe(glass.id)
+    }
+  })
+
   it('keeps a selected workspace theme while public routes temporarily use Quiet Research', async () => {
     store['laborbit_color_scheme'] = 'obsidian-gray'
     store['laborbit_bg_type'] = 'galaxy'
@@ -104,6 +138,41 @@ describe('useThemeStyle', () => {
     expect(localStorage.setItem).not.toHaveBeenCalledWith('laborbit_bg_type', 'paper')
 
     // Leaving the public routes restores the saved workspace theme and background.
+    attrs['data-public-page'] = 'false'
+    applyThemeToDOM(currentColorScheme.value, currentBgType.value)
+    expect(attrs['data-color-scheme']).toBe('obsidian-gray')
+    expect(attrs['data-bg-type']).toBe('galaxy')
+  })
+
+  it('persists public-site skin independently from the workspace preference', async () => {
+    store['laborbit_color_scheme'] = 'obsidian-gray'
+    store['laborbit_bg_type'] = 'galaxy'
+    store['labhub_public_color_scheme'] = 'classic-cyan'
+    attrs['data-public-page'] = 'true'
+
+    const {
+      currentColorScheme,
+      currentBgType,
+      publicColorScheme,
+      useThemeStyle,
+      applyThemeToDOM
+    } = await import('./useThemeStyle')
+    const { setPublicColorScheme } = useThemeStyle()
+
+    expect(currentColorScheme.value).toBe('obsidian-gray')
+    expect(currentBgType.value).toBe('galaxy')
+    expect(publicColorScheme.value).toBe('classic-cyan')
+    expect(attrs['data-color-scheme']).toBe('classic-cyan')
+    expect(attrs['data-bg-type']).toBe('paper')
+
+    setPublicColorScheme('nebula-purple')
+    expect(publicColorScheme.value).toBe('nebula-purple')
+    expect(store['labhub_public_color_scheme']).toBe('nebula-purple')
+    expect(attrs['data-color-scheme']).toBe('nebula-purple')
+    expect(store['laborbit_color_scheme']).toBe('obsidian-gray')
+    expect(store['laborbit_bg_type']).toBe('galaxy')
+
+    // A workspace route still restores the workspace's own palette and background.
     attrs['data-public-page'] = 'false'
     applyThemeToDOM(currentColorScheme.value, currentBgType.value)
     expect(attrs['data-color-scheme']).toBe('obsidian-gray')
