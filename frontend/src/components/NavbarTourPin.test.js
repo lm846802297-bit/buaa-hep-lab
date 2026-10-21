@@ -22,7 +22,7 @@ describe('Navbar Sidebar Tour Pinning Integration', () => {
     expect(script).toContain("localStorage.setItem('sidebar_pinned', 'true')")
   })
 
-  it('restores the user's original sidebar preference after the tutorial closes', () => {
+  it("restores the user's original sidebar preference after the tutorial closes", () => {
     expect(script).toContain('let tutorialPreviousPinned = null')
     expect(script).toContain('tutorialPreviousPinned = props.pinned')
     expect(script).toContain('const restorePinned = tutorialPreviousPinned')
