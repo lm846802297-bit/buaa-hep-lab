@@ -9,7 +9,7 @@ export const COLOR_SCHEMES = [
     id: 'quiet-research',
     name: 'Quiet Research（Claude 风格）',
     subtitle: '温暖纸白 · 墨色文字 · 陶土橙 · 编辑式衬线标题',
-    description: '温暖纸白与陶土橙，优先突出长文本、论文与公式阅读。'
+    description: '温暖纸白与陶土橙，优先突出长文本、论文与公式阅读。',
     colors: ['#F7F5F0', '#B85E3F', '#FFFEFA'],
     primaryColor: '#B85E3F',
     baseColor: '#F7F5F0',
@@ -19,7 +19,7 @@ export const COLOR_SCHEMES = [
     id: 'classic-cyan',
     name: '经典冷青与玄青',
     subtitle: '静谧冷青高光 · 经典玄青基底',
-    description: '冷青强调色与深青底色，适合长时间阅读与低干扰工作。'
+    description: '冷青强调色与深青底色，适合长时间阅读与低干扰工作。',
     colors: ['#081f28', '#c5e6df', '#102f33'], // Base, Primary Accent, Secondary Surface
     primaryColor: '#c5e6df',
     baseColor: '#081f28',
@@ -29,7 +29,7 @@ export const COLOR_SCHEMES = [
     id: 'obsidian-gray',
     name: '曜石碳灰',
     subtitle: '高级冷灰高光 · 纯粹石墨基底',
-    description: '石墨黑底与冷灰高光，减少视觉干扰并保持清晰层次。'
+    description: '石墨黑底与冷灰高光，减少视觉干扰并保持清晰层次。',
     colors: ['#090d16', '#94a3b8', '#161e2e'], // Base, Primary Accent, Secondary Surface
     primaryColor: '#94a3b8',
     baseColor: '#090d16',
@@ -39,7 +39,7 @@ export const COLOR_SCHEMES = [
     id: 'nebula-purple',
     name: '星云紫与深曜黑',
     subtitle: '深空星云紫高光 · 曜黑深邃基底',
-    description: '深空紫高光与近黑底色，保留现有星云视觉风格。'
+    description: '深空紫高光与近黑底色，保留现有星云视觉风格。',
     colors: ['#03020a', '#b89bf8', '#16122e'], // Base, Primary Accent, Secondary Surface
     primaryColor: '#b89bf8',
     baseColor: '#03020a',
