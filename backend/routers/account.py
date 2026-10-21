@@ -5,7 +5,7 @@ import re
 from typing import Any, Dict, Optional
 import warnings
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from PIL import Image, ImageOps, UnidentifiedImageError
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
@@ -25,14 +25,13 @@ class ProfileInput(BaseModel):
     real_name: str = Field('', max_length=100)
     nickname: str = Field('', max_length=50)
 
-    @field_validator('real_name')
-    @classmethod
-    def non_blank_real_name_when_provided(cls, value):
-        # The field may be omitted for a partial profile update, but an explicitly
-        # supplied whitespace-only value must not silently overwrite the profile.
-        if not value:
-            raise ValueError('真实姓名不能为空')
-        return value
+    @model_validator(mode='after')
+    def require_a_non_blank_profile_name(self):
+        # Either field may be omitted during a partial update, but an explicitly
+        # blank/whitespace-only profile must not silently overwrite the profile.
+        if not self.real_name and not self.nickname:
+            raise ValueError('真实姓名或昵称至少填写一项')
+        return self
 
 
 @router.put('/profile', response_model=UserOut)
