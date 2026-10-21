@@ -51,6 +51,21 @@ describe('public research topic pages', () => {
       })
       const html = await renderToString(app)
       expect(html).toContain(topic.title)
+      expect(html).toContain('class="topic-reading-layout"')
+      expect(html).toContain('class="topic-sidebar"')
+      expect(html).toContain('aria-label="专题目录"')
+      expect(html).toContain('FIELD INDEX')
+      expect(html).toContain('class="topic-content-column"')
+      expect(html).toContain('概念插图 · 非真实实验事件或科研数据')
+      const visualPaths = {
+        dark: '/images/research-topics/dark-matter.svg',
+        neutrino: '/images/research-topics/neutrino.svg',
+        collider: '/images/research-topics/collider.svg',
+        phase: '/images/research-topics/phase-gw.svg',
+        precision: '/images/research-topics/quantum-metrology.svg',
+      }
+      expect(html).toContain(visualPaths[topic.id])
+      expect(html).toContain('aria-expanded="false"')
       const navigation = researchTopicDetails[topic.id].navigation
       const blueprint = researchTopicDeepGuides[topic.id].analysisBlueprint
       expect(html).toContain(blueprint.title)
