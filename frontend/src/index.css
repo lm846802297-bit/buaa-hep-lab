@@ -2434,7 +2434,7 @@ html[data-bg-style="clouds-static"] body {
   filter: brightness(1.08);
   transform: translateY(1px) scale(.99);
 }
-/* Worldline Console public-site art direction: restrained hardware details, not a neon overlay. */
+/* Worldline Console public-site art direction: cold CRT instrumentation with vivid, time-bounded worldline signals. */
 :root[data-color-scheme="worldline-console"] .lab-public .public-header {
   position: relative;
   border-bottom-color: color-mix(in srgb, var(--worldline-blue) 20%, var(--line));
