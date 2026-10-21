@@ -95,7 +95,7 @@ try {
     window.__worldlinePhaseListener = event => {
       window.__worldlinePhaseLog.push(event.detail)
       if (event.detail !== 'decay') return
-      // Vue queues the DOM patch before this microtask; capture the decay CSS state
+      // Vue queues the DOM patch before this microtask; capture the decay CSS state deterministically
       // before screenshot tooling can stall the page past the end of the transition.
       queueMicrotask(() => {
         const overlay = document.querySelector('.worldline-shift-overlay')
