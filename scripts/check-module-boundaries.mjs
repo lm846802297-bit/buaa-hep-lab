@@ -90,7 +90,7 @@ function getBoundaryViolations(importer, target) {
     });
   }
 
-  if (isWithin(importer, 'frontend/functions/api') && isWithin(target, source)) {
+  if (isWithin(importer, 'frontend/functions/api') && isWithin(target, 'frontend/src')) {
     violations.push({
       code: 'RUNTIME-001',
       message: 'Cloudflare API code must not import browser-application source modules.',
