@@ -4,10 +4,11 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 const sections = [
   { id: 'top', number: '00', label: '首页' },
   { id: 'research', number: '01', label: '研究方向' },
-  { id: 'publications', number: '02', label: '代表成果' },
-  { id: 'physics-resources', number: '03', label: '物理资源' },
-  { id: 'about', number: '04', label: '关于我们' },
-  { id: 'collaboration', number: '05', label: '组内协作' },
+  { id: 'research-guides', number: '02', label: '专题导读' },
+  { id: 'publications', number: '03', label: '代表成果' },
+  { id: 'physics-resources', number: '04', label: '物理资源' },
+  { id: 'about', number: '05', label: '关于我们' },
+  { id: 'collaboration', number: '06', label: '组内协作' },
 ]
 
 const activeId = ref('top')
