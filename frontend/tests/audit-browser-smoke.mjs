@@ -102,6 +102,19 @@ try {
   check(worldlineTuner.phosphor === '#8faa9c', 'Worldline Console defines a desaturated green phosphor tone')
   check(worldlineTuner.coreStroke !== worldlineTuner.orbitStroke, 'Worldline tuner separates amber core from cool orbital lines')
   check(worldlineTuner.buttonShadow !== 'none', 'Worldline tuner uses its restrained device-like button shadow')
+  const terminalVisual = await page.evaluate(() => ({
+    heroSignal: getComputedStyle(document.querySelector('.hero-eyebrow')).color,
+    resourceRadius: getComputedStyle(document.querySelector('.physics-resource-card')).borderRadius
+  }))
+  check(terminalVisual.heroSignal === 'rgb(143, 170, 156)', 'Worldline hero uses the cool phosphor secondary signal')
+  check(terminalVisual.resourceRadius === '14px', 'Worldline resource cards use the compact instrument-panel radius')
+  await page.screenshot({ path: resolve(output, 'worldline-1440-first-screen.png') })
+  await page.setViewportSize({ width: 390, height: 900 })
+  check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline skin fits the 390px viewport without horizontal overflow')
+  await page.screenshot({ path: resolve(output, 'worldline-390-first-screen.png') })
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.locator('#research').screenshot({ path: resolve(output, 'worldline-1440-research.png') })
+  await page.locator('#physics-resources').screenshot({ path: resolve(output, 'worldline-1440-resources.png') })
   check(await page.evaluate(() => localStorage.getItem('labhub_public_color_scheme') === 'worldline-console' && localStorage.getItem('laborbit_color_scheme') !== 'worldline-console'), 'public theme persists separately from workspace preferences')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await page.waitForTimeout(950)

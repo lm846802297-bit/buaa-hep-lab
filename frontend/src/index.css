@@ -2434,6 +2434,198 @@ html[data-bg-style="clouds-static"] body {
   filter: brightness(1.08);
   transform: translateY(1px) scale(.99);
 }
+/* Worldline Console public-site art direction: restrained hardware details, not a neon overlay. */
+:root[data-color-scheme="worldline-console"] .lab-public .public-header {
+  position: relative;
+  border-bottom-color: color-mix(in srgb, var(--worldline-phosphor) 20%, var(--line));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-solid) 26%, transparent), transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: clamp(44px, 8vw, 96px);
+  height: 1px;
+  background: linear-gradient(90deg, var(--worldline-amber), color-mix(in srgb, var(--worldline-phosphor) 28%, transparent));
+  opacity: .82;
+  pointer-events: none;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-header nav > a {
+  position: relative;
+  transition: color .18s ease;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-header nav > a::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 5px;
+  left: 0;
+  height: 1px;
+  background: var(--worldline-amber);
+  opacity: .72;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .18s ease;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-header nav > a:hover,
+:root[data-color-scheme="worldline-console"] .lab-public .public-header nav > a.router-link-active {
+  color: var(--text);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-header nav > a:hover::after,
+:root[data-color-scheme="worldline-console"] .lab-public .public-header nav > a.router-link-active::after {
+  transform: scaleX(1);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-header .nav-hub {
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--worldline-phosphor) 5%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .hero-eyebrow {
+  color: var(--worldline-phosphor);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .hero-eyebrow .status-dot {
+  background: var(--worldline-amber);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--worldline-amber) 22%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure .detector-rings {
+  stroke: var(--worldline-phosphor);
+  stroke-opacity: .20;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-strip {
+  border-color: color-mix(in srgb, var(--worldline-phosphor) 22%, var(--line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-phosphor) 3%, transparent), transparent 68%);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .section-top .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--worldline-phosphor);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .section-top .eyebrow::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  flex: 0 0 5px;
+  background: var(--worldline-amber);
+  box-shadow: 0 0 7px color-mix(in srgb, var(--worldline-amber) 18%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-tabs button {
+  position: relative;
+  border-bottom-color: color-mix(in srgb, var(--worldline-phosphor) 16%, var(--line));
+  transition: color .18s ease, border-color .18s ease, background .18s ease;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-tabs button:hover {
+  color: var(--text);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-phosphor) 5%, transparent), transparent 76%);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-tabs button.active {
+  border-bottom-color: color-mix(in srgb, var(--worldline-amber) 38%, var(--line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-amber) 7%, transparent), transparent 78%);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-tabs button.active::before {
+  content: "";
+  position: absolute;
+  top: 25%;
+  bottom: 25%;
+  left: 0;
+  width: 2px;
+  background: var(--worldline-amber);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--worldline-amber) 12%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-detail,
+:root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card {
+  border-radius: 14px;
+  border-color: color-mix(in srgb, var(--worldline-phosphor) 18%, var(--line));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--panel-solid) 90%, var(--worldline-phosphor) 4%), color-mix(in srgb, var(--surface) 96%, var(--worldline-amber) 4%));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 3%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-detail::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--worldline-amber), transparent);
+  opacity: .82;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .research-symbol {
+  color: var(--worldline-phosphor);
+  opacity: .10;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .topic-tags span {
+  border-radius: 4px;
+  border-color: color-mix(in srgb, var(--worldline-phosphor) 24%, var(--line));
+  background: color-mix(in srgb, var(--worldline-phosphor) 4%, transparent);
+  color: var(--soft);
+  font-family: var(--font-mono);
+  letter-spacing: .025em;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .publications-section {
+  border-top-color: color-mix(in srgb, var(--worldline-phosphor) 20%, var(--line));
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-paper {
+  border-bottom-color: color-mix(in srgb, var(--worldline-phosphor) 15%, var(--line));
+  transition: background .18s ease, border-color .18s ease;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-paper:hover {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-amber) 4%, transparent), transparent 70%);
+  border-bottom-color: color-mix(in srgb, var(--worldline-amber) 24%, var(--line));
+  box-shadow: none;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .paper-tag {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid color-mix(in srgb, var(--worldline-amber) 28%, var(--line));
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--worldline-amber) 6%, transparent);
+  color: var(--worldline-amber-hot);
+  font-family: var(--font-mono);
+  letter-spacing: .035em;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card > span {
+  color: var(--worldline-phosphor);
+  font-family: var(--font-mono);
+  letter-spacing: .04em;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card h3 a {
+  color: var(--worldline-amber);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card h3 a:hover {
+  color: var(--worldline-amber-hot);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--worldline-amber) 10%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .about-details > div,
+:root[data-color-scheme="worldline-console"] .lab-public .hub-module-list > span {
+  border-bottom-color: color-mix(in srgb, var(--worldline-phosphor) 16%, var(--line));
+}
+:root[data-color-scheme="worldline-console"] .lab-public .hub-module-list > span {
+  transition: background .18s ease;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .hub-module-list > span:hover {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-phosphor) 5%, transparent), transparent 78%);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-footer {
+  border-top-color: color-mix(in srgb, var(--worldline-phosphor) 20%, var(--line));
+}
+:root[data-color-scheme="worldline-console"] .lab-public .button.primary {
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--worldline-amber-hot), var(--worldline-amber));
+  border-color: var(--worldline-amber);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 10%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .button.primary:hover {
+  background: var(--worldline-amber-hot);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--worldline-amber) 12%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .button.ghost {
+  border-radius: 6px;
+  border-color: color-mix(in srgb, var(--worldline-phosphor) 30%, var(--line));
+}
+:root[data-color-scheme="worldline-console"] .lab-public .button.ghost:hover {
+  background: color-mix(in srgb, var(--worldline-phosphor) 7%, transparent);
+  border-color: var(--worldline-phosphor);
+}
 @keyframes worldline-track-flow { to { stroke-dashoffset: -48; } }
 
 /* Brief, pointer-transparent worldline transition used only by the optional skin. */
