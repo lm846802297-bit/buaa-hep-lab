@@ -25,8 +25,16 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(indexHtml).toContain("var bgHex = scheme === 'quiet-research' ? '#F7F5F0'")
     expect(indexHtml).toContain('name="theme-color" content="#F7F5F0"')
     expect(indexHtml).toContain('name="color-scheme" content="light dark"')
-    expect(indexHtml).toContain("if (bgType === 'clouds-static' && scheme !== 'quiet-research'")
+    expect(indexHtml).toContain("if (bgType === 'clouds-static' && doc.dataset.publicPage !== 'true')")
     expect(indexHtml).not.toContain('</script>ipt>')
+  })
+
+  it('keeps the compact sidebar and background controls independent of Quiet Research', () => {
+    expect(indexCss).toContain('--sidebar: 88px;')
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="solid"] .glass-card')
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="frosted"] .glass-card')
+    expect(indexCss).not.toContain(':root[data-color-scheme="quiet-research"] .forecast-atmosphere {\n  display: none !important;')
+    expect(indexHtml).toContain("if (bgType === 'clouds-static' && doc.dataset.publicPage !== 'true')")
   })
 
   it('labels Quiet Research as the workspace default while preserving user choice', () => {
