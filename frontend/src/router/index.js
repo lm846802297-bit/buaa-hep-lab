@@ -81,19 +81,16 @@ import { isDemoMode, initDemoAuth } from '../mock/isDemo'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-  scrollBehavior(to, from, savedPosition) {
-    // Browser back/forward should restore the previous reading position.
-    if (savedPosition) return savedPosition
-    // Deep links should land on their target after the destination view renders.
-    if (to.hash) return { el: to.hash, top: 24 }
-    // A new route (especially a research topic) must start at the top, not
-    // inherit the previous page's scroll offset.
-    return { top: 0 }
-  },
 })
 
 
 router.beforeEach(async (to, from, next) => {
+  // Reset before the route transition starts. The app uses an out-in transition,
+  // so scrolling after navigation can race the outgoing page animation.
+  if (to.path !== from.path && typeof window !== 'undefined') {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
+
   // The public website must remain available before setup and without a backend.
   if (to.meta.public) return next()
   if (to.query?.demo === '1' || to.query?.demo === 'true') {
