@@ -25,13 +25,22 @@ class ProfileInput(BaseModel):
     real_name: str = Field('', max_length=100)
     nickname: str = Field('', max_length=50)
 
-    @model_validator(mode='after')
-    def require_a_non_blank_profile_name(self):
-        # Either field may be omitted during a partial update, but an explicitly
-        # blank/whitespace-only profile must not silently overwrite the profile.
-        if not self.real_name and not self.nickname:
-            raise ValueError('真实姓名或昵称至少填写一项')
-        return self
+    @model_validator(mode='before')
+    @classmethod
+    def reject_whitespace_only_real_name(cls, data):
+        # Explicit empty strings are allowed to clear optional profile fields.
+        # A non-empty value made only of whitespace is instead a malformed input.
+        if isinstance(data, dict):
+            real_name = data.get('real_name')
+            nickname = data.get('nickname')
+            if (
+                isinstance(real_name, str)
+                and real_name
+                and not real_name.strip()
+                and not (isinstance(nickname, str) and nickname.strip())
+            ):
+                raise ValueError('真实姓名不能仅包含空白字符')
+        return data
 
 
 @router.put('/profile', response_model=UserOut)
