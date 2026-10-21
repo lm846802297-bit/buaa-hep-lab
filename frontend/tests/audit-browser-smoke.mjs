@@ -111,6 +111,7 @@ try {
   await publicSkin.selectOption('worldline-console')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout'), null, { timeout: 1200 })
+  check(await page.locator('.worldline-shift-overlay').evaluate(el => el.classList.contains('is-timeline-active')), 'worldline keyframes start only after the overlay has been rendered')
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
   const readoutSnapshot = await page.evaluate(() => window.__worldlineReadoutSnapshot || null)
   check(Boolean(readoutSnapshot?.backdropVisible), 'Worldline Console enables the clockwork and scientific-drawing background')

@@ -3068,12 +3068,12 @@ html[data-bg-style="clouds-static"] body {
 }
 @keyframes worldline-meter-fill { to { transform: scaleX(1); } }
 
-/* One 1.32 s event timeline: ignition, wave propagation, particle burst, glitch, then readable HUD. */
+/* One 1.8 s event timeline: propagation, bounded glitches, readable HUD, then cleanup. */
 .worldline-backdrop-shift-wave__ring--outer {
-  animation: worldline-wave-ring .92s cubic-bezier(.16, .72, .18, 1) both;
+  animation: worldline-wave-ring 1.35s cubic-bezier(.16, .72, .18, 1) both;
 }
 .worldline-backdrop-shift-wave__ring--inner {
-  animation: worldline-wave-ring .76s cubic-bezier(.16, .72, .18, 1) .10s both;
+  animation: worldline-wave-ring 1.15s cubic-bezier(.16, .72, .18, 1) .13s both;
 }
 @keyframes worldline-wave-ring {
   0% { opacity: 0; transform: scale(.42); }
@@ -3081,37 +3081,45 @@ html[data-bg-style="clouds-static"] body {
   100% { opacity: 0; transform: scale(3.5); }
 }
 .worldline-shift-overlay__dial {
-  animation-duration: 1.24s;
+  animation-duration: 1.70s;
   animation-delay: .08s;
 }
 .worldline-shift-overlay__glitch--a {
-  animation-duration: .34s;
+  animation-duration: .42s;
   animation-delay: .18s;
 }
 .worldline-shift-overlay__glitch--b {
-  animation-duration: .34s;
+  animation-duration: .38s;
   animation-delay: .42s;
 }
 .worldline-shift-overlay__glitch--c {
-  animation-duration: .30s;
+  animation-duration: .34s;
   animation-delay: .61s;
 }
 .worldline-shift-overlay__hud {
-  /* Align the HUD's visible window with the scripted readout phase (~360 ms). */
-  animation-duration: .92s;
-  animation-delay: .16s;
+  animation-duration: 1.55s;
+  animation-delay: .15s;
 }
 .worldline-shift-overlay__meter > span {
-  animation-duration: .74s;
-  animation-delay: .42s;
+  animation-duration: .95s;
+  animation-delay: .50s;
 }
 .worldline-shift-overlay::before {
-  animation-duration: 1.08s;
+  animation-duration: 1.55s;
   animation-delay: .06s;
 }
 .worldline-shift-overlay::after {
-  animation-duration: .84s;
+  animation-duration: 1.10s;
   animation-delay: .16s;
+}
+/* Pause all shift-specific keyframes until the overlay is present in a rendered frame. */
+.worldline-shift-overlay:not(.is-timeline-active),
+.worldline-shift-overlay:not(.is-timeline-active)::before,
+.worldline-shift-overlay:not(.is-timeline-active)::after,
+.worldline-shift-overlay:not(.is-timeline-active) *,
+.worldline-technical-backdrop.is-shifting:not(.is-timeline-active) .worldline-backdrop-shift-wave,
+.worldline-technical-backdrop.is-shifting:not(.is-timeline-active) .worldline-backdrop-shift-wave * {
+  animation-play-state: paused !important;
 }
 
 @media (max-width: 639px) {

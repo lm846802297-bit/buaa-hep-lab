@@ -9,6 +9,7 @@ const isShifting = ref(false)
 const reducedMotion = ref(false)
 const shiftKey = ref(0)
 const shiftPhase = ref('idle')
+const shiftTimelineActive = ref(false)
 
 const excludedRoutes = ['/login', '/setup', '/quick-share']
 const isWorldlineActive = computed(() => {
@@ -465,6 +466,7 @@ function triggerShift() {
   shiftKey.value += 1
   const currentShiftKey = shiftKey.value
   isShifting.value = true
+  shiftTimelineActive.value = false
   setShiftPhase('ignite')
   burstParticles = []
   shockwaves = []
@@ -478,6 +480,7 @@ function triggerShift() {
       shiftStartFrameId = null
       if (!mounted || !isShifting.value || reducedMotion.value || shiftKey.value !== currentShiftKey) return
 
+      shiftTimelineActive.value = true
       scheduleShiftPhase(130, 'propagate')
       scheduleShiftPhase(350, 'disrupt')
       scheduleShiftPhase(490, 'readout')
@@ -492,6 +495,7 @@ function triggerShift() {
 
       shiftTimerId = window.setTimeout(() => {
         isShifting.value = false
+        shiftTimelineActive.value = false
         setShiftPhase('idle')
         shiftTimerId = null
         phaseTimerIds.forEach(timerId => window.clearTimeout(timerId))
@@ -512,6 +516,7 @@ function handleVisibilityChange() {
     pointer.active = false
     clearShiftTimers()
     isShifting.value = false
+    shiftTimelineActive.value = false
     setShiftPhase('idle')
     burstParticles = []
     shockwaves = []
@@ -559,6 +564,7 @@ watch(reducedMotion, reduced => {
     localPulses = []
     clearShiftTimers()
     isShifting.value = false
+    shiftTimelineActive.value = false
     setShiftPhase('idle')
     burstParticles = []
     shockwaves = []
@@ -630,7 +636,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <svg v-if="isWorldlineActive" class="worldline-technical-backdrop" :class="{ 'is-shifting': isShifting }" :data-phase="shiftPhase" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+  <svg v-if="isWorldlineActive" class="worldline-technical-backdrop" :class="{ 'is-shifting': isShifting, 'is-timeline-active': shiftTimelineActive }" :data-phase="shiftPhase" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
     <defs>
       <pattern id="worldline-draft-grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#83a9ff" stroke-opacity=".24" stroke-width=".55"/><path d="M16 0V32M0 16H32" fill="none" stroke="#55e6f2" stroke-opacity=".12" stroke-width=".35"/></pattern>
       <radialGradient id="worldline-backdrop-glow"><stop offset="0" stop-color="#55e6f2" stop-opacity=".12"/><stop offset="1" stop-color="#55e6f2" stop-opacity="0"/></radialGradient>
@@ -666,7 +672,7 @@ onBeforeUnmount(() => {
     :class="{ 'is-visible': showCanvas }"
     aria-hidden="true"
   ></canvas>
-  <div v-if="isShifting" :key="shiftKey" class="worldline-shift-overlay" :data-phase="shiftPhase" aria-hidden="true">
+  <div v-if="isShifting" :key="shiftKey" class="worldline-shift-overlay" :class="{ 'is-timeline-active': shiftTimelineActive }" :data-phase="shiftPhase" aria-hidden="true">
     <div class="worldline-shift-overlay__flash"></div>
     <div class="worldline-shift-overlay__dial">
       <span class="worldline-shift-overlay__dial-ring worldline-shift-overlay__dial-ring--outer"></span>
