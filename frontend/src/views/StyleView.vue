@@ -437,7 +437,7 @@ onMounted(() => {
       <div class="section-title-row">
         <div>
           <h2>界面配色方案</h2>
-          <p class="style-section-note">协作空间支持独立选择主题；Quiet Research（Claude 风格）是其中一个可选方案。公开官网始终使用 Quiet Research，不会被这里的个人设置改变。</p>
+          <p class="style-section-note">协作空间默认使用 Quiet Research（Claude 风格）；你可以在下方切换为其他配色。你的选择会保存在本地，并在刷新和路由切换后继续生效。已有的个人主题偏好会保留，不会被默认值覆盖。公开官网始终使用 Quiet Research，不受这里的个人设置影响。</p>
         </div>
       </div>
       <div class="theme-cards-grid">
@@ -455,7 +455,10 @@ onMounted(() => {
         >
           <div class="theme-card-header">
             <div class="theme-card-title-group">
+              <div class="theme-title-row">
               <h3 class="theme-title">{{ scheme.name }}</h3>
+              <span v-if="scheme.id === 'quiet-research'" class="theme-default-badge">默认风格</span>
+            </div>
               <p class="theme-subtitle">{{ scheme.subtitle }}</p>
             </div>
             <div class="theme-active-indicator" v-if="currentColorScheme === scheme.id">
