@@ -6,7 +6,7 @@ const siteConfig = reactive({
   initialized: null, // null = 未知/检测中, true = 已初始化, false = 未初始化
   userCount: 0,
   setupTokenRequired: false,
-  maxUploadBytes: 15 * 1024 * 1024,
+  maxUploadBytes: 1 * 1024 * 1024,
   labName: `${lab.name}（暂定）`,
   labShortName: lab.shortName,
   siteSlogan: '课题组科研协作与知识管理平台',
