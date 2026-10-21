@@ -10,7 +10,7 @@ export const COLOR_SCHEMES = [
     name: 'Quiet Research（Claude 风格）',
     subtitle: '温暖纸白 · 墨色文字 · 陶土橙 · 编辑式衬线标题',
     description: '温暖纸白背景、墨色文字与陶土橙交互，优先保证论文、公式和长文本的可读性。',
-    colors: ['#F7F5F0', '#B85E3F', '#FFFEFA'], 
+    colors: ['#F7F5F0', '#B85E3F', '#FFFEFA'],
     primaryColor: '#B85E3F',
     baseColor: '#F7F5F0',
     surfaceColor: '#FFFEFA'
