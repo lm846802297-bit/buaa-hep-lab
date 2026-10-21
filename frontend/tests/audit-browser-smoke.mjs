@@ -208,7 +208,7 @@ try {
     await page.waitForFunction(() => window.scrollY < 5)
     check(await page.evaluate(() => window.scrollY < 5), `opening a research topic resets reading position to the top at ${width}px`)
     check(await page.locator('.topic-sidebar').evaluate(el => getComputedStyle(el).position === 'sticky'), `topic directory uses sticky positioning at ${width}px`)
-    check(await page.locator('.topic-visual-panel img').evaluate(img => img.complete && img.naturalWidth > 0), `topic ${topic} visual illustration loads at ${width}px`)
+    check(await page.locator('.topic-visual-panel img').evaluate(img => img.complete && img.naturalWidth > 0), `topic visual illustration loads at ${width}px`)
     if (width <= 980) {
       await page.locator('.topic-sidebar-toggle').click()
       check(await page.locator('.topic-local-nav').evaluate(el => el.classList.contains('is-open')), `mobile topic directory expands at ${width}px`)
