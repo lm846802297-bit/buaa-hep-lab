@@ -110,9 +110,11 @@ try {
   })
   await publicSkin.selectOption('worldline-console')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout'), null, { timeout: 1200 })
+  await expect(page.locator('.worldline-shift-overlay')).toHaveClass(/is-timeline-active/, { timeout: 1000 })
   check(await page.locator('.worldline-shift-overlay').evaluate(el => el.classList.contains('is-timeline-active')), 'worldline keyframes start only after the overlay has been rendered')
+  // Capture before readout assertions and later screenshots consume the transition window.
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
+  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout'), null, { timeout: 1200 })
   const readoutSnapshot = await page.evaluate(() => window.__worldlineReadoutSnapshot || null)
   check(Boolean(readoutSnapshot?.backdropVisible), 'Worldline Console enables the clockwork and scientific-drawing background')
   check(Boolean(readoutSnapshot?.backdropShifting), 'worldline transition activates the technical backdrop during the readout phase')
@@ -181,6 +183,40 @@ try {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.locator('#research').screenshot({ path: resolve(output, 'worldline-1440-research.png') })
   await page.locator('#physics-resources').screenshot({ path: resolve(output, 'worldline-1440-resources.png') })
+  await page.locator('#publications').screenshot({ path: resolve(output, 'worldline-1440-publications.png') })
+
+  await page.goto(`${base}/research/dark`, { waitUntil: 'networkidle' })
+  await expect(page.locator('.research-topic-page')).toBeVisible()
+  await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
+  const topicVisual = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement)
+    const hero = document.querySelector('.topic-hero')
+    const relationCard = document.querySelector('.relation-card')
+    const formula = document.querySelector('.relation-formula')
+    return {
+      scheme: document.documentElement.getAttribute('data-color-scheme'),
+      accent: root.getPropertyValue('--accent').trim().toLowerCase(),
+      heroBackground: hero ? getComputedStyle(hero).backgroundColor : '',
+      relationBackground: relationCard ? getComputedStyle(relationCard).backgroundColor : '',
+      formulaColor: formula ? getComputedStyle(formula).color : '',
+      documentWidth: document.documentElement.scrollWidth,
+      viewportWidth: innerWidth
+    }
+  })
+  check(topicVisual.scheme === 'worldline-console', 'Worldline Console palette persists on the detailed research-topic route')
+  check(topicVisual.accent === '#55e6f2', 'research-topic detail uses the Worldline cyan accent token')
+  check(topicVisual.heroBackground !== 'transparent' && topicVisual.heroBackground !== 'rgba(0, 0, 0, 0)', 'research-topic hero keeps its terminal panel surface')
+  check(topicVisual.relationBackground !== 'transparent' && topicVisual.relationBackground !== 'rgba(0, 0, 0, 0)', 'research-topic relation cards inherit the terminal surface')
+  check(Boolean(topicVisual.formulaColor), 'research-topic equations retain an explicit readable text color')
+  check(topicVisual.documentWidth <= topicVisual.viewportWidth + 1, 'research-topic detail has no desktop horizontal overflow')
+  await page.screenshot({ path: resolve(output, 'worldline-1440-topic-dark.png'), fullPage: true })
+  await page.setViewportSize({ width: 390, height: 900 })
+  check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline research-topic detail fits the 390px viewport')
+  await page.screenshot({ path: resolve(output, 'worldline-390-topic-dark.png'), fullPage: true })
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto(base, { waitUntil: 'networkidle' })
+  await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
+  check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'Worldline Console persists when returning from a detailed topic')
   check(await page.evaluate(() => localStorage.getItem('labhub_public_color_scheme') === 'worldline-console' && localStorage.getItem('laborbit_color_scheme') !== 'worldline-console'), 'public theme persists separately from workspace preferences')
   await publicSkinTrigger.click()
   await publicSkin.selectOption('classic-cyan')
@@ -206,7 +242,21 @@ try {
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await page.getByRole('heading', { name: '团队与学术指导' }).waitFor()
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'worldline skin carries across public route navigation')
-  await page.waitForTimeout(1450)
+  await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
+  await page.screenshot({ path: resolve(output, 'worldline-1440-team.png'), fullPage: true })
+  const teamVisual = await page.evaluate(() => ({
+    accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().toLowerCase(),
+    cardBackground: getComputedStyle(document.querySelector('.person-card')).backgroundColor,
+    documentWidth: document.documentElement.scrollWidth,
+    viewportWidth: innerWidth
+  }))
+  check(teamVisual.accent === '#55e6f2', 'team directory inherits the Worldline accent token')
+  check(teamVisual.cardBackground !== 'transparent' && teamVisual.cardBackground !== 'rgba(0, 0, 0, 0)', 'team directory cards use a defined terminal surface')
+  check(teamVisual.documentWidth <= teamVisual.viewportWidth + 1, 'team directory has no desktop horizontal overflow')
+  await page.setViewportSize({ width: 390, height: 900 })
+  check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline team directory fits the 390px viewport')
+  await page.screenshot({ path: resolve(output, 'worldline-390-team.png'), fullPage: true })
+  await page.setViewportSize({ width: 1440, height: 900 })
   const peopleSkinTrigger = page.getByRole('button', { name: '切换官网风格' })
   check(await peopleSkinTrigger.isVisible(), 'public skin icon remains visible on the team directory')
   await peopleSkinTrigger.click()
@@ -215,7 +265,7 @@ try {
   await peopleSkin.selectOption('quiet-research')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'quiet-research', 'standard academic skin can be restored')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await page.waitForTimeout(1450)
+  await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await peopleSkinTrigger.click()
   await page.getByRole('combobox', { name: '选择官网皮肤风格' }).selectOption('worldline-console')
@@ -225,7 +275,7 @@ try {
   await peopleSkinTrigger.click()
   await page.getByRole('combobox', { name: '选择官网皮肤风格' }).selectOption('quiet-research')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await page.waitForTimeout(1450)
+  await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
 
   await page.goto(base, { waitUntil: 'networkidle' })
   check(!requested.some(url => new URL(url).pathname.startsWith('/api/')), 'anonymous homepage does not access internal APIs')
