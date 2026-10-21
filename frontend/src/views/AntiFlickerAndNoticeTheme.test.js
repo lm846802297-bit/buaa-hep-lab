@@ -58,6 +58,13 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="solid"] .app-shell .glass-card')
   })
 
+  it('uses BUAA HEP group branding in the font preview', () => {
+    expect(styleViewVue).toContain('北航粒子物理研究组')
+    expect(styleViewVue).toContain('Beihang University Particle Physics Phenomenology Group')
+    expect(styleViewVue).not.toContain('天体物理与交叉科学课题组')
+    expect(styleViewVue).not.toContain('Astrophysics and Interdisciplinary Science Research Group')
+  })
+
   it('defines --panel-solid in :root and classic-cyan', () => {
     expect(indexCss).toContain('--panel-solid: #0c0a1a;')
     expect(indexCss).toContain('--panel-solid: #152f38;')
