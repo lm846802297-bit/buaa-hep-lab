@@ -71,6 +71,7 @@ onMounted(() => {
             <p class="physics-card-label">{{ item.label }}</p>
             <h3>{{ item.title }}</h3>
             <p>{{ item.body }}</p>
+            <code v-if="item.formula" class="physics-formula">{{ item.formula }}</code>
             <ul>
               <li v-for="check in item.checks" :key="check">{{ check }}</li>
             </ul>
@@ -182,7 +183,8 @@ onMounted(() => {
 .physics-card-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:24px; }
 .physics-card,.interpretation-card { min-width:0; padding:22px; border:1px solid var(--line); border-radius:14px; background:var(--panel); }
 .physics-card-label,.interpretation-card>span { color:var(--accent); font-size:10px; letter-spacing:.12em; line-height:1.6; }
-.physics-card h3,.interpretation-card h3,.topic-workflow h3 { margin:10px 0 12px; font-size:17px; font-weight:600; line-height:1.5; }
+ .physics-card h3,.interpretation-card h3,.topic-workflow h3 { margin:10px 0 12px; font-size:17px; font-weight:600; line-height:1.5; }
+.physics-formula { display:block; margin:14px 0 10px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text); font-family:var(--mono,ui-monospace,monospace); font-size:12px; line-height:1.7; white-space:normal; overflow-wrap:anywhere; }
 .physics-card>p:not(.physics-card-label),.interpretation-card p,.topic-workflow li p { color:var(--soft); font-size:14px; line-height:1.9; }
 .physics-card ul { margin:14px 0 0; padding-left:18px; color:var(--muted); font-size:12px; line-height:1.9; }
 .topic-workflow { display:grid; gap:0; list-style:none; padding:0; margin:22px 0 0; }
