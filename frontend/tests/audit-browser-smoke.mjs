@@ -183,6 +183,8 @@ try {
   await page.locator('#physics-resources').screenshot({ path: resolve(output, 'worldline-1440-resources.png') })
   await page.locator('#publications').screenshot({ path: resolve(output, 'worldline-1440-publications.png') })
   await page.setViewportSize({ width: 390, height: 900 })
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.waitForFunction(() => window.scrollY < 5)
   check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline skin fits the 390px viewport without horizontal overflow')
   check(await technicalBackdrop.isVisible(), 'clockwork background remains enabled on the narrow mobile viewport')
   check(await technicalBackdrop.locator('.worldline-backdrop-gear--mobile-anchor').count() === 2, 'mobile viewport has dedicated central gear motifs')
