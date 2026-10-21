@@ -2,6 +2,21 @@
 // The page is an orientation guide: claims and limits must be checked against the cited paper/data release.
 export const researchTopicDetails = {
   dark: {
+    navigation: [
+      { target: 'topic-question', label: '暗物质问题', heading: '暗物质产生与探测的核心问题' },
+      { target: 'topic-mechanisms', label: '候选者与机制', heading: '暗物质候选者与产生机制' },
+      { target: 'topic-relations', label: '丰度与散射', heading: '丰度、散射与 UV–EFT 关系' },
+      { target: 'topic-framework', label: '暗扇区模型', heading: '暗扇区模型与理论框架' },
+      { target: 'topic-workflow', label: 'UV 参数到信号', heading: '从 UV 参数到探测器信号' },
+      { target: 'topic-blueprint', label: '非弹性散射重铸', heading: '非弹性暗物质的最小可复现研究路线' },
+      { target: 'topic-observables', label: '宇宙学与探测', heading: '宇宙学、核反冲与对撞机信号' },
+      { target: 'topic-interpretation', label: '约束与参数区', heading: '实验约束与参数空间判读' },
+      { target: 'topic-assumptions', label: '热史与 EFT 边界', heading: '热史、核响应与 EFT 适用边界' },
+      { target: 'topic-questions', label: '暗物质研究切入点', heading: '暗物质研究切入点' },
+      { target: 'topic-source-notes', label: '公式与实验依据', heading: '暗物质公式与实验依据' },
+      { target: 'topic-papers', label: '暗物质代表论文', heading: '暗物质与暗扇区代表论文' },
+      { target: 'topic-resources', label: '探测与计算工具', heading: '直接探测、实验数据与计算工具' }
+    ],
     lead: '把暗物质问题拆成三个相互关联、但不能混为一谈的任务：解释宇宙学丰度、建立自洽的微观模型、以及计算可与实验比较的信号。',
     mechanisms: [
       {
@@ -45,6 +60,21 @@ export const researchTopicDetails = {
     resourceIds: ['pdg', 'inspire', 'arxiv-hepph', 'hepdata', 'lz', 'pandax', 'madgraph', 'feyncalc']
   },
   neutrino: {
+    navigation: [
+      { target: 'topic-question', label: '中微子问题', heading: '中微子质量与新相互作用问题' },
+      { target: 'topic-mechanisms', label: '质量与新相互作用', heading: '质量起源、惰性态与轻子新相互作用' },
+      { target: 'topic-relations', label: '混合与振荡', heading: '混合、振荡与衰变关系' },
+      { target: 'topic-framework', label: '轻子味模型', heading: '中微子质量模型与轻子味框架' },
+      { target: 'topic-workflow', label: '质量耦合到信号', heading: '从质量与耦合到实验可观测量' },
+      { target: 'topic-blueprint', label: '质量矩阵到观测', heading: '从中微子质量矩阵到可观测量' },
+      { target: 'topic-observables', label: '振荡与实验探测', heading: '振荡、低能、宇宙学与对撞机信号' },
+      { target: 'topic-interpretation', label: '联合约束判读', heading: '振荡、宇宙学与对撞机约束判读' },
+      { target: 'topic-assumptions', label: '寿命与宇宙学边界', heading: '质量排序、寿命与宇宙学假设' },
+      { target: 'topic-questions', label: '中微子研究切入点', heading: '中微子模型研究切入点' },
+      { target: 'topic-source-notes', label: '中微子数据依据', heading: '中微子数据与理论来源依据' },
+      { target: 'topic-papers', label: '中微子代表论文', heading: '中微子与轻子新相互作用代表论文' },
+      { target: 'topic-resources', label: '中微子实验资源', heading: '中微子实验与公开数据资源' }
+    ],
     lead: '中微子专题同时关注质量起源、轻子味结构和可能的新相互作用。不同观测通常约束的是不同组合的质量、混合角、耦合、寿命和宇宙学参数，必须在具体模型中建立联系。',
     mechanisms: [
       { title: '质量生成与轻子味', label: 'MASS & FLAVOR', formula: 'P(ν_α → ν_β; L, E)', body: '从质量矩阵、混合结构和可能的 seesaw 扩展出发，检查参数如何进入振荡、衰变和精密测量；模型中引入新粒子不自动意味着它能解释全部中微子数据。', checks: ['注明质量排序和相位约定', '区分振荡量与绝对质量观测', '说明模型是否产生额外轻子味破坏'] },
@@ -66,6 +96,21 @@ export const researchTopicDetails = {
     resourceIds: ['pdg', 'inspire', 'arxiv-hepph', 'hepdata', 'icecube', 'superk', 'cern-open-data']
   },
   collider: {
+    navigation: [
+      { target: 'topic-question', label: '对撞机问题', heading: '新粒子与对撞机检验问题' },
+      { target: 'topic-mechanisms', label: '希格斯与顶夸克', heading: '希格斯耦合、顶夸克与长寿命粒子' },
+      { target: 'topic-relations', label: '截面与事例产额', heading: '产生截面、衰变率与事例产额' },
+      { target: 'topic-framework', label: '碰撞模型框架', heading: '从拉格朗日量到碰撞过程' },
+      { target: 'topic-workflow', label: '模型到探测器', heading: '从模型文件到探测器级预测' },
+      { target: 'topic-blueprint', label: '模拟到实验限制', heading: '从模型文件到实验统计限制' },
+      { target: 'topic-observables', label: '缺失能量与位移信号', heading: '可见末态、缺失能量与位移顶点' },
+      { target: 'topic-interpretation', label: '排除与灵敏度', heading: '理论预测、实验排除与未来灵敏度' },
+      { target: 'topic-assumptions', label: '接受度与统计假设', heading: '产生率、接受度与统计假设' },
+      { target: 'topic-questions', label: '对撞机分析切入点', heading: '对撞机分析研究切入点' },
+      { target: 'topic-source-notes', label: '生成与分析依据', heading: '模型、模拟与公开分析依据' },
+      { target: 'topic-papers', label: '对撞机代表论文', heading: '希格斯与对撞机唯象代表论文' },
+      { target: 'topic-resources', label: 'LHC 与模拟工具', heading: 'LHC 数据、事件生成与分析工具' }
+    ],
     lead: '对撞机唯象学的核心是把拉格朗日量中的耦合与质量，转化为可重现的产生、衰变和探测器级信号。理论截面、事例选择后的预期产额与实验排除是不同层次的量。',
     mechanisms: [
       { title: '希格斯与新耦合', label: 'HIGGS PHENOMENOLOGY', formula: 'N_sig = σ × 𝓛_int × BR × A × ε', body: '希格斯产生率、衰变分支比和运动学分布可检验标量门户及其他新相互作用。应同时说明标准模型参考值、干涉效应和参数相关性。', checks: ['列出耦合定义和归一化', '区分产生率偏离与分支比偏离', '记录所采用的实验组合'] },
@@ -87,6 +132,21 @@ export const researchTopicDetails = {
     resourceIds: ['pdg', 'inspire', 'arxiv-hepph', 'hepdata', 'cern-open-data', 'atlas', 'cms', 'madgraph', 'root']
   },
   phase: {
+    navigation: [
+      { target: 'topic-question', label: '相变与引力波问题', heading: '相变与引力波的核心问题' },
+      { target: 'topic-mechanisms', label: '有效势与泡成核', heading: '有限温有效势、泡成核与引力波源' },
+      { target: 'topic-relations', label: '相变参数与谱', heading: '相变热力学参数与引力波谱关系' },
+      { target: 'topic-framework', label: '有限温场论', heading: '有限温场论与标量势框架' },
+      { target: 'topic-workflow', label: '有效势到 GW 谱', heading: '从有效势到引力波谱' },
+      { target: 'topic-blueprint', label: '有效势到引力波谱', heading: '从有限温有效势到引力波谱' },
+      { target: 'topic-observables', label: '频谱与多信使', heading: '引力波频谱与粒子物理互补信号' },
+      { target: 'topic-interpretation', label: '相变完成与探测前景', heading: '相变完成、谱预测与探测前景' },
+      { target: 'topic-assumptions', label: '源项与规范假设', heading: '规范、重整化与引力波源项假设' },
+      { target: 'topic-questions', label: '相变研究切入点', heading: '相变与引力波研究切入点' },
+      { target: 'topic-source-notes', label: '成核与谱的依据', heading: '有效势、成核与引力波谱的依据' },
+      { target: 'topic-papers', label: '相变代表论文', heading: '相变与引力波代表论文' },
+      { target: 'topic-resources', label: '引力波数据与工作流', heading: '引力波观测与可复现计算资源' }
+    ],
     lead: '相变与引力波研究需要从有限温有效势和相变动力学出发，再将相变参数映射到引力波谱。只有模型确实产生满足条件的一阶相变时，才适合讨论相应的泡壁和引力波源。',
     mechanisms: [
       { title: '有限温有效势与相变类型', label: 'FINITE-TEMPERATURE FIELD THEORY', formula: 'V_eff(φ, T)', body: '需要分析有效势随温度的演化、相的局部/全局稳定性和临界温度，并区分临界、成核与相变完成。标准模型 125 GeV 希格斯对应的电弱热演化是 crossover，而不是一阶相变。', checks: ['注明有效势阶数、规范与重整化方案', '区分临界温度和成核温度', '验证真空转变是否实际完成'] },
@@ -108,6 +168,21 @@ export const researchTopicDetails = {
     resourceIds: ['pdg', 'inspire', 'arxiv-hepph', 'hepdata', 'lisa', 'nanograv', 'gwosc', 'reana']
   },
   precision: {
+    navigation: [
+      { target: 'topic-question', label: '量子计量问题', heading: '量子信息与对撞机精度的核心问题' },
+      { target: 'topic-mechanisms', label: 'Fisher 信息与自旋', heading: '量子 Fisher 信息、自旋关联与可测量量' },
+      { target: 'topic-relations', label: '信息量与精度界', heading: 'Fisher 信息与精度界限关系' },
+      { target: 'topic-framework', label: '量子态与测量框架', heading: '量子态、耦合与测量框架' },
+      { target: 'topic-workflow', label: '理想界到真实分析', heading: '从理想界限到真实碰撞分析' },
+      { target: 'topic-blueprint', label: '量子界到实验精度', heading: '从量子信息界到实验可达精度' },
+      { target: 'topic-observables', label: '角分布与精密耦合', heading: '角分布、自旋关联与精密耦合' },
+      { target: 'topic-interpretation', label: '统计与实验精度', heading: '量子界限、统计精度与实验精度' },
+      { target: 'topic-assumptions', label: '接受度与系统误差', heading: '估计条件、接受度与系统误差' },
+      { target: 'topic-questions', label: '量子计量研究切入点', heading: '量子计量研究切入点' },
+      { target: 'topic-source-notes', label: '量子信息依据', heading: '量子信息与分析方法依据' },
+      { target: 'topic-papers', label: '精密测量代表论文', heading: '量子计量与对撞机精度代表论文' },
+      { target: 'topic-resources', label: '统计与符号工具', heading: '统计分析与符号计算资源' }
+    ],
     lead: '量子计量学研究的是量子态及其参数依赖所允许的信息上限，以及真实实验可观测量能够保留多少信息。理论界限、有限样本统计精度和最终实验不确定度需要分层报告。',
     mechanisms: [
       { title: '量子 Fisher 信息与 Cramér–Rao 界', label: 'QUANTUM INFORMATION', formula: 'Var(θ) ≥ 1 / (N F_Q)（独立同分布探针的单参数界）', body: '量子 Fisher 信息刻画量子态对参数变化的可辨识度，并给出在相应正则条件下的理想精度界。该界不保证某个具体测量、有限样本估计器或真实探测器可以达到。', checks: ['说明参数化、态和量子 Fisher 信息定义', '检查估计器无偏性等适用条件', '分开写理想界与可实现测量'] },

@@ -20,19 +20,17 @@ describe('public research topic pages', () => {
     expect(html).toContain(topic.question)
     expect(html).toContain(topic.methods)
     expect(html).toContain(topic.probes)
-    expect(html).toContain('本页导航')
-    expect(html).toContain('核心物理机制与研究对象')
+    for (const item of researchTopicDetails.dark.navigation) {
+      expect(html).toContain(`href="#${item.target}"`)
+      expect(html).toContain(`id="${item.target}"`)
+      expect(html).toContain(item.label)
+      expect(html).toContain(item.heading)
+    }
+    expect(html).toContain('FIELD INDEX')
     expect(html).toContain('非弹性暗物质与核反冲')
     expect(html).toContain('Ωχ h² ≈ 0.12')
     expect(html).toContain('https://lz.lbl.gov/')
     expect(html).toContain('target="_blank" rel="noopener noreferrer"')
-    expect(html).toContain('从理论模型到可检验结论')
-    expect(html).toContain('关键关系式：公式、含义与适用边界')
-    expect(html).toContain('研究中必须明确的假设与常见误判')
-    expect(html).toContain('如何从导读进入实际研究')
-    expect(html).toContain('关系式与方法的参考依据')
-    expect(html).toContain('结果应该如何判读')
-    expect(html).toContain('本方向常用的专业资源')
     expect(html).toContain('LUX-ZEPLIN (LZ)')
     expect(html).toContain('PandaX')
     expect(html).toContain('不声称独立复现论文计算')
@@ -53,11 +51,43 @@ describe('public research topic pages', () => {
       })
       const html = await renderToString(app)
       expect(html).toContain(topic.title)
+      expect(html).toContain('class="topic-reading-layout"')
+      expect(html).toContain('class="topic-sidebar"')
+      expect(html).toContain('aria-label="专题目录"')
+      expect(html).toContain('FIELD INDEX')
+      expect(html).toContain('class="topic-content-column"')
+      expect(html).toContain('概念插图 · 非真实实验事件或科研数据')
+      const visualPaths = {
+        dark: '/images/research-topics/dark-matter.svg',
+        neutrino: '/images/research-topics/neutrino.svg',
+        collider: '/images/research-topics/collider.svg',
+        phase: '/images/research-topics/phase-gw.svg',
+        precision: '/images/research-topics/quantum-metrology.svg',
+      }
+      expect(html).toContain(visualPaths[topic.id])
+      expect(html).toContain('aria-expanded="false"')
+      const navigation = researchTopicDetails[topic.id].navigation
+      const blueprint = researchTopicDeepGuides[topic.id].analysisBlueprint
+      expect(html).toContain(blueprint.title)
+      expect(html).toContain(blueprint.question)
+      expect(html).toContain('必须通过的物理与数值检查')
+      expect(navigation).toHaveLength(13)
+      expect(new Set(navigation.map(item => item.target)).size).toBe(navigation.length)
+      const topicTerms = {
+        dark: '候选者与机制',
+        neutrino: '质量与新相互作用',
+        collider: '希格斯与顶夸克',
+        phase: '有效势与泡成核',
+        precision: 'Fisher 信息与自旋',
+      }
+      expect(navigation.some(item => item.label.includes(topicTerms[topic.id]))).toBe(true)
+      for (const item of navigation) {
+        expect(html).toContain(`href="#${item.target}"`)
+        expect(html).toContain(`id="${item.target}"`)
+        expect(html).toContain(item.label)
+        expect(html).toContain(item.heading)
+      }
       expect(html).toContain(researchTopicDetails[topic.id].mechanisms[0].title)
-      expect(html).toContain('从理论模型到可检验结论')
-      expect(html).toContain('关键关系式：公式、含义与适用边界')
-      expect(html).toContain('研究中必须明确的假设与常见误判')
-      expect(html).toContain('本方向常用的专业资源')
       expect(html).toContain('href="#topic-resources"')
     }
   })
@@ -76,6 +106,39 @@ describe('public research topic pages', () => {
       const deepGuide = researchTopicDeepGuides[topic.id]
       expect(deepGuide, `missing deep guide for ${topic.id}`).toBeTruthy()
       expect(deepGuide.keyRelations.length).toBeGreaterThanOrEqual(3)
+      const blueprint = deepGuide.analysisBlueprint
+      expect(blueprint, `missing reproducible research blueprint for ${topic.id}`).toBeTruthy()
+      expect(blueprint.steps.length).toBeGreaterThanOrEqual(5)
+      expect(blueprint.validationChecks.length).toBeGreaterThanOrEqual(4)
+      expect(blueprint.reportingChecklist.length).toBeGreaterThanOrEqual(4)
+      expect(blueprint.question.length).toBeGreaterThanOrEqual(30)
+      expect(blueprint.scope.length).toBeGreaterThanOrEqual(40)
+      for (const step of blueprint.steps) {
+        expect(step.title.length).toBeGreaterThanOrEqual(5)
+        expect(step.detail.length).toBeGreaterThanOrEqual(40)
+        expect(step.output.length).toBeGreaterThanOrEqual(10)
+      }
+      for (const check of blueprint.validationChecks) {
+        expect(check.title.length).toBeGreaterThanOrEqual(4)
+        expect(check.detail.length).toBeGreaterThanOrEqual(30)
+      }
+      const blueprintText = [
+        blueprint.question,
+        blueprint.scope,
+        ...blueprint.steps.flatMap(step => [step.title, step.detail, step.output]),
+        ...blueprint.validationChecks.flatMap(check => [check.title, check.detail]),
+        ...blueprint.reportingChecklist,
+      ].join(' ')
+      const physicsMarkers = {
+        dark: ['δ → 0', 'UV → EFT', '核反冲'],
+        neutrino: ['Takagi', '质量平方差', '重中微子'],
+        collider: ['Ward identity', 'cut-flow', 'nuisance'],
+        phase: ['T_c', 'T_n', 'S₃/T', '标准模型基线'],
+        precision: ['QFI', 'Fisher 信息', 'toy Monte Carlo'],
+      }
+      for (const marker of physicsMarkers[topic.id]) {
+        expect(blueprintText, `missing topic-specific physics marker ${marker} in ${topic.id}`).toContain(marker)
+      }
       expect(deepGuide.assumptions.length).toBeGreaterThanOrEqual(3)
       expect(deepGuide.researchQuestions.length).toBeGreaterThanOrEqual(3)
       expect(deepGuide.references.length).toBeGreaterThanOrEqual(2)

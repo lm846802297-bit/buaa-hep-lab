@@ -207,14 +207,40 @@ try {
     })
     await page.waitForFunction(() => window.scrollY < 5)
     check(await page.evaluate(() => window.scrollY < 5), `opening a research topic resets reading position to the top at ${width}px`)
-    check(await page.locator('.topic-local-nav').evaluate(el => getComputedStyle(el).position === 'static'), `topic navigation scrolls with content instead of sticking in the viewport at ${width}px`)
-    await page.locator('.topic-local-nav').getByRole('link', { name: '适用条件', exact: true }).click()
+    const stickyExpected = await page.evaluate(() => window.innerWidth > 760 || CSS.supports('overflow-x', 'clip'))
+    check(await page.locator('.topic-sidebar').evaluate(el => getComputedStyle(el).position) === (stickyExpected ? 'sticky' : 'static'), `topic directory uses a non-obstructing layout at ${width}px`)
+    check(await page.locator('.topic-visual-panel img').evaluate(img => img.complete && img.naturalWidth > 0), `topic visual illustration loads at ${width}px`)
+    if (width <= 980) {
+      await page.locator('.topic-sidebar-toggle').click()
+      check(await page.locator('.topic-local-nav').evaluate(el => el.classList.contains('is-open')), `mobile topic directory expands at ${width}px`)
+    }
+    await page.locator('.topic-local-nav a[href="#topic-assumptions"]').click()
     await page.waitForFunction(() => location.hash === '#topic-assumptions')
+    await page.waitForFunction(() => {
+      const top = document.querySelector('#topic-assumptions')?.getBoundingClientRect().top
+      return top != null && top >= 0 && top < 140
+    })
     check(await page.locator('#topic-assumptions').evaluate(el => {
       const top = el.getBoundingClientRect().top
-      return top >= 0 && top < 120
+      return top >= 0 && top < 140
     }), `in-page navigation aligns the selected section near the top at ${width}px`)
-    check(await page.locator('.topic-local-nav').evaluate(el => el.getBoundingClientRect().bottom < 0), `topic navigation does not remain pinned after jumping to a later section at ${width}px`)
+    await page.waitForFunction(() => document.querySelector('.topic-local-nav a[aria-current="location"]')?.getAttribute('href') === '#topic-assumptions')
+    check(await page.locator('.topic-local-nav a[aria-current="location"]').getAttribute('href') === '#topic-assumptions', `topic directory highlights the selected section at ${width}px`)
+    if (stickyExpected) {
+      const sidebarFitsViewport = await page.waitForFunction(() => {
+        const element = document.querySelector('.topic-sidebar')
+        if (!element) return false
+        const rect = element.getBoundingClientRect()
+        return rect.top >= 0 && rect.top < 100 && rect.bottom <= window.innerHeight + 1
+      }, null, { timeout: 10000 }).then(() => true).catch(() => false)
+      const sidebarMetrics = await page.locator('.topic-sidebar').evaluate(el => {
+        const rect = el.getBoundingClientRect()
+        return { top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height), viewport: window.innerHeight }
+      })
+      check(sidebarFitsViewport, `topic directory remains visible within the viewport while reading later sections at ${width}px: ${JSON.stringify(sidebarMetrics)}`)
+    } else {
+      check(await page.locator('.topic-sidebar').evaluate(el => getComputedStyle(el).position === 'static'), `legacy mobile layout keeps the topic directory in document flow at ${width}px`)
+    }
     await page.locator('.topic-all-guides').click()
     await page.locator('#research-guides').waitFor()
     await page.waitForFunction(() => location.hash === '#research-guides')
@@ -231,6 +257,18 @@ try {
       await page.locator('.research-topic-page').waitFor()
       check(await page.getByRole('button', { name: '切换官网风格' }).isVisible(), `public skin icon is visible on research topic ${topic}`)
       check(await page.locator('h1').isVisible(), `research topic ${topic} renders at ${width}px`)
+      const illustration = page.locator('.topic-visual-panel img')
+      await illustration.evaluate(img => img.decode())
+      check(await illustration.evaluate(img => img.complete && img.naturalWidth > 0), `research topic ${topic} illustration loads at ${width}px`)
+      if (width === 390 || width === 1440) {
+        await page.locator('.topic-visual-wrapper').screenshot({ path: resolve(output, `research-topic-${topic}-illustration-${width}.png`) })
+      }
+      check((await illustration.getAttribute('alt'))?.length > 20, `research topic ${topic} illustration has descriptive alternative text`)
+      if (width <= 600) {
+        check(await page.locator('.topic-visual-labels').isVisible(), `research topic ${topic} exposes readable mobile illustration labels`)
+        check(await page.locator('.topic-visual-labels li').count() >= 3, `research topic ${topic} shows at least three mobile illustration labels`)
+        check(await page.locator('.topic-visual-panel figcaption').evaluate(el => el.getBoundingClientRect().top >= el.closest('.topic-visual-panel').querySelector('img').getBoundingClientRect().bottom - 1), `research topic ${topic} caption stays below the mobile artwork`)
+      }
       check(await page.locator('.topic-section').count() >= 8, `research topic ${topic} includes the expanded physics guide, workflow, observables, papers and resources`)
       check(await page.locator('#topic-mechanisms').isVisible(), `research topic ${topic} explains its core physics mechanisms`)
       check(await page.locator('#topic-relations').isVisible(), `research topic ${topic} explains key relations and their validity conditions`)
