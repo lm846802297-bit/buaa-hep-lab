@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" role="img" aria-labelledby="title desc">
+<title id="title">对撞机事件与粒子径迹概念图</title><desc id="desc">探测器截面中的中心碰撞点向外发出多条青色和琥珀色粒子径迹。</desc>
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#06111b"/><stop offset="1" stop-color="#142b3b"/></linearGradient><radialGradient id="flash"><stop stop-color="#fff7dd"/><stop offset=".12" stop-color="#ffc875" stop-opacity=".9"/><stop offset="1" stop-color="#ffc875" stop-opacity="0"/></radialGradient></defs>
+<rect width="1000" height="400" fill="url(#bg)"/><g fill="none" stroke="#6bd9ee" stroke-opacity=".23"><ellipse cx="500" cy="200" rx="430" ry="170"/><ellipse cx="500" cy="200" rx="365" ry="145"/><ellipse cx="500" cy="200" rx="300" ry="120"/><ellipse cx="500" cy="200" rx="235" ry="95"/><ellipse cx="500" cy="200" rx="170" ry="68"/><ellipse cx="500" cy="200" rx="105" ry="42"/></g>
+<g stroke="#6bd9ee" stroke-opacity=".12"><path d="M70 200H930M500 30V370M120 85L880 315M120 315L880 85M250 50L750 350M250 350L750 50"/></g>
+<circle cx="500" cy="200" r="64" fill="url(#flash)"/><circle cx="500" cy="200" r="8" fill="#fff5d8"/>
+<g fill="none" stroke-linecap="round" stroke-width="3"><path d="M500 200C580 155 635 112 730 80S875 52 970 18" stroke="#67e5f5"/><path d="M500 200C590 220 660 272 740 305S875 335 980 390" stroke="#ffc875"/><path d="M500 200C435 130 380 100 310 72S175 30 60 16" stroke="#5eb6ff"/><path d="M500 200C420 250 355 286 275 315S140 355 24 388" stroke="#53ead7"/><path d="M500 200C560 265 590 325 640 382" stroke="#67e5f5" stroke-opacity=".7"/><path d="M500 200C455 170 440 100 430 25" stroke="#ffc875" stroke-opacity=".8"/></g>
+<g fill="#dffbff"><circle cx="730" cy="80" r="4"/><circle cx="310" cy="72" r="3"/><circle cx="640" cy="382" r="4"/><circle cx="275" cy="315" r="3"/></g><g fill="#ffc875"><circle cx="740" cy="305" r="4"/><circle cx="430" cy="25" r="3"/><circle cx="875" cy="335" r="3"/></g>
+</svg>
