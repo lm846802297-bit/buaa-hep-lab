@@ -89,18 +89,22 @@ try {
     window.__worldlinePhaseListener = event => {
       window.__worldlinePhaseLog.push(event.detail)
       if (event.detail !== 'readout') return
-      const overlay = document.querySelector('.worldline-shift-overlay')
-      const backdrop = document.querySelector('.worldline-technical-backdrop')
-      const hud = overlay?.querySelector('.worldline-shift-overlay__hud')
-      window.__worldlineReadoutSnapshot = {
-        backdropVisible: Boolean(backdrop && backdrop.getBoundingClientRect().width > 0),
-        backdropShifting: Boolean(backdrop?.classList.contains('is-shifting')),
-        ringCount: backdrop?.querySelectorAll('.worldline-backdrop-shift-wave__ring').length || 0,
-        hudVisible: Boolean(hud && hud.getBoundingClientRect().width > 0 && hud.getBoundingClientRect().height > 0),
-        hudOpacity: hud ? Number(getComputedStyle(hud).opacity) : null,
-        hudAnimationName: hud ? getComputedStyle(hud).animationName : '',
-        hudBackgroundColor: hud ? getComputedStyle(hud).backgroundColor : ''
-      }
+      // The event fires before the browser's next style/paint pass. Sample after
+      // one animation frame so computed opacity reflects the painted HUD frame.
+      requestAnimationFrame(() => {
+        const overlay = document.querySelector('.worldline-shift-overlay')
+        const backdrop = document.querySelector('.worldline-technical-backdrop')
+        const hud = overlay?.querySelector('.worldline-shift-overlay__hud')
+        window.__worldlineReadoutSnapshot = {
+          backdropVisible: Boolean(backdrop && backdrop.getBoundingClientRect().width > 0),
+          backdropShifting: Boolean(backdrop?.classList.contains('is-shifting')),
+          ringCount: backdrop?.querySelectorAll('.worldline-backdrop-shift-wave__ring').length || 0,
+          hudVisible: Boolean(hud && hud.getBoundingClientRect().width > 0 && hud.getBoundingClientRect().height > 0),
+          hudOpacity: hud ? Number(getComputedStyle(hud).opacity) : null,
+          hudAnimationName: hud ? getComputedStyle(hud).animationName : '',
+          hudBackgroundColor: hud ? getComputedStyle(hud).backgroundColor : ''
+        }
+      })
     }
     window.addEventListener('worldline:phase', window.__worldlinePhaseListener)
   })
