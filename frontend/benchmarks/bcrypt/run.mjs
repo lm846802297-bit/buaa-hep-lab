@@ -31,7 +31,7 @@ if (values.runtime === 'cloudflare') {
     throw new Error('Only the isolated buaa-hep-bcrypt-benchmark.<account-subdomain>.workers.dev origin is supported')
   }
   invoke = async params => {
-    const response = await fetch(new URL(`/benchmark?${new URLSearchParams(params)}`, endpoint), { headers: { Authorization: `Bearer ${benchmarkToken}` }, signal: AbortSignal.timeout(30000), cache: 'no-store', redirect: 'error' })
+    const response = await fetch(new URL('/benchmark', endpoint), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...params, token: benchmarkToken }), signal: AbortSignal.timeout(30000), cache: 'no-store', redirect: 'error' })
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
     const result = await response.json()
     if (result.benchmark !== 'bcrypt-v1' || result.sampleId !== params.sample || result.cost !== Number(params.cost) || result.bytes !== Number(params.bytes) || result.operation !== params.operation || result.ok !== true) throw new Error('Invalid benchmark response')
@@ -44,7 +44,7 @@ if (values.runtime === 'cloudflare') {
     compatibilityDate: '2026-09-17', compatibilityFlags: ['nodejs_compat'],
     bindings: { BENCHMARK_TOKEN: 'local-workerd-benchmark-token-do-not-use-externally-2026' } }))
   invoke = async params => {
-    const response = await mf.dispatchFetch(`http://benchmark.invalid/benchmark?${new URLSearchParams(params)}`, { headers: { Authorization: 'Bearer local-workerd-benchmark-token-do-not-use-externally-2026' } })
+    const response = await mf.dispatchFetch('http://benchmark.invalid/benchmark', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...params, token: 'local-workerd-benchmark-token-do-not-use-externally-2026' }) })
     if (!response.ok) throw new Error(`Local runtime failure: ${response.status}`)
     const result = await response.json()
     if (result.benchmark !== 'bcrypt-v1' || result.sampleId !== params.sample || result.cost !== Number(params.cost) || result.bytes !== Number(params.bytes) || result.operation !== params.operation || result.ok !== true) throw new Error('Invalid local runtime benchmark response')
@@ -54,8 +54,10 @@ if (values.runtime === 'cloudflare') {
   // This is still a Node process measurement, not a Cloudflare CPU measurement.
   const localToken = 'local-node-benchmark-token-do-not-use-externally-2026'
   invoke = async params => {
-    const request = new Request(`http://benchmark.invalid/benchmark?${new URLSearchParams(params)}`, {
-      headers: { Authorization: `Bearer ${localToken}` },
+    const request = new Request('http://benchmark.invalid/benchmark', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...params, token: localToken }),
     })
     const response = await worker.fetch(request, { BENCHMARK_TOKEN: localToken })
     if (!response.ok) throw new Error(`Local Node Worker failure: ${response.status}`)
