@@ -12,6 +12,7 @@ on:
       - '.cursor/rules/parallel-development.mdc'
       - '.windsurf/rules/parallel-development.md'
       - 'docs/PARALLEL_DEVELOPMENT_WORKFLOW.md'
+      - 'docs/AGENT_PREFLIGHT_VALIDATION.md'
       - '.agents/skills/vibe-coding-lab-orbit/SKILL.md'
       - 'skills/vibe-coding-lab-orbit/SKILL.md'
   push:
@@ -26,6 +27,7 @@ on:
       - '.cursor/rules/parallel-development.mdc'
       - '.windsurf/rules/parallel-development.md'
       - 'docs/PARALLEL_DEVELOPMENT_WORKFLOW.md'
+      - 'docs/AGENT_PREFLIGHT_VALIDATION.md'
       - '.agents/skills/vibe-coding-lab-orbit/SKILL.md'
       - 'skills/vibe-coding-lab-orbit/SKILL.md'
 
