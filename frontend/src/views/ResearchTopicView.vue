@@ -347,6 +347,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 .topic-local-nav a.is-active { border-left-color:var(--accent); }
 .topic-local-nav a.is-active .topic-nav-index { color:var(--accent); }
 .topic-content-column { min-width:0; }
+:global(html) { scroll-behavior:smooth; }
 .topic-section { padding:44px 0; border-bottom:1px solid var(--line); scroll-margin-top:28px; }
 .topic-section h2 { margin:10px 0 18px; font-family:var(--serif); font-size:clamp(26px,3vw,34px); font-weight:400; }
 .topic-section h2[id] { scroll-margin-top:28px; }
@@ -413,6 +414,10 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 .topic-not-found { padding:64px 0; }
 .topic-not-found h1 { margin:16px 0; font-family:var(--serif); font-weight:400; font-size:clamp(32px,5vw,48px); }
 .topic-not-found>p:not(.eyebrow) { margin-bottom:24px; color:var(--muted); }
+@media(prefers-reduced-motion:reduce) {
+  :global(html) { scroll-behavior:auto; }
+  .topic-local-nav a { transition:none; }
+}
 @media(max-width:980px) {
   .topic-reading-layout { grid-template-columns:1fr; gap:12px; }
   .topic-sidebar { top:8px; z-index:20; max-height:calc(100vh - 16px); padding:8px 10px; background:color-mix(in srgb,var(--panel) 90%,transparent); backdrop-filter:blur(14px); }
