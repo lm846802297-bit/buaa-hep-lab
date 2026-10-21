@@ -415,11 +415,12 @@ try {
   check(await splitFontCards.count() === 2, 'split font mode exposes both independent font slots')
   for (const [index, filename] of [[0, 'audit-font-en.ttf'], [1, 'audit-font-zh.ttf']]) {
     const fontPickerPromise = stylePage.waitForEvent('filechooser')
-    await splitFontCards.nth(index).locator('.slot-empty-box').click()
+    await splitFontCards.nth(index).locator('.slot-empty-box .upload-text').click()
     const fontPicker = await fontPickerPromise
     await fontPicker.setFiles({ name: filename, mimeType: 'font/ttf', buffer: fontFixture })
     await splitFontCards.nth(index).locator('.slot-info-box').waitFor({ state: 'visible', timeout: 15000 })
   }
+  await expect(stylePage.locator('html')).toHaveAttribute('data-custom-font', 'split', { timeout: 15000 })
   check(await stylePage.evaluate(() => document.documentElement.dataset.customFont === 'split'), 'English and Chinese custom font slots both apply')
   stylePage.once('dialog', dialog => dialog.accept())
   await stylePage.getByRole('button', { name: '恢复系统默认字体方案', exact: true }).click()
