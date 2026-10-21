@@ -52,6 +52,10 @@ describe('public research topic pages', () => {
       const html = await renderToString(app)
       expect(html).toContain(topic.title)
       const navigation = researchTopicDetails[topic.id].navigation
+      const blueprint = researchTopicDeepGuides[topic.id].analysisBlueprint
+      expect(html).toContain(blueprint.title)
+      expect(html).toContain(blueprint.question)
+      expect(html).toContain('必须通过的物理与数值检查')
       expect(navigation).toHaveLength(13)
       expect(new Set(navigation.map(item => item.target)).size).toBe(navigation.length)
       const topicTerms = {
@@ -103,8 +107,6 @@ describe('public research topic pages', () => {
         expect(check.title.length).toBeGreaterThanOrEqual(4)
         expect(check.detail.length).toBeGreaterThanOrEqual(30)
       }
-      expect(html).toContain(blueprint.title)
-      expect(html).toContain('必须通过的物理与数值检查')
       const blueprintText = [
         blueprint.question,
         blueprint.scope,
