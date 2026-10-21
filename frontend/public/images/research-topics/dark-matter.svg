@@ -32,4 +32,12 @@
 </g>
 <g transform="translate(58 325)" fill="none" stroke="#63d4eb" stroke-opacity=".55"><path d="M0 0H250M0 0V-54"/><path d="M0 -2C25 -3 31 -10 48 -17S77 -35 103 -39 150 -47 180 -49 223 -52 250 -53" stroke="#ffc16b" stroke-width="2"/></g>
 <g fill="#8ddced" fill-opacity=".7"><circle cx="60" cy="30" r="2"/><circle cx="550" cy="85" r="2"/><circle cx="677" cy="45" r="1.5"/><circle cx="940" cy="340" r="2"/></g>
+
+<g font-family="Arial, Helvetica, sans-serif" font-weight="500" paint-order="stroke" stroke="#07111c" stroke-width="3" stroke-linejoin="round">
+<text x="34" y="34" fill="#d9f7ff" font-size="16" font-weight="700" stroke="#07111c" stroke-width="3">DARK MATTER DIRECT DETECTION</text>
+<text x="42" y="74" fill="#a8eafa" font-size="13" stroke="#07111c" stroke-width="3">Dark Matter Halo</text>
+<text x="365" y="287" fill="#d9f7ff" font-size="13" stroke="#07111c" stroke-width="3">Target Nucleus</text>
+<text x="505" y="249" fill="#ffd18b" font-size="13" stroke="#07111c" stroke-width="3">Nuclear Recoil</text>
+<text x="730" y="375" fill="#a8eafa" font-size="13" stroke="#07111c" stroke-width="3">Liquid Xenon Detector</text>
+</g>
 </svg>
