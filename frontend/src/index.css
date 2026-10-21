@@ -2637,6 +2637,7 @@ html[data-bg-style="clouds-static"] body {
 /* Worldline Console: clockwork/blueprint layer, animated particles, then page content. */
 .worldline-technical-backdrop { position: fixed; inset: 0; display: block; width: 100vw; height: 100vh; z-index: 0; opacity: .32; overflow: hidden; pointer-events: none; color: var(--worldline-blue, #83a9ff); mix-blend-mode: screen; }
 .worldline-technical-backdrop .worldline-backdrop-gear { color: var(--worldline-hardware, #87928d); opacity: .8; }
+.worldline-technical-backdrop .worldline-backdrop-gear--mobile-anchor { color: var(--worldline-blue, #83a9ff); opacity: 1; }
 .worldline-technical-backdrop .worldline-backdrop-gear-rotor { transform-box: fill-box; transform-origin: center; animation: worldline-gear-drift 150s linear infinite; }
 .worldline-technical-backdrop .worldline-backdrop-gear-rotor--reverse { animation-direction: reverse; animation-duration: 210s; }
 .worldline-technical-backdrop .worldline-backdrop-reticle { color: var(--worldline-blue, #83a9ff); opacity: .7; }
@@ -3024,7 +3025,7 @@ html[data-bg-style="clouds-static"] body {
 @keyframes worldline-meter-fill { to { transform: scaleX(1); } }
 
 @media (max-width: 639px) {
-  .worldline-technical-backdrop { opacity: .17; }
+  .worldline-technical-backdrop { opacity: .20; }
   .worldline-technical-backdrop .worldline-backdrop-instrument { opacity: .34; }
   .worldline-technical-backdrop .worldline-backdrop-notes { opacity: .24; }
   .worldline-particle-canvas.is-visible { opacity: .34; }
