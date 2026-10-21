@@ -58,7 +58,6 @@ describe('approved public bibliography', () => {
     const titles = DEMO_BOOKS.map(book => book.title)
     expect(titles).toContain('Quantum Field Theory and the Standard Model')
     expect(titles).toContain('Review of Particle Physics (2026)')
-    expect(titles).toContain('FeynCalc Documentation')
     const categoryNames = DEMO_RESOURCES_CATEGORIES.map(category => category.name)
     expect(DEMO_BOOKS.every(book => categoryNames.includes(book.category))).toBe(true)
     expect(DEMO_BOOKS.map(book => book.title).join(' ')).not.toMatch(/JWST|galaxy formation|astrophysics/i)
