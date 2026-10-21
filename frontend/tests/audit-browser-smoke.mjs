@@ -84,11 +84,23 @@ try {
   await page.keyboard.press('Escape')
   check(await publicSkin.count() === 0, 'Escape closes the public theme popover')
   await publicSkinTrigger.click()
+  // Force a known non-Worldline starting state so this test always exercises a real theme transition.
+  await publicSkin.selectOption('classic-cyan')
+  await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
+  if (!(await publicSkin.isVisible())) await publicSkinTrigger.click()
+  let worldlineReadoutScreenshotPromise = null
+  await page.exposeFunction('__captureWorldlineReadout', async () => {
+    if (!worldlineReadoutScreenshotPromise) {
+      worldlineReadoutScreenshotPromise = page.screenshot({ path: resolve(output, 'worldline-1440-shift-readout.png') })
+    }
+  })
   await page.evaluate(() => {
+    window.__worldlineReadoutSnapshot = null
     window.__worldlinePhaseLog = []
     window.__worldlinePhaseListener = event => {
       window.__worldlinePhaseLog.push(event.detail)
       if (event.detail !== 'readout') return
+      window.__captureWorldlineReadout().catch(() => {})
       // The event fires before the browser's next style/paint pass. Sample after
       // one animation frame so computed opacity reflects the painted HUD frame.
       requestAnimationFrame(() => {
@@ -114,7 +126,9 @@ try {
   check(await page.locator('.worldline-shift-overlay').evaluate(el => el.classList.contains('is-timeline-active')), 'worldline keyframes start only after the overlay has been rendered')
   // Capture before readout assertions and later screenshots consume the transition window.
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
-  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout'), null, { timeout: 1200 })
+  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout'), null, { timeout: 2000 })
+  check(Boolean(worldlineReadoutScreenshotPromise), 'readout screenshot was triggered by the phase event')
+  await worldlineReadoutScreenshotPromise
   const readoutSnapshot = await page.evaluate(() => window.__worldlineReadoutSnapshot || null)
   check(Boolean(readoutSnapshot?.backdropVisible), 'Worldline Console enables the clockwork and scientific-drawing background')
   check(Boolean(readoutSnapshot?.backdropShifting), 'worldline transition activates the technical backdrop during the readout phase')
