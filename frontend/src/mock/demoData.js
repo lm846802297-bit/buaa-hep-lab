@@ -28,7 +28,7 @@ export const DEMO_SEMINARS = [2, 9, 16, -5, -12].map((offset, i) => ({
 }))
 export const DEMO_ARXIV_PAPERS = publications.map((p, i) => ({
   id: 301 + i, arxiv_id: p.id, title: p.title, authors: p.authors.join(', '), journal: p.journal, primary_category: 'hep-ph',
-  published_date: p.published, source_url: `https://arxiv.org/abs/${p.id}`, pdf_url: `https://arxiv.org/pdf/${p.id}`,
+  published_date: p.arxivSubmitted, source_url: `https://arxiv.org/abs/${p.id}`, pdf_url: `https://arxiv.org/pdf/${p.id}`,
   abstract: p.summary, recommender: DEMO_MEMBERS[i % 2], recommended_by: DEMO_MEMBERS[i % 2].name,
   recommended_at: formatOffsetDate(-2 - i), notes: '演示推荐记录。论文为已核对的公开文献，推荐人与互动为虚构。',
   likes_count: 0, user_liked: false, is_liked_by_me: false, read: false, is_read_by_me: false, comments: [],
