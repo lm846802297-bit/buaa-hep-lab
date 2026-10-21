@@ -18,9 +18,9 @@ node frontend/benchmarks/bcrypt/run.mjs --runtime workerd --samples 50 --warmup 
 
 环境：Windows `10.0.26300 x64`；AMD Ryzen 7 9800X3D（16 逻辑 CPU）；Node `v24.20.0`；bcryptjs `3.0.3`；Wrangler `4.131.0`；workerd `1.20260910.1`。workerd 与生产仓库配置同为兼容日期 `2026-09-17`、`nodejs_compat`。这是运行时行为对齐，不是 Cloudflare 硬件、套餐或 CPU 计费等效认证。
 
-## 实测延迟分布
+## 历史延迟分布（旧基线，仅供参考）
 
-单位毫秒；每格 n=50、失败=0。p50/p95/p99 使用 nearest-rank，即排序后第 ceil(p×n) 个值；n=50 时 p99 就是最大值，尾部估计不稳定。完整 min/p50/p95/p99/max 和逐样本数据见 [Node 原始记录](bcrypt-node.json)、[workerd 原始记录](bcrypt-workerd.json)。
+以下是 Windows/AMD 环境的旧三操作数据，单位毫秒；每格 n=50、失败=0。p50/p95/p99 使用 nearest-rank，即排序后第 ceil(p×n) 个值；n=50 时 p99 就是最大值，尾部估计不稳定。完整旧记录见 [Node 原始记录](bcrypt-node.json)、[workerd 原始记录](bcrypt-workerd.json)。**旧 runner 的 Node 路径与 workerd 路径并未完全对齐，且不含 control 组；不要用此表作跨运行时比较或生产预算结论。当前可比较的基准见下方最新 CI 证据。
 
 | 环境 | 字节 | 操作 | cost | p50 | p95 | p99 |
 |---|---:|---|---:|---:|---:|---:|
@@ -61,12 +61,32 @@ node frontend/benchmarks/bcrypt/run.mjs --runtime workerd --samples 50 --warmup 
 | workerd | 72 | compare-mismatch | 7 | 7.047 | 7.452 | 7.900 |
 | workerd | 72 | compare-mismatch | 8 | 13.014 | 13.718 | 14.639 |
 
-## 中间候选的 CI 基准证据与方法修正（2026-10-21）
+## 当前候选的最新 CI 基准证据（2026-10-21）
 
-- [GitHub Actions run 39535976599](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39535976599) 对当时的 PR head 196cae07b1b4f3d6d89ab65461a5212cb89cf511 完成了 validate；artifact ID 为 12317109921。该 artifact 每份 JSON 含 1,320 行：1,200 个测量样本、120 次预热、24 个分组、0 次失败。
-- **该 artifact 现仅保留为中间证据，不作为最终跨运行时对比。** 复核发现当时 Node runner 直接调用 runOperation，而 workerd/Cloudflare runner 走 Worker fetch 路径；两边的请求校验、日志、Response 构造与 JSON 解析开销不一致。已修正 Node runner，使其也通过同一个 Worker fetch/auth/validation/log/response 路径。必须以该修正之后当前 head 的 CI artifact 重新记录最终表格。
-- 中间 artifact 的环境为 Linux x64、Intel Xeon Platinum 8573C、2 个逻辑 CPU、Node v24.22.0、bcryptjs 3.0.3、Wrangler 4.131.0、workerd 1.20260910.1；报告 revision a4e3a2a2b1e26f3a8ead117a10620624d5323a56 是当时 PR head 与 base 合并的 CI 测试提交，而非分支 head。
-- 这项修正不改变生产认证逻辑；生产 bcrypt cost 仍为 6。之前 Windows/AMD 的大表是旧机器的历史基线，不能与新的 Linux runner 数据作直接硬件性能比较。
+- 测量代码的 PR head：9d5cecf4a88d5828df9195496e31278503467ee9；base：fb287b4fac1a7c45e02ee3d1e276ebdabf476269。
+- [GitHub Actions run 39539229688](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39539229688) 已完成：validate=success，deploy=skipped。本次没有发布生产。
+- Artifact：bcrypt-local-evidence，ID 12319400215（从上述 Actions run 页面下载）。包含 node.json 与 workerd.json；每份均有 1,320 行：1,200 个测量样本、120 次预热、24 个分组、0 次失败。
+- 两份报告的 environment.revision 均为 53520ed3b4d8a8131028d83fb430139c00c40625，是 base 与测量 head 的合并测试提交（父提交分别为 fb287b4fac1a7c45e02ee3d1e276ebdabf476269 与 9d5cecf4a88d5828df9195496e31278503467ee9），不是分支 head。
+- 当前 CI runner：Linux x64、AMD EPYC 9V74、2 个逻辑 CPU、Node v24.22.0、bcryptjs 3.0.3、Wrangler 4.131.0、workerd 1.20260910.1；兼容日期 2026-09-17，nodejs_compat。
+- 源码 SHA-256（UTF-8 文本，换行统一为 LF）：core.mjs=b0b19fba7291113af1d48177c4dca7341d67089d8e574e4278779c814bd116b1；fixtures.json=ac02d2fd5379fc83260564c0cbdffacc43dc914d32a73917b5e9519fcd1d3cf5；worker.mjs=5b219eb244c8f0cebd46d8167f568159dce6c9d82d266c71df4b9c1e793186db；run.mjs=0b09542bdccbdaf8ce36437d659ca81b4c659301cffdecb786833382767b33cb；wrangler.jsonc=469258fa7de68b56e464e4e1a0821bd3479673f36905f2f97e5601819ee48e5b；frontend/package-lock.json=6343f35eeaecf50c73e99bd56ec19e5dcfd16dc68c88a2fb0a501099ba6e44f8。
+
+下表来自当前已通过的 CI artifact。每个分组 n=50；每个 cost 单元按“12 字节输入 p50/p95；72 字节输入 p50/p95”列出，单位 ms。p99 没有列出，因为 n=50 时 nearest-rank p99 就等于最大值，尾部估计不稳定。
+
+| Runtime | 操作 | cost 6：12B；72B | cost 7：12B；72B | cost 8：12B；72B |
+|---|---|---:|---:|---:|
+| Node | control | 0.064/0.155；0.077/0.206 | 0.075/0.187；0.071/0.179 | 0.063/0.158；0.070/0.153 |
+| Node | hash | 4.845/5.203；4.868/6.080 | 9.276/9.612；9.312/10.848 | 18.192/18.689；18.250/19.322 |
+| Node | compare-match | 4.802/5.409；4.773/5.331 | 9.242/10.692；9.223/10.988 | 18.204/19.329；18.129/18.729 |
+| Node | compare-mismatch | 4.775/5.064；4.779/5.142 | 9.219/9.707；9.225/9.524 | 18.233/19.892；18.144/19.423 |
+| workerd | control | 1.458/2.476；1.555/2.418 | 1.425/2.781；1.483/2.057 | 1.419/3.532；1.372/2.205 |
+| workerd | hash | 6.565/8.944；6.594/8.116 | 11.230/13.589；11.247/14.051 | 20.523/26.708；20.561/25.343 |
+| workerd | compare-match | 6.709/8.028；6.691/8.175 | 11.232/16.770；11.305/13.609 | 20.647/25.474；20.422/24.720 |
+| workerd | compare-mismatch | 6.856/8.479；6.798/8.192 | 11.328/14.830；11.359/14.221 | 20.508/26.996；20.565/24.889 |
+
+**结果解释：**
+- Node 的 process.cpuUsage 原始记录中，hash 的 CPU p50 约为 cost 6：4.85–4.87 ms、cost 7：9.29–9.32 ms、cost 8：18.20–18.23 ms；control 约为 0.07–0.08 ms。它是当前 CI Node 进程的 CPU，不是 Cloudflare CPU。
+- workerd 的 control wall p50 约为 1.37–1.56 ms；hash/compare 的 wall p50 约为 cost 6：6.56–6.86 ms、cost 7：11.23–11.36 ms、cost 8：20.42–20.65 ms。它包含 dispatchFetch、本地调度、IPC、序列化与响应解析，不能当作 CPU。
+- 这些数据支持一个有限结论：在此 CI runner 上，cost 从 6 升至 7 或 8 会显著增加计算开销；它们不能证明 Cloudflare 生产 CPU 预算充足，也不能据此决定调高 cost。生产 cost 继续保持 6，直到线上调用级 CPU 与完整认证路径证据齐备。
 
 ### 当前 Pages 认证路径盘点
 
@@ -79,11 +99,11 @@ node frontend/benchmarks/bcrypt/run.mjs --runtime workerd --samples 50 --warmup 
 
 frontend/tests/security.test.ts 已有基于 SQLite 的 D1 适配器测试，覆盖凭据更新、token_version 失效和认证限速等功能；这些是功能/安全回归，不是 Cloudflare CPU 基准，也不等于生产完整路径的 CPU 验收。旧 FastAPI backend 使用独立的 Python bcrypt 实现，未包含在当前 Pages 发布工作流中；除非有独立生产部署证据，不应将它与 Pages 运行数据混合。
 
-当前 Worker 基准的 control 组在 Node、workerd 与 Cloudflare 中均应走同一 Worker fetch 路径，只绕过 bcrypt 运算；它不包含 D1、JWT、邀请码或真实认证中间件。因此 control 差值只能估计隔离基准 Worker 内 bcrypt 的增量成本，不能代替完整认证路由测量。
+当前 Worker 基准的 control 组在 Node、workerd 与 Cloudflare 中均走同一 Worker fetch 路径，只绕过 bcrypt 运算；它不包含 D1、JWT、邀请码或真实认证中间件。因此 control 差值只能估计隔离基准 Worker 内 bcrypt 的增量成本，不能代替完整认证路由测量。
 
 ## 局限与决策
 
-- Node 使用调用端高精度单调时钟；附带的 `process.cpuUsage` 仅是 Node 进程 user+system CPU，在 Windows 上分辨率不足以可靠解释单次短操作，不能代替 Worker CPU。
+- Node 使用调用端高精度单调时钟；附带的 `process.cpuUsage` 是 Node 进程 user+system CPU。旧 Windows 记录的单次 CPU 分辨率不足；当前 Linux CI 记录虽包含每次操作的 CPU 计数，但仍受进程级计量、调度与输出开销影响，不能代替 Worker CPU。
 - workerd 使用调用端 `hrtime` 包围 `dispatchFetch` 和响应解析，包含本地调度、IPC、序列化及运行开销；并非哈希纯 CPU。真实 Cloudflare 模式测的是网络 RTT，不能把它写成生产 CPU。
 - 不在 Worker 内用 `Date.now()` / `performance.now()` 测纯计算：线上计时器只随 I/O 推进，可能得到 0。参见 [Cloudflare timers](https://developers.cloudflare.com/workers/runtime-apis/performance/)。
 - 2026-10-20 的 Cloudflare Pages production dashboard 快照记录了过去 24h 聚合 CPU 数据（早于 main 部署 run 39529826480）：2,058 次成功 invocation、0 错误、25 子请求、0 CPU 超限；CPU P50 2.209 ms、P75 2.854 ms、P99 11.222 ms、P99.9 23.375 ms。此数据包含该 Pages 项目的所有 Functions 调用，未按路由、操作、cost 分类；样本数是总 invocation 数，不是每个分位数对应的 bcrypt 样本量。不能把聚合 P99 当成 cost 6，也不能把它用于预测 cost 7/8。
@@ -131,7 +151,7 @@ Cloudflare invocation CPU 是整个 Worker 请求的 CPU 总量，包含 URL/令
 
 ### CPU 证据验收
 
-在 Cloudflare Workers Observability / Logs 中按 `benchmark=bcrypt-v1` 与随机 sample ID 定位每次调用，并关联该调用的 CPU time、outcome；参见 [Metrics 的 CPU Time per execution](https://developers.cloudflare.com/workers/observability/metrics-and-analytics/)。按 cost、输入字节数、操作分组；排除 warmup，但保留失败、资源超限和缺失样本数。不能将混合 cost 的总分位数当成单一 cost 的结果。若日志无法与调用级 CPU 关联，继续标记“Cloudflare CPU 未测”，不得用 RTT 代替。
+在 [Cloudflare Workers Logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/) 中按结构化字段 `benchmark=bcrypt-v1` 或 URL 中的 sample ID 定位自定义日志，再关联同一请求 URL 的 invocation log；Cloudflare 会在 invocation log 中提供 CPU 与 wall time。可用 [Query Builder](https://developers.cloudflare.com/workers/observability/query-builder/) 的 `$workers.cpuTimeMs` 和 `$workers.wallTimeMs` 字段核验。总览见 [CPU Time per execution](https://developers.cloudflare.com/workers/observability/metrics-and-analytics/)。按 cost、输入字节数、操作分组；排除 warmup，但保留失败、资源超限和缺失样本数。不能将混合 cost 的总分位数当成单一 cost 的结果。若日志无法与调用级 CPU 关联，继续标记“Cloudflare CPU 未测”，不得用 RTT 代替。
 
 验收记录至少包含：cost、操作、输入字节数、n、失败/缺失数、CPU min/p50/p95/p99/max、wall/RTT 分布、套餐/限额、Worker 版本、地区、日志采样率与时间窗口。还需在隔离的非生产认证应用中测完整登录/注册/改密路径和限速开销，评估资源余量并记录维护者的参数选择理由。**Node/workerd 微基准成功不代表生产成本评估完成。**
 
