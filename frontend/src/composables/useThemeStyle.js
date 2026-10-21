@@ -128,7 +128,7 @@ export const DEFAULT_MIGRATION_KEY = 'laborbit_default_v20261021_quiet_research'
 export const CUSTOM_COLOR_SCHEME_KEY = 'laborbit_custom_color_scheme'
 export const GLASS_STYLE_KEY = 'laborbit_glass_style'
 export const BG_DIM_KEY = 'laborbit_bg_dim_percent_v2'
-export const DEFAULT_BG_DIM = 100
+export const DEFAULT_BG_DIM = 35
 
 const LEGACY_STORAGE_NAMESPACE_MIGRATION_KEY = 'laborbit_storage_namespace_v20261021'
 
