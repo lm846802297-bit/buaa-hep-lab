@@ -139,7 +139,7 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
   it('keeps the compact sidebar and background controls independent of Quiet Research', () => {
     expect(indexCss).toContain('--sidebar: 88px;')
     expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="solid"] .app-shell .glass-card')
-    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="frosted"] .glass-card')
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="frosted"] .app-shell .glass-card')
     expect(indexCss).not.toContain(':root[data-color-scheme="quiet-research"] .forecast-atmosphere {\\n  display: none !important;')
     expect(indexHtml).toContain("if (bgType === 'clouds-static' && doc.dataset.publicPage !== 'true')")
   })

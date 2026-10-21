@@ -142,7 +142,7 @@ try {
   check(
     readoutSnapshot.hudBackgroundColor !== 'rgba(0, 0, 0, 0)'
       && readoutSnapshot.hudBackgroundColor !== 'transparent'
-      && !/^rgba?\\(\\s*0\\s*,\\s*0\\s*,\\s*0/.test(readoutSnapshot.hudBackgroundColor),
+      && !/^rgba?\(\s*0\s*,\s*0\s*,\s*0/.test(readoutSnapshot.hudBackgroundColor),
     'worldline shift HUD uses a light, high-contrast paper panel'
   )
   const worldlineTuner = await page.evaluate(() => {
