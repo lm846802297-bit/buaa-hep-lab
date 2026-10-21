@@ -18,6 +18,7 @@ export interface UserRow {
   avatar: string | null;
   bio: string | null;
   token_version: number;
+  tutorial_completed?: number | boolean | null;
   can_manage_seminars: number; // 0 or 1
   zotero_user_id?: string | null;
   zotero_api_key?: string | null;
