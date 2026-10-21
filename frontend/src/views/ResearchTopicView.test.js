@@ -52,7 +52,7 @@ describe('public research topic pages', () => {
       const html = await renderToString(app)
       expect(html).toContain(topic.title)
       const navigation = researchTopicDetails[topic.id].navigation
-      expect(navigation).toHaveLength(12)
+      expect(navigation).toHaveLength(13)
       expect(new Set(navigation.map(item => item.target)).size).toBe(navigation.length)
       const topicTerms = {
         dark: '候选者与机制',
@@ -87,6 +87,24 @@ describe('public research topic pages', () => {
       const deepGuide = researchTopicDeepGuides[topic.id]
       expect(deepGuide, `missing deep guide for ${topic.id}`).toBeTruthy()
       expect(deepGuide.keyRelations.length).toBeGreaterThanOrEqual(3)
+      const blueprint = deepGuide.analysisBlueprint
+      expect(blueprint, `missing reproducible research blueprint for ${topic.id}`).toBeTruthy()
+      expect(blueprint.steps.length).toBeGreaterThanOrEqual(5)
+      expect(blueprint.validationChecks.length).toBeGreaterThanOrEqual(4)
+      expect(blueprint.reportingChecklist.length).toBeGreaterThanOrEqual(4)
+      expect(blueprint.question.length).toBeGreaterThanOrEqual(30)
+      expect(blueprint.scope.length).toBeGreaterThanOrEqual(40)
+      for (const step of blueprint.steps) {
+        expect(step.title.length).toBeGreaterThanOrEqual(5)
+        expect(step.detail.length).toBeGreaterThanOrEqual(40)
+        expect(step.output.length).toBeGreaterThanOrEqual(10)
+      }
+      for (const check of blueprint.validationChecks) {
+        expect(check.title.length).toBeGreaterThanOrEqual(5)
+        expect(check.detail.length).toBeGreaterThanOrEqual(30)
+      }
+      expect(html).toContain(blueprint.title)
+      expect(html).toContain('必须通过的物理与数值检查')
       expect(deepGuide.assumptions.length).toBeGreaterThanOrEqual(3)
       expect(deepGuide.researchQuestions.length).toBeGreaterThanOrEqual(3)
       expect(deepGuide.references.length).toBeGreaterThanOrEqual(2)
