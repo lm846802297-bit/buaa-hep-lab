@@ -42,8 +42,11 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
   it('exposes an independent public skin selector on every public route', () => {
     const appVue = readFileSync(resolve(__dirname, '../App.vue'), 'utf-8')
     const themeSwitcher = readFileSync(resolve(__dirname, '../components/PublicThemeSwitcher.vue'), 'utf-8')
+    const publicHomeView = readFileSync(resolve(__dirname, 'PublicHomeView.vue'), 'utf-8')
     const themeModule = readFileSync(resolve(__dirname, '../composables/useThemeStyle.js'), 'utf-8')
-    expect(appVue).toContain('<PublicThemeSwitcher v-if="isPublic" />')
+    expect(appVue).toContain('route.path !==')
+    expect(publicHomeView).toContain('<PublicThemeSwitcher inline />')
+    expect(themeSwitcher).toContain('aria-label="切换官网风格"')
     expect(themeSwitcher).toContain('选择官网皮肤风格')
     expect(themeSwitcher).toContain('v-for="scheme in colorSchemes"')
     expect(themeModule).toContain("export const PUBLIC_COLOR_SCHEME_KEY = 'labhub_public_color_scheme'")

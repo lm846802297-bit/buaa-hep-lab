@@ -12,6 +12,7 @@ describe('Public academic website', () => {
     expect(html).toContain('高能粒子物理唯象学')
     expect(html).toContain('暂定名称')
     expect(html).toContain('href="/hub"')
+    expect(html).toContain('aria-label="切换官网风格"')
     expect(html).toContain('BibTeX')
     expect(html).toContain('aria-label="导师：王小平"')
     expect(html).toContain('aria-label="学术指导：刘佳"')
