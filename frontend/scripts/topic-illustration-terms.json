@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "policy": "The SVG source is the artwork, but all title, description, alternative text and visible text must match this reviewed whitelist. Curves, color blocks and detector geometry are conceptual only; they must not be presented as data or numerical predictions.",
+  "topics": [
+    {
+      "id": "dark",
+      "file": "dark-matter.svg",
+      "title": "暗物质直接探测与核反冲",
+      "description": "左侧轨道线仅为暗物质晕的概念化视觉背景，中心展示入射粒子与靶核相互作用，右侧展示探测器及示意信号。底部曲线没有数值刻度，不代表实验数据或特定模型的定量预测。",
+      "alt": "暗物质粒子与靶核相互作用、核反冲及探测器信号的概念示意图；曲线不代表实验数据。",
+      "visibleText": [],
+      "requiredMarkup": [],
+      "approvedTerms": ["暗物质直接探测", "暗物质晕", "核反冲", "液氙探测器"],
+      "limitations": ["底部曲线无数值刻度，不代表实验数据或特定模型的定量预测。", "插图不指定暗物质质量、耦合常数、核响应或探测效率。"]
+    },
+    {
+      "id": "neutrino",
+      "file": "neutrino.svg",
+      "title": "中微子振荡、质量本征态与混合",
+      "description": "三种中微子味态沿传播方向演化，示意振荡与混合；右侧三乘三色块仅象征混合矩阵结构，不代表 PMNS 矩阵元的数值。曲线不对应指定振荡参数下的概率计算。",
+      "alt": "中微子味态传播、振荡及 PMNS 混合矩阵结构的概念示意图；波形和矩阵色块不代表定量计算。",
+      "visibleText": ["UPMNS", "ν1", "ν2", "ν3", "νe", "νμ", "ντ", "νe", "νμ", "ντ", "L/E"],
+      "requiredMarkup": [
+        "baseline-shift=\"sub\" font-size=\"7\">PMNS</tspan>",
+        "baseline-shift=\"sub\" font-size=\"7\">1</tspan>",
+        "baseline-shift=\"sub\" font-size=\"7\">2</tspan>",
+        "baseline-shift=\"sub\" font-size=\"7\">3</tspan>",
+        "baseline-shift=\"sub\" font-size=\"7\">e</tspan>",
+        "baseline-shift=\"sub\" font-size=\"7\">μ</tspan>",
+        "baseline-shift=\"sub\" font-size=\"7\">τ</tspan>",
+        "baseline-shift=\"sub\" font-size=\"8\">e</tspan>",
+        "baseline-shift=\"sub\" font-size=\"8\">μ</tspan>",
+        "baseline-shift=\"sub\" font-size=\"8\">τ</tspan>"
+      ],
+      "approvedTerms": ["中微子味态", "质量本征态", "中微子振荡", "PMNS 混合矩阵", "L/E", "ν_e", "ν_μ", "ν_τ", "ν_1", "ν_2", "ν_3"],
+      "limitations": ["矩阵色块没有数值，不代表 PMNS 矩阵元或其模方。", "三条彩色波形不是在指定振荡参数下计算的概率曲线。", "图中的 L/E 仅为变量提示，不提供单位、刻度或拟合结果。"]
+    },
+    {
+      "id": "collider",
+      "file": "collider.svg",
+      "title": "对撞机事件与粒子径迹",
+      "description": "多层同心结构概念化表示探测器桶部与端盖，中心点表示碰撞顶点，多色线条表示示意性粒子径迹。右下曲线图没有数值刻度，不对应真实事件、特定探测器几何或模拟样本。",
+      "alt": "多层对撞机探测器、碰撞顶点与粒子径迹的概念示意图；不代表真实事件显示。",
+      "visibleText": [],
+      "requiredMarkup": [],
+      "approvedTerms": ["对撞机", "探测器桶部", "探测器端盖", "碰撞顶点", "粒子径迹"],
+      "limitations": ["未指定具体实验、探测器、重建算法或事件拓扑。", "右下曲线图无定量刻度，不对应真实碰撞事件或模拟样本。"]
+    },
+    {
+      "id": "phase",
+      "file": "phase-gw.svg",
+      "title": "宇宙相变泡成核、碰撞与引力波",
+      "description": "不同尺度的圆形区域示意真空泡成核、扩张与碰撞；背景网格和右侧波形仅作时空扰动及引力波信号的概念表达。图中不包含特定相变参数、定量频谱或对泡壁碰撞、声波、湍流等源贡献的计算。",
+      "alt": "真空泡成核、扩张、碰撞及引力波信号的概念示意图；波形不代表定量频谱。",
+      "visibleText": [],
+      "requiredMarkup": [],
+      "approvedTerms": ["宇宙相变", "真空泡成核", "泡扩张", "泡碰撞", "引力波"],
+      "limitations": ["波形与频谱不是数值预测，也不对应特定相变参数。", "插图没有定量区分泡壁碰撞、声波与湍流的贡献。"]
+    },
+    {
+      "id": "precision",
+      "file": "quantum-metrology.svg",
+      "title": "量子态、自旋关联与费舍尔信息",
+      "description": "左侧示意 Bloch 球上的量子态方向矢量，中部示意两个相关自旋，右侧为无定量刻度的测量分布曲线。图中不表示具体数据、费舍尔信息数值或量子费舍尔信息（QFI）的计算结果，也不能单凭示意图判定态是否纠缠。",
+      "alt": "Bloch 球量子态、相关自旋与测量分布的概念示意图；不表示具体费舍尔信息计算。",
+      "visibleText": ["z", "x", "y", "θ"],
+      "requiredMarkup": [],
+      "approvedTerms": ["Bloch 球", "量子态", "自旋关联", "费舍尔信息", "量子费舍尔信息（QFI）", "测量分布"],
+      "limitations": ["曲线没有数据、参数或数值刻度，不表示费舍尔信息或量子费舍尔信息的计算结果。", "示意图本身不构成量子态纠缠的证据。"]
+    }
+  ]
+}
