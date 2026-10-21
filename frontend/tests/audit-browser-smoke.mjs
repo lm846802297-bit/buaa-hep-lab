@@ -196,7 +196,10 @@ try {
     check(await firstGuideLink.getAttribute('href') === '/research/dark', `homepage topic entry targets the expected research route at ${width}px`)
     await firstGuideLink.click()
     await page.waitForURL(url => url.pathname === '/research/dark', { timeout: 10000 })
-    await page.locator('.research-topic-page').waitFor({ timeout: 10000 })
+    await page.locator('.research-topic-page').waitFor({ timeout: 10000 }).catch(async error => {
+      const bodyText = (await page.locator('body').innerText()).slice(0, 300)
+      throw new Error(`topic route did not render; url=${page.url()}; pageErrors=${errors.slice(-5).join(' | ')}; body=${bodyText}; cause=${error.message}`)
+    })
     await page.waitForFunction(() => window.scrollY < 5)
     check(await page.evaluate(() => window.scrollY < 5), `opening a research topic resets reading position to the top at ${width}px`)
     check(await page.locator('.topic-local-nav').evaluate(el => getComputedStyle(el).position === 'static'), `topic navigation scrolls with content instead of sticking in the viewport at ${width}px`)
