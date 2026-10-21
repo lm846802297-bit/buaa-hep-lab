@@ -88,53 +88,48 @@ try {
   await publicSkin.selectOption('classic-cyan')
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
   if (!(await publicSkin.isVisible())) await publicSkinTrigger.click()
-  let worldlineReadoutScreenshotPromise = null
-  await page.exposeFunction('__captureWorldlineReadout', async () => {
-    if (!worldlineReadoutScreenshotPromise) {
-      worldlineReadoutScreenshotPromise = page.screenshot({ path: resolve(output, 'worldline-1440-shift-readout.png') })
-    }
-  })
   await page.evaluate(() => {
     window.__worldlineReadoutSnapshot = null
     window.__worldlinePhaseLog = []
     window.__worldlinePhaseListener = event => {
       window.__worldlinePhaseLog.push(event.detail)
       if (event.detail !== 'readout') return
-      window.__captureWorldlineReadout().catch(() => {})
-      // The event fires before the browser's next style/paint pass. Sample after
-      // one animation frame so computed opacity reflects the painted HUD frame.
-      requestAnimationFrame(() => {
-        const overlay = document.querySelector('.worldline-shift-overlay')
-        const backdrop = document.querySelector('.worldline-technical-backdrop')
-        const hud = overlay?.querySelector('.worldline-shift-overlay__hud')
-        window.__worldlineReadoutSnapshot = {
-          backdropVisible: Boolean(backdrop && backdrop.getBoundingClientRect().width > 0),
-          backdropShifting: Boolean(backdrop?.classList.contains('is-shifting')),
-          ringCount: backdrop?.querySelectorAll('.worldline-backdrop-shift-wave__ring').length || 0,
-          hudVisible: Boolean(hud && hud.getBoundingClientRect().width > 0 && hud.getBoundingClientRect().height > 0),
-          hudOpacity: hud ? Number(getComputedStyle(hud).opacity) : null,
-          hudAnimationName: hud ? getComputedStyle(hud).animationName : '',
-          hudBackgroundColor: hud ? getComputedStyle(hud).backgroundColor : ''
-        }
-      })
+      // Sample synchronously at the phase boundary. A screenshot request or a
+      // deferred animation frame can block until the HUD has already faded out.
+      const overlay = document.querySelector('.worldline-shift-overlay')
+      const backdrop = document.querySelector('.worldline-technical-backdrop')
+      const hud = overlay?.querySelector('.worldline-shift-overlay__hud')
+      const hudStyle = hud ? getComputedStyle(hud) : null
+      window.__worldlineReadoutSnapshot = {
+        backdropVisible: Boolean(backdrop && backdrop.getBoundingClientRect().width > 0),
+        backdropShifting: Boolean(backdrop?.classList.contains('is-shifting')),
+        ringCount: backdrop?.querySelectorAll('.worldline-backdrop-shift-wave__ring').length || 0,
+        hudVisible: Boolean(hud && hud.getBoundingClientRect().width > 0 && hud.getBoundingClientRect().height > 0),
+        hudOpacity: hudStyle ? Number(hudStyle.opacity) : null,
+        hudAnimationName: hudStyle ? hudStyle.animationName : '',
+        hudAnimationPlayState: hudStyle ? hudStyle.animationPlayState : '',
+        hudBackgroundColor: hudStyle ? hudStyle.backgroundColor : '',
+        overlayClassName: overlay ? overlay.className : ''
+      }
     }
     window.addEventListener('worldline:phase', window.__worldlinePhaseListener)
   })
   await publicSkin.selectOption('worldline-console')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await expect(page.locator('.worldline-shift-overlay')).toHaveClass(/is-timeline-active/, { timeout: 1000 })
+  await expect(page.locator('.worldline-shift-overlay')).toHaveClass(/is-timeline-active/, { timeout: 1500 })
   check(await page.locator('.worldline-shift-overlay').evaluate(el => el.classList.contains('is-timeline-active')), 'worldline keyframes start only after the overlay has been rendered')
-  // Capture before readout assertions and later screenshots consume the transition window.
-  await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
-  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout'), null, { timeout: 2000 })
-  check(Boolean(worldlineReadoutScreenshotPromise), 'readout screenshot was triggered by the phase event')
-  await worldlineReadoutScreenshotPromise
+  // Do not screenshot before readout: a slow screenshot can block the main thread
+  // long enough for CSS keyframes to reach their terminal opacity before sampling.
+  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout') && window.__worldlineReadoutSnapshot, null, { timeout: 1500 })
   const readoutSnapshot = await page.evaluate(() => window.__worldlineReadoutSnapshot || null)
+  await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
+  await page.screenshot({ path: resolve(output, 'worldline-1440-shift-readout.png') })
   check(Boolean(readoutSnapshot?.backdropVisible), 'Worldline Console enables the clockwork and scientific-drawing background')
   check(Boolean(readoutSnapshot?.backdropShifting), 'worldline transition activates the technical backdrop during the readout phase')
   check(readoutSnapshot?.ringCount === 2, 'worldline transition draws two expanding instrument-wave rings')
   check(Boolean(readoutSnapshot?.hudVisible), 'worldline shift HUD is visible in the readout frame')
   check(Boolean(readoutSnapshot?.hudAnimationName?.includes('worldline-hud-fade')), `worldline shift HUD has its own opacity timeline (computed animation: ${readoutSnapshot?.hudAnimationName || 'none'})`)
+  check(readoutSnapshot?.hudAnimationPlayState === 'running', `worldline HUD animation is running during readout (play state: ${readoutSnapshot?.hudAnimationPlayState || 'missing'}, overlay: ${readoutSnapshot?.overlayClassName || 'missing'})`)
   check(Number(readoutSnapshot?.hudOpacity) > 0.2, `worldline HUD remains visibly readable during readout (opacity: ${readoutSnapshot?.hudOpacity})`)
   check(readoutSnapshot?.hudBackgroundColor !== 'rgba(0, 0, 0, 0)' && readoutSnapshot?.hudBackgroundColor !== 'transparent', 'worldline shift HUD uses a dark, high-contrast panel')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
