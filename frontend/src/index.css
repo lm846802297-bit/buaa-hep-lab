@@ -1838,9 +1838,16 @@ html[data-bg-style="clouds-static"] body {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-:root[data-color-scheme="quiet-research"] .sidebar-edge-trigger,
-:root[data-color-scheme="quiet-research"] .pin-anchor-wrapper {
+:root[data-color-scheme="quiet-research"] .sidebar-edge-trigger {
   display: none !important;
+}
+/* Keep the pin control available when the rail expands or is pinned.
+   Only hide it in the compact, unpinned icon rail. */
+:root[data-color-scheme="quiet-research"] .forecast-sidebar.is-collapsed .pin-anchor-wrapper {
+  display: none !important;
+}
+:root[data-color-scheme="quiet-research"] .forecast-sidebar:not(.is-collapsed) .pin-anchor-wrapper {
+  display: flex !important;
 }
 :root[data-color-scheme="quiet-research"] .forecast-sidebar.is-collapsed,
 :root[data-color-scheme="quiet-research"] .forecast-sidebar.is-peeking,
@@ -2460,4 +2467,19 @@ html[data-bg-style="clouds-static"] body {
     transition-duration: .01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Quiet Research must preserve the selected glass style instead of letting its
+   paper-card defaults turn liquid/frosted modes into no-ops. The translucent
+   surface is a CSS fallback when the WebGL liquid renderer is unavailable. */
+:root[data-color-scheme="quiet-research"][data-glass-style="liquid"] .glass-card,
+:root[data-color-scheme="quiet-research"][data-glass-style="frosted"] .glass-card {
+  background: color-mix(in srgb, var(--panel) 78%, transparent);
+  border-color: color-mix(in srgb, var(--line) 78%, transparent);
+  backdrop-filter: blur(20px) saturate(135%);
+  -webkit-backdrop-filter: blur(20px) saturate(135%);
+}
+:root[data-color-scheme="quiet-research"][data-glass-style="liquid"] .glass-card:hover,
+:root[data-color-scheme="quiet-research"][data-glass-style="frosted"] .glass-card:hover {
+  background: color-mix(in srgb, var(--raised) 84%, transparent);
 }
