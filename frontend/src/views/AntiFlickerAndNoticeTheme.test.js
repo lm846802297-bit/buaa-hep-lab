@@ -39,10 +39,10 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
   })
 
   it('preserves the original collapsed icon rail in Quiet Research', () => {
-    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"] .app-shell.has-sidebar.sidebar-collapsed {\r\n  padding-left: 88px;')
-    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"] .forecast-sidebar.is-collapsed {\r\n  width: 88px;')
+    expect(indexCss).toMatch(/:root\[data-color-scheme="quiet-research"\] \.app-shell\.has-sidebar\.sidebar-collapsed\s*\{\s*padding-left:\s*88px;/)
+    expect(indexCss).toMatch(/:root\[data-color-scheme="quiet-research"\] \.forecast-sidebar\.is-collapsed\s*\{\s*width:\s*88px;/)
     expect(indexCss).toContain(':root[data-color-scheme="quiet-research"] .forecast-sidebar.is-floating,')
-    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"] .forecast-sidebar.is-collapsed .iso-pro .iso-text {\r\n  display: none;')
+    expect(indexCss).toMatch(/:root\[data-color-scheme="quiet-research"\] \.forecast-sidebar\.is-collapsed \.iso-pro \.iso-text\s*\{\s*display:\s*none;/)
   })
 
   it('allows dynamic and local backgrounds when Quiet Research is selected', () => {
