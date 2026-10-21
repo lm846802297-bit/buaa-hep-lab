@@ -467,7 +467,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
   .research-question-grid { grid-template-columns:1fr; }
   .relation-card { padding:18px; }
   .relation-formula { font-size:11px; }
-  .topic-breadcrumb { margin-bottom:28px; }
+  .topic-breadcrumb { margin-bottom:28px; padding-right:56px; }
   .topic-hero { padding:26px 22px; }
   .topic-intro,.topic-section>p:not(.eyebrow) { font-size:14px; }
   .topic-publications li { gap:12px; }

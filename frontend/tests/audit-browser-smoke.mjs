@@ -203,6 +203,20 @@ try {
   check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline research-topic detail has no desktop horizontal overflow')
   await page.screenshot({ path: resolve(output, 'worldline-1440-topic-dark.png'), fullPage: true })
   await page.setViewportSize({ width: 390, height: 900 })
+  const mobileTopicBreadcrumb = await page.evaluate(() => {
+    const current = document.querySelector('.topic-breadcrumb [aria-current="page"]')
+    const tuner = document.querySelector('.public-theme-trigger')
+    const breadcrumb = document.querySelector('.topic-breadcrumb')
+    if (!current || !tuner || !breadcrumb) return null
+    const currentRect = current.getBoundingClientRect()
+    const tunerRect = tuner.getBoundingClientRect()
+    return {
+      overlapsTuner: currentRect.right > tunerRect.left && currentRect.left < tunerRect.right && currentRect.bottom > tunerRect.top && currentRect.top < tunerRect.bottom,
+      reservedRight: Number.parseFloat(getComputedStyle(breadcrumb).paddingRight)
+    }
+  })
+  check(Boolean(mobileTopicBreadcrumb) && !mobileTopicBreadcrumb.overlapsTuner, 'mobile topic breadcrumb never overlaps the floating theme tuner')
+  check(Number(mobileTopicBreadcrumb?.reservedRight) >= 56, 'mobile topic breadcrumb reserves space for the floating theme tuner')
   check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline research-topic detail fits the 390px viewport')
   await page.screenshot({ path: resolve(output, 'worldline-390-topic-dark.png'), fullPage: true })
   await page.setViewportSize({ width: 1440, height: 900 })
