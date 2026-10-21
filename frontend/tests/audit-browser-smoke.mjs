@@ -226,6 +226,56 @@ try {
     }), `in-page navigation aligns the selected section near the top at ${width}px`)
     await page.waitForFunction(() => document.querySelector('.topic-local-nav a[aria-current="location"]')?.getAttribute('href') === '#topic-assumptions')
     check(await page.locator('.topic-local-nav a[aria-current="location"]').getAttribute('href') === '#topic-assumptions', `topic directory highlights the selected section at ${width}px`)
+    check(
+      await page.locator('.topic-breadcrumb-home').isVisible()
+        && await page.locator('.topic-breadcrumb-home').getAttribute('href') === '/',
+      `breadcrumb exposes a visible home link at ${width}px`,
+    )
+    check(
+      await page.locator('.topic-sidebar-home').isVisible()
+        && await page.locator('.topic-sidebar-home').getAttribute('href') === '/',
+      `topic directory exposes a visible home link at ${width}px`,
+    )
+
+    // A sequence of in-page directory clicks must replace the current fragment,
+    // not create a stack of section entries that trap the browser Back button.
+    if (width <= 980) {
+      await page.locator('.topic-sidebar-toggle').click()
+      check(
+        await page.locator('.topic-local-nav').evaluate(el => el.classList.contains('is-open')),
+        `topic directory reopens for history regression at ${width}px`,
+      )
+    }
+    await page.locator('.topic-local-nav a[href="#topic-workflow"]').click()
+    await page.waitForFunction(() => location.hash === '#topic-workflow')
+    check(
+      new URL(page.url()).hash === '#topic-workflow',
+      `second topic directory selection updates the fragment at ${width}px`,
+    )
+    await page.goBack()
+    await page.waitForURL(url => url.pathname === '/' && url.hash === '', { timeout: 10000 })
+    check(
+      new URL(page.url()).pathname === '/' && new URL(page.url()).hash === '',
+      `browser Back leaves the topic after multiple directory clicks at ${width}px`,
+    )
+
+    // Re-enter the topic so the remaining layout checks still run against a
+    // fresh topic navigation, not a page restored from the history stack.
+    const reentryLink = page.locator('.topic-guide-entry').first()
+    await reentryLink.scrollIntoViewIfNeeded()
+    check(
+      await reentryLink.getAttribute('href') === '/research/dark',
+      `topic can be reopened from the homepage after browser Back at ${width}px`,
+    )
+    await reentryLink.click()
+    await page.waitForURL(url => url.pathname === '/research/dark', { timeout: 10000 })
+    await page.locator('.research-topic-page').waitFor({ timeout: 10000 })
+    await page.waitForFunction(() => window.scrollY < 5)
+    check(
+      await page.evaluate(() => window.scrollY < 5),
+      `reopened topic starts at the top after browser Back at ${width}px`,
+    )
+
     if (stickyExpected) {
       const sidebarFitsViewport = await page.waitForFunction(() => {
         const element = document.querySelector('.topic-sidebar')
