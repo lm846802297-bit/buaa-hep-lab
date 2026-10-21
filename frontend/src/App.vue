@@ -34,20 +34,14 @@ const isAssistant = computed(() => route.path === '/assistant')
 const isDemo = computed(() => isDemoMode())
 const isExcludedRoute = computed(() => isPublic.value || ['/setup', '/login', '/quick-share'].includes(route.path))
 
-// Keep public reading routes immediate and deterministic. Identify the outgoing
-// element itself because route meta can already describe the destination when
-// Vue starts the out-in transition.
-function isPublicPageElement(el) {
-  return ['lab-public', 'research-topic-page', 'people-page', 'events-page']
-    .some(className => el?.classList?.contains(className))
-}
+const isPublicPageElement = el => el.matches('.lab-public,.research-topic-page,.people-page,.events-page')
 function enterRoutePage(el, done) {
-  if (isPublic.value || isPublicPageElement(el)) { done(); return }
-  enterPage(el, done)
+  if (isPublic.value || isPublicPageElement(el)) done()
+  else enterPage(el, done)
 }
 function leaveRoutePage(el, done) {
-  if (isPublic.value || isPublicPageElement(el)) { done(); return }
-  leavePage(el, done)
+  if (isPublic.value || isPublicPageElement(el)) done()
+  else leavePage(el, done)
 }
 
 const isPinned = ref(localStorage.getItem('sidebar_pinned') === 'true')
