@@ -18,14 +18,14 @@
 <g fill="#b9e9f5" fill-opacity=".65"><circle cx="0" cy="50" r="3"/><circle cx="150" cy="50" r="3"/></g>
 </g>
 <g transform="translate(570 285)" fill="none"><path d="M0 0H390M0 0V-90" stroke="#9ab8c9" stroke-opacity=".5"/><path d="M0 -3C35 -5 55 -18 80 -46S120 -85 150 -59 200 -12 235 -29 285 -68 315 -45 360 -7 390 -3" stroke="#63d7ec" stroke-width="2.4"/><path d="M0 -3C35 -4 55 -13 80 -35S120 -68 150 -48 200 -11 235 -24 285 -52 315 -37 360 -6 390 -3" stroke="#ffc477" stroke-opacity=".8" stroke-width="1.6" stroke-dasharray="5 4"/></g>
-<g fill="#9bddec" font-family="sans-serif" font-size="13" opacity=".8"><text x="300" y="38">z</text><text x="460" y="210">x</text><text x="208" y="292">y</text><text x="965" y="295">θ</text></g>
+<g fill="#9bddec" font-family="sans-serif" font-size="13" opacity=".8"><text x="300" y="75">z</text><text x="460" y="210">x</text><text x="208" y="292">y</text><text x="965" y="295">θ</text></g>
 
 <g font-family="Arial, Helvetica, sans-serif" font-weight="500" paint-order="stroke" stroke="#07111c" stroke-width="3" stroke-linejoin="round">
-<text x="34" y="34" fill="#d9f7ff" font-size="16" font-weight="700" stroke="#07111c" stroke-width="3">QUANTUM METROLOGY</text>
-<text x="220" y="356" fill="#a8eafa" font-size="13" stroke="#07111c" stroke-width="3">Bloch Sphere</text>
+<text x="34" y="70" fill="#d9f7ff" font-size="16" font-weight="700" stroke="#07111c" stroke-width="3">QUANTUM METROLOGY</text>
+<text x="220" y="320" fill="#a8eafa" font-size="13" stroke="#07111c" stroke-width="3">Bloch Sphere</text>
 <text x="373" y="106" fill="#65e5ce" font-size="13" stroke="#07111c" stroke-width="3">Quantum State</text>
 <text x="605" y="254" fill="#ffd18b" font-size="13" stroke="#07111c" stroke-width="3">Spin Correlations</text>
-<text x="690" y="348" fill="#a8eafa" font-size="12" stroke="#07111c" stroke-width="3">Measurement Distribution</text>
-<text x="690" y="371" fill="#ffd18b" font-size="12" stroke="#07111c" stroke-width="3">Fisher Information (conceptual)</text>
+<text x="690" y="310" fill="#a8eafa" font-size="12" stroke="#07111c" stroke-width="3">Measurement Distribution</text>
+<text x="690" y="330" fill="#ffd18b" font-size="12" stroke="#07111c" stroke-width="3">Fisher Information (conceptual)</text>
 </g>
 </svg>
