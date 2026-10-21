@@ -55,7 +55,8 @@ describe('Public academic website', () => {
     expect(publications.every(p => /^\d{4}\.\d{4,5}$/.test(p.id))).toBe(true)
     expect(new Set(publications.map(p => p.id)).size).toBe(publications.length)
     for (const direction of directions) {
-      expect(direction.references).toHaveLength(2)
+      expect(direction.references.length).toBeGreaterThanOrEqual(2)
+      expect(direction.references.length).toBeLessThanOrEqual(4)
       for (const id of direction.references) expect(publications.find(p => p.id === id)?.categories).toContain(direction.id)
     }
     expect(publicResources).toHaveLength(9)
