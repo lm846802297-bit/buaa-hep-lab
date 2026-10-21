@@ -4,8 +4,8 @@
 
 ## 总则
 
-1. **图像模型不负责绘制最终文字。** 可见文字直接写入 SVG 的 `<text>` / `<tspan>`，从而可以逐字检查拼写、希腊字母和下标。
-2. **可见文字使用白名单。** `frontend/scripts/topic-illustration-terms.json` 是自动化检查使用的机器可读基准；新增标签必须先更新清单并审查物理含义。
+1. **最终文字由代码排版并可逐字检查。** 桌面插图中的标题与对象标签由 SVG 的 `<text>` / `<tspan>` 手工编写；为避免手机端缩小后难以阅读，移动端隐藏 SVG 小字号标签，改由 `ResearchTopicView.vue` 的 `topicVisuals[*].labels` 以 HTML 文本呈现。桌面 SVG 文字与移动端 HTML 标签是两组不同的可见文本，必须分别核对。
+2. **可见文字使用分层白名单。** `frontend/scripts/topic-illustration-terms.json` 是自动化检查使用的机器可读基准：`visibleText` 精确核对 SVG 文字，`mobileLabels` 精确核对移动端 HTML 标签及顺序，`approvedTerms` 则核对移动端标签是否属于已审查术语。新增或改名标签必须同步更新清单并审查物理含义；不能只修改 Vue 模板。
 3. **没有数据就不画成数据。** 五张图中的曲线、网格、颜色和探测器形状均为概念构图，不是实验事件显示、数值求解、拟合结果或定量预测。页面图注也明确说明这一点。
 4. **不在插图里放未经核查的复杂公式。** 五张图使用少量手工编写的英文标题和对象标签；中微子图只保留 `ν_e`、`ν_μ`、`ν_τ`、`ν_1`、`ν_2`、`ν_3` 与 `L/E` 等基础符号；量子计量图的 `x`、`y`、`z` 是 Bloch 球坐标示意，`θ` 是测量分布横轴的示意标记。标签不承载任何数值预测。
 5. **符号约定：** 中微子味态写作 `ν_e`、`ν_μ`、`ν_τ`；质量本征态写作 `ν_1`、`ν_2`、`ν_3`。SVG 使用 `<tspan baseline-shift="sub">` 实际排版下标，不能把下标依赖字体猜测或拼成普通基线字符。插图的矩阵区只标为 `PMNS MIXING MATRIX`，不显示或暗示任何矩阵元数值；在正文公式中，PMNS 矩阵可按规范记作 `U_PMNS`。
@@ -25,6 +25,7 @@
 
 - `frontend/scripts/check-topic-illustrations.mjs` 使用 Python 标准库 XML 解析器检查 SVG 是否为良构 XML。
 - 校验每张 SVG 的 `title`、`desc`、可见文字、下标标记、唯一 ID 和 `aria-labelledby`。
+- 精确比较 `ResearchTopicView.vue` 中每个专题的移动端 `labels` 数组与清单的 `mobileLabels`（包括顺序），并要求每个标签均能在 `approvedTerms` 中找到。
 - 校验专题页面的 `alt` 文本与机器可读清单一致。
 - `npm test` 与 `npm run build` 均会执行插图检查；浏览器烟测会检查五张图在实际页面中均成功加载。
 - 若物理图意发生变化，必须同时更新 SVG、机器可读清单、此文档及测试，不能只改其中一项。
