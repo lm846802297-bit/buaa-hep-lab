@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import os from 'node:os'
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { cases, costs, operations, runOperation } from './core.mjs'
+import { cases, costs, operations } from './core.mjs'
 import worker from './worker.mjs'
 
 const { values } = parseArgs({ options: {
