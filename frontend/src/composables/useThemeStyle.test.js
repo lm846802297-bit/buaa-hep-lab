@@ -88,6 +88,40 @@ describe('useThemeStyle', () => {
     expect(document.documentElement.setAttribute).toHaveBeenCalledWith('data-bg-type', 'galaxy')
   })
 
+  it('applies every appearance card option and persists its selected ID', async () => {
+    const {
+      useThemeStyle,
+      colorSchemes,
+      bgOptions,
+      glassOptions,
+      currentColorScheme,
+      currentBgType,
+      currentGlassStyle
+    } = await import('./useThemeStyle')
+    const { setColorScheme, setBgType, setGlassStyle } = useThemeStyle()
+
+    for (const scheme of colorSchemes) {
+      setColorScheme(scheme.id)
+      expect(currentColorScheme.value).toBe(scheme.id)
+      expect(store['laborbit_color_scheme']).toBe(scheme.id)
+      expect(attrs['data-color-scheme']).toBe(scheme.id)
+    }
+
+    for (const bg of bgOptions) {
+      setBgType(bg.id)
+      expect(currentBgType.value).toBe(bg.id)
+      expect(store['laborbit_bg_type']).toBe(bg.id)
+      expect(attrs['data-bg-type']).toBe(bg.id)
+    }
+
+    for (const glass of glassOptions) {
+      setGlassStyle(glass.id)
+      expect(currentGlassStyle.value).toBe(glass.id)
+      expect(store['laborbit_glass_style']).toBe(glass.id)
+      expect(attrs['data-glass-style']).toBe(glass.id)
+    }
+  })
+
   it('keeps a selected workspace theme while public routes temporarily use Quiet Research', async () => {
     store['laborbit_color_scheme'] = 'obsidian-gray'
     store['laborbit_bg_type'] = 'galaxy'
