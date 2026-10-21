@@ -218,6 +218,10 @@ try {
     await page.locator('.topic-all-guides').click()
     await page.locator('#research-guides').waitFor()
     await page.waitForFunction(() => location.hash === '#research-guides')
+    await page.waitForFunction(() => {
+      const top = document.querySelector('#research-guides')?.getBoundingClientRect().top
+      return top != null && top >= 0 && top < 200
+    })
     check(await page.locator('#research-guides').evaluate(el => {
       const top = el.getBoundingClientRect().top
       return top >= 0 && top < 200
