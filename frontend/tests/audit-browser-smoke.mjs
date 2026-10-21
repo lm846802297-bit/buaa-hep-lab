@@ -133,6 +133,7 @@ try {
   await page.screenshot({ path: resolve(output, 'worldline-1440-cursor-field.png') })
   await page.mouse.click(700, 150)
   await page.waitForTimeout(80)
+  check(await particleCanvas.evaluate(el => getComputedStyle(el).pointerEvents === 'none'), 'particle field never intercepts real page clicks')
   await page.screenshot({ path: resolve(output, 'worldline-1440-click-pulse.png') })
   await page.setViewportSize({ width: 390, height: 900 })
   check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline skin fits the 390px viewport without horizontal overflow')
