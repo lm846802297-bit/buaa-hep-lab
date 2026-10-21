@@ -6,7 +6,7 @@ export const researchTopicDetails = {
     mechanisms: [
       {
         title: '热遗迹、冻结与共湮灭',
-        label: 'EARLY-UNIVERSE COSMOLOGY', formula: 'Ωχ h² ≈ 0.12  |  ⟨σ_eff v⟩',
+        label: 'EARLY-UNIVERSE COSMOLOGY', formula: 'Ωχ h² ≈ 0.12（观测基准）; Ωχ ∝ 1/⟨σ_eff v⟩（标准热遗迹近似）',
         body: '在标准热史中，暗物质与热浴的反应率随宇宙膨胀下降，化学退耦后留下今日丰度。若有质量接近的暗态，次轻态与暗物质的共湮灭可能显著改变有效反应率；只计算单一粒子的湮灭截面可能不够。',
         checks: ['说明采用的宇宙学热史和自由度', '区分目标丰度、次主导组分与过量丰度', '记录共湮灭态的质量差与耦合']
       },
@@ -90,7 +90,7 @@ export const researchTopicDetails = {
     lead: '相变与引力波研究需要从有限温有效势和相变动力学出发，再将相变参数映射到引力波谱。只有模型确实产生满足条件的一阶相变时，才适合讨论相应的泡壁和引力波源。',
     mechanisms: [
       { title: '有限温有效势与相变类型', label: 'FINITE-TEMPERATURE FIELD THEORY', formula: 'V_eff(φ, T)', body: '需要分析有效势随温度的演化、相的局部/全局稳定性和临界温度，并区分临界、成核与相变完成。标准模型 125 GeV 希格斯对应的电弱热演化是 crossover，而不是一阶相变。', checks: ['注明有效势阶数、规范与重整化方案', '区分临界温度和成核温度', '验证真空转变是否实际完成'] },
-      { title: '泡成核与热力学参数', label: 'BUBBLE NUCLEATION', formula: 'α = Δρ / ρ_rad  ;  β/H* = T* d(S₃/T)/dT |T*', body: '引力波预测常用 α、β/H* 和泡壁速度等量概括相变强度与时间尺度。它们来自模型势能、反弹解及流体假设，不应作为与模型无关的自由数字。', checks: ['记录反弹作用量与成核判据', '说明 α、β/H* 的定义与温度', '检查泡壁速度和流体处理假设'] },
+      { title: '泡成核与热力学参数', label: 'BUBBLE NUCLEATION', formula: 'α = Δρ / ρ_rad  ;  β/H* ≃ Tₙ d(S₃/T)/dT |Tₙ', body: '引力波预测常用 α、β/H* 和泡壁速度等量概括相变强度与时间尺度。它们来自模型势能、反弹解及流体假设，不应作为与模型无关的自由数字。', checks: ['记录反弹作用量与成核判据', '说明 α、β/H* 的定义与温度', '检查泡壁速度和流体处理假设'] },
       { title: '引力波源与多信使', label: 'GRAVITATIONAL-WAVE SOURCES', formula: 'Ω_GW(f) = Σ_source Ω_source(f)', body: '声波、湍流和泡壁碰撞的贡献取决于相变动力学与源项建模；频谱峰值、幅度和可探测性均具有模型依赖性。若同一模型有新粒子信号，可与对撞机搜索互补。', checks: ['标明采用的源项模型与适用范围', '区分理论谱、仪器灵敏度与实际观测', '把 PTA 与空间干涉仪的频段/假设分开讨论'] }
     ],
     workflow: [
@@ -110,7 +110,7 @@ export const researchTopicDetails = {
   precision: {
     lead: '量子计量学研究的是量子态及其参数依赖所允许的信息上限，以及真实实验可观测量能够保留多少信息。理论界限、有限样本统计精度和最终实验不确定度需要分层报告。',
     mechanisms: [
-      { title: '量子 Fisher 信息与 Cramér–Rao 界', label: 'QUANTUM INFORMATION', formula: 'Δθ ≥ 1 / √(N F_Q)', body: '量子 Fisher 信息刻画量子态对参数变化的可辨识度，并给出在相应正则条件下的理想精度界。该界不保证某个具体测量、有限样本估计器或真实探测器可以达到。', checks: ['说明参数化、态和量子 Fisher 信息定义', '检查估计器无偏性等适用条件', '分开写理想界与可实现测量'] },
+      { title: '量子 Fisher 信息与 Cramér–Rao 界', label: 'QUANTUM INFORMATION', formula: 'Var(θ) ≥ 1 / (N F_Q)（独立同分布探针的单参数界）', body: '量子 Fisher 信息刻画量子态对参数变化的可辨识度，并给出在相应正则条件下的理想精度界。该界不保证某个具体测量、有限样本估计器或真实探测器可以达到。', checks: ['说明参数化、态和量子 Fisher 信息定义', '检查估计器无偏性等适用条件', '分开写理想界与可实现测量'] },
       { title: '自旋密度矩阵与关联', label: 'SPIN CORRELATIONS', formula: 'dσ/dΩ ∝ Tr[ρ_spin A(Ω)]', body: '在顶夸克等过程里，自旋密度矩阵和角分布将耦合信息编码在关联观测量中。基底选择、不可见自由度和运动学切会影响实际保留的信息。', checks: ['给出自旋基底与归一化', '核对可测角变量和接受度', '比较不同观测量的信息损失'] },
       { title: '从理想信息到实验精度', label: 'REALISTIC SENSITIVITY', formula: 'σ_θ ∝ 1 / √N  (ideal statistical scaling)', body: '有限积分亮度、背景、探测器响应、事件重建和系统误差都会降低实际灵敏度。对比研究应尽可能在相同事件样本、参数定义和统计假设下进行。', checks: ['报告样本量和统计模型', '列出主要系统误差来源', '将可达精度与预期排除/发现能力区分'] }
     ],
