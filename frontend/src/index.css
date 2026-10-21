@@ -3002,6 +3002,19 @@ html[data-bg-style="clouds-static"] body {
   overflow: hidden;
   background: color-mix(in srgb, var(--worldline-cyan) 12%, transparent);
 }
+/* Pin the HUD to the semantic readout phase instead of relying on wall-clock animation progress. */
+.worldline-shift-overlay[data-phase="readout"] .worldline-shift-overlay__hud {
+  animation: none;
+  opacity: 1;
+}
+.worldline-shift-overlay[data-phase="decay"] .worldline-shift-overlay__hud {
+  animation: worldline-hud-decay .58s ease-out both;
+}
+@keyframes worldline-hud-decay {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, -50%) scale(.985); }
+}
+
 .worldline-shift-overlay__meter > span {
   display: block;
   width: 100%;

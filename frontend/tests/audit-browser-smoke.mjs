@@ -93,24 +93,6 @@ try {
     window.__worldlinePhaseLog = []
     window.__worldlinePhaseListener = event => {
       window.__worldlinePhaseLog.push(event.detail)
-      if (event.detail !== 'readout') return
-      // Sample structure and timeline state at the phase boundary. The browser may
-      // resume this callback after a compositor animation has advanced or completed,
-      // so instantaneous opacity is deliberately not an acceptance criterion.
-      const overlay = document.querySelector('.worldline-shift-overlay')
-      const backdrop = document.querySelector('.worldline-technical-backdrop')
-      const hud = overlay?.querySelector('.worldline-shift-overlay__hud')
-      const hudStyle = hud ? getComputedStyle(hud) : null
-      window.__worldlineReadoutSnapshot = {
-        backdropVisible: Boolean(backdrop && backdrop.getBoundingClientRect().width > 0),
-        backdropShifting: Boolean(backdrop?.classList.contains('is-shifting')),
-        ringCount: backdrop?.querySelectorAll('.worldline-backdrop-shift-wave__ring').length || 0,
-        hudVisible: Boolean(hud && hud.getBoundingClientRect().width > 0 && hud.getBoundingClientRect().height > 0),
-        hudAnimationName: hudStyle ? hudStyle.animationName : '',
-        hudAnimationPlayState: hudStyle ? hudStyle.animationPlayState : '',
-        hudBackgroundColor: hudStyle ? hudStyle.backgroundColor : '',
-        overlayClassName: overlay ? overlay.className : ''
-      }
     }
     window.addEventListener('worldline:phase', window.__worldlinePhaseListener)
   })
@@ -118,18 +100,36 @@ try {
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await expect(page.locator('.worldline-shift-overlay')).toHaveClass(/is-timeline-active/, { timeout: 1500 })
   check(await page.locator('.worldline-shift-overlay').evaluate(el => el.classList.contains('is-timeline-active')), 'worldline keyframes start only after the overlay has been rendered')
-  // Do not screenshot before readout: a slow screenshot can block the main thread
-  // long enough for CSS keyframes to reach their terminal opacity before sampling.
-  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout') && window.__worldlineReadoutSnapshot, null, { timeout: 1500 })
-  const readoutSnapshot = await page.evaluate(() => window.__worldlineReadoutSnapshot || null)
+  // Wait for Vue to reflect the semantic phase in the DOM before checking computed styles.
+  // The HUD is explicitly held visible for readout and then receives its own decay animation.
+  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout'), null, { timeout: 1500 })
+  await expect(page.locator('.worldline-shift-overlay')).toHaveAttribute('data-phase', 'readout', { timeout: 1500 })
+  const readoutSnapshot = await page.evaluate(() => {
+    const overlay = document.querySelector('.worldline-shift-overlay')
+    const backdrop = document.querySelector('.worldline-technical-backdrop')
+    const hud = overlay?.querySelector('.worldline-shift-overlay__hud')
+    const hudStyle = hud ? getComputedStyle(hud) : null
+    return {
+      backdropVisible: Boolean(backdrop && backdrop.getBoundingClientRect().width > 0),
+      backdropShifting: Boolean(backdrop?.classList.contains('is-shifting')),
+      ringCount: backdrop?.querySelectorAll('.worldline-backdrop-shift-wave__ring').length || 0,
+      hudVisible: Boolean(hud && hud.getBoundingClientRect().width > 0 && hud.getBoundingClientRect().height > 0),
+      hudOpacity: hudStyle ? Number(hudStyle.opacity) : null,
+      hudAnimationName: hudStyle ? hudStyle.animationName : '',
+      hudBackgroundColor: hudStyle ? hudStyle.backgroundColor : '',
+      overlayClassName: overlay ? overlay.className : ''
+    }
+  })
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-readout.png') })
   check(Boolean(readoutSnapshot?.backdropVisible), 'Worldline Console enables the clockwork and scientific-drawing background')
   check(Boolean(readoutSnapshot?.backdropShifting), 'worldline transition activates the technical backdrop during the readout phase')
   check(readoutSnapshot?.ringCount === 2, 'worldline transition draws two expanding instrument-wave rings')
   check(Boolean(readoutSnapshot?.hudVisible), 'worldline shift HUD is visible in the readout frame')
-  check(Boolean(readoutSnapshot?.hudAnimationName?.includes('worldline-hud-fade')), `worldline shift HUD has its own opacity timeline (computed animation: ${readoutSnapshot?.hudAnimationName || 'none'})`)
-  check(readoutSnapshot?.hudAnimationPlayState === 'running', `worldline HUD animation is running during readout (play state: ${readoutSnapshot?.hudAnimationPlayState || 'missing'}, overlay: ${readoutSnapshot?.overlayClassName || 'missing'})`)
+  check(readoutSnapshot?.hudAnimationName === 'none', `worldline HUD is phase-locked and not racing a wall-clock fade during readout (animation: ${readoutSnapshot?.hudAnimationName || 'none'})`)
+  check(Number(readoutSnapshot?.hudOpacity) >= 0.98, `worldline HUD is fully readable in the readout phase (opacity: ${readoutSnapshot?.hudOpacity})`)
+  await expect(page.locator('.worldline-shift-overlay')).toHaveAttribute('data-phase', 'decay', { timeout: 1500 })
+  await expect.poll(() => page.locator('.worldline-shift-overlay__hud').evaluate(el => getComputedStyle(el).animationName)).toBe('worldline-hud-decay')
   check(readoutSnapshot?.hudBackgroundColor !== 'rgba(0, 0, 0, 0)' && readoutSnapshot?.hudBackgroundColor !== 'transparent', 'worldline shift HUD uses a dark, high-contrast panel')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
   const worldlineTuner = await page.evaluate(() => {
