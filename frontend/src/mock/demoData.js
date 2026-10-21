@@ -66,7 +66,7 @@ export const DEMO_LIBRARY_PAPERS = DEMO_PAPER_CATALOG.map((p, i) => ({
 }))
 export const DEMO_PENDING_IMPORTS = []
 export const DEMO_TALKS = []
-export const DEMO_EMAILS = ['文献分享使用说明', '组会摘要填写示例'].map((title, i) => ({
+export const DEMO_EMAILS = ['文献分享', '组会摘要', '资料归档', '日历导出'].map((title, i) => ({
   uid: String(i + 1), id: i + 1, subject: `【演示】${title}`, sender_name: '虚构演示通知', sender_email: 'demo@example.invalid',
   date: formatOffsetDate(-i) + 'T08:00:00Z', snippet: '演示邮件，不连接真实邮箱。', body_text: '演示邮件，不连接真实邮箱。',
   body_html: '<p>虚构示例邮件，不连接真实邮箱。</p>', is_read: i > 0, has_attachments: false,
