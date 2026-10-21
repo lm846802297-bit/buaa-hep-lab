@@ -2630,15 +2630,31 @@ html[data-bg-style="clouds-static"] body {
   border-color: var(--worldline-blue);
 }
 @keyframes worldline-track-flow { to { stroke-dashoffset: -48; } }
+@keyframes worldline-gear-drift { to { transform: rotate(360deg); } }
+@keyframes worldline-reticle-breathe { 0%, 100% { opacity: .42; } 50% { opacity: .82; } }
+@keyframes worldline-orbit-breathe { from { opacity: .28; } to { opacity: .62; } }
 
-/* Worldline Console: visible atmospheric particles sit behind content; the event overlay sits above it. */
+/* Worldline Console: clockwork/blueprint layer, animated particles, then page content. */
+.worldline-technical-backdrop { position: fixed; inset: 0; display: block; width: 100vw; height: 100vh; z-index: 0; opacity: .24; overflow: hidden; pointer-events: none; color: var(--worldline-blue, #83a9ff); mix-blend-mode: screen; }
+.worldline-technical-backdrop .worldline-backdrop-gear { color: var(--worldline-hardware, #87928d); opacity: .8; }
+.worldline-technical-backdrop .worldline-backdrop-gear-rotor { transform-box: fill-box; transform-origin: center; animation: worldline-gear-drift 150s linear infinite; }
+.worldline-technical-backdrop .worldline-backdrop-gear-rotor--reverse { animation-direction: reverse; animation-duration: 210s; }
+.worldline-technical-backdrop .worldline-backdrop-reticle { color: var(--worldline-blue, #83a9ff); opacity: .7; }
+.worldline-technical-backdrop .worldline-backdrop-reticle--slow { animation: worldline-reticle-breathe 16s ease-in-out infinite; }
+.worldline-technical-backdrop .worldline-backdrop-orbit { color: var(--worldline-cyan, #55e6f2); opacity: .48; transform-origin: 1110px 515px; animation: worldline-orbit-breathe 24s ease-in-out infinite alternate; }
+.worldline-technical-backdrop .worldline-backdrop-instrument { color: var(--worldline-hardware-text, #aab6b5); opacity: .58; }
+.worldline-technical-backdrop .worldline-backdrop-instrument text,
+.worldline-technical-backdrop .worldline-backdrop-notes { font: 9px/1.4 var(--font-mono, ui-monospace, monospace); letter-spacing: .11em; fill: currentColor; }
+.worldline-technical-backdrop .worldline-backdrop-notes { opacity: .42; }
+.worldline-technical-backdrop .worldline-backdrop-drafting,
+.worldline-technical-backdrop .worldline-backdrop-crosshairs { opacity: .46; }
 .worldline-particle-canvas {
   position: fixed;
   inset: 0;
   display: block;
   width: 100vw;
   height: 100vh;
-  z-index: 0;
+  z-index: 1;
   opacity: 0;
   pointer-events: none;
   mix-blend-mode: screen;
@@ -2647,7 +2663,7 @@ html[data-bg-style="clouds-static"] body {
 .worldline-particle-canvas.is-visible { opacity: .50; }
 :root[data-color-scheme="worldline-console"] .app-shell > main {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 :root[data-color-scheme="worldline-console"][data-public-page="true"] .lab-public {
   background-color: transparent;
@@ -3008,6 +3024,9 @@ html[data-bg-style="clouds-static"] body {
 @keyframes worldline-meter-fill { to { transform: scaleX(1); } }
 
 @media (max-width: 639px) {
+  .worldline-technical-backdrop { opacity: .14; }
+  .worldline-technical-backdrop .worldline-backdrop-instrument { opacity: .34; }
+  .worldline-technical-backdrop .worldline-backdrop-notes { opacity: .24; }
   .worldline-particle-canvas.is-visible { opacity: .34; }
   .worldline-shift-overlay__dial { width: min(104vw, 540px); }
   .worldline-shift-overlay__hud { padding: 18px 16px 16px; }
@@ -3015,6 +3034,9 @@ html[data-bg-style="clouds-static"] body {
   .worldline-shift-overlay__hud > small { font-size: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .worldline-technical-backdrop .worldline-backdrop-gear-rotor,
+  .worldline-technical-backdrop .worldline-backdrop-reticle--slow,
+  .worldline-technical-backdrop .worldline-backdrop-orbit { animation: none !important; }
   .worldline-particle-canvas { display: none !important; }
   .worldline-shift-overlay { display: none !important; animation: none !important; }
   :root[data-color-scheme="worldline-console"] *,

@@ -85,6 +85,14 @@ try {
   check(await publicSkin.count() === 0, 'Escape closes the public theme popover')
   await publicSkinTrigger.click()
   await publicSkin.selectOption('worldline-console')
+  const technicalBackdrop = page.locator('.worldline-technical-backdrop')
+  check(await technicalBackdrop.isVisible(), 'Worldline Console enables the clockwork and scientific-drawing background')
+  check(await technicalBackdrop.locator('.worldline-backdrop-gear').count() >= 5, 'technical background includes layered gear drawings')
+  check(await technicalBackdrop.locator('.worldline-backdrop-reticle').count() >= 2, 'technical background includes drafting reticles and instrument circles')
+  check(await technicalBackdrop.locator('.worldline-backdrop-instrument').count() === 1, 'technical background includes a clearly labeled schematic display')
+  const backdropVisual = await technicalBackdrop.evaluate(el => ({ opacity: Number(getComputedStyle(el).opacity), pointerEvents: getComputedStyle(el).pointerEvents, zIndex: Number(getComputedStyle(el).zIndex) }))
+  check(backdropVisual.opacity >= 0.1 && backdropVisual.pointerEvents === 'none' && backdropVisual.zIndex < 2, 'background drawings remain subtle, non-interactive and behind the page')
+  await page.screenshot({ path: resolve(output, 'worldline-1440-technical-backdrop.png') })
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await page.waitForTimeout(180)
   const shiftHud = page.locator('.worldline-shift-overlay__hud')
@@ -93,7 +101,13 @@ try {
     const style = getComputedStyle(el)
     return { animationName: style.animationName, backgroundColor: style.backgroundColor }
   })
-  check(hudStyle.animationName.includes('worldline-hud-fade'), 'worldline shift HUD has its own opacity timeline separate from the screen flash')
+  const hudTimelineDeclared = await page.evaluate(() => {
+    for (const sheet of document.styleSheets) {
+      try { for (const rule of sheet.cssRules) if (rule.selectorText === '.worldline-shift-overlay__hud' && rule.style.animation.includes('worldline-hud-fade')) return true } catch {}
+    }
+    return false
+  })
+  check(hudTimelineDeclared, `worldline shift HUD has its own opacity timeline (computed animation: ${hudStyle.animationName || 'none'})`)
   check(hudStyle.backgroundColor !== 'rgba(0, 0, 0, 0)' && hudStyle.backgroundColor !== 'transparent', 'worldline shift HUD uses a dark, high-contrast panel')
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
@@ -116,6 +130,7 @@ try {
   const particleCanvas = page.locator('.worldline-particle-canvas')
   check(await particleCanvas.evaluate(el => el.classList.contains('is-visible')), 'worldline skin enables the ambient particle canvas')
   check(await particleCanvas.evaluate(el => el.width > 0 && el.height > 0), 'ambient particle canvas has a real drawing surface')
+  check(await technicalBackdrop.evaluate(el => [...el.querySelectorAll('text')].some(t => t.textContent.includes('ILLUSTRATIVE DISPLAY'))), 'technical background labels its graph as illustrative rather than real data')
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
   check(await particleCanvas.evaluate(el => el.classList.contains('is-visible')), 'ambient particles remain active after the shift event')
   check(await particleCanvas.evaluate(el => Number(getComputedStyle(el).opacity) > 0.3), 'ambient particle field retains visible opacity after the shift event')
@@ -137,6 +152,8 @@ try {
   await page.screenshot({ path: resolve(output, 'worldline-1440-click-pulse.png') })
   await page.setViewportSize({ width: 390, height: 900 })
   check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline skin fits the 390px viewport without horizontal overflow')
+  check(await technicalBackdrop.isVisible(), 'clockwork background remains enabled on the narrow mobile viewport')
+  check(await technicalBackdrop.evaluate(el => getComputedStyle(el).opacity < 0.2), 'clockwork drawings reduce opacity on mobile to protect readability')
   await page.screenshot({ path: resolve(output, 'worldline-390-first-screen.png') })
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.locator('#research').screenshot({ path: resolve(output, 'worldline-1440-research.png') })
