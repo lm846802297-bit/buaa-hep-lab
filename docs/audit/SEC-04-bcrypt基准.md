@@ -63,27 +63,26 @@ node frontend/benchmarks/bcrypt/run.mjs --runtime workerd --samples 50 --warmup 
 
 ## 当前 PR head 的 CI 与可复核基准证据
 
-- 当前 PR head：`d176b77bb0301bfbad435354d83e9c4c750c4b86`。
-- PR 的 GitHub 元数据 base SHA 仍返回旧值 `fb287b4fac1a7c45e02ee3d1e276ebdabf476269`；本次 run 的实际合并测试提交为 `045a2a8a41dc8a3bb6afb4ba9efb69e9e6fc1b5e`，其父提交分别是当时的 `main=596ad2de8fbd2f133d93a44a2332245393df85cf` 与上述 PR head。三者必须分开记录，不能把 artifact revision 当作 PR head。
-- [GitHub Actions run 39542043131](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39542043131) 已完成：`validate=success`、`deploy=skipped`。隔离 Worker 的 Wrangler `--dry-run`、安全回归、构建、浏览器检查和本地基准均通过；没有部署 Cloudflare Worker 或生产站点。
-- `bcrypt-local-evidence` artifact ID `12320285738`，包含 `node.json` 与 `workerd.json`。两份记录的 `environment.revision=045a2a8a41dc8a3bb6afb4ba9efb69e9e6fc1b5e`，与该 run 的合并测试提交一致；每份 1,320 行：1,200 个测量样本、120 次预热、24 个分组、0 次失败。
-- 运行环境：Linux x64（GitHub-hosted runner）；AMD EPYC 9V74 80-Core Processor，报告显示 2 个逻辑 CPU；Node v24.21.0、bcryptjs 3.0.3、Wrangler 4.131.0、workerd 1.20260910.1；compatibility date `2026-09-17`，`nodejs_compat`。
-- 源码 SHA-256（UTF-8，换行统一为 LF）：`core.mjs` = `ed47f24cc7b024cc2864b76920644329993a0a0582fd2579a3fb639477e1f774`；`fixtures.json` = `ac02d2fd5379fc83260564c0cbdffacc43dc914d32a73917b5e9519fcd1d3cf5`；`worker.mjs` = `622be8816fdb6600121db1f7eef5067212c8240543027692adaaf0d1842d5461`；`run.mjs` = `2b42e0cc4a9a44619cf7952d6c40b93500876bd1e578e0a5e5c0e9d7543dabe1`；`wrangler.jsonc` = `469258fa7de68b56e464e4e1a0821bd3479673f36905f2f97e5601819ee48e5b`；`frontend/package-lock.json` = `6343f35eeaecf50c73e99bd56ec19e5dcfd16dc68c88a2fb0a501099ba6e44f8`。
+- 当前 PR head：`c679a24a4d8d176fe355fe7538cd52d9526ef6eb`。
+- [GitHub Actions run 39601665582](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39601665582) 对该 head 的 `validate=success`、`deploy=skipped`；隔离基准未部署，生产站点也未由该 PR run 发布。
+- 同一 head 的独立 FastAPI backend regression run [39601665692](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39601665692) 为 `success`。该套件是独立后端测试，不等同于 Pages 生产 bcrypt CPU 验收。
+- `bcrypt-local-evidence` artifact ID `12346154108`，包含 `node.json` 与 `workerd.json`。两份记录的 `environment.revision=fcf18a738ffc943d472f3c8f97b0d809271d5b98`，与该 PR run 的合并测试提交一致；每份 1,320 行：1,200 个测量样本、120 次预热、24 个分组、0 次失败。PR head、PR base SHA 与合并测试 revision 是不同概念，必须分别记录。
+- 运行环境：Linux x64 GitHub-hosted runner；AMD EPYC 9V74，报告显示 2 个逻辑 CPU；Node v24.21.0、bcryptjs 3.0.3、Wrangler 4.131.0、workerd 1.20260910.1；兼容日期 `2026-09-17`、`nodejs_compat`。
+- 该 artifact 的 cost 6、12-byte 样本（n=50，单位 ms）：
+  
+  | Runtime | Operation | wall p50 | wall p95 | Node process CPU p50 |
+  |---|---|---:|---:|---:|
+  | Node | control | 0.096 | 0.200 | 0.098 |
+  | Node | hash | 5.442 | 5.804 | 5.445 |
+  | Node | compare-match | 5.346 | 5.603 | 5.341 |
+  | Node | compare-mismatch | 5.342 | 5.655 | 5.345 |
+  | workerd | control | 2.094 | 3.271 | 不适用 |
+  | workerd | hash | 7.788 | 9.478 | 不适用 |
+  | workerd | compare-match | 7.627 | 10.511 | 不适用 |
+  | workerd | compare-mismatch | 7.658 | 9.319 | 不适用 |
 
-下表均来自上述 artifact。每组 n=50；每格按“12 字节输入 p50/p95；72 字节输入 p50/p95”列出，单位 ms。n=50 时 p95 估计仍有限，不能把它当作稳定的生产尾延迟。
-
-| Runtime | 操作 | cost 6：12B；72B | cost 7：12B；72B | cost 8：12B；72B |
-|---|---|---:|---:|---:|
-| Node | control wall | 0.092/0.162；0.096/0.176 | 0.101/0.177；0.088/0.155 | 0.090/0.166；0.087/0.155 |
-| Node | hash wall | 4.876/5.359；4.867/5.561 | 9.279/9.708；9.293/10.295 | 18.219/20.160；18.125/18.415 |
-| Node | compare-match wall | 4.794/5.041；4.804/5.124 | 9.207/10.324；9.211/9.616 | 18.095/18.701；18.120/18.611 |
-| Node | compare-mismatch wall | 4.785/4.998；4.790/5.092 | 9.213/9.754；9.213/9.493 | 18.120/18.429；18.098/18.309 |
-| workerd | control wall | 1.258/2.196；1.270/3.025 | 1.241/3.061；1.275/2.481 | 1.244/2.890；1.257/3.767 |
-| workerd | hash wall | 6.142/8.140；6.086/7.471 | 10.677/13.176；10.714/14.372 | 20.009/24.359；19.822/24.785 |
-| workerd | compare-match wall | 6.095/7.982；6.116/7.704 | 10.728/13.088；10.582/13.564 | 20.227/24.144；19.831/24.109 |
-| workerd | compare-mismatch wall | 6.315/7.850；6.113/8.253 | 10.714/13.872；10.719/13.888 | 19.680/24.144；19.965/24.499 |
-
-Node 的 `process.cpuUsage` p50 与 wall 近似：hash cost 6/7/8 分别约为 4.87/9.30/18.18 ms；control 约为 0.09–0.10 ms。这是 CI Node 进程的 CPU 计数，不是 Cloudflare Worker CPU。workerd 数据测的是调用端包围 `dispatchFetch` 的 wall time，包含调度、IPC、序列化与响应解析；不能把它当成纯计算 CPU。此组数据可说明在该 runner 上 cost 增大显著增加本地计算工作量，但不能证明 Cloudflare CPU 预算充足，也不能据此提高生产 cost。
+  Node CPU 是本地 Node 进程级计数；workerd 数值是调用端包围 `dispatchFetch` 的 wall time。两者都不是 Cloudflare 线上 invocation CPU。control 与 bcrypt 组的差值只用于说明本地同路径的增量工作量，不能直接换算为生产 CPU 预算。
+- 本地 CI 证据只证明该 SHA 上基准与安全回归能够运行，**不证明 Cloudflare 生产套餐/CPU 限额、隔离 Worker 调用级 CPU 或完整认证路径已经验收**。生产 bcrypt cost 继续保持 6，SEC-04 继续开放。
 
 ### 当前 Pages 认证路径盘点
 
