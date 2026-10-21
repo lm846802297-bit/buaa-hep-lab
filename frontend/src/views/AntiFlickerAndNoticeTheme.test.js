@@ -38,6 +38,26 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(styleViewVue).toContain('handleColorSchemeSelect(scheme)')
   })
 
+  it('preserves the original collapsed icon rail in Quiet Research', () => {
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"] .app-shell.has-sidebar.sidebar-collapsed {\r\n  padding-left: 88px;')
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"] .forecast-sidebar.is-collapsed {\r\n  width: 88px;')
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"] .forecast-sidebar.is-floating,')
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"] .forecast-sidebar.is-collapsed .iso-pro .iso-text {\r\n  display: none;')
+  })
+
+  it('allows dynamic and local backgrounds when Quiet Research is selected', () => {
+    const appVue = readFileSync(resolve(__dirname, '../App.vue'), 'utf-8')
+    expect(appVue).toContain("['galaxy', 'vanta-fog', 'custom-local', 'earth-orbit'].includes(currentBgType)")
+    expect(appVue).not.toContain("currentColorScheme !== 'quiet-research'")
+    expect(styleViewVue).toContain('{{ bg.description || bg.subtitle }}')
+  })
+
+  it('keeps the glass-style overlay active under Quiet Research theme specificity', () => {
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="frosted"] .app-shell .glass-card')
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="liquid"] .app-shell .glass-card')
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="solid"] .app-shell .glass-card')
+  })
+
   it('defines --panel-solid in :root and classic-cyan', () => {
     expect(indexCss).toContain('--panel-solid: #0c0a1a;')
     expect(indexCss).toContain('--panel-solid: #152f38;')
