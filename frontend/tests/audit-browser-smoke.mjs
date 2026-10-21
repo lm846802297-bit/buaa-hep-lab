@@ -276,6 +276,16 @@ try {
       `reopened topic starts at the top after browser Back at ${width}px`,
     )
 
+    // Recreate the reading position used by the existing sticky-sidebar test.
+    if (width <= 980) await page.locator('.topic-sidebar-toggle').click()
+    await page.locator('.topic-local-nav a[href="#topic-assumptions"]').click()
+    await page.waitForFunction(() => location.hash === '#topic-assumptions')
+    await page.waitForFunction(() => {
+      const top = document.querySelector('#topic-assumptions')?.getBoundingClientRect().top
+      return top != null && top >= 0 && top < 140
+    })
+    await page.waitForFunction(() => document.querySelector('.topic-local-nav a[aria-current="location"]')?.getAttribute('href') === '#topic-assumptions')
+
     if (stickyExpected) {
       const sidebarFitsViewport = await page.waitForFunction(() => {
         const element = document.querySelector('.topic-sidebar')
