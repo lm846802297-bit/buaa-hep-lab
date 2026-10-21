@@ -470,7 +470,7 @@ function triggerShift() {
   shockwaves = []
   impactFlashes = []
 
-  // Wait for Vue to mount the overlay, then start one coordinated 1.32 s timeline.
+  // Wait for Vue to mount the overlay, then start one coordinated 1.8 s timeline.
   // This prevents a slow SVG/layout pass from consuming the early phases before they can paint.
   nextTick(() => {
     if (!mounted || !isShifting.value || reducedMotion.value || shiftKey.value !== currentShiftKey) return
@@ -478,10 +478,10 @@ function triggerShift() {
       shiftStartFrameId = null
       if (!mounted || !isShifting.value || reducedMotion.value || shiftKey.value !== currentShiftKey) return
 
-      scheduleShiftPhase(100, 'propagate')
-      scheduleShiftPhase(260, 'disrupt')
-      scheduleShiftPhase(360, 'readout')
-      scheduleShiftPhase(900, 'decay')
+      scheduleShiftPhase(130, 'propagate')
+      scheduleShiftPhase(350, 'disrupt')
+      scheduleShiftPhase(490, 'readout')
+      scheduleShiftPhase(1220, 'decay')
 
       burstTimerId = window.setTimeout(() => {
         burstTimerId = null
@@ -496,7 +496,7 @@ function triggerShift() {
         shiftTimerId = null
         phaseTimerIds.forEach(timerId => window.clearTimeout(timerId))
         phaseTimerIds = []
-      }, 1320)
+      }, 1800)
       startAnimation()
     })
   })
