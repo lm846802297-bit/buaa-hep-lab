@@ -32,6 +32,8 @@ let lastFrameTime = 0
 let ambientParticles = []
 let burstParticles = []
 let shockwaves = []
+let localPulses = []
+let pointer = { x: 0, y: 0, active: false }
 
 const particleTones = [
   { color: '85, 230, 242', weight: 0.52 },
@@ -67,7 +69,7 @@ function resizeCanvas() {
   if (!context) return
   context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
 
-  const count = width < 640 ? 20 : Math.min(68, Math.max(40, Math.round(width * height / 24000)))
+  const count = width < 640 ? 28 : Math.min(92, Math.max(52, Math.round(width * height / 18000)))
   ambientParticles = Array.from({ length: count }, () => ({
     x: Math.random() * width,
     y: Math.random() * height,
@@ -89,6 +91,16 @@ function drawAmbient(time, delta) {
   for (const particle of ambientParticles) {
     particle.x += particle.vx * delta
     particle.y += particle.vy * delta
+    if (pointer.active) {
+      const dx = particle.x - pointer.x
+      const dy = particle.y - pointer.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+      if (distance > 1 && distance < 145) {
+        const force = (1 - distance / 145) * 1.4 * delta
+        particle.x += (dx / distance) * force
+        particle.y += (dy / distance) * force
+      }
+    }
     if (particle.x < -8) particle.x = width + 8
     if (particle.x > width + 8) particle.x = -8
     if (particle.y < -8) particle.y = height + 8
@@ -113,6 +125,39 @@ function drawAmbient(time, delta) {
     }
   }
 
+  if (pointer.active) {
+    for (const particle of ambientParticles) {
+      const dx = particle.x - pointer.x
+      const dy = particle.y - pointer.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+      if (distance > 1 && distance < 152) {
+        const alpha = (1 - distance / 152) * 0.24
+        ctx.strokeStyle = `rgba(85, 230, 242, ${alpha})`
+        ctx.lineWidth = 0.8
+        ctx.beginPath()
+        ctx.moveTo(pointer.x, pointer.y)
+        ctx.lineTo(particle.x, particle.y)
+        ctx.stroke()
+      }
+    }
+    const radius = 18 + 3 * Math.sin(time * 0.006)
+    ctx.strokeStyle = 'rgba(85, 230, 242, 0.34)'
+    ctx.lineWidth = 0.9
+    ctx.beginPath()
+    ctx.arc(pointer.x, pointer.y, radius, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(pointer.x - 26, pointer.y)
+    ctx.lineTo(pointer.x - 12, pointer.y)
+    ctx.moveTo(pointer.x + 12, pointer.y)
+    ctx.lineTo(pointer.x + 26, pointer.y)
+    ctx.moveTo(pointer.x, pointer.y - 26)
+    ctx.lineTo(pointer.x, pointer.y - 12)
+    ctx.moveTo(pointer.x, pointer.y + 12)
+    ctx.lineTo(pointer.x, pointer.y + 26)
+    ctx.stroke()
+  }
+
   for (const particle of ambientParticles) {
     const pulse = 0.42 + 0.58 * (0.5 + 0.5 * Math.sin(time * 0.001 * particle.pulseSpeed + particle.phase))
     ctx.fillStyle = `rgba(${particle.tone}, ${0.20 + pulse * 0.36})`
@@ -122,6 +167,20 @@ function drawAmbient(time, delta) {
     ctx.arc(particle.x, particle.y, particle.radius * (0.78 + pulse * 0.22), 0, Math.PI * 2)
     ctx.fill()
   }
+  for (let i = localPulses.length - 1; i >= 0; i -= 1) {
+    const pulse = localPulses[i]
+    pulse.radius += 3.4 * delta
+    pulse.life -= 0.032 * delta
+    if (pulse.life <= 0) {
+      localPulses.splice(i, 1)
+      continue
+    }
+    ctx.strokeStyle = `rgba(${pulse.tone}, ${pulse.life * 0.52})`
+    ctx.lineWidth = 1.1
+    ctx.beginPath()
+    ctx.arc(pulse.x, pulse.y, pulse.radius, 0, Math.PI * 2)
+    ctx.stroke()
+  }
   ctx.shadowBlur = 0
   ctx.globalCompositeOperation = 'source-over'
 }
@@ -130,7 +189,7 @@ function createBurst() {
   if (width < 1 || height < 1) resizeCanvas()
   const cx = width / 2
   const cy = height / 2
-  const count = width < 640 ? 54 : 108
+  const count = width < 640 ? 68 : 132
   burstParticles = Array.from({ length: count }, () => {
     const angle = Math.random() * Math.PI * 2
     const speed = 1.8 + Math.random() * (width < 640 ? 4.0 : 6.8)
@@ -252,20 +311,45 @@ function handleMotionPreferenceChange(event) {
 
 function handleVisibilityChange() {
   if (document.visibilityState === 'hidden') {
+    pointer.active = false
     stopAnimation(false)
     return
   }
   if (showCanvas.value) startAnimation()
 }
 
+function handlePointerMove(event) {
+  if (!isWorldlineActive.value || reducedMotion.value || event.pointerType === 'touch') return
+  pointer.x = event.clientX
+  pointer.y = event.clientY
+  pointer.active = true
+}
+
+function handlePointerLeave() {
+  pointer.active = false
+}
+
+function handlePointerDown(event) {
+  if (!isWorldlineActive.value || reducedMotion.value) return
+  localPulses.push({ x: event.clientX, y: event.clientY, radius: 3, life: 1, tone: pickTone() })
+  if (localPulses.length > 6) localPulses.shift()
+  startAnimation()
+}
+
 watch(isWorldlineActive, active => {
   if (!mounted) return
+  if (!active) {
+    pointer.active = false
+    localPulses = []
+  }
   if (active && !reducedMotion.value) startAnimation()
   else if (!active && !isShifting.value && !burstParticles.length && !shockwaves.length) stopAnimation()
 })
 
 watch(reducedMotion, reduced => {
   if (reduced) {
+    pointer.active = false
+    localPulses = []
     if (shiftTimerId !== null && typeof window !== 'undefined') window.clearTimeout(shiftTimerId)
     shiftTimerId = null
     isShifting.value = false
@@ -309,6 +393,9 @@ onMounted(() => {
   }
   visibilityHandler = handleVisibilityChange
   window.addEventListener('resize', resizeHandler, { passive: true })
+  window.addEventListener('pointermove', handlePointerMove, { passive: true })
+  window.addEventListener('pointerdown', handlePointerDown, { passive: true })
+  window.addEventListener('blur', handlePointerLeave)
   document.addEventListener('visibilitychange', visibilityHandler)
   resizeCanvas()
   if (showCanvas.value) startAnimation()
@@ -320,6 +407,9 @@ onBeforeUnmount(() => {
   stopAnimation()
   if (typeof window !== 'undefined') {
     if (resizeHandler) window.removeEventListener('resize', resizeHandler)
+    window.removeEventListener('pointermove', handlePointerMove)
+    window.removeEventListener('pointerdown', handlePointerDown)
+    window.removeEventListener('blur', handlePointerLeave)
     if (mediaQuery && mediaChangeHandler) {
       if (mediaQuery.removeEventListener) mediaQuery.removeEventListener('change', mediaChangeHandler)
       else mediaQuery.removeListener?.(mediaChangeHandler)

@@ -2641,7 +2641,7 @@ html[data-bg-style="clouds-static"] body {
   mix-blend-mode: screen;
   transition: opacity .22s ease;
 }
-.worldline-particle-canvas.is-visible { opacity: .44; }
+.worldline-particle-canvas.is-visible { opacity: .50; }
 :root[data-color-scheme="worldline-console"] .app-shell > main {
   position: relative;
   z-index: 1;
@@ -2949,7 +2949,7 @@ html[data-bg-style="clouds-static"] body {
 @keyframes worldline-meter-fill { to { transform: scaleX(1); } }
 
 @media (max-width: 639px) {
-  .worldline-particle-canvas.is-visible { opacity: .28; }
+  .worldline-particle-canvas.is-visible { opacity: .34; }
   .worldline-shift-overlay__dial { width: min(104vw, 540px); }
   .worldline-shift-overlay__hud { padding: 18px 16px 16px; }
   .worldline-shift-overlay__hud > span,
