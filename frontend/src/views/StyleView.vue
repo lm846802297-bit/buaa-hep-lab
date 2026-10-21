@@ -624,7 +624,7 @@ onMounted(() => {
               <span class="active-dot"></span> 当前生效
             </div>
           </div>
-          <p class="theme-card-desc">{{ bg.description }}</p>
+          <p class="theme-card-desc">{{ bg.description || bg.subtitle }}</p>
           <div class="theme-card-footer">
             <div class="bg-card-hint muted" style="font-size: 11px;">
               <template v-if="bg.id === 'custom-local'">
@@ -1457,9 +1457,9 @@ onMounted(() => {
 }
 
 .anchor-pill.highlight-glass {
-  border-color: rgba(184, 155, 248, 0.4);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
   color: var(--accent);
-  background: var(--glass);
+  background: var(--raised);
 }
 
 .section-title-row {
@@ -1516,23 +1516,14 @@ onMounted(() => {
 
 .theme-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(184, 155, 248, 0.35);
-  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4), 0 0 16px -4px rgba(184, 155, 248, 0.15);
-}
-
-[data-theme-style="vanta-fog"] .theme-card:hover {
-  border-color: rgba(197, 230, 223, 0.35);
-  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4), 0 0 16px -4px rgba(197, 230, 223, 0.15);
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--line));
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.12), 0 0 16px -4px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .theme-card.is-active {
   border-color: var(--accent);
-  background: linear-gradient(135deg, rgba(184, 155, 248, 0.08) 0%, rgba(20, 16, 35, 0.6) 100%);
-  box-shadow: 0 8px 28px -6px rgba(0, 0, 0, 0.5), 0 0 20px -4px var(--accent-glow, rgba(184, 155, 248, 0.3));
-}
-
-[data-theme-style="vanta-fog"] .theme-card.is-active {
-  background: linear-gradient(135deg, rgba(197, 230, 223, 0.08) 0%, rgba(13, 37, 44, 0.6) 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, var(--surface)) 0%, var(--surface) 100%);
+  box-shadow: 0 8px 28px -6px rgba(0, 0, 0, 0.16), 0 0 20px -4px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 .theme-card-header {
