@@ -48,8 +48,8 @@ export const DEMO_SEMINARS = [2, 9, 16, -5, -12].map((offset, i) => {
 export const DEMO_ARXIV_PAPERS = publications.map((p, i) => ({
   id: 301 + i, arxiv_id: p.id, title: p.title, authors: p.authors.join(', '), journal: p.journal, primary_category: 'hep-ph',
   published_date: p.arxivSubmitted, source_url: `https://arxiv.org/abs/${p.id}`, pdf_url: `https://arxiv.org/pdf/${p.id}`,
-  abstract: p.summary, recommender: DEMO_MEMBERS[i % 2], recommended_by: DEMO_MEMBERS[i % 2].name,
-  recommended_at: formatOffsetDate(-2 - i), notes: '演示推荐记录。论文为已核对的公开文献，推荐人与互动为虚构。',
+  abstract: `演示用中文导读（非原文逐字摘要）：${p.summary}`, recommender: DEMO_MEMBERS[i % 2], recommended_by: DEMO_MEMBERS[i % 2].name,
+  recommended_at: formatOffsetDate(-2 - i), notes: '演示推荐记录；摘要为课题组中文导读而非原文逐字摘要。论文来自公开文献，推荐人与互动为虚构。',
   likes_count: 0, user_liked: false, is_liked_by_me: false, read: false, is_read_by_me: false, comments: [],
 }))
 export const DEMO_NOTICES = [{ id: 1, title: '欢迎体验粒子物理科研工作台', content: '组员、组会和交流记录均为演示。真实部署请使用管理员初始化向导。', is_pinned: true, created_by: DEMO_MEMBERS[0].name, created_at: formatOffsetDate(-1), priority: 'normal' }]
@@ -66,7 +66,7 @@ export const DEMO_BOOKS = [
   { title: 'FeynCalc Documentation', authors: 'FeynCalc Collaboration', category: '工具', description: 'Mathematica 中的费曼振幅、Dirac/颜色代数和圈图计算工具文档。', url: 'https://feyncalc.github.io/' },
   { title: 'FeynRules', authors: 'FeynRules Collaboration', category: '工具', description: '从拉格朗日量导出 Feynman rules 并生成模型文件的工具入口。', url: 'https://feynrules.irmp.ucl.ac.be/' },
   { title: 'HEPData', authors: 'HEPData', category: '综述与数据', description: '实验发布的数值数据表与协方差信息入口，适用于可追溯的唯象学重解释。', url: 'https://www.hepdata.net/' },
-].map((book, i) => ({ ...book, id: i + 1, original_title: book.title, tutorial_url: book.url, exercise_url: '', github_url: '', download_url: '', cover_url: '', favorite_count: 0, is_favorited: i < 3, created_at: formatOffsetDate(-10) + 'T10:00:00Z' }))
+].map((book, i) => ({ ...book, id: i + 1, original_title: book.title, tutorial_url: book.url, exercise_url: '', github_url: '', download_url: '', cover_url: '', favorite_count: 0, is_favorited: i < 3 || i === 5, created_at: formatOffsetDate(-10) + 'T10:00:00Z' }))
 const DEMO_SEMINAR_BY_PAPER = Object.fromEntries(seminarPaperIds.map((arxivId, i) => [arxivId, seminarIds[i]]))
 export const DEMO_LIBRARY_PAPERS = publications.map((p, i) => {
   const seminarId = DEMO_SEMINAR_BY_PAPER[p.id] ?? null
