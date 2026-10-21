@@ -1,10 +1,10 @@
 // Non-confidential study notes. Kept out of the approved public homepage.
 // Source checking does not constitute group academic review or independent reproduction.
-export const learningRevision = { version: '0.2', checkedAt: '2026-10-21', status: '学习初稿 · 待学术审核', maintainer: '待课题组指定' }
+export const learningRevision = { version: '0.3', checkedAt: '2026-10-21', status: '学习初稿 · 待学术审核', maintainer: '待课题组指定' }
 
 export const learningSources = [
-  { id: 'pdg', name: 'Particle Data Group', category: '理论与数据', url: 'https://pdg.lbl.gov/', use: '粒子性质、标准模型和实验方法的综述入口。引用具体条目时记录年份、章节和勘误。', checked: '已核对入口' },
-  { id: 'kinematics', name: 'PDG · Kinematics（2025 版）', category: '理论与数据', url: 'https://pdg.lbl.gov/2025/reviews/rpp2025-rev-kinematics.pdf', use: '第 49.3–49.5 节：振幅归一化、相空间、衰变与截面；本指南的运动学公式采用这一版本。', checked: '已核对正文' },
+  { id: 'pdg', name: 'Particle Data Group · Review of Particle Physics 2026', category: '理论与数据', url: 'https://pdg.lbl.gov/2026/', use: '当前版粒子性质、标准模型和实验方法综述入口。引用数值或限制时记录具体版本、条目、数据日期与勘误；不要把上一版数值直接当作当前限制。', checked: '已核对 2026 版官方入口' },
+  { id: 'kinematics', name: 'PDG · Kinematics（2026 版）', category: '理论与数据', url: 'https://pdg.lbl.gov/2026/reviews/rpp2026-rev-kinematics.pdf', use: '第 49.3–49.5 节：不变振幅、粒子衰变与截面；本指南的相空间归一化和两体衰变公式按此版核对。引用时仍应记录具体公式编号和版本。', checked: '已核对 2026 版正文' },
   { id: 'smeft', name: 'Brivio & Trott · SMEFT 综述', category: '理论与数据', url: 'https://arxiv.org/abs/1706.08945', use: '有效场论的能标展开、算符、匹配和重整化群；阅读时核对文中基底与归一化。', checked: '已核对论文记录' },
   { id: 'singlet', name: 'Cline 等 · 实标量暗物质模型', category: '理论与数据', url: 'https://arxiv.org/abs/1306.4710v5', use: 'Z₂ 单态标量与 Higgs 门户的原始研究参考。历史实验限制不作为当前数值；本指南的树级有界条件由所列势能配方得到。', checked: '已核对论文记录 · 约束为历史结果' },
   { id: 'ewpt-lattice', name: 'Nonperturbative study of the electroweak phase transition in the real scalar singlet extended standard model', category: '理论与数据', url: 'https://doi.org/10.1103/PhysRevD.110.115016', use: '非微扰/格点研究参考：约 125 GeV Higgs 的标准模型电弱热演化为 crossover；扩展标量扇区可在部分参数区域出现一阶相变。不能把零温势能稳定性直接当作有限温相变结论。', checked: '已核对期刊记录与摘要' },
