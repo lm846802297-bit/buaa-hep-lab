@@ -48,8 +48,8 @@ export const COLOR_SCHEMES = [
   {
     id: 'worldline-console',
     name: '世界线终端',
-    subtitle: '《命运石之门》视觉语言启发 · 琥珀读数 · 复古科研终端',
-    description: '提取复古电子终端、琥珀色读数与克制的信号干扰；不使用原作角色、标志或美术素材。',
+    subtitle: '冷蓝黑 CRT · 青色磷光 · 电蓝世界线信号',
+    description: '冷色复古电子终端、扫描线、世界线变动与粒子效果；不使用原作角色、标志或美术素材。',
     colors: ['#07111d', '#55e6f2', '#102436'],
     primaryColor: '#55e6f2',
     baseColor: '#07111d',

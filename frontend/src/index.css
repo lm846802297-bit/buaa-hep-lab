@@ -2628,62 +2628,339 @@ html[data-bg-style="clouds-static"] body {
 }
 @keyframes worldline-track-flow { to { stroke-dashoffset: -48; } }
 
-/* Brief, pointer-transparent worldline transition used only by the optional skin. */
+/* Worldline Console: visible atmospheric particles sit behind content; the event overlay sits above it. */
+.worldline-particle-canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  transition: opacity .22s ease;
+}
+.worldline-particle-canvas.is-visible { opacity: .44; }
+:root[data-color-scheme="worldline-console"] .app-shell > main {
+  position: relative;
+  z-index: 1;
+}
+:root[data-color-scheme="worldline-console"][data-public-page="true"] .lab-public {
+  background-color: transparent;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure {
+  isolation: isolate;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure::before {
+  content: "";
+  position: absolute;
+  inset: 4% 2.5% 8%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .46;
+  background:
+    linear-gradient(var(--worldline-cyan) 0 0) left top / 26px 1px no-repeat,
+    linear-gradient(var(--worldline-cyan) 0 0) left top / 1px 26px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) right top / 26px 1px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) right top / 1px 26px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) left bottom / 26px 1px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) left bottom / 1px 26px no-repeat,
+    linear-gradient(var(--worldline-cyan) 0 0) right bottom / 26px 1px no-repeat,
+    linear-gradient(var(--worldline-cyan) 0 0) right bottom / 1px 26px no-repeat;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure .track-hits circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--worldline-cyan) 68%, transparent));
+  animation: worldline-hit-pulse 3.8s ease-in-out infinite;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure .track-hits circle:nth-child(2n) {
+  animation-delay: -1.1s;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-figure .track-hits circle:nth-child(3n) {
+  animation-delay: -2.2s;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-tracks path:nth-child(3n) {
+  stroke: var(--worldline-blue);
+  opacity: .84;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .collision-annotations text:last-child {
+  fill: var(--worldline-cyan);
+}
+@keyframes worldline-hit-pulse {
+  0%, 100% { opacity: .58; }
+  50% { opacity: 1; }
+}
+
+/* Full worldline-shift event: scanline sweep, chromatic fault bands, rotating instrument dial and HUD. */
 .worldline-shift-overlay {
+  --worldline-screen: #07111d;
+  --worldline-cyan: #55e6f2;
+  --worldline-cyan-hot: #c5fbff;
+  --worldline-blue: #83a9ff;
+  --worldline-anomaly: #ff4d86;
   position: fixed;
   inset: 0;
   z-index: 10050;
   overflow: hidden;
+  isolation: isolate;
   pointer-events: none;
   opacity: 0;
-  background: color-mix(in srgb, var(--worldline-screen, #07111d) 10%, transparent);
-  animation: worldline-shift-flash .9s steps(1, end) both;
+  background:
+    radial-gradient(ellipse at center, color-mix(in srgb, var(--worldline-cyan) 13%, transparent), transparent 62%),
+    linear-gradient(115deg, color-mix(in srgb, var(--worldline-screen) 22%, transparent), color-mix(in srgb, var(--worldline-blue) 7%, transparent));
+  animation: worldline-shift-flash 1.32s ease-out both;
 }
 .worldline-shift-overlay::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--worldline-cyan-hot, #c5fbff) 10%, transparent) 0, color-mix(in srgb, var(--worldline-cyan-hot, #c5fbff) 10%, transparent) 1px, transparent 1px, transparent 4px);
-  animation: worldline-scanline .9s ease-out both;
+  inset: -8%;
+  z-index: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--worldline-cyan-hot) 12%, transparent) 0,
+    color-mix(in srgb, var(--worldline-cyan-hot) 12%, transparent) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  mix-blend-mode: screen;
+  animation: worldline-scanline 1.32s ease-out both;
 }
 .worldline-shift-overlay::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 34%;
-  height: 16%;
+  left: -8%;
+  right: -8%;
+  top: 36%;
+  height: 18%;
+  z-index: 2;
   opacity: 0;
-  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--worldline-cyan, #55e6f2) 18%, transparent), color-mix(in srgb, var(--worldline-cyan, #55e6f2) 3%, transparent), transparent);
-  animation: worldline-signal-band .9s steps(2, end) both;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--worldline-cyan) 28%, transparent) 34%,
+    color-mix(in srgb, var(--worldline-anomaly) 12%, transparent) 52%,
+    color-mix(in srgb, var(--worldline-blue) 24%, transparent) 68%,
+    transparent
+  );
+  filter: saturate(1.3);
+  animation: worldline-signal-band 1.32s steps(1, end) both;
 }
+.worldline-shift-overlay__dial {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(78vw, 760px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(.7);
+  opacity: 0;
+  z-index: 1;
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--worldline-cyan) 22%, transparent));
+  animation: worldline-dial-ignite 1.32s cubic-bezier(.16, .72, .18, 1) both;
+}
+.worldline-shift-overlay__dial-ring,
+.worldline-shift-overlay__dial-ticks,
+.worldline-shift-overlay__dial-cross,
+.worldline-shift-overlay__dial-core {
+  position: absolute;
+  display: block;
+}
+.worldline-shift-overlay__dial-ring {
+  border-radius: 50%;
+  inset: 0;
+}
+.worldline-shift-overlay__dial-ring--outer {
+  border: 1px solid color-mix(in srgb, var(--worldline-cyan-hot) 76%, transparent);
+  box-shadow: inset 0 0 32px color-mix(in srgb, var(--worldline-cyan) 8%, transparent), 0 0 24px color-mix(in srgb, var(--worldline-cyan) 10%, transparent);
+}
+.worldline-shift-overlay__dial-ticks {
+  inset: 4%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--worldline-cyan-hot) 84%, transparent) 0deg .35deg,
+    transparent .35deg 5deg
+  );
+  -webkit-mask: radial-gradient(circle, transparent 63%, #000 63.5% 67%, transparent 67.5%);
+  mask: radial-gradient(circle, transparent 63%, #000 63.5% 67%, transparent 67.5%);
+  animation: worldline-dial-rotate 8s linear infinite;
+}
+.worldline-shift-overlay__dial-ring--inner {
+  inset: 22%;
+  border: 1px dashed color-mix(in srgb, var(--worldline-blue) 78%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--worldline-blue) 9%, transparent);
+}
+.worldline-shift-overlay__dial-cross {
+  inset: 12% 0;
+  background:
+    linear-gradient(90deg, transparent calc(50% - .5px), color-mix(in srgb, var(--worldline-cyan) 56%, transparent) calc(50% - .5px), color-mix(in srgb, var(--worldline-cyan) 56%, transparent) calc(50% + .5px), transparent calc(50% + .5px)),
+    linear-gradient(0deg, transparent calc(50% - .5px), color-mix(in srgb, var(--worldline-cyan) 56%, transparent) calc(50% - .5px), color-mix(in srgb, var(--worldline-cyan) 56%, transparent) calc(50% + .5px), transparent calc(50% + .5px));
+}
+.worldline-shift-overlay__dial-core {
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--worldline-cyan-hot);
+  border-radius: 50%;
+  background: var(--worldline-anomaly);
+  box-shadow: 0 0 12px var(--worldline-cyan), 0 0 28px color-mix(in srgb, var(--worldline-anomaly) 68%, transparent);
+  transform: translate(-50%, -50%);
+}
+.worldline-shift-overlay__glitch {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  z-index: 2;
+  height: 3.2%;
+  opacity: 0;
+  border-block: 1px solid color-mix(in srgb, var(--worldline-cyan-hot) 62%, transparent);
+  background: linear-gradient(90deg, transparent 8%, color-mix(in srgb, var(--worldline-cyan) 24%, transparent) 27%, color-mix(in srgb, var(--worldline-anomaly) 25%, transparent) 48%, color-mix(in srgb, var(--worldline-blue) 28%, transparent) 71%, transparent 94%);
+  mix-blend-mode: screen;
+}
+.worldline-shift-overlay__glitch--a { top: 24%; animation: worldline-glitch-a 1.32s steps(1, end) both; }
+.worldline-shift-overlay__glitch--b { top: 61%; height: 5.5%; animation: worldline-glitch-b 1.32s steps(1, end) both; }
+.worldline-shift-overlay__glitch--c { top: 43%; height: 1.5%; animation: worldline-glitch-c 1.32s steps(1, end) both; }
 .worldline-shift-overlay__hud {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: min(420px, calc(100vw - 36px));
-  padding: 18px 22px;
+  z-index: 3;
+  width: min(440px, calc(100vw - 36px));
+  padding: 22px 24px 20px;
   transform: translate(-50%, -50%);
-  border: 1px solid color-mix(in srgb, var(--worldline-cyan, #55e6f2) 62%, var(--worldline-blue, #83a9ff) 10%);
-  background: color-mix(in srgb, var(--worldline-screen, #07111d) 88%, transparent);
-  box-shadow: 0 0 30px color-mix(in srgb, var(--worldline-cyan, #55e6f2) 14%, transparent), inset 0 0 24px color-mix(in srgb, var(--worldline-cyan, #55e6f2) 4%, transparent);
-  color: var(--worldline-cyan-hot, #c5fbff);
+  border: 1px solid color-mix(in srgb, var(--worldline-cyan) 66%, var(--worldline-blue) 14%);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--worldline-cyan) 5%, transparent), transparent 54%),
+    color-mix(in srgb, var(--worldline-screen) 91%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--worldline-cyan) 8%, transparent),
+    0 0 36px color-mix(in srgb, var(--worldline-cyan) 17%, transparent),
+    0 0 72px color-mix(in srgb, var(--worldline-blue) 10%, transparent),
+    inset 0 0 28px color-mix(in srgb, var(--worldline-cyan) 5%, transparent);
+  color: var(--worldline-cyan-hot);
   text-align: center;
   font-family: var(--font-mono, ui-monospace, monospace);
   letter-spacing: .10em;
-  animation: worldline-hud-fade .9s ease-out both;
+  animation: worldline-hud-fade 1.32s ease-out both;
+}
+.worldline-shift-overlay__hud::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--worldline-cyan-hot) 0 0) left top / 22px 1px no-repeat,
+    linear-gradient(var(--worldline-cyan-hot) 0 0) left top / 1px 22px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) right top / 22px 1px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) right top / 1px 22px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) left bottom / 22px 1px no-repeat,
+    linear-gradient(var(--worldline-blue) 0 0) left bottom / 1px 22px no-repeat,
+    linear-gradient(var(--worldline-cyan-hot) 0 0) right bottom / 22px 1px no-repeat,
+    linear-gradient(var(--worldline-cyan-hot) 0 0) right bottom / 1px 22px no-repeat;
 }
 .worldline-shift-overlay__hud > span,
-.worldline-shift-overlay__hud > small { display: block; font-size: 10px; }
-.worldline-shift-overlay__hud > strong { display: block; margin: 8px 0; font-size: clamp(17px, 3vw, 23px); font-weight: 500; letter-spacing: .16em; }
-.worldline-shift-overlay__hud > small { color: color-mix(in srgb, var(--worldline-cyan-hot, #c5fbff) 70%, transparent); letter-spacing: .05em; }
-@keyframes worldline-shift-flash { 0%, 100% { opacity: 0; } 12% { opacity: .9; } 22% { opacity: .14; } 38% { opacity: .68; } 52% { opacity: .08; } 64% { opacity: .42; } 78% { opacity: .04; } }
-@keyframes worldline-scanline { 0% { opacity: 0; transform: translateY(-8%); } 18% { opacity: .8; } 70% { opacity: .32; transform: translateY(4%); } 100% { opacity: 0; transform: translateY(12%); } }
-@keyframes worldline-signal-band { 0%, 100% { opacity: 0; transform: translateY(-12%); } 24% { opacity: .75; transform: translateY(0); } 42% { opacity: .15; transform: translateY(12%); } 54% { opacity: .52; transform: translateY(-5%); } 72% { opacity: 0; transform: translateY(18%); } }
-@keyframes worldline-hud-fade { 0%, 100% { opacity: 0; } 18%, 70% { opacity: 1; } }
+.worldline-shift-overlay__hud > small {
+  display: block;
+  font-size: 10px;
+  line-height: 1.7;
+}
+.worldline-shift-overlay__hud > strong {
+  display: block;
+  margin: 10px 0 13px;
+  font-family: var(--font, system-ui, sans-serif);
+  font-size: clamp(19px, 3vw, 26px);
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-shadow: 0 0 16px color-mix(in srgb, var(--worldline-cyan) 46%, transparent);
+}
+.worldline-shift-overlay__meter {
+  height: 2px;
+  margin: 0 0 12px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--worldline-cyan) 12%, transparent);
+}
+.worldline-shift-overlay__meter > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--worldline-cyan), var(--worldline-blue), var(--worldline-anomaly));
+  box-shadow: 0 0 10px var(--worldline-cyan);
+  animation: worldline-meter-fill 1.08s cubic-bezier(.2, .7, .25, 1) .08s both;
+}
+.worldline-shift-overlay__hud > small {
+  color: color-mix(in srgb, var(--worldline-cyan-hot) 82%, transparent);
+  letter-spacing: .06em;
+}
+@keyframes worldline-shift-flash {
+  0%, 100% { opacity: 0; }
+  12% { opacity: .86; }
+  34% { opacity: .30; }
+  52% { opacity: .64; }
+  76% { opacity: .18; }
+}
+@keyframes worldline-scanline {
+  0% { opacity: 0; transform: translateY(-5%); }
+  18% { opacity: .72; }
+  68% { opacity: .28; transform: translateY(5%); }
+  100% { opacity: 0; transform: translateY(12%); }
+}
+@keyframes worldline-signal-band {
+  0%, 100% { opacity: 0; transform: translateY(-12%); }
+  23% { opacity: .82; transform: translateY(0); }
+  42% { opacity: .16; transform: translateY(12%); }
+  58% { opacity: .62; transform: translateY(-5%); }
+  76% { opacity: 0; transform: translateY(18%); }
+}
+@keyframes worldline-dial-ignite {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.72) rotate(-22deg); }
+  18% { opacity: .92; }
+  68% { opacity: .58; transform: translate(-50%, -50%) scale(1.02) rotate(6deg); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.12) rotate(14deg); }
+}
+@keyframes worldline-dial-rotate { to { transform: rotate(360deg); } }
+@keyframes worldline-glitch-a {
+  0%, 100% { opacity: 0; transform: translateX(-7%) skewX(-4deg); }
+  21% { opacity: .9; transform: translateX(2%) skewX(1deg); }
+  24% { opacity: .35; transform: translateX(-1%) skewX(-2deg); }
+  45% { opacity: 0; transform: translateX(5%) skewX(2deg); }
+}
+@keyframes worldline-glitch-b {
+  0%, 100% { opacity: 0; transform: translateX(6%) skewX(3deg); }
+  36% { opacity: 0; }
+  48% { opacity: .78; transform: translateX(-3%) skewX(-2deg); }
+  52% { opacity: .2; transform: translateX(1%) skewX(1deg); }
+  72% { opacity: 0; transform: translateX(-6%) skewX(-3deg); }
+}
+@keyframes worldline-glitch-c {
+  0%, 100% { opacity: 0; transform: translateX(-4%); }
+  56% { opacity: .7; transform: translateX(4%); }
+  61% { opacity: .15; transform: translateX(-2%); }
+  73% { opacity: 0; transform: translateX(2%); }
+}
+@keyframes worldline-hud-fade {
+  0%, 100% { opacity: 0; }
+  16%, 74% { opacity: 1; }
+}
+@keyframes worldline-meter-fill { to { transform: scaleX(1); } }
+
+@media (max-width: 639px) {
+  .worldline-particle-canvas.is-visible { opacity: .28; }
+  .worldline-shift-overlay__dial { width: min(104vw, 540px); }
+  .worldline-shift-overlay__hud { padding: 18px 16px 16px; }
+  .worldline-shift-overlay__hud > span,
+  .worldline-shift-overlay__hud > small { font-size: 8px; }
+}
 @media (prefers-reduced-motion: reduce) {
+  .worldline-particle-canvas { display: none !important; }
   .worldline-shift-overlay { display: none !important; animation: none !important; }
-  :root[data-color-scheme="worldline-console"] *, :root[data-color-scheme="worldline-console"] *::before, :root[data-color-scheme="worldline-console"] *::after {
+  :root[data-color-scheme="worldline-console"] *,
+  :root[data-color-scheme="worldline-console"] *::before,
+  :root[data-color-scheme="worldline-console"] *::after {
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;

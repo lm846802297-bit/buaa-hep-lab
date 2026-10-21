@@ -168,6 +168,11 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(indexCss).toContain(':root[data-color-scheme="worldline-console"] button:active:not(:disabled)')
     expect(appVue).toContain('<WorldlineEffects />')
     expect(worldlineEffects).toContain('prefers-reduced-motion: reduce')
+    expect(worldlineEffects).toContain('worldline-particle-canvas')
+    expect(worldlineEffects).toContain("canvas.getContext('2d')")
+    expect(indexCss).toContain('@keyframes worldline-dial-ignite')
+    expect(indexCss).toContain('.worldline-shift-overlay__dial-ticks')
+    expect(indexCss).toContain('.worldline-shift-overlay__glitch--a')
     expect(worldlineEffects).toContain('世界线变动')
   })
 
