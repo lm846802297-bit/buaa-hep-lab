@@ -372,9 +372,12 @@ dialog:not([open]),
 
   /* 移动端锁死水平横向晃动 */
   html, body, .app-shell {
-    overflow-x: hidden;
+    overflow-x: clip;
     width: 100%;
     max-width: 100%;
+  }
+  @supports not (overflow-x: clip) {
+    html, body, .app-shell { overflow-x: hidden; }
   }
 
   /* 输入框字号强制保持 >= 16px 杜绝 iOS Safari 唤起软键盘时强行放大页面 */

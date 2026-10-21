@@ -66,11 +66,15 @@ def test_demo_seminars_link_to_the_matching_phenomenology_papers():
 
 
 def test_demo_resources_focus_on_particle_physics_and_reproducible_phenomenology():
-    expected_titles = {
+    expected_original_titles = {
         "Modern Particle Physics",
         "Quantum Field Theory and the Standard Model",
-        "粒子物理评论 (Review of Particle Physics, 2026)",
+        "Review of Particle Physics (2026)",
     }
     with SessionLocal() as db:
-        titles = {book.title for book in db.query(ResourceBook).all()}
-    assert expected_titles.issubset(titles)
+        original_titles = {
+            book.original_title
+            for book in db.query(ResourceBook).all()
+            if book.original_title
+        }
+    assert expected_original_titles.issubset(original_titles)

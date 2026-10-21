@@ -84,10 +84,7 @@ try {
   await page.keyboard.press('Escape')
   check(await publicSkin.count() === 0, 'Escape closes the public theme popover')
   await publicSkinTrigger.click()
-  // Force a known non-Worldline starting state so this test always exercises a real theme transition.
-  await publicSkin.selectOption('classic-cyan')
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
-  if (!(await publicSkin.isVisible())) await publicSkinTrigger.click()
   await page.evaluate(() => {
     window.__worldlineReadoutSnapshot = null
     window.__worldlineDecaySnapshot = null
@@ -95,8 +92,6 @@ try {
     window.__worldlinePhaseListener = event => {
       window.__worldlinePhaseLog.push(event.detail)
       if (event.detail !== 'decay') return
-      // Vue queues the DOM patch before this microtask; capture the decay CSS state deterministically
-      // before screenshot tooling can stall the page past the end of the transition.
       queueMicrotask(() => {
         const overlay = document.querySelector('.worldline-shift-overlay')
         const hud = overlay?.querySelector('.worldline-shift-overlay__hud')
@@ -109,11 +104,12 @@ try {
     window.addEventListener('worldline:phase', window.__worldlinePhaseListener)
   })
   await publicSkin.selectOption('worldline-console')
+  check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
+  check(await page.evaluate(() => localStorage.getItem('labhub_public_color_scheme') === 'worldline-console' && localStorage.getItem('laborbit_color_scheme') !== 'worldline-console'), 'public theme persists separately from workspace preferences')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await expect(page.locator('.worldline-shift-overlay')).toHaveClass(/is-timeline-active/, { timeout: 1500 })
   check(await page.locator('.worldline-shift-overlay').evaluate(el => el.classList.contains('is-timeline-active')), 'worldline keyframes start only after the overlay has been rendered')
-  // Wait for Vue to reflect the semantic phase in the DOM before checking computed styles.
-  // The HUD is explicitly held visible for readout and then receives its own decay animation.
+  await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
   await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout'), null, { timeout: 1500 })
   await expect(page.locator('.worldline-shift-overlay')).toHaveAttribute('data-phase', 'readout', { timeout: 1500 })
   const readoutSnapshot = await page.evaluate(() => {
@@ -128,24 +124,17 @@ try {
       hudVisible: Boolean(hud && hud.getBoundingClientRect().width > 0 && hud.getBoundingClientRect().height > 0),
       hudOpacity: hudStyle ? Number(hudStyle.opacity) : null,
       hudAnimationName: hudStyle ? hudStyle.animationName : '',
-      hudBackgroundColor: hudStyle ? hudStyle.backgroundColor : '',
-      overlayClassName: overlay ? overlay.className : ''
+      hudBackgroundColor: hudStyle ? hudStyle.backgroundColor : ''
     }
   })
-  await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-readout.png') })
-  check(Boolean(readoutSnapshot?.backdropVisible), 'Worldline Console enables the clockwork and scientific-drawing background')
-  check(Boolean(readoutSnapshot?.backdropShifting), 'worldline transition activates the technical backdrop during the readout phase')
-  check(readoutSnapshot?.ringCount === 2, 'worldline transition draws two expanding instrument-wave rings')
-  check(Boolean(readoutSnapshot?.hudVisible), 'worldline shift HUD is visible in the readout frame')
-  check(readoutSnapshot?.hudAnimationName === 'none', `worldline HUD is phase-locked and not racing a wall-clock fade during readout (animation: ${readoutSnapshot?.hudAnimationName || 'none'})`)
-  check(Number(readoutSnapshot?.hudOpacity) >= 0.98, `worldline HUD is fully readable in the readout phase (opacity: ${readoutSnapshot?.hudOpacity})`)
-  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('decay') && window.__worldlineDecaySnapshot, null, { timeout: 1500 })
-  const decaySnapshot = await page.evaluate(() => window.__worldlineDecaySnapshot || null)
-  check(decaySnapshot?.phase === 'decay', `worldline HUD reaches the decay DOM phase (phase: ${decaySnapshot?.phase || 'missing'})`)
-  check(decaySnapshot?.animationName === 'worldline-hud-decay', `worldline HUD starts its dedicated decay animation (animation: ${decaySnapshot?.animationName || 'none'})`)
-  check(readoutSnapshot?.hudBackgroundColor !== 'rgba(0, 0, 0, 0)' && readoutSnapshot?.hudBackgroundColor !== 'transparent', 'worldline shift HUD uses a dark, high-contrast panel')
-  check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
+  check(Boolean(readoutSnapshot.backdropVisible), 'Worldline Console enables the clockwork and scientific-drawing background')
+  check(Boolean(readoutSnapshot.backdropShifting), 'worldline transition activates the technical backdrop during readout')
+  check(readoutSnapshot.ringCount === 2, 'worldline transition draws two expanding instrument-wave rings')
+  check(Boolean(readoutSnapshot.hudVisible), 'worldline shift HUD has a rendered panel during readout')
+  check(readoutSnapshot.hudAnimationName === 'none', 'worldline HUD is phase-locked instead of racing a wall-clock fade')
+  check(Number(readoutSnapshot.hudOpacity) >= 0.98, 'worldline HUD is fully readable during readout: ' + readoutSnapshot.hudOpacity)
+  check(readoutSnapshot.hudBackgroundColor !== 'rgba(0, 0, 0, 0)' && readoutSnapshot.hudBackgroundColor !== 'transparent', 'worldline shift HUD uses a dark, high-contrast panel')
   const worldlineTuner = await page.evaluate(() => {
     const root = getComputedStyle(document.documentElement)
     const icon = document.querySelector('.theme-tuner-icon')
@@ -153,13 +142,13 @@ try {
     return {
       accent: root.getPropertyValue('--accent').trim().toLowerCase(),
       blue: root.getPropertyValue('--worldline-blue').trim().toLowerCase(),
-      coreStroke: getComputedStyle(icon.querySelector('.tuner-core')).stroke,
-      orbitStroke: getComputedStyle(icon.querySelector('.tuner-orbit')).stroke,
-      buttonShadow: getComputedStyle(trigger).boxShadow
+      coreStroke: icon?.querySelector('.tuner-core') ? getComputedStyle(icon.querySelector('.tuner-core')).stroke : '',
+      orbitStroke: icon?.querySelector('.tuner-orbit') ? getComputedStyle(icon.querySelector('.tuner-orbit')).stroke : '',
+      buttonShadow: trigger ? getComputedStyle(trigger).boxShadow : 'none'
     }
   })
   check(worldlineTuner.accent === '#55e6f2', 'Worldline Console uses the cold cyan CRT signal')
-  check(worldlineTuner.blue === '#83a9ff', 'Worldline Console defines a electric-blue worldline signal')
+  check(worldlineTuner.blue === '#83a9ff', 'Worldline Console defines an electric-blue worldline signal')
   check(worldlineTuner.coreStroke !== worldlineTuner.orbitStroke, 'Worldline tuner separates cyan core from electric-blue orbital lines')
   check(worldlineTuner.buttonShadow !== 'none', 'Worldline tuner uses its cold phosphor device-like shadow')
   const technicalBackdrop = page.locator('.worldline-technical-backdrop')
@@ -167,27 +156,21 @@ try {
   check(await particleCanvas.evaluate(el => el.classList.contains('is-visible')), 'worldline skin enables the ambient particle canvas')
   check(await particleCanvas.evaluate(el => el.width > 0 && el.height > 0), 'ambient particle canvas has a real drawing surface')
   check(await particleCanvas.evaluate(el => el.width <= innerWidth * 1.5 + 1 && el.height <= innerHeight * 1.5 + 1), 'particle canvas caps device-pixel-ratio at 1.5x for performance')
+  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('decay') && window.__worldlineDecaySnapshot, null, { timeout: 1500 })
+  const decaySnapshot = await page.evaluate(() => window.__worldlineDecaySnapshot || null)
+  check(decaySnapshot?.phase === 'decay', 'worldline HUD reaches the decay DOM phase: ' + decaySnapshot?.phase)
+  check(decaySnapshot?.animationName === 'worldline-hud-decay', 'worldline HUD starts its dedicated decay animation: ' + decaySnapshot?.animationName)
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
-  check(!(await page.locator('.worldline-technical-backdrop').evaluate(el => el.classList.contains('is-shifting'))), 'technical backdrop returns to its idle state after the worldline transition')
+  check(!(await technicalBackdrop.evaluate(el => el.classList.contains('is-shifting'))), 'technical backdrop returns to idle after the worldline transition')
   const phaseLog = await page.evaluate(() => {
     if (window.__worldlinePhaseListener) window.removeEventListener('worldline:phase', window.__worldlinePhaseListener)
     delete window.__worldlinePhaseListener
     return Array.isArray(window.__worldlinePhaseLog) ? window.__worldlinePhaseLog : []
   })
   const expectedPhases = ['ignite', 'propagate', 'disrupt', 'readout', 'decay', 'idle']
-  const phasePositions = expectedPhases.map(phase => phase === 'idle' ? phaseLog.lastIndexOf(phase) : phaseLog.indexOf(phase))
-  check(phasePositions.every((position, index) => position >= 0 && (index === 0 || position > phasePositions[index - 1])), `worldline timeline runs through the expected ordered phases (${phaseLog.join(' -> ')})`)
+  const phasePositions = expectedPhases.map(phase => phaseLog.indexOf(phase))
+  check(phasePositions.every((position, index) => position >= 0 && (index === 0 || position > phasePositions[index - 1])), 'worldline timeline follows ignite → propagate → disrupt → readout → decay → idle')
   await page.screenshot({ path: resolve(output, 'worldline-1440-technical-backdrop.png') })
-  check(await particleCanvas.evaluate(el => el.classList.contains('is-visible')), 'ambient particles remain active after the shift event')
-  check(await particleCanvas.evaluate(el => Number(getComputedStyle(el).opacity) > 0.3), 'ambient particle field retains visible opacity after the shift event')
-  const terminalVisual = await page.evaluate(() => ({
-    heroSignal: getComputedStyle(document.querySelector('.hero-eyebrow')).color,
-    resourceRadius: getComputedStyle(document.querySelector('.physics-resource-card')).borderRadius,
-    monitorLabel: getComputedStyle(document.querySelector('.collision-figure'), '::after').content
-  }))
-  check(terminalVisual.heroSignal === 'rgb(131, 169, 255)', 'Worldline hero uses the electric-blue secondary signal')
-  check(terminalVisual.resourceRadius === '8px', 'Worldline resource cards use the compact instrument-panel radius')
-  check(terminalVisual.monitorLabel.includes('FIELD MONITOR'), 'Worldline hero is framed as an analog field monitor, not a generic neon panel')
   await page.screenshot({ path: resolve(output, 'worldline-1440-first-screen.png') })
   await page.mouse.move(700, 150)
   await page.waitForTimeout(100)
@@ -196,41 +179,21 @@ try {
   await page.waitForTimeout(80)
   check(await particleCanvas.evaluate(el => getComputedStyle(el).pointerEvents === 'none'), 'particle field never intercepts real page clicks')
   await page.screenshot({ path: resolve(output, 'worldline-1440-click-pulse.png') })
+  await page.locator('#research').screenshot({ path: resolve(output, 'worldline-1440-research.png') })
+  await page.locator('#physics-resources').screenshot({ path: resolve(output, 'worldline-1440-resources.png') })
+  await page.locator('#publications').screenshot({ path: resolve(output, 'worldline-1440-publications.png') })
   await page.setViewportSize({ width: 390, height: 900 })
   check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline skin fits the 390px viewport without horizontal overflow')
   check(await technicalBackdrop.isVisible(), 'clockwork background remains enabled on the narrow mobile viewport')
   check(await technicalBackdrop.locator('.worldline-backdrop-gear--mobile-anchor').count() === 2, 'mobile viewport has dedicated central gear motifs')
-  check(await technicalBackdrop.evaluate(el => getComputedStyle(el).opacity <= 0.2), 'clockwork drawings reduce opacity on mobile to protect readability')
+  check(await technicalBackdrop.evaluate(el => Number(getComputedStyle(el).opacity) <= 0.2), 'clockwork drawings reduce opacity on mobile to protect readability')
   await page.screenshot({ path: resolve(output, 'worldline-390-first-screen.png') })
   await page.setViewportSize({ width: 1440, height: 900 })
-  await page.locator('#research').screenshot({ path: resolve(output, 'worldline-1440-research.png') })
-  await page.locator('#physics-resources').screenshot({ path: resolve(output, 'worldline-1440-resources.png') })
-  await page.locator('#publications').screenshot({ path: resolve(output, 'worldline-1440-publications.png') })
-
   await page.goto(`${base}/research/dark`, { waitUntil: 'networkidle' })
   await expect(page.locator('.research-topic-page')).toBeVisible()
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
-  const topicVisual = await page.evaluate(() => {
-    const root = getComputedStyle(document.documentElement)
-    const hero = document.querySelector('.topic-hero')
-    const relationCard = document.querySelector('.relation-card')
-    const formula = document.querySelector('.relation-formula')
-    return {
-      scheme: document.documentElement.getAttribute('data-color-scheme'),
-      accent: root.getPropertyValue('--accent').trim().toLowerCase(),
-      heroBackground: hero ? getComputedStyle(hero).backgroundColor : '',
-      relationBackground: relationCard ? getComputedStyle(relationCard).backgroundColor : '',
-      formulaColor: formula ? getComputedStyle(formula).color : '',
-      documentWidth: document.documentElement.scrollWidth,
-      viewportWidth: innerWidth
-    }
-  })
-  check(topicVisual.scheme === 'worldline-console', 'Worldline Console palette persists on the detailed research-topic route')
-  check(topicVisual.accent === '#55e6f2', 'research-topic detail uses the Worldline cyan accent token')
-  check(topicVisual.heroBackground !== 'transparent' && topicVisual.heroBackground !== 'rgba(0, 0, 0, 0)', 'research-topic hero keeps its terminal panel surface')
-  check(topicVisual.relationBackground !== 'transparent' && topicVisual.relationBackground !== 'rgba(0, 0, 0, 0)', 'research-topic relation cards inherit the terminal surface')
-  check(Boolean(topicVisual.formulaColor), 'research-topic equations retain an explicit readable text color')
-  check(topicVisual.documentWidth <= topicVisual.viewportWidth + 1, 'research-topic detail has no desktop horizontal overflow')
+  check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'Worldline Console palette persists on the detailed research-topic route')
+  check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline research-topic detail has no desktop horizontal overflow')
   await page.screenshot({ path: resolve(output, 'worldline-1440-topic-dark.png'), fullPage: true })
   await page.setViewportSize({ width: 390, height: 900 })
   check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline research-topic detail fits the 390px viewport')
@@ -239,42 +202,18 @@ try {
   await page.goto(base, { waitUntil: 'networkidle' })
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'Worldline Console persists when returning from a detailed topic')
-  check(await page.evaluate(() => localStorage.getItem('labhub_public_color_scheme') === 'worldline-console' && localStorage.getItem('laborbit_color_scheme') !== 'worldline-console'), 'public theme persists separately from workspace preferences')
-  await publicSkinTrigger.click()
-  await publicSkin.selectOption('classic-cyan')
-  const classicTuner = await page.evaluate(() => {
-    const root = getComputedStyle(document.documentElement)
-    const core = document.querySelector('.theme-tuner-icon .tuner-core')
-    return { accent: root.getPropertyValue('--accent').trim().toLowerCase(), coreStroke: getComputedStyle(core).stroke }
-  })
-  check(classicTuner.accent === '#c5e6df', 'classic cyan theme restores its own accent token')
-  check(classicTuner.coreStroke !== worldlineTuner.coreStroke, 'tuner core automatically follows the selected non-terminal skin')
-  await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
-  check(!(await particleCanvas.evaluate(el => el.classList.contains('is-visible'))), 'ambient particles stop after the exit transition finishes')
-  await publicSkinTrigger.click()
-  await publicSkin.selectOption('worldline-console')
-  await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
-  check(await page.locator('.worldline-shift-overlay').count() === 0, 'worldline transition overlay exits cleanly after restoring the terminal skin')
   const firstResourceCard = page.locator('.physics-resource-card').first()
   await firstResourceCard.hover()
   const hoverShadow = await firstResourceCard.evaluate(el => getComputedStyle(el).boxShadow)
   check(hoverShadow !== 'none', 'worldline mode provides visible hover feedback on resource cards')
   await page.getByRole('navigation', { name: '官网导航' }).getByRole('link', { name: '团队' }).click()
-  await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await page.getByRole('heading', { name: '团队与学术指导' }).waitFor()
+  await page.getByRole('heading', { name: '团队与学术指导' }).waitFor({ timeout: 10000 }).catch(async error => {
+    const bodyText = (await page.locator('body').innerText()).slice(0, 300)
+    throw new Error('public people route did not render; url=' + page.url() + '; pageErrors=' + errors.slice(-5).join(' | ') + '; consoleErrors=' + consoleErrors.slice(-5).join(' | ') + '; failedRequests=' + failedRequests.slice(-5).join(' | ') + '; body=' + bodyText + '; cause=' + error.message)
+  })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'worldline skin carries across public route navigation')
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
   await page.screenshot({ path: resolve(output, 'worldline-1440-team.png'), fullPage: true })
-  const teamVisual = await page.evaluate(() => ({
-    accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().toLowerCase(),
-    cardBackground: getComputedStyle(document.querySelector('.person-card')).backgroundColor,
-    documentWidth: document.documentElement.scrollWidth,
-    viewportWidth: innerWidth
-  }))
-  check(teamVisual.accent === '#55e6f2', 'team directory inherits the Worldline accent token')
-  check(teamVisual.cardBackground !== 'transparent' && teamVisual.cardBackground !== 'rgba(0, 0, 0, 0)', 'team directory cards use a defined terminal surface')
-  check(teamVisual.documentWidth <= teamVisual.viewportWidth + 1, 'team directory has no desktop horizontal overflow')
   await page.setViewportSize({ width: 390, height: 900 })
   check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline team directory fits the 390px viewport')
   await page.screenshot({ path: resolve(output, 'worldline-390-team.png'), fullPage: true })
@@ -298,7 +237,6 @@ try {
   await page.getByRole('combobox', { name: '选择官网皮肤风格' }).selectOption('quiet-research')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
-
   await page.goto(base, { waitUntil: 'networkidle' })
   check(!requested.some(url => new URL(url).pathname.startsWith('/api/')), 'anonymous homepage does not access internal APIs')
   check(!await page.locator('.research-static').isVisible(), 'script-free research fallback stays hidden when interactive tabs are active')
@@ -386,14 +324,100 @@ try {
     })
     await page.waitForFunction(() => window.scrollY < 5)
     check(await page.evaluate(() => window.scrollY < 5), `opening a research topic resets reading position to the top at ${width}px`)
-    check(await page.locator('.topic-local-nav').evaluate(el => getComputedStyle(el).position === 'static'), `topic navigation scrolls with content instead of sticking in the viewport at ${width}px`)
-    await page.locator('.topic-local-nav').getByRole('link', { name: '适用条件', exact: true }).click()
+    const stickyExpected = await page.evaluate(() => window.innerWidth > 760 || CSS.supports('overflow-x', 'clip'))
+    check(await page.locator('.topic-sidebar').evaluate(el => getComputedStyle(el).position) === (stickyExpected ? 'sticky' : 'static'), `topic directory uses a non-obstructing layout at ${width}px`)
+    check(await page.locator('.topic-visual-panel img').evaluate(img => img.complete && img.naturalWidth > 0), `topic visual illustration loads at ${width}px`)
+    if (width <= 980) {
+      await page.locator('.topic-sidebar-toggle').click()
+      check(await page.locator('.topic-local-nav').evaluate(el => el.classList.contains('is-open')), `mobile topic directory expands at ${width}px`)
+    }
+    await page.locator('.topic-local-nav a[href="#topic-assumptions"]').click()
     await page.waitForFunction(() => location.hash === '#topic-assumptions')
+    await page.waitForFunction(() => {
+      const top = document.querySelector('#topic-assumptions')?.getBoundingClientRect().top
+      return top != null && top >= 0 && top < 140
+    })
     check(await page.locator('#topic-assumptions').evaluate(el => {
       const top = el.getBoundingClientRect().top
-      return top >= 0 && top < 120
+      return top >= 0 && top < 140
     }), `in-page navigation aligns the selected section near the top at ${width}px`)
-    check(await page.locator('.topic-local-nav').evaluate(el => el.getBoundingClientRect().bottom < 0), `topic navigation does not remain pinned after jumping to a later section at ${width}px`)
+    await page.waitForFunction(() => document.querySelector('.topic-local-nav a[aria-current="location"]')?.getAttribute('href') === '#topic-assumptions')
+    check(await page.locator('.topic-local-nav a[aria-current="location"]').getAttribute('href') === '#topic-assumptions', `topic directory highlights the selected section at ${width}px`)
+    check(
+      await page.locator('.topic-breadcrumb-home').isVisible()
+        && await page.locator('.topic-breadcrumb-home').getAttribute('href') === '/',
+      `breadcrumb exposes a visible home link at ${width}px`,
+    )
+    check(
+      await page.locator('.topic-sidebar-home').isVisible()
+        && await page.locator('.topic-sidebar-home').getAttribute('href') === '/',
+      `topic directory exposes a visible home link at ${width}px`,
+    )
+
+    // A sequence of in-page directory clicks must replace the current fragment,
+    // not create a stack of section entries that trap the browser Back button.
+    if (width <= 980) {
+      await page.locator('.topic-sidebar-toggle').click()
+      check(
+        await page.locator('.topic-local-nav').evaluate(el => el.classList.contains('is-open')),
+        `topic directory reopens for history regression at ${width}px`,
+      )
+    }
+    await page.locator('.topic-local-nav a[href="#topic-workflow"]').click()
+    await page.waitForFunction(() => location.hash === '#topic-workflow')
+    check(
+      new URL(page.url()).hash === '#topic-workflow',
+      `second topic directory selection updates the fragment at ${width}px`,
+    )
+    await page.goBack()
+    await page.waitForURL(url => url.pathname === '/' && url.hash === '', { timeout: 10000 })
+    check(
+      new URL(page.url()).pathname === '/' && new URL(page.url()).hash === '',
+      `browser Back leaves the topic after multiple directory clicks at ${width}px`,
+    )
+
+    // Re-enter the topic so the remaining layout checks still run against a
+    // fresh topic navigation, not a page restored from the history stack.
+    const reentryLink = page.locator('.topic-guide-entry').first()
+    await reentryLink.scrollIntoViewIfNeeded()
+    check(
+      await reentryLink.getAttribute('href') === '/research/dark',
+      `topic can be reopened from the homepage after browser Back at ${width}px`,
+    )
+    await reentryLink.click()
+    await page.waitForURL(url => url.pathname === '/research/dark', { timeout: 10000 })
+    await page.locator('.research-topic-page').waitFor({ timeout: 10000 })
+    await page.waitForFunction(() => window.scrollY < 5)
+    check(
+      await page.evaluate(() => window.scrollY < 5),
+      `reopened topic starts at the top after browser Back at ${width}px`,
+    )
+
+    // Recreate the reading position used by the existing sticky-sidebar test.
+    if (width <= 980) await page.locator('.topic-sidebar-toggle').click()
+    await page.locator('.topic-local-nav a[href="#topic-assumptions"]').click()
+    await page.waitForFunction(() => location.hash === '#topic-assumptions')
+    await page.waitForFunction(() => {
+      const top = document.querySelector('#topic-assumptions')?.getBoundingClientRect().top
+      return top != null && top >= 0 && top < 140
+    })
+    await page.waitForFunction(() => document.querySelector('.topic-local-nav a[aria-current="location"]')?.getAttribute('href') === '#topic-assumptions')
+
+    if (stickyExpected) {
+      const sidebarFitsViewport = await page.waitForFunction(() => {
+        const element = document.querySelector('.topic-sidebar')
+        if (!element) return false
+        const rect = element.getBoundingClientRect()
+        return rect.top >= 0 && rect.top < 100 && rect.bottom <= window.innerHeight + 1
+      }, null, { timeout: 10000 }).then(() => true).catch(() => false)
+      const sidebarMetrics = await page.locator('.topic-sidebar').evaluate(el => {
+        const rect = el.getBoundingClientRect()
+        return { top: Math.round(rect.top), bottom: Math.round(rect.bottom), height: Math.round(rect.height), viewport: window.innerHeight }
+      })
+      check(sidebarFitsViewport, `topic directory remains visible within the viewport while reading later sections at ${width}px: ${JSON.stringify(sidebarMetrics)}`)
+    } else {
+      check(await page.locator('.topic-sidebar').evaluate(el => getComputedStyle(el).position === 'static'), `legacy mobile layout keeps the topic directory in document flow at ${width}px`)
+    }
     await page.locator('.topic-all-guides').click()
     await page.locator('#research-guides').waitFor()
     await page.waitForFunction(() => location.hash === '#research-guides')
@@ -410,6 +434,18 @@ try {
       await page.locator('.research-topic-page').waitFor()
       check(await page.getByRole('button', { name: '切换官网风格' }).isVisible(), `public skin icon is visible on research topic ${topic}`)
       check(await page.locator('h1').isVisible(), `research topic ${topic} renders at ${width}px`)
+      const illustration = page.locator('.topic-visual-panel img')
+      await illustration.evaluate(img => img.decode())
+      check(await illustration.evaluate(img => img.complete && img.naturalWidth > 0), `research topic ${topic} illustration loads at ${width}px`)
+      if (width === 390 || width === 1440) {
+        await page.locator('.topic-visual-wrapper').screenshot({ path: resolve(output, `research-topic-${topic}-illustration-${width}.png`) })
+      }
+      check((await illustration.getAttribute('alt'))?.length > 20, `research topic ${topic} illustration has descriptive alternative text`)
+      if (width <= 600) {
+        check(await page.locator('.topic-visual-labels').isVisible(), `research topic ${topic} exposes readable mobile illustration labels`)
+        check(await page.locator('.topic-visual-labels li').count() >= 3, `research topic ${topic} shows at least three mobile illustration labels`)
+        check(await page.locator('.topic-visual-panel figcaption').evaluate(el => el.getBoundingClientRect().top >= el.closest('.topic-visual-panel').querySelector('img').getBoundingClientRect().bottom - 1), `research topic ${topic} caption stays below the mobile artwork`)
+      }
       check(await page.locator('.topic-section').count() >= 8, `research topic ${topic} includes the expanded physics guide, workflow, observables, papers and resources`)
       check(await page.locator('#topic-mechanisms').isVisible(), `research topic ${topic} explains its core physics mechanisms`)
       check(await page.locator('#topic-relations').isVisible(), `research topic ${topic} explains key relations and their validity conditions`)

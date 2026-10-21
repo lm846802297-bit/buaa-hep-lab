@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" role="img" aria-labelledby="title desc">
+<title id="title">中微子振荡、质量本征态与混合</title><desc id="desc">三种中微子味态沿传播方向演化，示意振荡与混合；右侧三乘三色块仅象征混合矩阵结构，不代表 PMNS 矩阵元的数值。曲线不对应指定振荡参数下的概率计算。</desc>
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#050d18"/><stop offset="1" stop-color="#101a30"/></linearGradient><linearGradient id="beam"><stop stop-color="#5ad7f0" stop-opacity="0"/><stop offset=".45" stop-color="#5ad7f0" stop-opacity=".8"/><stop offset="1" stop-color="#5ad7f0" stop-opacity="0"/></linearGradient><radialGradient id="node"><stop stop-color="#efffff"/><stop offset=".35" stop-color="#66dff4"/><stop offset="1" stop-color="#2876c2" stop-opacity=".1"/></radialGradient><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#7b9ce4" stroke-opacity=".09"/></pattern></defs>
+<style>@media (max-width: 600px) { text { display: none; } } @media (max-width: 600px) { #neutrino-title-label { display: none; } }</style>
+<rect width="1000" height="400" fill="url(#bg)"/><rect width="1000" height="400" fill="url(#grid)"/>
+<g font-family="Arial, Helvetica, sans-serif" font-weight="600" paint-order="stroke" stroke="#07111c" stroke-width="3" stroke-linejoin="round">
+
+<text x="30" y="140" fill="#a8eafa" font-size="13">FLAVOR STATES</text>
+</g>
+<g fill="none" stroke-width="2.8" stroke-linecap="round">
+<path d="M20 105C55 44 91 44 126 105S197 166 232 105 303 44 338 105 409 166 444 105 515 44 550 105 621 166 656 105 727 44 762 105" stroke="#64c9ff"/>
+<path d="M20 192C58 252 95 132 133 192S208 252 246 192 321 132 359 192 434 252 472 192 547 132 585 192 660 252 698 192 773 132 811 192" stroke="#55e5c6"/>
+<path d="M20 278C57 217 94 217 131 278S205 339 242 278 316 217 353 278 427 339 464 278 538 217 575 278 649 339 686 278 760 217 797 278" stroke="#ffc477"/>
+</g>
+<g fill="none" stroke="url(#beam)" stroke-width="22" opacity=".5"><path d="M20 105H820"/><path d="M20 192H820"/><path d="M20 278H820"/></g>
+<g fill="#e1faff"><circle cx="30" cy="105" r="5"/><circle cx="30" cy="192" r="5"/><circle cx="30" cy="278" r="5"/><circle cx="790" cy="105" r="5"/><circle cx="790" cy="192" r="5"/><circle cx="790" cy="278" r="5"/></g>
+<g stroke="#7edff2" stroke-opacity=".48" fill="none"><path d="M800 100L850 145L900 100L950 145"/><path d="M800 190L850 145L900 190L950 145"/><path d="M800 280L850 235L900 280L950 235"/></g>
+<g transform="translate(845 135)"><rect x="0" y="0" width="33" height="33" rx="3" fill="#4cbef2" fill-opacity=".8"/><rect x="39" y="0" width="33" height="33" rx="3" fill="#9b85ff" fill-opacity=".65"/><rect x="78" y="0" width="33" height="33" rx="3" fill="#57e2c5" fill-opacity=".72"/><rect x="0" y="39" width="33" height="33" rx="3" fill="#ffc477" fill-opacity=".7"/><rect x="39" y="39" width="33" height="33" rx="3" fill="#4cbef2" fill-opacity=".5"/><rect x="78" y="39" width="33" height="33" rx="3" fill="#9b85ff" fill-opacity=".8"/><rect x="0" y="78" width="33" height="33" rx="3" fill="#57e2c5" fill-opacity=".58"/><rect x="39" y="78" width="33" height="33" rx="3" fill="#ffc477" fill-opacity=".76"/><rect x="78" y="78" width="33" height="33" rx="3" fill="#4cbef2" fill-opacity=".65"/></g>
+<g fill="#a6cfe3" font-family="sans-serif" font-size="10" opacity=".9">
+<text x="900" y="104" text-anchor="middle" font-size="9">PMNS MIXING MATRIX</text>
+<text x="861" y="128" text-anchor="middle">ν<tspan baseline-shift="sub" font-size="7">1</tspan></text><text x="900" y="128" text-anchor="middle">ν<tspan baseline-shift="sub" font-size="7">2</tspan></text><text x="939" y="128" text-anchor="middle">ν<tspan baseline-shift="sub" font-size="7">3</tspan></text>
+<text x="837" y="156" text-anchor="end">ν<tspan baseline-shift="sub" font-size="7">e</tspan></text><text x="837" y="195" text-anchor="end">ν<tspan baseline-shift="sub" font-size="7">μ</tspan></text><text x="837" y="234" text-anchor="end">ν<tspan baseline-shift="sub" font-size="7">τ</tspan></text><text x="900" y="295" text-anchor="middle" font-size="8">MASS EIGENSTATES</text>
+</g>
+<g fill="none" stroke-width="2"><path d="M820 370H978M820 370V278" stroke="#7a9dbb" stroke-opacity=".6"/><path d="M820 368C842 366 849 342 868 327S895 336 911 352 935 361 950 365 967 368 978 369" stroke="#62d9ef"/><path d="M820 368C840 367 851 357 867 345S895 320 914 334 937 359 955 366 969 368 978 369" stroke="#ffc477" stroke-opacity=".8"/></g>
+<g fill="#a6cfe3" font-family="sans-serif" font-size="12" opacity=".82"><text x="36" y="86">ν<tspan baseline-shift="sub" font-size="8">e</tspan></text><text x="36" y="174">ν<tspan baseline-shift="sub" font-size="8">μ</tspan></text><text x="36" y="260">ν<tspan baseline-shift="sub" font-size="8">τ</tspan></text><text x="806" y="315">L/E</text></g>
+<g id="neutrino-title-label">
+  <rect x="330" y="91" width="250" height="38" rx="5" fill="#07111c" fill-opacity=".9" stroke="#244b5b" stroke-opacity=".8"/>
+  <text x="340" y="115" fill="#d9f7ff" font-size="16" font-weight="700">NEUTRINO OSCILLATION</text>
+</g>
+</svg>

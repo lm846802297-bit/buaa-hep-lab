@@ -4,8 +4,6 @@ import tempfile
 import pytest
 
 os.environ["SEED_DEMO_DATA"] = "1"
-# Explicit test-only invite code; never rely on a production fallback.
-os.environ["LABHUB_INVITE_CODE"] = "TEST-INVITE-2026"
 _test_database = tempfile.TemporaryDirectory(prefix="labhub-pytest-")
 os.environ["LABHUB_DB_PATH"] = os.path.join(_test_database.name, "test.db")
 
@@ -18,3 +16,22 @@ def isolated_database():
     yield
     engine.dispose()
     _test_database.cleanup()
+
+
+@pytest.fixture(autouse=True)
+def clear_auth_rate_limits_between_tests():
+    """Keep persistent rate-limit protection intact within each test, but isolate tests from one another."""
+    from sqlalchemy import text
+    from backend.database import engine
+
+    def clear_limits():
+        with engine.begin() as connection:
+            exists = connection.execute(text(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='auth_rate_limits'"
+            )).first()
+            if exists:
+                connection.execute(text("DELETE FROM auth_rate_limits"))
+
+    clear_limits()
+    yield
+    clear_limits()
