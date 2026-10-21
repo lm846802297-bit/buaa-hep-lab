@@ -2681,16 +2681,16 @@ html[data-bg-style="clouds-static"] body {
   opacity: 0;
   transform-box: view-box;
   transform-origin: 800px 500px;
-  animation: worldline-backdrop-wave 1.32s ease-out both;
+  animation: worldline-backdrop-wave 1.8s ease-out both;
   color: var(--worldline-cyan-hot, #c5fbff);
 }
 .worldline-backdrop-shift-wave__ring { transform-box: fill-box; transform-origin: center; }
 .worldline-backdrop-shift-wave__ring--outer {
-  animation: worldline-wave-ring 1.32s cubic-bezier(.1,.7,.2,1) both;
+  animation: worldline-wave-ring 1.8s cubic-bezier(.1,.7,.2,1) both;
   stroke: var(--worldline-blue, #83a9ff);
 }
 .worldline-backdrop-shift-wave__ring--inner {
-  animation: worldline-wave-ring-inner 1.32s cubic-bezier(.1,.7,.2,1) both;
+  animation: worldline-wave-ring-inner 1.8s cubic-bezier(.1,.7,.2,1) both;
   stroke: var(--worldline-cyan-hot, #c5fbff);
 }
 .worldline-particle-canvas {
@@ -2830,7 +2830,7 @@ html[data-bg-style="clouds-static"] body {
   background:
     radial-gradient(ellipse at center, color-mix(in srgb, var(--worldline-cyan) 25%, transparent), transparent 64%),
     linear-gradient(115deg, color-mix(in srgb, var(--worldline-screen) 44%, transparent), color-mix(in srgb, var(--worldline-blue) 18%, transparent));
-  animation: worldline-shift-flash 1.32s ease-out both;
+  animation: worldline-shift-flash 1.8s ease-out both;
 }
 .worldline-shift-overlay::before {
   content: "";
@@ -2845,7 +2845,7 @@ html[data-bg-style="clouds-static"] body {
     transparent 4px
   );
   mix-blend-mode: screen;
-  animation: worldline-scanline 1.32s ease-out both;
+  animation: worldline-scanline 1.8s ease-out both;
 }
 .worldline-shift-overlay::after {
   content: "";
@@ -2865,7 +2865,7 @@ html[data-bg-style="clouds-static"] body {
     transparent
   );
   filter: saturate(1.3);
-  animation: worldline-signal-band 1.32s steps(1, end) both;
+  animation: worldline-signal-band 1.8s steps(1, end) both;
 }
 .worldline-shift-overlay__dial {
   position: absolute;
@@ -2878,7 +2878,7 @@ html[data-bg-style="clouds-static"] body {
   opacity: 0;
   z-index: 2;
   filter: drop-shadow(0 0 18px color-mix(in srgb, var(--worldline-cyan) 22%, transparent));
-  animation: worldline-dial-ignite 1.32s cubic-bezier(.16, .72, .18, 1) both;
+  animation: worldline-dial-ignite 1.8s cubic-bezier(.16, .72, .18, 1) both;
 }
 .worldline-shift-overlay__dial-ring,
 .worldline-shift-overlay__dial-ticks,
@@ -2940,9 +2940,9 @@ html[data-bg-style="clouds-static"] body {
   background: linear-gradient(90deg, transparent 8%, color-mix(in srgb, var(--worldline-cyan) 24%, transparent) 27%, color-mix(in srgb, var(--worldline-anomaly) 25%, transparent) 48%, color-mix(in srgb, var(--worldline-blue) 28%, transparent) 71%, transparent 94%);
   mix-blend-mode: screen;
 }
-.worldline-shift-overlay__glitch--a { top: 24%; animation: worldline-glitch-a 1.32s steps(1, end) both; }
-.worldline-shift-overlay__glitch--b { top: 61%; height: 5.5%; animation: worldline-glitch-b 1.32s steps(1, end) both; }
-.worldline-shift-overlay__glitch--c { top: 43%; height: 1.5%; animation: worldline-glitch-c 1.32s steps(1, end) both; }
+.worldline-shift-overlay__glitch--a { top: 24%; animation: worldline-glitch-a 1.8s steps(1, end) both; }
+.worldline-shift-overlay__glitch--b { top: 61%; height: 5.5%; animation: worldline-glitch-b 1.8s steps(1, end) both; }
+.worldline-shift-overlay__glitch--c { top: 43%; height: 1.5%; animation: worldline-glitch-c 1.8s steps(1, end) both; }
 .worldline-shift-overlay__hud {
   position: absolute;
   top: 50%;
@@ -2964,7 +2964,7 @@ html[data-bg-style="clouds-static"] body {
   text-align: center;
   font-family: var(--font-mono, ui-monospace, monospace);
   letter-spacing: .10em;
-  animation: worldline-hud-fade 1.32s ease-out both;
+  animation: worldline-hud-fade 1.8s ease-out both;
 }
 .worldline-shift-overlay__hud::before {
   content: "";
