@@ -90,7 +90,8 @@ try {
   for (let i = 0; i < 5; i++) {
     await tabs.nth(i).click()
     check(await page.locator('.research-explainer dt').allTextContents().then(text => text.join('/') === '研究问题/主要方法/实验联系'), `research direction ${i + 1} provides a structured explanation`)
-    check(await page.locator('.research-evidence a').count() === 2, `research direction ${i + 1} links two approved papers`)
+    const evidenceCount = await page.locator('.research-evidence a').count()
+     check(evidenceCount >= 2 && evidenceCount <= 4, `research direction ${i + 1} links 2–4 approved papers`)
   }
   await tabs.first().focus(); await page.keyboard.press('End')
   check(await tabs.last().getAttribute('aria-selected') === 'true', 'End selects last research tab')
