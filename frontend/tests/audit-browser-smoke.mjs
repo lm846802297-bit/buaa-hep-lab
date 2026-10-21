@@ -92,21 +92,21 @@ try {
     const trigger = document.querySelector('.public-theme-trigger')
     return {
       accent: root.getPropertyValue('--accent').trim().toLowerCase(),
-      phosphor: root.getPropertyValue('--worldline-phosphor').trim().toLowerCase(),
+      phosphor: root.getPropertyValue('--worldline-khaki').trim().toLowerCase(),
       coreStroke: getComputedStyle(icon.querySelector('.tuner-core')).stroke,
       orbitStroke: getComputedStyle(icon.querySelector('.tuner-orbit')).stroke,
       buttonShadow: getComputedStyle(trigger).boxShadow
     }
   })
-  check(worldlineTuner.accent === '#e6a64b', 'Worldline Console uses the warm amber primary signal')
-  check(worldlineTuner.phosphor === '#8faa9c', 'Worldline Console defines a desaturated green phosphor tone')
+  check(worldlineTuner.accent === '#e6a24a', 'Worldline Console uses the warm amber primary signal')
+  check(worldlineTuner.khaki === '#a79a7d', 'Worldline Console defines a washed khaki/olive instrument tone')
   check(worldlineTuner.coreStroke !== worldlineTuner.orbitStroke, 'Worldline tuner separates amber core from cool orbital lines')
   check(worldlineTuner.buttonShadow !== 'none', 'Worldline tuner uses its restrained device-like button shadow')
   const terminalVisual = await page.evaluate(() => ({
     heroSignal: getComputedStyle(document.querySelector('.hero-eyebrow')).color,
     resourceRadius: getComputedStyle(document.querySelector('.physics-resource-card')).borderRadius
   }))
-  check(terminalVisual.heroSignal === 'rgb(143, 170, 156)', 'Worldline hero uses the cool phosphor secondary signal')
+  check(terminalVisual.heroSignal === 'rgb(167, 154, 125)', 'Worldline hero uses the washed khaki secondary signal')
   check(terminalVisual.resourceRadius === '14px', 'Worldline resource cards use the compact instrument-panel radius')
   await page.screenshot({ path: resolve(output, 'worldline-1440-first-screen.png') })
   await page.setViewportSize({ width: 390, height: 900 })
