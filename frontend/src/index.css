@@ -2340,7 +2340,7 @@ html[data-bg-style="clouds-static"] body {
   --radius: 14px;
   --shadow: 0 16px 48px -8px rgba(0, 0, 0, .55), 0 0 24px rgba(255, 179, 71, .035);
 }
-:root[data-color-scheme="worldline-console"][data-bg-type="paper"] body {
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] body {
   background-color: var(--bg);
   background-image: radial-gradient(ellipse at 18% 0%, rgba(255, 179, 71, .07), transparent 38%), repeating-linear-gradient(0deg, rgba(255, 179, 71, .014) 0, rgba(255, 179, 71, .014) 1px, transparent 1px, transparent 4px);
   background-attachment: fixed;
