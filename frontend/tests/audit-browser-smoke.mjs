@@ -207,14 +207,28 @@ try {
     })
     await page.waitForFunction(() => window.scrollY < 5)
     check(await page.evaluate(() => window.scrollY < 5), `opening a research topic resets reading position to the top at ${width}px`)
-    check(await page.locator('.topic-local-nav').evaluate(el => getComputedStyle(el).position === 'static'), `topic navigation scrolls with content instead of sticking in the viewport at ${width}px`)
+    check(await page.locator('.topic-sidebar').evaluate(el => getComputedStyle(el).position === 'sticky'), `topic directory uses sticky positioning at ${width}px`)
+    check(await page.locator('.topic-visual-panel img').evaluate(img => img.complete && img.naturalWidth > 0), `topic ${topic} visual illustration loads at ${width}px`)
+    if (width <= 980) {
+      await page.locator('.topic-sidebar-toggle').click()
+      check(await page.locator('.topic-local-nav').evaluate(el => el.classList.contains('is-open')), `mobile topic directory expands at ${width}px`)
+    }
     await page.locator('.topic-local-nav a[href="#topic-assumptions"]').click()
     await page.waitForFunction(() => location.hash === '#topic-assumptions')
+    await page.waitForFunction(() => {
+      const top = document.querySelector('#topic-assumptions')?.getBoundingClientRect().top
+      return top != null && top >= 0 && top < 140
+    })
     check(await page.locator('#topic-assumptions').evaluate(el => {
       const top = el.getBoundingClientRect().top
-      return top >= 0 && top < 120
+      return top >= 0 && top < 140
     }), `in-page navigation aligns the selected section near the top at ${width}px`)
-    check(await page.locator('.topic-local-nav').evaluate(el => el.getBoundingClientRect().bottom < 0), `topic navigation does not remain pinned after jumping to a later section at ${width}px`)
+    await page.waitForFunction(() => document.querySelector('.topic-local-nav a[aria-current="location"]')?.getAttribute('href') === '#topic-assumptions')
+    check(await page.locator('.topic-local-nav a[aria-current="location"]').getAttribute('href') === '#topic-assumptions', `topic directory highlights the selected section at ${width}px`)
+    check(await page.locator('.topic-sidebar').evaluate(el => {
+      const rect = el.getBoundingClientRect()
+      return rect.top >= 0 && rect.top < 100 && rect.bottom <= window.innerHeight
+    }), `topic directory remains visible while reading later sections at ${width}px`)
     await page.locator('.topic-all-guides').click()
     await page.locator('#research-guides').waitFor()
     await page.waitForFunction(() => location.hash === '#research-guides')
