@@ -61,39 +61,25 @@ node frontend/benchmarks/bcrypt/run.mjs --runtime workerd --samples 50 --warmup 
 | workerd | 72 | compare-mismatch | 7 | 7.047 | 7.452 | 7.900 |
 | workerd | 72 | compare-mismatch | 8 | 13.014 | 13.718 | 14.639 |
 
-## 当前候选的最新 CI 基准证据（2026-10-21）
+## 中间候选的 CI 基准证据与方法修正（2026-10-21）
 
-- 当前 PR head：196cae07b1b4f3d6d89ab65461a5212cb89cf511；base：fb287b4fac1a7c45e02ee3d1e276ebdabf476269。
-- 精确 head 的 [GitHub Actions run 39535976599](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39535976599) 已完成：validate=success，deploy=skipped。本次没有发布生产。
-- 当前 bcrypt-local-evidence artifact ID：12317109921（可从上述 run 页面下载）。包含 node.json 与 workerd.json；每份均有 1,320 行：1,200 个测量样本、120 次预热、24 个分组、0 次失败。
-- Artifact 内 environment.revision 为 a4e3a2a2b1e26f3a8ead117a10620624d5323a56，是本次 PR 测试用的合并提交（父提交分别为 base SHA 和当前 PR head SHA），不是 PR head 本身。报告同时记录了源码 SHA-256，防止把不同代码版本的基准混为一谈。
-- 当前 CI runner 环境：Linux x64、Intel Xeon Platinum 8573C、2 个逻辑 CPU、Node v24.22.0、bcryptjs 3.0.3、Wrangler 4.131.0、workerd 1.20260910.1。这与此前 Windows/AMD 的历史表格是不同机器，数值不应直接当成硬件性能对比。
-
-下表是当前 Linux CI artifact 的调用端 wall time 摘要，单位 ms；每个分组 n=50。每个 cost 单元按“12 字节输入 p50/p95；72 字节输入 p50/p95”列出。这里的 p95 仅描述该次 CI runner，不代表 Cloudflare 生产分布。
-
-| Runtime | 操作 | cost 6：12B；72B | cost 7：12B；72B | cost 8：12B；72B |
-|---|---|---:|---:|---:|
-| Node | control | 0.0006/0.0014；0.0006/0.0031 | 0.0007/0.0021；0.0006/0.0018 | 0.0006/0.0014；0.0007/0.0013 |
-| Node | hash | 4.635/5.268；4.582/5.391 | 9.188/10.173；9.293/10.125 | 18.227/20.022；18.276/19.198 |
-| Node | compare-match | 4.658/5.297；4.599/5.125 | 9.256/10.032；9.163/10.300 | 18.543/19.324；18.178/19.317 |
-| Node | compare-mismatch | 4.633/5.194；4.659/5.110 | 9.069/9.670；9.210/10.072 | 18.363/19.351；18.594/20.150 |
-| workerd | control | 1.540/3.543；1.583/4.649 | 1.533/2.361；1.508/2.316 | 1.498/2.480；1.468/2.630 |
-| workerd | hash | 6.732/8.570；6.673/8.542 | 11.719/13.743；11.629/14.586 | 21.705/25.782；21.475/27.086 |
-| workerd | compare-match | 6.780/9.677；6.680/7.841 | 11.597/13.612；11.813/14.038 | 21.695/25.965；21.666/27.519 |
-| workerd | compare-mismatch | 6.894/9.486；6.802/8.740 | 11.860/14.677；11.756/14.428 | 21.683/27.245；21.521/25.910 |
-
-**解释限制：** Node 的 control 仅是异步函数/计时器开销，单次 CPU 数值受 process.cpuUsage 分辨率限制；workerd 的 wall time 包含 dispatchFetch、本地调度、IPC、序列化与响应解析。二者都不是 Cloudflare invocation CPU。当前数据只能证明基准在该 CI 环境可复现、三种 bcrypt 操作均正常，不能据此确定生产 cost 6 的 CPU 预算是否安全。
+- [GitHub Actions run 39535976599](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39535976599) 对当时的 PR head 196cae07b1b4f3d6d89ab65461a5212cb89cf511 完成了 validate；artifact ID 为 12317109921。该 artifact 每份 JSON 含 1,320 行：1,200 个测量样本、120 次预热、24 个分组、0 次失败。
+- **该 artifact 现仅保留为中间证据，不作为最终跨运行时对比。** 复核发现当时 Node runner 直接调用 runOperation，而 workerd/Cloudflare runner 走 Worker fetch 路径；两边的请求校验、日志、Response 构造与 JSON 解析开销不一致。已修正 Node runner，使其也通过同一个 Worker fetch/auth/validation/log/response 路径。必须以该修正之后当前 head 的 CI artifact 重新记录最终表格。
+- 中间 artifact 的环境为 Linux x64、Intel Xeon Platinum 8573C、2 个逻辑 CPU、Node v24.22.0、bcryptjs 3.0.3、Wrangler 4.131.0、workerd 1.20260910.1；报告 revision a4e3a2a2b1e26f3a8ead117a10620624d5323a56 是当时 PR head 与 base 合并的 CI 测试提交，而非分支 head。
+- 这项修正不改变生产认证逻辑；生产 bcrypt cost 仍为 6。之前 Windows/AMD 的大表是旧机器的历史基线，不能与新的 Linux runner 数据作直接硬件性能比较。
 
 ### 当前 Pages 认证路径盘点
 
-检查当前部署所用的 frontend/functions/api/routes/auth.ts，确认其中有以下 bcrypt 路径：
+检查当前部署所用的 Pages Functions 路由，确认以下 bcrypt 路径：
 
-- POST /login：对已有用户的 hashed_password 执行 bcrypt.compare；哈希的 cost 由存量哈希决定。
-- POST /register：先做注册校验与邀请码/邮箱 D1 查询，再执行 bcrypt.hash(password, 6)，随后插入用户并处理关联记录。
-- 管理员 POST /members：执行 bcrypt.hash(password, 6) 后创建账号。
-- **未在当前 Pages auth router 中找到修改密码/重置密码端点。** 因此不能声称“密码修改路径已测”；若应用其他部署入口存在此功能，需要先确认真实路由与部署位置，再纳入审计。仓库中的旧 FastAPI backend 是另一条运行路径，不属于当前 Pages workflow 的发布产物，除非另有部署证据，不应与 Pages 运行数据混合。
+- POST /auth/login：对存量用户的 hashed_password 执行 bcrypt.compare；cost 取决于该用户现有哈希。
+- POST /auth/register：校验密码与邀请码、查询邮箱后执行 bcrypt.hash(password, 6)，随后写入 D1 并处理关联记录。
+- PUT /account/credentials：先对 current_password 执行 bcrypt.compare；如果提交 new_password，则校验后执行 bcrypt.hash(new_password, 6)，更新邮箱/哈希/token_version 并签发新 token。该路径使用 protectAuthAttempts('credentials')。
+- 管理员 POST /auth/members：执行 bcrypt.hash(password, 6) 后创建账号。
 
-当前控制组只覆盖基准 Worker 自身的鉴权、参数校验、日志和响应路径；它不执行 D1、JWT、邀请码、真实登录保护中间件或整条认证路由。完整认证路径仍需单独测试，且必须区分 Worker CPU 与端到端 wall latency。
+frontend/tests/security.test.ts 已有基于 SQLite 的 D1 适配器测试，覆盖凭据更新、token_version 失效和认证限速等功能；这些是功能/安全回归，不是 Cloudflare CPU 基准，也不等于生产完整路径的 CPU 验收。旧 FastAPI backend 使用独立的 Python bcrypt 实现，未包含在当前 Pages 发布工作流中；除非有独立生产部署证据，不应将它与 Pages 运行数据混合。
+
+当前 Worker 基准的 control 组在 Node、workerd 与 Cloudflare 中均应走同一 Worker fetch 路径，只绕过 bcrypt 运算；它不包含 D1、JWT、邀请码或真实认证中间件。因此 control 差值只能估计隔离基准 Worker 内 bcrypt 的增量成本，不能代替完整认证路由测量。
 
 ## 局限与决策
 
