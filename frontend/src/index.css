@@ -3097,8 +3097,9 @@ html[data-bg-style="clouds-static"] body {
   animation-delay: .61s;
 }
 .worldline-shift-overlay__hud {
+  /* Align the HUD's visible window with the scripted readout phase (~360 ms). */
   animation-duration: .92s;
-  animation-delay: .30s;
+  animation-delay: .16s;
 }
 .worldline-shift-overlay__meter > span {
   animation-duration: .74s;
