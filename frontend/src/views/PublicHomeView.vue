@@ -107,6 +107,25 @@ function downloadBibtex() {
       <noscript><div class="research-static"><h3>全部研究方向</h3><article v-for="direction in directions" :key="direction.id"><h4>{{ direction.title }}</h4><p>{{ direction.text }}</p><dl><dt>研究问题</dt><dd>{{ direction.question }}</dd><dt>主要方法</dt><dd>{{ direction.methods }}</dd><dt>实验联系</dt><dd>{{ direction.probes }}</dd></dl><p>{{ direction.detail }}</p></article></div></noscript>
     </section>
 
+    <section id="research-guides" class="public-section research-guides-section" aria-labelledby="research-guides-title">
+      <div class="section-top">
+        <div><span class="eyebrow">02 / RESEARCH GUIDES</span><h2 id="research-guides-title">从概念出发，沿着证据深入。</h2></div>
+        <p>五个方向，各有一份可继续阅读的专题导读。<br>公式附带适用条件，结论标明模型与数据边界。</p>
+      </div>
+      <div class="research-guide-grid">
+        <article v-for="direction in directions" :key="direction.id" class="research-guide-card">
+          <div class="research-guide-top"><span>{{ direction.number }} / TOPIC GUIDE</span><span class="research-guide-symbol" aria-hidden="true">{{ direction.symbol }}</span></div>
+          <p class="research-guide-kicker">{{ direction.en }}</p>
+          <h3>{{ direction.title }}</h3>
+          <p class="research-guide-summary">{{ direction.text }}</p>
+          <div class="research-guide-question"><span>核心问题</span><p>{{ direction.question }}</p></div>
+          <div class="research-guide-tags"><span v-for="tag in direction.tags.slice(0, 3)" :key="tag">{{ tag }}</span></div>
+          <router-link :to="'/research/' + direction.id" class="button primary research-guide-open">打开专题导读 <span aria-hidden="true">↗</span></router-link>
+        </article>
+      </div>
+      <p class="research-guides-note">导读用于建立概念地图与追溯原始来源；不替代论文原文、独立计算或实验分析复现。</p>
+    </section>
+
     <section id="publications" class="public-section publications-section">
       <div class="section-top"><div><span class="eyebrow">02 / SELECTED PUBLICATIONS</span><h2>以研究回应问题。</h2></div><button class="button secondary" :disabled="!visiblePapers.length" @click="downloadBibtex">导出 BibTeX <span aria-hidden="true">↓</span></button></div>
       <p class="section-description">以下为公开代表成果选录，非完整或最新论文列表。16 篇选录已由课题组确认，书目信息交叉核对至 arXiv 与 INSPIRE-HEP；最近核对：2026-10-20。</p>
