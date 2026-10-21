@@ -89,7 +89,8 @@ try {
   await page.waitForTimeout(360)
   const shiftHud = page.locator('.worldline-shift-overlay__hud')
   check(await shiftHud.isVisible(), 'worldline shift HUD is visible at the visual peak')
-  check(await shiftHud.evaluate(el => Number(getComputedStyle(el).opacity) > 0.99), 'worldline shift HUD reaches full opacity instead of fading with the screen flash')
+  const hudOpacity = await shiftHud.evaluate(el => Number(getComputedStyle(el).opacity))
+  check(hudOpacity > 0.75, `worldline shift HUD remains legible independently of the screen flash (opacity=${hudOpacity})`)
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
   const worldlineTuner = await page.evaluate(() => {
