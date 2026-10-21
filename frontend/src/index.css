@@ -1788,7 +1788,8 @@ html[data-bg-style="clouds-static"] body {
 :root[data-color-scheme="quiet-research"] textarea::placeholder {
   color: #81796E;
 }
-:root[data-color-scheme="quiet-research"] .forecast-atmosphere {
+:root[data-color-scheme="quiet-research"][data-bg-type="paper"] .forecast-atmosphere,
+:root[data-color-scheme="quiet-research"][data-bg-type="clouds-static"] .forecast-atmosphere {
   display: none !important;
 }
 :root[data-color-scheme="quiet-research"] .app-shell {
