@@ -11,7 +11,14 @@ description: >-
 
 # LabOrbit Vibe-Coding 全栈开发与定制技能手册
 
-本 Skill 为开发者和 AI Agent（如 Antigravity, Claude Code, Cursor, Windsurf, Codex 等）提供利用 **Vibe-Coding（人类主导需求与交互审美 + AI 执行全栈代码研发）** 高效定制、二次开发与课题组迁移的完整标准作业程序（SOP）。
+本 Skill 为 GPT / ChatGPT（本项目主要开发入口）、DSH 与 WorkBuddy 提供利用 **Vibe-Coding（人类主导需求与交互审美 + AI 执行全栈代码研发）** 高效定制、二次开发与课题组迁移的标准作业程序（SOP）。
+
+## 仓库协作与安全前置要求（优先级高于本 Skill 的历史示例）
+
+- 本仓库的统一规则入口是根目录 `AGENTS.md`、`docs/GPT_FIRST_DEVELOPMENT_WORKFLOW.md` 与 `docs/PARALLEL_DEVELOPMENT_WORKFLOW.md`。GPT 是主要入口，DSH 和 WorkBuddy 复用同一流程；暂不为其他工具维护独立配置。
+- 在任何文件写入前，先明确计划修改的路径并完成实时 GitHub 预检。有本地 checkout 与已认证 `gh` CLI 时执行 `node scripts/agent-preflight.mjs --paths <path1> <path2> ...`；GPT 通过 GitHub 连接器工作或没有 CLI 时，使用连接器完成等价的只读检查并记录 main SHA、相关开放 PR HEAD 与 changed-files 证据。预检失败、路径交集或基线过期时必须停止写入并协调；覆盖选项只能在用户明确授权后使用。
+- 未经用户明确授权，不执行生产部署、远程 D1 写入/迁移或其他会改变生产数据与资源的操作。远程资源名称以当前 `frontend/wrangler.json` 为准，本文的历史示例不是可直接执行的生产操作指令。
+- 测试套件数量会变化；验收依据是当前 HEAD 的实际测试结果与 CI，而不是本文或历史记录中的固定数量。
 
 ---
 
@@ -202,36 +209,16 @@ app.post('/items/:id/score', async (c) => {
 
 ### 1. SQLite 自建模式数据库运维
 
-- **本地数据库文件**：默认存储在 `./data/labhub.db`。
-- **字段追加策略（加法迁移）**：
-  在 `backend/migrations.py` 中编写容错更新逻辑：
-  ```python
-  def run_migrations(engine):
-      with engine.connect() as conn:
-          try:
-              conn.execute(text("ALTER TABLE items ADD COLUMN score REAL DEFAULT 0.0;"))
-              conn.commit()
-          except Exception:
-              pass  # 字段已存在时安全跳过
-  ```
+- 本地数据库文件、模型和迁移入口以当前 `backend/` 配置为准；不要假定历史文档中的路径或数据库文件名仍然准确。
+- 优先使用可追踪、可重复、可验证的迁移，并分别测试空库与已有数据。
+- 不要用 `except Exception: pass` 吞掉所有迁移错误。只有明确识别的“迁移已应用/列已存在”情形才可以安全处理；其他异常必须显式失败并保留诊断信息。
 
 ### 2. Cloudflare D1 边缘数据库运维
 
-通过 Wrangler CLI 在 `frontend/` 目录执行：
-```bash
-cd frontend
-
-# 查看线上数据表字段
-npx wrangler d1 execute labhub-db --remote --command="PRAGMA table_info(seminars);"
-
-# 执行无损字段添加
-npx wrangler d1 execute labhub-db --remote --command="ALTER TABLE seminars ADD COLUMN custom_tag TEXT DEFAULT '';"
-
-# 执行迁移脚本
-npx wrangler d1 execute labhub-db --remote --file=../scripts/your_migration.sql
-```
-> [!IMPORTANT]
-> 严禁在线上直接执行 `DROP TABLE`。涉及字段类型或重构时，一律先新建列并回填默认值。
+- 资源绑定和数据库名称必须从当前 `frontend/wrangler.json` 读取；不得照抄旧示例中的 `labhub-db` 或其他历史资源名。
+- 迁移 SQL 的审查源以当前 `scripts/schema_d1.sql` 及仓库中版本化迁移为准。先在本地/隔离环境验证，再通过 PR 审查迁移与回滚/前向修复方案。
+- 远程只读检查、远程写入与生产迁移是不同风险等级。未经用户明确授权，不运行带 `--remote` 的写入/迁移命令，不在生产数据库试验，也不把临时 DDL 当作正式迁移流程。
+- 如任务确实需要生产操作，先说明目标资源、精确命令、影响、备份/恢复计划与验证方法，等待用户明确批准后再执行。
 
 ---
 
@@ -367,7 +354,7 @@ Vibe-Coding 的核心是“大胆重构，严格测试”。任何代码交付�
 ```bash
 npm --prefix frontend test
 ```
-- **合格基准**：57 个测试套件、369+ 个单元测试必须 **100% 全部通过 (Zero Failures)**；
+- **合格基准**：当前 HEAD 上实际发现的测试套件与测试必须全部通过（Zero Failures）；不要把历史套件/测试数量写成固定门槛。PR 的最终验证以该 HEAD 对应的 GitHub Actions 结果为准。
 - 若修改了界面文案或数据结构，必须同步更新对应的 `*.test.js` 文件。
 
 ### 2. 静态构建与 Pages 生产打包检查

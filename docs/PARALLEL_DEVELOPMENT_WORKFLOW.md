@@ -1,7 +1,7 @@
 # 并行开发与 PR 协作规范
 
 > 状态：第一版工程规范。本文定义代码协作边界，不替代代码、测试和线上运行证据。
-> 本规范与仓库根目录 `AGENTS.md` 配合使用。若历史说明与本文冲突，以当前 `main` 上的 CI/部署配置和本规范为准；历史说明中的直接推送、直接生产部署指令不得执行。
+> 本规范与仓库根目录 `AGENTS.md` 及 [GPT 优先开发工作流](GPT_FIRST_DEVELOPMENT_WORKFLOW.md) 配合使用。GPT / ChatGPT 是主要开发入口，DSH 与 WorkBuddy 复用同一规范。若历史说明与本文冲突，以当前 `main` 上的 CI/部署配置和本规范为准；历史说明中的直接推送、直接生产部署指令不得执行。
 > 详细模块依赖、共享热点和多会话责任边界见 [模块边界与并行开发责任图](architecture/MODULE_BOUNDARIES_AND_OWNERSHIP.md)；当前开放 PR 的文件交集与 CI 状态见 [并行开发架构审计](audit/并行开发架构审计-2026-10-21.md)。
 
 ## 1. 基本工作流
@@ -24,6 +24,14 @@
 5. 一个文件同一时段只由一个明确的主导任务修改。不同会话并不构成文件锁；不同分支也不保证语义上没有冲突。
 6. 开发中保持 Draft 是正常状态。功能未完成或 CI 失败时，继续修复与验证，不为“让 PR 变绿”而跳过有意义的测试，也不因 CI 失败而提前合并。
 7. 合并前检查最新 head SHA、CI、文件交集及分支是否落后/分叉；任何新提交都需要对应的新验证结果。
+
+开工前必须完成只读预检（在任何文件写入前）。在有本地 checkout 与已认证 GitHub CLI 的环境中，可执行仓库内的预检工具：
+
+```bash
+node scripts/agent-preflight.mjs --paths frontend/src/index.css frontend/tests/audit-browser-smoke.mjs
+```
+
+将示例路径替换为本任务计划修改的全部仓库相对路径。工具会刷新本地 `origin/main` 跟踪引用，核对 GitHub 上的最新 base SHA，并读取所有指向同一 base 的开放 PR 与 changed-files 列表；它不会修改源文件或远端分支。需要本地 Git、GitHub CLI (`gh`) 和有效的 `gh auth status`。退出码非零表示预检被阻止或无法完成：不要继续写入；先解决过期基线/路径交集，或在 GPT 通过 GitHub 连接器等没有 CLI 的环境中完成等价的只读检查并记录证据。`--allow-overlap` 与 `--allow-stale-base` 只能在用户明确授权后使用，不能用来绕过协作规则。
 
 ### 禁止默认执行的操作
 
