@@ -61,6 +61,40 @@ node frontend/benchmarks/bcrypt/run.mjs --runtime workerd --samples 50 --warmup 
 | workerd | 72 | compare-mismatch | 7 | 7.047 | 7.452 | 7.900 |
 | workerd | 72 | compare-mismatch | 8 | 13.014 | 13.718 | 14.639 |
 
+## 当前候选的最新 CI 基准证据（2026-10-21）
+
+- 当前 PR head：196cae07b1b4f3d6d89ab65461a5212cb89cf511；base：fb287b4fac1a7c45e02ee3d1e276ebdabf476269。
+- 精确 head 的 [GitHub Actions run 39535976599](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39535976599) 已完成：validate=success，deploy=skipped。本次没有发布生产。
+- 当前 bcrypt-local-evidence artifact ID：12317109921（可从上述 run 页面下载）。包含 node.json 与 workerd.json；每份均有 1,320 行：1,200 个测量样本、120 次预热、24 个分组、0 次失败。
+- Artifact 内 environment.revision 为 a4e3a2a2b1e26f3a8ead117a10620624d5323a56，是本次 PR 测试用的合并提交（父提交分别为 base SHA 和当前 PR head SHA），不是 PR head 本身。报告同时记录了源码 SHA-256，防止把不同代码版本的基准混为一谈。
+- 当前 CI runner 环境：Linux x64、Intel Xeon Platinum 8573C、2 个逻辑 CPU、Node v24.22.0、bcryptjs 3.0.3、Wrangler 4.131.0、workerd 1.20260910.1。这与此前 Windows/AMD 的历史表格是不同机器，数值不应直接当成硬件性能对比。
+
+下表是当前 Linux CI artifact 的调用端 wall time 摘要，单位 ms；每个分组 n=50。每个 cost 单元按“12 字节输入 p50/p95；72 字节输入 p50/p95”列出。这里的 p95 仅描述该次 CI runner，不代表 Cloudflare 生产分布。
+
+| Runtime | 操作 | cost 6：12B；72B | cost 7：12B；72B | cost 8：12B；72B |
+|---|---|---:|---:|---:|
+| Node | control | 0.0006/0.0014；0.0006/0.0031 | 0.0007/0.0021；0.0006/0.0018 | 0.0006/0.0014；0.0007/0.0013 |
+| Node | hash | 4.635/5.268；4.582/5.391 | 9.188/10.173；9.293/10.125 | 18.227/20.022；18.276/19.198 |
+| Node | compare-match | 4.658/5.297；4.599/5.125 | 9.256/10.032；9.163/10.300 | 18.543/19.324；18.178/19.317 |
+| Node | compare-mismatch | 4.633/5.194；4.659/5.110 | 9.069/9.670；9.210/10.072 | 18.363/19.351；18.594/20.150 |
+| workerd | control | 1.540/3.543；1.583/4.649 | 1.533/2.361；1.508/2.316 | 1.498/2.480；1.468/2.630 |
+| workerd | hash | 6.732/8.570；6.673/8.542 | 11.719/13.743；11.629/14.586 | 21.705/25.782；21.475/27.086 |
+| workerd | compare-match | 6.780/9.677；6.680/7.841 | 11.597/13.612；11.813/14.038 | 21.695/25.965；21.666/27.519 |
+| workerd | compare-mismatch | 6.894/9.486；6.802/8.740 | 11.860/14.677；11.756/14.428 | 21.683/27.245；21.521/25.910 |
+
+**解释限制：** Node 的 control 仅是异步函数/计时器开销，单次 CPU 数值受 process.cpuUsage 分辨率限制；workerd 的 wall time 包含 dispatchFetch、本地调度、IPC、序列化与响应解析。二者都不是 Cloudflare invocation CPU。当前数据只能证明基准在该 CI 环境可复现、三种 bcrypt 操作均正常，不能据此确定生产 cost 6 的 CPU 预算是否安全。
+
+### 当前 Pages 认证路径盘点
+
+检查当前部署所用的 frontend/functions/api/routes/auth.ts，确认其中有以下 bcrypt 路径：
+
+- POST /login：对已有用户的 hashed_password 执行 bcrypt.compare；哈希的 cost 由存量哈希决定。
+- POST /register：先做注册校验与邀请码/邮箱 D1 查询，再执行 bcrypt.hash(password, 6)，随后插入用户并处理关联记录。
+- 管理员 POST /members：执行 bcrypt.hash(password, 6) 后创建账号。
+- **未在当前 Pages auth router 中找到修改密码/重置密码端点。** 因此不能声称“密码修改路径已测”；若应用其他部署入口存在此功能，需要先确认真实路由与部署位置，再纳入审计。仓库中的旧 FastAPI backend 是另一条运行路径，不属于当前 Pages workflow 的发布产物，除非另有部署证据，不应与 Pages 运行数据混合。
+
+当前控制组只覆盖基准 Worker 自身的鉴权、参数校验、日志和响应路径；它不执行 D1、JWT、邀请码、真实登录保护中间件或整条认证路由。完整认证路径仍需单独测试，且必须区分 Worker CPU 与端到端 wall latency。
+
 ## 局限与决策
 
 - Node 使用调用端高精度单调时钟；附带的 `process.cpuUsage` 仅是 Node 进程 user+system CPU，在 Windows 上分辨率不足以可靠解释单次短操作，不能代替 Worker CPU。
