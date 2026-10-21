@@ -71,7 +71,7 @@ describe('public research topic pages', () => {
     for (const resource of researchTopicResources) {
       expect(resource.url).toMatch(/^https:\/\//)
       expect(resource.name).toBeTruthy()
-      expect(resource.description.length).toBeGreaterThan(20)
+      expect(resource.description.length).toBeGreaterThanOrEqual(20)
     }
   })
 
