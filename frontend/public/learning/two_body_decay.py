@@ -2,8 +2,8 @@
 
 Units: hbar=c=1; masses and g in GeV; L_int=-g X a b; tree level.
 No experimental inputs, loops, spin, detector model or Higgs identification.
-Reference: PDG Kinematics (2025), sections 49.4 and 49.4.2.
-https://pdg.lbl.gov/2025/reviews/rpp2025-rev-kinematics.pdf
+Reference: PDG Kinematics (2026), sections 49.4 and 49.4.2.
+https://pdg.lbl.gov/2026/reviews/rpp2026-rev-kinematics.pdf
 Run: python two_body_decay.py (Python 3.9+, standard library only).
 Checks: analytic limits and a separate angular quadrature implementation.
 This is implementation consistency evidence, not independent research validation.

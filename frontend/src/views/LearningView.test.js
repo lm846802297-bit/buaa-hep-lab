@@ -38,6 +38,14 @@ describe('Study guides and research provenance', () => {
     }
     expect(html).not.toContain('katex-error')
   })
+  it('separates the Standard Model crossover source from singlet-extension lattice results', () => {
+    expect(sourceById('ewpt-sm-lattice').url).toBe('https://doi.org/10.1103/PhysRevLett.113.141602')
+    expect(sourceById('ewpt-lattice').url).toBe('https://doi.org/10.1103/PhysRevD.110.115016')
+  })
+  it('pins kinematics formulas to the current PDG edition', () => {
+    expect(sourceById('pdg').url).toBe('https://pdg.lbl.gov/2026/')
+    expect(sourceById('kinematics').url).toBe('https://pdg.lbl.gov/2026/reviews/rpp2026-rev-kinematics.pdf')
+  })
   it('handles an unknown deep link without silently showing the wrong topic', async () => {
     const html = await renderTopic('missing-guide')
     expect(html).toContain('没有这个学习专题')

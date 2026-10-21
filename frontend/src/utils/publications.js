@@ -4,7 +4,7 @@ export function filterPublications(papers, { category = 'all', query = '', year 
     (category === 'all' || (paper.categories || [paper.category]).includes(category)) &&
     (year === 'all' || String(paper.year) === String(year)) &&
     [paper.title, ...paper.authors, paper.id, paper.year, paper.journal, paper.doi, ...(paper.tags || [])].join(' ').toLowerCase().includes(term)
-  ).sort((a, b) => (sort === 'oldest' ? 1 : -1) * (Number(a.year) - Number(b.year) || a.published.localeCompare(b.published)))
+  ).sort((a, b) => (sort === 'oldest' ? 1 : -1) * (Number(a.year) - Number(b.year) || a.arxivSubmitted.localeCompare(b.arxivSubmitted)))
 }
 
 export function citationText(paper) {

@@ -12,7 +12,7 @@ const mockLocalStorage = {
 }
 globalThis.localStorage = mockLocalStorage
 
-describe('Demo Mode Frozen Date (2026-09-10)', () => {
+describe('Demo Mode Frozen Date (2026-10-21)', () => {
   beforeEach(() => {
     localStorage.clear()
   })
@@ -25,20 +25,20 @@ describe('Demo Mode Frozen Date (2026-09-10)', () => {
     expect(today.startsWith(realYear)).toBe(true)
   })
 
-  it('freezes date to 2026-09-10 in demo mode for GitHub Pages showcase', () => {
+  it('freezes date to the demo dataset date in demo mode for GitHub Pages showcase', () => {
     localStorage.setItem('labhub_force_demo', '1')
     expect(isDemoMode()).toBe(true)
 
-    expect(DEMO_BASE_DATE_STR).toBe('2026-09-10')
-    expect(DEMO_FROZEN_DATE_STR).toBe('2026-09-10')
-    expect(shanghaiToday()).toBe('2026-09-10')
+    expect(DEMO_BASE_DATE_STR).toBe('2026-10-21')
+    expect(DEMO_FROZEN_DATE_STR).toBe('2026-10-21')
+    expect(shanghaiToday()).toBe('2026-10-21')
 
-    // Seminars status relative to 2026-09-10
-    const upcomingSeminar = DEMO_SEMINARS.find(s => s.id === 101) // 2026-09-12
-    const pastSeminar = DEMO_SEMINARS.find(s => s.id === 100) // 2026-09-05
+    // Seminar status relative to the shared demo base date 2026-10-21
+    const upcomingSeminar = DEMO_SEMINARS.find(s => s.id === 101) // 2026-10-23
+    const pastSeminar = DEMO_SEMINARS.find(s => s.id === 100) // 2026-10-16
 
-    expect(upcomingSeminar.date).toBe('2026-09-12')
-    expect(pastSeminar.date).toBe('2026-09-05')
+    expect(upcomingSeminar.date).toBe('2026-10-23')
+    expect(pastSeminar.date).toBe('2026-10-16')
 
     expect(isSeminarCompleted(upcomingSeminar)).toBe(false)
     expect(statusLabel(upcomingSeminar)).toBe('待举行')
@@ -50,7 +50,7 @@ describe('Demo Mode Frozen Date (2026-09-10)', () => {
     const next = nextSeminar(DEMO_SEMINARS)
     expect(next).toBeTruthy()
     expect(next.id).toBe(101)
-    expect(next.date).toBe('2026-09-12')
+    expect(next.date).toBe('2026-10-23')
     expect(next.presenter_name).toContain('陈晨')
   })
 
