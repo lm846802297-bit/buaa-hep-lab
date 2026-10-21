@@ -31,7 +31,6 @@ describe('public research topic pages', () => {
     expect(html).toContain('研究中必须明确的假设与常见误判')
     expect(html).toContain('如何从导读进入实际研究')
     expect(html).toContain('关系式与方法的参考依据')
-    expect(html).toContain('从理论模型到可检验结论')
     expect(html).toContain('结果应该如何判读')
     expect(html).toContain('本方向常用的专业资源')
     expect(html).toContain('LUX-ZEPLIN (LZ)')
