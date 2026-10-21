@@ -33,7 +33,7 @@ if (values.runtime === 'cloudflare') {
     const result = await response.json()
     if (result.benchmark !== 'bcrypt-v1' || result.sampleId !== params.sample || result.cost !== Number(params.cost) || result.bytes !== Number(params.bytes) || result.operation !== params.operation || result.ok !== true) throw new Error('Invalid benchmark response')
   }
- else if (values.runtime === 'workerd') {
+} else if (values.runtime === 'workerd') {
   const { build } = await import('esbuild')
   const { Miniflare, convertV4MiniflareOptions } = await import('miniflare')
   const bundle = await build({ entryPoints: [resolve(here, 'worker.mjs')], bundle: true, format: 'esm', platform: 'browser', write: false })
