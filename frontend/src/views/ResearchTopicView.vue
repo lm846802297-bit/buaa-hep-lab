@@ -92,13 +92,15 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
         </div>
       </header>
 
-      <figure v-if="currentTopicVisual" class="topic-visual-panel">
-        <img :src="currentTopicVisual.src" :alt="currentTopicVisual.alt" width="1000" height="400" loading="lazy" decoding="async">
-        <figcaption>概念插图 · 非真实实验事件或科研数据</figcaption>
-      </figure>
-      <ul v-if="currentTopicVisual" class="topic-visual-labels" aria-label="插图关键标签">
-        <li v-for="label in currentTopicVisual.labels" :key="label">{{ label }}</li>
-      </ul>
+      <div v-if="currentTopicVisual" class="topic-visual-wrapper">
+        <figure class="topic-visual-panel">
+          <img :src="currentTopicVisual.src" :alt="currentTopicVisual.alt" width="1000" height="400" loading="lazy" decoding="async">
+          <figcaption>概念插图 · 非真实实验事件或科研数据</figcaption>
+        </figure>
+        <ul class="topic-visual-labels" aria-label="插图关键标签">
+          <li v-for="label in currentTopicVisual.labels" :key="label">{{ label }}</li>
+        </ul>
+      </div>
 
       <div class="topic-reading-layout">
         <aside v-if="topicDetail" class="topic-sidebar" aria-label="专题目录">
