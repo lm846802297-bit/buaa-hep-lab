@@ -18,11 +18,11 @@ const topicResources = computed(() => topicDetail.value
 const topicNavigation = computed(() => topicDetail.value?.navigation || [])
 
 const topicVisuals = {
-  dark: { src: '/images/research-topics/dark-matter.svg', alt: '暗物质晕、靶核、核反冲与液氙探测器的概念示意图；曲线不代表实验数据。' },
-  neutrino: { src: '/images/research-topics/neutrino.svg', alt: '中微子味态振荡传播与 PMNS 混合矩阵结构的概念示意图；矩阵色块和波形不代表定量计算。' },
-  collider: { src: '/images/research-topics/collider.svg', alt: '多层对撞机探测器、粒子径迹、碰撞顶点及缺失横动量的概念示意图；不代表真实事件。' },
-  phase: { src: '/images/research-topics/phase-gw.svg', alt: '真空泡成核、扩张与碰撞以及引力波的概念示意图；波形不代表定量频谱。' },
-  precision: { src: '/images/research-topics/quantum-metrology.svg', alt: 'Bloch 球上的量子态、自旋关联及测量分布的概念示意图；不表示 Fisher 信息计算结果。' },
+  dark: { src: '/images/research-topics/dark-matter.svg', alt: '暗物质晕、靶核、核反冲与液氙探测器的概念示意图；曲线不代表实验数据。', labels: ['Dark Matter Halo', 'Target Nucleus', 'Nuclear Recoil', 'Liquid Xenon Detector'] },
+  neutrino: { src: '/images/research-topics/neutrino.svg', alt: '中微子味态振荡传播与 PMNS 混合矩阵结构的概念示意图；矩阵色块和波形不代表定量计算。', labels: ['Neutrino Oscillation', 'Flavor States', 'Mass Eigenstates', 'PMNS Mixing Matrix'] },
+  collider: { src: '/images/research-topics/collider.svg', alt: '多层对撞机探测器、粒子径迹、碰撞顶点及缺失横动量的概念示意图；不代表真实事件。', labels: ['Detector Layers', 'Particle Tracks', 'Interaction Vertex', 'Missing Transverse Momentum'] },
+  phase: { src: '/images/research-topics/phase-gw.svg', alt: '真空泡成核、扩张与碰撞以及引力波的概念示意图；波形不代表定量频谱。', labels: ['Bubble Nucleation', 'Bubble Expansion', 'Bubble Collision', 'Gravitational Waves'] },
+  precision: { src: '/images/research-topics/quantum-metrology.svg', alt: 'Bloch 球上的量子态、自旋关联及测量分布的概念示意图；不表示 Fisher 信息计算结果。', labels: ['Bloch Sphere', 'Quantum State', 'Spin Correlations', 'Measurement Distribution', 'Fisher Information (conceptual)'] },
 }
 const currentTopicVisual = computed(() => topicVisuals[topic.value?.id] || null)
 const activeTopicSection = ref('topic-question')
@@ -96,6 +96,9 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
         <img :src="currentTopicVisual.src" :alt="currentTopicVisual.alt" width="1000" height="400" loading="lazy" decoding="async">
         <figcaption>概念插图 · 非真实实验事件或科研数据</figcaption>
       </figure>
+      <ul v-if="currentTopicVisual" class="topic-visual-labels" aria-label="插图关键标签">
+        <li v-for="label in currentTopicVisual.labels" :key="label">{{ label }}</li>
+      </ul>
 
       <div class="topic-reading-layout">
         <aside v-if="topicDetail" class="topic-sidebar" aria-label="专题目录">
