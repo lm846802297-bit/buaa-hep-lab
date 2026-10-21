@@ -488,7 +488,11 @@ try {
     return {
       rootInline: document.documentElement.style.getPropertyValue('--bg-dim'),
       rootComputed: getComputedStyle(document.documentElement).getPropertyValue('--bg-dim'),
+      shadeVariable: shade ? getComputedStyle(shade).getPropertyValue('--bg-dim') : null,
+      parentVariable: shade?.parentElement ? getComputedStyle(shade.parentElement).getPropertyValue('--bg-dim') : null,
       shadeOpacity: shade ? getComputedStyle(shade).opacity : null,
+      shadeInlineStyle: shade?.getAttribute('style') ?? null,
+      shadeTransition: shade ? getComputedStyle(shade).transition : null,
       sliderValue: document.querySelector('#bg-dim-slider')?.value ?? null
     }
   })
