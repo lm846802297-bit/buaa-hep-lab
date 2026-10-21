@@ -2,8 +2,8 @@
 <title id="title">中微子振荡、质量本征态与混合</title><desc id="desc">三种中微子味态沿传播方向演化，示意振荡与混合；右侧三乘三色块仅象征混合矩阵结构，不代表 PMNS 矩阵元的数值。曲线不对应指定振荡参数下的概率计算。</desc>
 <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#050d18"/><stop offset="1" stop-color="#101a30"/></linearGradient><linearGradient id="beam"><stop stop-color="#5ad7f0" stop-opacity="0"/><stop offset=".45" stop-color="#5ad7f0" stop-opacity=".8"/><stop offset="1" stop-color="#5ad7f0" stop-opacity="0"/></linearGradient><radialGradient id="node"><stop stop-color="#efffff"/><stop offset=".35" stop-color="#66dff4"/><stop offset="1" stop-color="#2876c2" stop-opacity=".1"/></radialGradient><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#7b9ce4" stroke-opacity=".09"/></pattern></defs>
 <g font-family="Arial, Helvetica, sans-serif" font-weight="600" paint-order="stroke" stroke="#07111c" stroke-width="3" stroke-linejoin="round">
-<text x="30" y="34" fill="#d9f7ff" font-size="16" font-weight="700">NEUTRINO OSCILLATION</text>
-<text x="30" y="61" fill="#a8eafa" font-size="13">FLAVOR STATES</text>
+<text x="30" y="70" fill="#d9f7ff" font-size="16" font-weight="700">NEUTRINO OSCILLATION</text>
+<text x="30" y="94" fill="#a8eafa" font-size="13">FLAVOR STATES</text>
 </g>
 <rect width="1000" height="400" fill="url(#bg)"/><rect width="1000" height="400" fill="url(#grid)"/>
 <g fill="none" stroke-width="2.8" stroke-linecap="round">
@@ -21,5 +21,5 @@
 <text x="837" y="156" text-anchor="end">ν<tspan baseline-shift="sub" font-size="7">e</tspan></text><text x="837" y="195" text-anchor="end">ν<tspan baseline-shift="sub" font-size="7">μ</tspan></text><text x="837" y="234" text-anchor="end">ν<tspan baseline-shift="sub" font-size="7">τ</tspan></text><text x="900" y="258" text-anchor="middle" font-size="8">MASS EIGENSTATES</text>
 </g>
 <g fill="none" stroke-width="2"><path d="M820 370H978M820 370V278" stroke="#7a9dbb" stroke-opacity=".6"/><path d="M820 368C842 366 849 342 868 327S895 336 911 352 935 361 950 365 967 368 978 369" stroke="#62d9ef"/><path d="M820 368C840 367 851 357 867 345S895 320 914 334 937 359 955 366 969 368 978 369" stroke="#ffc477" stroke-opacity=".8"/></g>
-<g fill="#a6cfe3" font-family="sans-serif" font-size="12" opacity=".82"><text x="36" y="86">ν<tspan baseline-shift="sub" font-size="8">e</tspan></text><text x="36" y="174">ν<tspan baseline-shift="sub" font-size="8">μ</tspan></text><text x="36" y="260">ν<tspan baseline-shift="sub" font-size="8">τ</tspan></text><text x="806" y="386">L/E</text></g>
+<g fill="#a6cfe3" font-family="sans-serif" font-size="12" opacity=".82"><text x="36" y="86">ν<tspan baseline-shift="sub" font-size="8">e</tspan></text><text x="36" y="174">ν<tspan baseline-shift="sub" font-size="8">μ</tspan></text><text x="36" y="260">ν<tspan baseline-shift="sub" font-size="8">τ</tspan></text><text x="806" y="325">L/E</text></g>
 </svg>
