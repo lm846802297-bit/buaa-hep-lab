@@ -18,11 +18,11 @@ const topicResources = computed(() => topicDetail.value
 const topicNavigation = computed(() => topicDetail.value?.navigation || [])
 
 const topicVisuals = {
-  dark: { src: '/images/research-topics/dark-matter.svg', alt: '暗物质粒子与靶核相互作用、产生核反冲的概念插图' },
-  neutrino: { src: '/images/research-topics/neutrino.svg', alt: '三种中微子传播波包相互交织的概念插图' },
-  collider: { src: '/images/research-topics/collider.svg', alt: '对撞机探测器中粒子碰撞与径迹的概念插图' },
-  phase: { src: '/images/research-topics/phase-gw.svg', alt: '早期宇宙相变泡及其传播波纹的概念插图' },
-  precision: { src: '/images/research-topics/quantum-metrology.svg', alt: '量子态、自旋关联和测量波形的概念插图' },
+  dark: { src: '/images/research-topics/dark-matter.svg', alt: '星系晕、暗物质粒子与液氙探测器中的核反冲信号示意图' },
+  neutrino: { src: '/images/research-topics/neutrino.svg', alt: '三种中微子味态的振荡传播、混合关系与示意性振荡谱' },
+  collider: { src: '/images/research-topics/collider.svg', alt: '多层对撞机探测器、中心碰撞顶点与多色粒子径迹' },
+  phase: { src: '/images/research-topics/phase-gw.svg', alt: '早期宇宙真空泡成核、扩张、碰撞以及引力波传播的概念图' },
+  precision: { src: '/images/research-topics/quantum-metrology.svg', alt: 'Bloch 球量子态、自旋关联与量子测量分布的示意图' },
 }
 const currentTopicVisual = computed(() => topicVisuals[topic.value?.id] || null)
 const activeTopicSection = ref('topic-question')
@@ -331,7 +331,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 .topic-hero-actions .button { min-height:46px; }
 .topic-all-guides { color:var(--accent); font-size:13px; text-underline-offset:4px; }
 .topic-all-guides:hover { text-decoration:underline; }
-.topic-visual-panel { position:relative; height:clamp(136px,20vw,220px); margin:18px 0 26px; overflow:hidden; border:1px solid var(--line); border-radius:15px; background:#07131d; box-shadow:var(--shadow); }
+.topic-visual-panel { position:relative; height:clamp(170px,24vw,280px); margin:18px 0 26px; overflow:hidden; border:1px solid var(--line); border-radius:15px; background:#07131d; box-shadow:var(--shadow); }
 .topic-visual-panel::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(90deg,rgba(4,14,22,.08),transparent 45%,rgba(4,14,22,.18)); }
 .topic-visual-panel img { display:block; width:100%; height:100%; object-fit:cover; object-position:center; }
 .topic-visual-panel figcaption { position:absolute; right:12px; bottom:10px; z-index:1; padding:5px 8px; border:1px solid rgba(160,220,232,.24); border-radius:6px; background:rgba(3,13,21,.72); color:#d2e8ec; font-size:10px; letter-spacing:.04em; }
