@@ -20,18 +20,6 @@ onMounted(() => {
   document.title = topic.value
     ? `${topic.value.title} | BUAA HEP Hub`
     : '研究专题不存在 | BUAA HEP Hub'
-
-  // This is a long-form reading page: start at the beginning on ordinary
-  // navigation, while preserving an explicit deep link to a section.
-  if (typeof window !== 'undefined') {
-    const hash = window.location.hash
-    if (hash) {
-      const target = document.getElementById(decodeURIComponent(hash.slice(1)))
-      target?.scrollIntoView()
-    } else {
-      window.scrollTo(0, 0)
-    }
-  }
 })
 </script>
 
