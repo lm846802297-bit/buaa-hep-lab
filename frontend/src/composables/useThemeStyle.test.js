@@ -128,6 +128,15 @@ describe('useThemeStyle', () => {
     expect(store['laborbit_glass_style']).toBe('frosted')
   })
 
+  it('provides a visible description for every theme card and a readable wallpaper dim default', async () => {
+    const { colorSchemes, bgOptions, glassOptions, DEFAULT_BG_DIM } = await import('./useThemeStyle')
+    for (const option of [...colorSchemes, ...bgOptions, ...glassOptions]) {
+      expect(typeof option.description).toBe('string')
+      expect(option.description.trim().length).toBeGreaterThan(0)
+    }
+    expect(DEFAULT_BG_DIM).toBe(35)
+  })
+
   it('supports toggling glass styles between liquid and frosted', async () => {
     const { useThemeStyle, currentGlassStyle, glassOptions, setGlassStyle } = await import('./useThemeStyle')
     expect(glassOptions).toHaveLength(3)
