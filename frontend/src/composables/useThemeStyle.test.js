@@ -65,8 +65,8 @@ describe('useThemeStyle', () => {
     const { useThemeStyle, currentColorScheme, currentBgType, colorSchemes, bgOptions } = await import('./useThemeStyle')
     const { setColorScheme, setBgType } = useThemeStyle()
 
-    expect(colorSchemes).toHaveLength(4)
-    expect(colorSchemes.map(s => s.id)).toEqual(['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple'])
+    expect(colorSchemes).toHaveLength(5)
+    expect(colorSchemes.map(s => s.id)).toEqual(['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'worldline-console'])
     expect(colorSchemes[0].baseColor).toBe('#F7F5F0')
     expect(colorSchemes[0].primaryColor).toBe('#B85E3F')
     expect(colorSchemes[0].colors).toBeDefined()
@@ -165,10 +165,10 @@ describe('useThemeStyle', () => {
     expect(attrs['data-color-scheme']).toBe('classic-cyan')
     expect(attrs['data-bg-type']).toBe('paper')
 
-    setPublicColorScheme('nebula-purple')
-    expect(publicColorScheme.value).toBe('nebula-purple')
-    expect(store['labhub_public_color_scheme']).toBe('nebula-purple')
-    expect(attrs['data-color-scheme']).toBe('nebula-purple')
+    setPublicColorScheme('worldline-console')
+    expect(publicColorScheme.value).toBe('worldline-console')
+    expect(store['labhub_public_color_scheme']).toBe('worldline-console')
+    expect(attrs['data-color-scheme']).toBe('worldline-console')
     expect(store['laborbit_color_scheme']).toBe('obsidian-gray')
     expect(store['laborbit_bg_type']).toBe('galaxy')
 
@@ -232,7 +232,7 @@ describe('useThemeStyle', () => {
 
   it('keeps Quiet Research available alongside every pre-existing theme', async () => {
     const { colorSchemes } = await import('./useThemeStyle')
-    expect(colorSchemes.map(s => s.id)).toEqual(['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple'])
+    expect(colorSchemes.map(s => s.id)).toEqual(['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'worldline-console'])
     expect(colorSchemes[0].name).toContain('Claude 风格')
   })
 
