@@ -323,6 +323,10 @@ try {
   await stylePage.goto(base + '/style', { waitUntil: 'networkidle' })
   await stylePage.locator('#section-color .theme-card').first().waitFor()
 
+  // Playwright starts the pointer at (0, 0), over the fixed rail. Move away and let its leave debounce settle before asserting the default collapsed state.
+  await stylePage.mouse.move(520, 400)
+  await stylePage.waitForTimeout(350)
+
   // Capture initial state before asserting so a failure distinguishes app state from CSS sizing.
   const sidebarState = await stylePage.evaluate(() => {
     const nav = document.querySelector('.forecast-sidebar')
