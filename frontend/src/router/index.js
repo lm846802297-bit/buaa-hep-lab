@@ -85,12 +85,6 @@ const router = createRouter({
 
 
 router.beforeEach(async (to, from, next) => {
-  // Reset before the route transition starts. The app uses an out-in transition,
-  // so scrolling after navigation can race the outgoing page animation.
-  if (to.path !== from.path && typeof window !== 'undefined') {
-    window.scrollTo(0, 0)
-  }
-
   // The public website must remain available before setup and without a backend.
   if (to.meta.public) return next()
   if (to.query?.demo === '1' || to.query?.demo === 'true') {
