@@ -208,7 +208,7 @@ try {
     await page.waitForFunction(() => window.scrollY < 5)
     check(await page.evaluate(() => window.scrollY < 5), `opening a research topic resets reading position to the top at ${width}px`)
     check(await page.locator('.topic-local-nav').evaluate(el => getComputedStyle(el).position === 'static'), `topic navigation scrolls with content instead of sticking in the viewport at ${width}px`)
-    await page.locator('.topic-local-nav').getByRole('link', { name: '适用条件', exact: true }).click()
+    await page.locator('.topic-local-nav a[href="#topic-assumptions"]').click()
     await page.waitForFunction(() => location.hash === '#topic-assumptions')
     check(await page.locator('#topic-assumptions').evaluate(el => {
       const top = el.getBoundingClientRect().top
