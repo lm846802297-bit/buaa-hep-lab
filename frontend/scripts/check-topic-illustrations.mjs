@@ -68,7 +68,7 @@ for (const topic of terms.topics) {
     return Number(y[1])
   })
   for (const y of textBaselines) {
-    assert.ok(y >= 65 && y <= 335, `${topic.file}: text baseline y=${y} is outside the responsive crop-safe band (65–335).`)
+    assert.ok(y >= 80 && y <= 320, `${topic.file}: text baseline y=${y} is outside the responsive crop-safe band (80–320).`)
   }
 
   for (const snippet of topic.requiredMarkup) {
