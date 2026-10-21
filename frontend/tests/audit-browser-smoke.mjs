@@ -383,33 +383,73 @@ try {
   check(loginPage.url().includes('/login?redirect=/learning/eft'), 'anonymous learning navigation redirects to login with its target preserved')
   await loggedOut.close()
 
-  // Exercise the email HTML isolation boundary in a real Chromium document.
+  // Exercise the actual MailboxView and its emailHtml helper with a hostile email fixture.
   const emailIsolationPage = await browser.newPage()
-  await emailIsolationPage.goto(base, { waitUntil: 'networkidle' })
-  const csp = "default-src 'none'; img-src data:; style-src 'unsafe-inline'; font-src data:; connect-src 'none'; media-src data:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
-  const scriptPayload = '<scr' + 'ipt>parent.__emailHtmlExecuted = true<' + '/script>'
-  const maliciousPayload = '</body>' + scriptPayload + '<img src="' + base + '/email-tracker-pixel"><body>'
-  const emailHtmlDocument = '<!doctype html><html lang="und"><head><meta charset="utf-8">' +
-    '<meta http-equiv="Content-Security-Policy" content="' + csp + '">' +
-    '<meta name="referrer" content="no-referrer"></head><body>' + maliciousPayload + '</body></html>'
-  await emailIsolationPage.evaluate(documentHtml => new Promise(resolveLoad => {
+  await emailIsolationPage.addInitScript(() => {
+    localStorage.setItem('labhub_token', 'browser-smoke-mailbox-token')
+    localStorage.setItem('labhub_user', JSON.stringify({
+      id: 1, name: 'Security QA', email: 'qa@example.invalid', role: 'student',
+      identity: 'student', tutorial_completed: 1
+    }))
     window.__emailHtmlExecuted = false
-    const frame = document.createElement('iframe')
-    frame.id = 'audit-email-html'
-    frame.setAttribute('sandbox', '')
-    frame.referrerPolicy = 'no-referrer'
-    frame.addEventListener('load', () => resolveLoad(true), { once: true })
-    frame.srcdoc = documentHtml
-    document.body.appendChild(frame)
-  }), emailHtmlDocument)
+  })
+  const emailSummary = {
+    id: 1,
+    subject: 'Security isolation fixture',
+    sender_name: 'Untrusted Sender',
+    sender_email: 'sender@example.invalid',
+    recipient: 'qa@example.invalid',
+    date_str: '2026-10-22 02:00',
+    snippet: 'Untrusted HTML fixture',
+    has_attachments: false,
+    is_read: false,
+    uid: 'mailbox-security-fixture-1'
+  }
+  const scriptPayload = '<scr' + 'ipt>parent.__emailHtmlExecuted = true<' + '/script>'
+  const hostileEmailHtml = '<p>Untrusted message</p>' + scriptPayload + '<img src="/email-tracker-pixel">'
+  await emailIsolationPage.route('**/api/**', async route => {
+    const pathname = new URL(route.request().url()).pathname
+    let payload = {}
+    if (pathname === '/api/system/status') {
+      payload = { initialized: true, user_count: 1, lab_name: 'BUAA HEP' }
+    } else if (pathname === '/api/auth/me') {
+      payload = {
+        id: 1, name: 'Security QA', email: 'qa@example.invalid', role: 'student',
+        identity: 'student', tutorial_completed: 1, can_manage_seminars: 0
+      }
+    } else if (pathname === '/api/mailbox/config') {
+      payload = {
+        has_config: true, email_address: 'qa@example.invalid', protocol: 'imap',
+        server_host: 'imap.example.invalid', server_port: 993, use_ssl: true,
+        username: 'qa@example.invalid', has_password: true, updated_at: ''
+      }
+    } else if (pathname === '/api/mailbox/emails') {
+      payload = [emailSummary]
+    } else if (pathname === '/api/mailbox/emails/1') {
+      payload = { ...emailSummary, body_html: hostileEmailHtml, body_text: 'Untrusted message' }
+    } else if (pathname.endsWith('/home-layout') || pathname.endsWith('/sent-emails')) {
+      payload = []
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(payload)
+    })
+  })
+  await emailIsolationPage.goto(base + '/mailbox', { waitUntil: 'networkidle' })
+  await emailIsolationPage.locator('.email-card').first().waitFor({ state: 'visible' })
+  await emailIsolationPage.locator('.email-card').first().click()
+  const isolatedMailFrame = emailIsolationPage.locator('.email-html-sandbox')
+  await isolatedMailFrame.waitFor({ state: 'visible' })
   await emailIsolationPage.waitForTimeout(200)
-  check(await emailIsolationPage.evaluate(() => window.__emailHtmlExecuted === false), 'sandboxed email HTML cannot execute script in the parent context')
+  check(await emailIsolationPage.evaluate(() => window.__emailHtmlExecuted === false), 'actual mailbox HTML cannot execute script in the parent context')
   check(await emailIsolationPage.evaluate(() => {
-    const frame = document.querySelector('#audit-email-html')
+    const frame = document.querySelector('.email-html-sandbox')
     try { void frame.contentWindow.document; return false } catch (error) { return error?.name === 'SecurityError' }
-  }), 'sandboxed email HTML has an opaque origin inaccessible to the parent')
-  check(blockedEmailResourceRequests.length === 0, 'email CSP prevents a tracking image request from reaching the server')
-  check(await emailIsolationPage.locator('#audit-email-html').getAttribute('sandbox') === '', 'email iframe grants no sandbox permissions')
+  }), 'actual mailbox iframe has an opaque origin inaccessible to the parent')
+  check(blockedEmailResourceRequests.length === 0, 'actual mailbox CSP prevents a tracking image request from reaching the server')
+  check(await isolatedMailFrame.getAttribute('sandbox') === '', 'actual mailbox iframe grants no sandbox permissions')
+  check(await isolatedMailFrame.getAttribute('referrerpolicy') === 'no-referrer', 'actual mailbox iframe suppresses referrer leakage')
   await emailIsolationPage.close()
 
   await writeFile(resolve(output, 'browser-checks.json'), JSON.stringify({ checks, total: checks.length }, null, 2))
