@@ -524,13 +524,10 @@ function destroyVantaFog() {
 function freezeDynamicBackground() {
   if (!isBgVideoPaused.value) return
   const type = currentBgType.value
-  if (type !== 'galaxy' && type !== 'vanta-fog') return
 
   try {
     frozenBackgroundFrame.value = containerRef.value?.querySelector('canvas')?.toDataURL() || null
-  } catch {
-    frozenBackgroundFrame.value = null
-  }
+  } catch {}
 
   if (type === 'galaxy' && animateId) {
     cancelAnimationFrame(animateId)
