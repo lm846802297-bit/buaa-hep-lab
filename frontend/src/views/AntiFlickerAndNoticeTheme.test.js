@@ -9,6 +9,7 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
   const noticesVue = readFileSync(resolve(__dirname, 'NoticesView.vue'), 'utf-8')
   const noticeMarqueeVue = readFileSync(resolve(__dirname, '../components/NoticeMarquee.vue'), 'utf-8')
   const assistantVue = readFileSync(resolve(__dirname, 'AssistantView.vue'), 'utf-8')
+  const styleViewVue = readFileSync(resolve(__dirname, 'StyleView.vue'), 'utf-8')
 
   it('uses Quiet Research on public routes and preserves the selected workspace theme', () => {
     expect(indexHtml).toContain("localStorage.getItem('laborbit_color_scheme')")
@@ -26,6 +27,15 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(indexHtml).toContain('name="color-scheme" content="light dark"')
     expect(indexHtml).toContain("if (bgType === 'clouds-static' && scheme !== 'quiet-research'")
     expect(indexHtml).not.toContain('</script>ipt>')
+  })
+
+  it('labels Quiet Research as the workspace default while preserving user choice', () => {
+    expect(styleViewVue).toContain('协作空间默认使用 Quiet Research（Claude 风格）')
+    expect(styleViewVue).toContain('已有的个人主题偏好会保留')
+    expect(styleViewVue).toContain('v-for="scheme in colorSchemes"')
+    expect(styleViewVue).toContain("scheme.id === 'quiet-research'")
+    expect(styleViewVue).toContain('class="theme-default-badge">默认风格</span>')
+    expect(styleViewVue).toContain('handleColorSchemeSelect(scheme)')
   })
 
   it('defines --panel-solid in :root and classic-cyan', () => {
