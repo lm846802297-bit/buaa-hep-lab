@@ -51,11 +51,12 @@ onBeforeUnmount(() => {
       title="切换官网风格"
       @click="togglePanel"
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M12 3a9 9 0 1 0 0 18h1.2a2 2 0 0 0 1.3-3.5 1.7 1.7 0 0 1 1.1-3h1.4A4 4 0 0 0 21 10.5C21 6.4 16.97 3 12 3Z" />
-        <circle cx="7.5" cy="10" r="1" />
-        <circle cx="11" cy="6.8" r="1" />
-        <circle cx="15.2" cy="7.8" r="1" />
+      <svg class="theme-tuner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle class="tuner-orbit" cx="12" cy="12" r="7.85" />
+        <path class="tuner-axis" d="M12 2.9v2.35 M12 18.75v2.35 M2.9 12h2.35 M18.75 12h2.35" />
+        <path class="tuner-core" d="M12 8.55 13.25 10.75 15.45 12 13.25 13.25 12 15.45 10.75 13.25 8.55 12 10.75 10.75Z" />
+        <circle class="tuner-node" cx="6.15" cy="7.15" r="1.35" />
+        <circle class="tuner-node" cx="17.85" cy="16.85" r="1.35" />
       </svg>
       <span class="theme-trigger-dot" aria-hidden="true"></span>
     </button>
@@ -105,23 +106,41 @@ onBeforeUnmount(() => {
   width: 44px;
   height: 44px;
   padding: 0;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
+  border: 1px solid var(--theme-tuner-button-border, color-mix(in srgb, var(--line) 70%, var(--accent) 30%));
+  border-radius: 14px;
+  background: var(--theme-tuner-button-background, linear-gradient(145deg, color-mix(in srgb, var(--surface) 92%, var(--accent) 8%), var(--surface)));
   color: var(--text);
-  box-shadow: 0 8px 22px rgb(0 0 0 / 14%);
+  box-shadow: var(--theme-tuner-button-shadow, 0 6px 18px rgb(0 0 0 / 12%), inset 0 1px 0 rgb(255 255 255 / 8%));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   cursor: pointer;
-  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
 }
-.public-theme-trigger svg { width: 21px; height: 21px; }
+.theme-tuner-icon {
+  width: 23px;
+  height: 23px;
+  overflow: visible;
+  transition: transform .2s cubic-bezier(.2, .75, .25, 1);
+}
+.tuner-orbit { stroke: var(--theme-tuner-ring, color-mix(in srgb, currentColor 74%, var(--accent) 26%)); stroke-width: 1.3; opacity: .9; }
+.tuner-axis { stroke: var(--theme-tuner-axis, color-mix(in srgb, currentColor 52%, transparent)); stroke-width: 1.2; }
+.tuner-core {
+  stroke: var(--theme-tuner-core, var(--accent));
+  stroke-width: 1.3;
+  fill: var(--theme-tuner-core-fill, color-mix(in srgb, var(--accent) 16%, transparent));
+  transition: fill .18s ease;
+}
+.tuner-node { fill: var(--theme-tuner-node, var(--accent)); stroke: var(--theme-tuner-node-stroke, var(--surface)); stroke-width: 1.1; }
 .public-theme-trigger:hover,
 .public-theme-trigger[aria-expanded="true"] {
-  border-color: var(--accent);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 18%), 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: var(--theme-tuner-node, var(--accent));
+  box-shadow: var(--theme-tuner-button-hover-shadow, 0 8px 24px rgb(0 0 0 / 16%), 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent), inset 0 1px 0 rgb(255 255 255 / 10%));
 }
 .public-theme-trigger:hover { transform: translateY(-1px); }
+.public-theme-trigger:hover .theme-tuner-icon { transform: rotate(-6deg); }
+.public-theme-trigger:hover .tuner-core,
+.public-theme-trigger[aria-expanded="true"] .tuner-core { fill: var(--theme-tuner-core-hover-fill, color-mix(in srgb, var(--accent) 25%, transparent)); }
+.public-theme-trigger:active { transform: scale(.97); }
 .public-theme-trigger:focus-visible,
 .panel-close:focus-visible,
 .public-theme-panel select:focus-visible {
@@ -136,7 +155,7 @@ onBeforeUnmount(() => {
   height: 6px;
   border: 1px solid var(--surface);
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--theme-tuner-node, var(--accent));
 }
 .public-theme-panel {
   position: absolute;
@@ -201,6 +220,11 @@ onBeforeUnmount(() => {
   .public-theme-trigger { width: 42px; height: 42px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .public-theme-trigger { transition: none; }
+  .public-theme-trigger,
+  .theme-tuner-icon,
+  .tuner-core { transition: none; }
+  .public-theme-trigger:hover,
+  .public-theme-trigger:active,
+  .public-theme-trigger:hover .theme-tuner-icon { transform: none; }
 }
 </style>

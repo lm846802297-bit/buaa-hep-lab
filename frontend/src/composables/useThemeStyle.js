@@ -50,9 +50,9 @@ export const COLOR_SCHEMES = [
     name: '世界线终端',
     subtitle: '《命运石之门》视觉语言启发 · 琥珀读数 · 复古科研终端',
     description: '提取复古电子终端、琥珀色读数与克制的信号干扰；不使用原作角色、标志或美术素材。',
-    colors: ['#100d08', '#ffb347', '#1d170f'],
+    colors: ['#07111d', '#ffb347', '#1d170f'],
     primaryColor: '#ffb347',
-    baseColor: '#100d08',
+    baseColor: '#07111d',
     surfaceColor: '#1d170f'
   }
 ]
@@ -730,7 +730,7 @@ export function applyThemeToDOM(scheme = currentColorScheme.value, bg = currentB
           doc.style.removeProperty(v)
         }
       })
-      const baseBg = actualScheme === 'quiet-research' ? '#F7F5F0' : (actualScheme === 'worldline-console' ? '#100d08' : (actualScheme === 'obsidian-gray' ? '#090d16' : (actualScheme === 'nebula-purple' ? '#03020a' : '#081f28')))
+      const baseBg = actualScheme === 'quiet-research' ? '#F7F5F0' : (actualScheme === 'worldline-console' ? '#07111d' : (actualScheme === 'obsidian-gray' ? '#090d16' : (actualScheme === 'nebula-purple' ? '#03020a' : '#081f28')))
       doc.style.backgroundColor = baseBg
     }
 
