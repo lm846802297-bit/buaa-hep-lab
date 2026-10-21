@@ -9,6 +9,7 @@ export const COLOR_SCHEMES = [
     id: 'quiet-research',
     name: 'Quiet Research（Claude 风格）',
     subtitle: '温暖纸白 · 墨色文字 · 陶土橙 · 编辑式衬线标题',
+    description: '温暖纸白与陶土橙，优先突出长文本、论文与公式阅读。'
     colors: ['#F7F5F0', '#B85E3F', '#FFFEFA'],
     primaryColor: '#B85E3F',
     baseColor: '#F7F5F0',
@@ -18,6 +19,7 @@ export const COLOR_SCHEMES = [
     id: 'classic-cyan',
     name: '经典冷青与玄青',
     subtitle: '静谧冷青高光 · 经典玄青基底',
+    description: '冷青强调色与深青底色，适合长时间阅读与低干扰工作。'
     colors: ['#081f28', '#c5e6df', '#102f33'], // Base, Primary Accent, Secondary Surface
     primaryColor: '#c5e6df',
     baseColor: '#081f28',
@@ -27,6 +29,7 @@ export const COLOR_SCHEMES = [
     id: 'obsidian-gray',
     name: '曜石碳灰',
     subtitle: '高级冷灰高光 · 纯粹石墨基底',
+    description: '石墨黑底与冷灰高光，减少视觉干扰并保持清晰层次。'
     colors: ['#090d16', '#94a3b8', '#161e2e'], // Base, Primary Accent, Secondary Surface
     primaryColor: '#94a3b8',
     baseColor: '#090d16',
@@ -36,10 +39,21 @@ export const COLOR_SCHEMES = [
     id: 'nebula-purple',
     name: '星云紫与深曜黑',
     subtitle: '深空星云紫高光 · 曜黑深邃基底',
+    description: '深空紫高光与近黑底色，保留现有星云视觉风格。'
     colors: ['#03020a', '#b89bf8', '#16122e'], // Base, Primary Accent, Secondary Surface
     primaryColor: '#b89bf8',
     baseColor: '#03020a',
     surfaceColor: '#16122e'
+  },
+  {
+    id: 'worldline-console',
+    name: '世界线终端',
+    subtitle: '《命运石之门》视觉语言启发 · 琥珀读数 · 复古科研终端',
+    description: '提取复古电子终端、琥珀色读数与克制的信号干扰；不使用原作角色、标志或美术素材。',
+    colors: ['#100d08', '#ffb347', '#1d170f'],
+    primaryColor: '#ffb347',
+    baseColor: '#100d08',
+    surfaceColor: '#1d170f'
   }
 ]
 
@@ -614,6 +628,7 @@ export const publicColorScheme = ref(getInitialPublicColorScheme())
 
 // 兼容器：保留 currentThemeStyle 响应式对象
 function resolveLegacyTheme(scheme, bg) {
+  if (scheme === 'worldline-console') return 'worldline-console'
   if (scheme === 'quiet-research') return bg === 'paper' ? 'paper' : bg
   if (scheme === 'obsidian-gray') return 'clouds-static'
   if (scheme === 'nebula-purple') return 'galaxy'
@@ -678,7 +693,7 @@ export function applyThemeToDOM(scheme = currentColorScheme.value, bg = currentB
     ? actualBg
     : DEFAULT_BG_TYPE
 
-  const legacyTheme = actualScheme === 'quiet-research' && actualBg === 'paper' ? 'paper' : (actualScheme === 'nebula-purple' ? 'galaxy' : (actualScheme === 'custom' ? 'custom' : (actualBg === 'vanta-fog' ? 'vanta-fog' : 'clouds-static')))
+  const legacyTheme = actualScheme === 'worldline-console' ? 'worldline-console' : (actualScheme === 'quiet-research' && actualBg === 'paper' ? 'paper' : (actualScheme === 'nebula-purple' ? 'galaxy' : (actualScheme === 'custom' ? 'custom' : (actualBg === 'vanta-fog' ? 'vanta-fog' : 'clouds-static'))))
 
   // 1. 设置解耦属性
   doc.setAttribute('data-color-scheme', actualScheme)
@@ -715,7 +730,7 @@ export function applyThemeToDOM(scheme = currentColorScheme.value, bg = currentB
           doc.style.removeProperty(v)
         }
       })
-      const baseBg = actualScheme === 'quiet-research' ? '#F7F5F0' : (actualScheme === 'obsidian-gray' ? '#090d16' : (actualScheme === 'nebula-purple' ? '#03020a' : '#081f28'))
+      const baseBg = actualScheme === 'quiet-research' ? '#F7F5F0' : (actualScheme === 'worldline-console' ? '#100d08' : (actualScheme === 'obsidian-gray' ? '#090d16' : (actualScheme === 'nebula-purple' ? '#03020a' : '#081f28')))
       doc.style.backgroundColor = baseBg
     }
 
@@ -806,7 +821,10 @@ export function useThemeStyle() {
 
   // 兼容旧版 setThemeStyle 调用
   function setThemeStyle(style) {
-    if (style === 'paper') {
+    if (style === 'worldline-console') {
+      setColorScheme('worldline-console')
+      setBgType('paper')
+    } else if (style === 'paper') {
       setColorScheme('quiet-research')
       setBgType('paper')
     } else if (style === 'earth-orbit' || style === 'clouds-static') {
