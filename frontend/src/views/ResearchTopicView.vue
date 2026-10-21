@@ -331,7 +331,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 .topic-hero-actions .button { min-height:46px; }
 .topic-all-guides { color:var(--accent); font-size:13px; text-underline-offset:4px; }
 .topic-all-guides:hover { text-decoration:underline; }
-.topic-visual-panel { position:relative; height:clamp(170px,24vw,280px); margin:18px 0 26px; overflow:hidden; border:1px solid var(--line); border-radius:15px; background:#07131d; box-shadow:var(--shadow); }
+.topic-visual-panel { position:relative; height:clamp(220px,30vw,360px); margin:18px 0 26px; overflow:hidden; border:1px solid var(--line); border-radius:15px; background:#07131d; box-shadow:var(--shadow); }
 .topic-visual-panel::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(90deg,rgba(4,14,22,.08),transparent 45%,rgba(4,14,22,.18)); }
 .topic-visual-panel img { display:block; width:100%; height:100%; object-fit:cover; object-position:center; }
 .topic-visual-panel figcaption { position:absolute; right:12px; bottom:10px; z-index:1; padding:5px 8px; border:1px solid rgba(160,220,232,.24); border-radius:6px; background:rgba(3,13,21,.72); color:#d2e8ec; font-size:10px; letter-spacing:.04em; }
