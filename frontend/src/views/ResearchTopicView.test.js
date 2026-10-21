@@ -105,6 +105,23 @@ describe('public research topic pages', () => {
       }
       expect(html).toContain(blueprint.title)
       expect(html).toContain('必须通过的物理与数值检查')
+      const blueprintText = [
+        blueprint.question,
+        blueprint.scope,
+        ...blueprint.steps.flatMap(step => [step.title, step.detail, step.output]),
+        ...blueprint.validationChecks.flatMap(check => [check.title, check.detail]),
+        ...blueprint.reportingChecklist,
+      ].join(' ')
+      const physicsMarkers = {
+        dark: ['δ → 0', 'UV → EFT', '核反冲'],
+        neutrino: ['Takagi', '质量平方差', '重中微子'],
+        collider: ['Ward identity', 'cut-flow', 'nuisance'],
+        phase: ['T_c', 'T_n', 'S₃/T', '标准模型基线'],
+        precision: ['QFI', 'Fisher 信息', 'toy Monte Carlo'],
+      }
+      for (const marker of physicsMarkers[topic.id]) {
+        expect(blueprintText, `missing topic-specific physics marker ${marker} in ${topic.id}`).toContain(marker)
+      }
       expect(deepGuide.assumptions.length).toBeGreaterThanOrEqual(3)
       expect(deepGuide.researchQuestions.length).toBeGreaterThanOrEqual(3)
       expect(deepGuide.references.length).toBeGreaterThanOrEqual(2)
