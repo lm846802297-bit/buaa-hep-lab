@@ -12,7 +12,7 @@ const terms = JSON.parse(readFileSync(termsPath, 'utf8'))
 const topicView = readFileSync(resolve(frontendRoot, 'src/views/ResearchTopicView.vue'), 'utf8')
 const assetDir = resolve(frontendRoot, 'public/images/research-topics')
 
-assert.equal(terms.version, 1, 'Update the validator when the terminology schema changes.')
+assert.equal(terms.version, 2, 'Update the validator when the terminology schema changes.')
 assert.equal(terms.topics.length, 5, 'Exactly five research-topic illustrations are expected.')
 assert.deepEqual(
   terms.topics.map(topic => topic.id).sort(),
@@ -80,6 +80,29 @@ for (const topic of terms.topics) {
     `${topic.id}:\\s*\\{\\s*src:\\s*'${escapeRegExp(`/images/research-topics/${topic.file}`)}',\\s*alt:\\s*'${escapeRegExp(topic.alt)}'[^}]*\\}`,
   )
   assert.ok(mapping.test(topicView), `${topic.id}: page image path or alt text differs from the reviewed whitelist.`)
+
+  assert.ok(Array.isArray(topic.mobileLabels), `${topic.id}: reviewed mobile label whitelist is missing.`)
+  assert.ok(Array.isArray(topic.approvedTerms) && topic.approvedTerms.length > 0, `${topic.id}: approved terminology whitelist is missing.`)
+  const labelMapping = new RegExp(
+    `${topic.id}:\\s*\\{[^\\n]*?labels:\\s*\\[([^\\]]*)\\]`,
+  )
+  const labelMatch = topicView.match(labelMapping)
+  assert.ok(labelMatch, `${topic.id}: mobile-visible labels could not be extracted from ResearchTopicView.vue.`)
+  const mobileLabels = [...labelMatch[1].matchAll(/'((?:\\\\.|[^'])*)'/g)]
+    .map(match => match[1].replace(/\\\\(['\\\\])/g, '$1'))
+  assert.deepEqual(
+    mobileLabels,
+    topic.mobileLabels,
+    `${topic.id}: rendered mobile illustration labels must match the reviewed manifest exactly and in order.`,
+  )
+  const normalizeTerm = term => term.normalize('NFKC').toLocaleLowerCase('en-US')
+  const approvedTerms = new Set(topic.approvedTerms.map(normalizeTerm))
+  for (const label of mobileLabels) {
+    assert.ok(
+      approvedTerms.has(normalizeTerm(label)),
+      `${topic.id}: mobile label "${label}" is absent from approvedTerms.`,
+    )
+  }
 }
 
 // Use a real XML parser rather than relying on browser error recovery for malformed SVG.
@@ -103,4 +126,4 @@ for (const candidate of pythonCommands) {
 }
 assert.ok(parsed, 'Python 3 is required for strict XML parsing of the SVG assets.')
 
-console.log(`Validated ${terms.topics.length} research-topic SVGs: XML well-formedness, accessible metadata, exact visible-text whitelist, subscript markup, and page alt text.`)
+console.log(`Validated ${terms.topics.length} research-topic SVGs: XML well-formedness, accessible metadata, exact desktop text and mobile-label whitelists, approved terminology, subscript markup, and page alt text.`)

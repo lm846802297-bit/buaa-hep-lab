@@ -512,7 +512,7 @@ export const researchTopicDeepGuides = {
         "label": "ENERGY RELEASE",
         "formula": "α = (ρfalse − ρtrue) / ρrad,   ρ = Veff − T ∂Veff/∂T",
         "meaning": "α 比较相变释放的能量密度与辐射能量密度。能量密度来自自由能/有效势对温度的导数，因此不能简单把两个极小值的势能差在任意温度直接当作 Δρ。",
-        "conditions": "必须明确 Δρ 是假真空与真真空能量密度之差、评估温度及有效势的重整化/热修正方案。",
+        "conditions": "本文约定 Δρ(T_n) ≡ ρ_false(T_n) − ρ_true(T_n)，因此 α(T_n) = Δρ(T_n)/ρ_rad(T_n)，其中 ρ_rad(T_n) = (π²/30) g_*(T_n) T_n⁴；分子与分母均在同一成核温度 T_n 评估。若改用其他参考温度（如 T_*），须同步重算并明确标注；有效势的规范选择、重整化方案与热修正应保持一致。",
         "doesNotMean": "α 不是与模型无关的输入常数；它受势能、成核温度、热史与定义约定影响。"
       },
       {

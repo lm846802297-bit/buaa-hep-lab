@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "policy": "The SVG source is the artwork, but all title, description, alternative text and visible text must match this reviewed whitelist. Curves, color blocks and detector geometry are conceptual only; they must not be presented as data or numerical predictions.",
   "topics": [
     {
@@ -10,6 +10,12 @@
       "alt": "暗物质晕、靶核、核反冲与液氙探测器的概念示意图；曲线不代表实验数据。",
       "visibleText": [
         "DARK MATTER DIRECT DETECTION",
+        "Dark Matter Halo",
+        "Target Nucleus",
+        "Nuclear Recoil",
+        "Liquid Xenon Detector"
+      ],
+      "mobileLabels": [
         "Dark Matter Halo",
         "Target Nucleus",
         "Nuclear Recoil",
@@ -53,6 +59,12 @@
         "νμ",
         "ντ",
         "L/E"
+      ],
+      "mobileLabels": [
+        "Neutrino Oscillation",
+        "Flavor States",
+        "Mass Eigenstates",
+        "PMNS Mixing Matrix"
       ],
       "requiredMarkup": [
         "baseline-shift=\"sub\" font-size=\"7\">1</tspan>",
@@ -101,6 +113,12 @@
         "Interaction Vertex",
         "Missing Transverse Momentum"
       ],
+      "mobileLabels": [
+        "Detector Layers",
+        "Particle Tracks",
+        "Interaction Vertex",
+        "Missing Transverse Momentum"
+      ],
       "requiredMarkup": [],
       "approvedTerms": [
         "对撞机",
@@ -128,6 +146,12 @@
       "alt": "真空泡成核、扩张与碰撞以及引力波的概念示意图；波形不代表定量频谱。",
       "visibleText": [
         "COSMOLOGICAL PHASE TRANSITION",
+        "Bubble Nucleation",
+        "Bubble Expansion",
+        "Bubble Collision",
+        "Gravitational Waves"
+      ],
+      "mobileLabels": [
         "Bubble Nucleation",
         "Bubble Expansion",
         "Bubble Collision",
@@ -163,6 +187,13 @@
         "y",
         "θ",
         "QUANTUM METROLOGY",
+        "Bloch Sphere",
+        "Quantum State",
+        "Spin Correlations",
+        "Measurement Distribution",
+        "Fisher Information (conceptual)"
+      ],
+      "mobileLabels": [
         "Bloch Sphere",
         "Quantum State",
         "Spin Correlations",
