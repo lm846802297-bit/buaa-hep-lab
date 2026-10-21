@@ -92,16 +92,16 @@ try {
     const trigger = document.querySelector('.public-theme-trigger')
     return {
       accent: root.getPropertyValue('--accent').trim().toLowerCase(),
-      khaki: root.getPropertyValue('--worldline-khaki').trim().toLowerCase(),
+      blue: root.getPropertyValue('--worldline-blue').trim().toLowerCase(),
       coreStroke: getComputedStyle(icon.querySelector('.tuner-core')).stroke,
       orbitStroke: getComputedStyle(icon.querySelector('.tuner-orbit')).stroke,
       buttonShadow: getComputedStyle(trigger).boxShadow
     }
   })
-  check(worldlineTuner.accent === '#e6a24a', 'Worldline Console uses the warm amber primary signal')
-  check(worldlineTuner.khaki === '#a79a7d', 'Worldline Console defines a washed khaki/olive instrument tone')
-  check(worldlineTuner.coreStroke !== worldlineTuner.orbitStroke, 'Worldline tuner separates amber core from washed khaki/olive orbital lines')
-  check(worldlineTuner.buttonShadow !== 'none', 'Worldline tuner uses its restrained device-like button shadow')
+  check(worldlineTuner.accent === '#55e6f2', 'Worldline Console uses the cold cyan CRT signal')
+  check(worldlineTuner.blue === '#83a9ff', 'Worldline Console defines a electric-blue worldline signal')
+  check(worldlineTuner.coreStroke !== worldlineTuner.orbitStroke, 'Worldline tuner separates cyan core from electric-blue orbital lines')
+  check(worldlineTuner.buttonShadow !== 'none', 'Worldline tuner uses its cold phosphor device-like shadow')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await page.waitForTimeout(950)
   check(await page.locator('.worldline-shift-overlay').count() === 0, 'worldline transition overlay exits cleanly')
@@ -109,7 +109,7 @@ try {
     heroSignal: getComputedStyle(document.querySelector('.hero-eyebrow')).color,
     resourceRadius: getComputedStyle(document.querySelector('.physics-resource-card')).borderRadius
   }))
-  check(terminalVisual.heroSignal === 'rgb(167, 154, 125)', 'Worldline hero uses the washed khaki secondary signal')
+  check(terminalVisual.heroSignal === 'rgb(131, 169, 255)', 'Worldline hero uses the electric-blue secondary signal')
   check(terminalVisual.resourceRadius === '14px', 'Worldline resource cards use the compact instrument-panel radius')
   await page.screenshot({ path: resolve(output, 'worldline-1440-first-screen.png') })
   await page.setViewportSize({ width: 390, height: 900 })

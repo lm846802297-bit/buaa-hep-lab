@@ -2327,71 +2327,71 @@ html[data-bg-style="clouds-static"] body {
 /* Worldline Console: an original, optional sci-fi research skin inspired by retro lab terminals. */
 :root[data-color-scheme="worldline-console"] {
   color-scheme: dark;
-  /* Original palette: warm black, amber signal and washed khaki/olive shadows. */
-  --bg: #15120f;
-  --panel: rgba(33, 27, 21, .92);
-  --panel-solid: #211b15;
-  --surface: rgba(31, 25, 19, .88);
-  --raised: rgba(167, 154, 125, .10);
-  --glass: rgba(167, 154, 125, .12);
-  --text: #f1e7d7;
-  --soft: #d8c8af;
-  --muted: #b0a083;
-  --accent: #e6a24a;
-  --accent-strong: #ffd08a;
-  --accent-ink: #21180c;
-  --line: rgba(198, 157, 104, .22);
-  --warning: #e8c27a;
-  --warning-bg: rgba(232, 194, 122, .12);
-  --danger: #c87555;
-  --danger-bg: rgba(200, 117, 85, .12);
-  --danger-border: rgba(200, 117, 85, .30);
-  --success: #a8b18c;
-  --focus: #ffd08a;
+  /* Original palette: cold blue-black, cyan phosphor and electric-blue worldline signals. */
+  --bg: #07111d;
+  --panel: rgba(12, 27, 42, .92);
+  --panel-solid: #102436;
+  --surface: rgba(10, 28, 44, .90);
+  --raised: rgba(85, 230, 242, .10);
+  --glass: rgba(85, 230, 242, .13);
+  --text: #e8f5ff;
+  --soft: #bed5e4;
+  --muted: #88a6bc;
+  --accent: #55e6f2;
+  --accent-strong: #c5fbff;
+  --accent-ink: #03141c;
+  --line: rgba(85, 197, 225, .24);
+  --warning: #ffc979;
+  --warning-bg: rgba(255, 201, 121, .12);
+  --danger: #ff5c8a;
+  --danger-bg: rgba(255, 92, 138, .12);
+  --danger-border: rgba(255, 92, 138, .34);
+  --success: #6de4ce;
+  --focus: #9df6ff;
   --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
   --radius: 14px;
-  --shadow: 0 16px 48px -8px rgba(0, 0, 0, .55), 0 0 24px color-mix(in srgb, var(--worldline-amber) 4%, transparent);
-  --worldline-screen: #15120f;
-  --worldline-amber: #e6a24a;
-  --worldline-amber-hot: #ffd08a;
-  --worldline-khaki: #a79a7d;
-  --worldline-rust: #c87555;
-  --worldline-warm-ambient: color-mix(in srgb, var(--worldline-amber) 8%, transparent);
-  --worldline-khaki-ambient: color-mix(in srgb, var(--worldline-khaki) 5%, transparent);
-  --worldline-screenline: color-mix(in srgb, var(--worldline-khaki) 2%, transparent);
-  --theme-tuner-ring: color-mix(in srgb, var(--text) 46%, var(--worldline-khaki) 54%);
-  --theme-tuner-axis: color-mix(in srgb, var(--worldline-khaki) 65%, transparent);
-  --theme-tuner-core: var(--worldline-amber);
-  --theme-tuner-core-fill: color-mix(in srgb, var(--worldline-amber) 17%, transparent);
-  --theme-tuner-core-hover-fill: color-mix(in srgb, var(--worldline-amber-hot) 28%, transparent);
-  --theme-tuner-node: var(--worldline-amber);
+  --shadow: 0 16px 48px -8px rgba(0, 0, 0, .55), 0 0 24px color-mix(in srgb, var(--worldline-cyan) 4%, transparent);
+  --worldline-screen: #07111d;
+  --worldline-cyan: #55e6f2;
+  --worldline-cyan-hot: #c5fbff;
+  --worldline-blue: #83a9ff;
+  --worldline-anomaly: #ff4d86;
+  --worldline-cyan-ambient: color-mix(in srgb, var(--worldline-cyan) 13%, transparent);
+  --worldline-blue-ambient: color-mix(in srgb, var(--worldline-blue) 10%, transparent);
+  --worldline-screenline: color-mix(in srgb, var(--worldline-cyan) 4%, transparent);
+  --theme-tuner-ring: color-mix(in srgb, var(--text) 42%, var(--worldline-blue) 58%);
+  --theme-tuner-axis: color-mix(in srgb, var(--worldline-cyan) 68%, transparent);
+  --theme-tuner-core: var(--worldline-cyan);
+  --theme-tuner-core-fill: color-mix(in srgb, var(--worldline-cyan) 20%, transparent);
+  --theme-tuner-core-hover-fill: color-mix(in srgb, var(--worldline-cyan-hot) 32%, transparent);
+  --theme-tuner-node: var(--worldline-anomaly);
   --theme-tuner-node-stroke: var(--panel-solid);
-  --theme-tuner-button-border: color-mix(in srgb, var(--worldline-khaki) 28%, var(--line) 72%);
-  --theme-tuner-button-background: linear-gradient(145deg, color-mix(in srgb, var(--panel-solid) 88%, var(--worldline-khaki) 12%), color-mix(in srgb, var(--surface) 94%, var(--worldline-amber) 6%));
+  --theme-tuner-button-border: color-mix(in srgb, var(--worldline-blue) 35%, var(--line) 65%);
+  --theme-tuner-button-background: linear-gradient(145deg, color-mix(in srgb, var(--panel-solid) 88%, var(--worldline-blue) 12%), color-mix(in srgb, var(--surface) 94%, var(--worldline-cyan) 6%));
   --theme-tuner-button-shadow: 0 6px 18px rgb(0 0 0 / 22%), inset 0 1px 0 color-mix(in srgb, var(--text) 7%, transparent);
-  --theme-tuner-button-hover-shadow: 0 8px 24px rgb(0 0 0 / 26%), 0 0 0 3px color-mix(in srgb, var(--worldline-amber) 18%, transparent), 0 0 18px color-mix(in srgb, var(--worldline-khaki) 8%, transparent), inset 0 1px 0 color-mix(in srgb, var(--text) 9%, transparent);
+  --theme-tuner-button-hover-shadow: 0 8px 24px rgb(0 0 0 / 26%), 0 0 0 3px color-mix(in srgb, var(--worldline-cyan) 24%, transparent), 0 0 18px color-mix(in srgb, var(--worldline-blue) 8%, transparent), inset 0 1px 0 color-mix(in srgb, var(--text) 9%, transparent);
 }
 :root[data-color-scheme="worldline-console"][data-bg-style="paper"] body {
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse at 16% 0%, var(--worldline-warm-ambient), transparent 38%),
-    radial-gradient(ellipse at 88% 14%, var(--worldline-khaki-ambient), transparent 34%),
+    radial-gradient(ellipse at 16% 0%, var(--worldline-cyan-ambient), transparent 38%),
+    radial-gradient(ellipse at 88% 14%, var(--worldline-blue-ambient), transparent 34%),
     repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 5px);
   background-attachment: fixed;
 }
 :root[data-color-scheme="worldline-console"][data-public-page="true"] .lab-public {
   background-image:
-    radial-gradient(ellipse at 16% 0%, var(--worldline-warm-ambient), transparent 38%),
-    radial-gradient(ellipse at 88% 14%, var(--worldline-khaki-ambient), transparent 34%),
+    radial-gradient(ellipse at 16% 0%, var(--worldline-cyan-ambient), transparent 38%),
+    radial-gradient(ellipse at 88% 14%, var(--worldline-blue-ambient), transparent 34%),
     repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 5px);
   background-attachment: fixed;
 }
-:root[data-color-scheme="worldline-console"] ::selection { background: color-mix(in srgb, var(--worldline-amber) 34%, transparent); color: #fff8ea; }
+:root[data-color-scheme="worldline-console"] ::selection { background: color-mix(in srgb, var(--worldline-cyan) 34%, transparent); color: #fff8ea; }
 :root[data-color-scheme="worldline-console"] input:focus,
 :root[data-color-scheme="worldline-console"] select:focus,
 :root[data-color-scheme="worldline-console"] textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--worldline-amber) 18%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--worldline-cyan) 24%, transparent);
 }
 :root[data-color-scheme="worldline-console"] .eyebrow,
 :root[data-color-scheme="worldline-console"] .badge,
@@ -2415,15 +2415,15 @@ html[data-bg-style="clouds-static"] body {
   :root[data-color-scheme="worldline-console"] .public-paper:hover,
   :root[data-color-scheme="worldline-console"] .research-detail:hover,
   :root[data-color-scheme="worldline-console"] .physics-resource-card:hover {
-    border-color: color-mix(in srgb, var(--worldline-amber) 56%, var(--worldline-khaki) 12%);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .24), 0 0 18px color-mix(in srgb, var(--worldline-amber) 10%, transparent), 0 0 24px color-mix(in srgb, var(--worldline-khaki) 6%, transparent);
+    border-color: color-mix(in srgb, var(--worldline-cyan) 56%, var(--worldline-blue) 12%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .24), 0 0 18px color-mix(in srgb, var(--worldline-cyan) 10%, transparent), 0 0 24px color-mix(in srgb, var(--worldline-blue) 6%, transparent);
   }
   :root[data-color-scheme="worldline-console"] .theme-card:hover,
   :root[data-color-scheme="worldline-console"] .public-paper:hover,
   :root[data-color-scheme="worldline-console"] .research-detail:hover,
   :root[data-color-scheme="worldline-console"] .physics-resource-card:hover { transform: translateY(-2px); }
   :root[data-color-scheme="worldline-console"] .button.primary:hover:not(:disabled),
-  :root[data-color-scheme="worldline-console"] .button-primary:hover:not(:disabled) { box-shadow: 0 0 20px color-mix(in srgb, var(--worldline-amber) 14%, transparent), 0 0 24px color-mix(in srgb, var(--worldline-khaki) 6%, transparent); }
+  :root[data-color-scheme="worldline-console"] .button-primary:hover:not(:disabled) { box-shadow: 0 0 20px color-mix(in srgb, var(--worldline-cyan) 14%, transparent), 0 0 24px color-mix(in srgb, var(--worldline-blue) 6%, transparent); }
   :root[data-color-scheme="worldline-console"] .collision-figure:hover .collision-tracks path {
     stroke-dasharray: 5 7;
     animation: worldline-track-flow 2.8s linear infinite;
@@ -2437,7 +2437,7 @@ html[data-bg-style="clouds-static"] body {
 /* Worldline Console public-site art direction: restrained hardware details, not a neon overlay. */
 :root[data-color-scheme="worldline-console"] .lab-public .public-header {
   position: relative;
-  border-bottom-color: color-mix(in srgb, var(--worldline-khaki) 20%, var(--line));
+  border-bottom-color: color-mix(in srgb, var(--worldline-blue) 20%, var(--line));
   background: linear-gradient(180deg, color-mix(in srgb, var(--panel-solid) 26%, transparent), transparent);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .public-header::after {
@@ -2447,7 +2447,7 @@ html[data-bg-style="clouds-static"] body {
   bottom: -1px;
   width: clamp(44px, 8vw, 96px);
   height: 1px;
-  background: linear-gradient(90deg, var(--worldline-amber), color-mix(in srgb, var(--worldline-khaki) 28%, transparent));
+  background: linear-gradient(90deg, var(--worldline-cyan), color-mix(in srgb, var(--worldline-blue) 48%, transparent));
   opacity: .82;
   pointer-events: none;
 }
@@ -2462,7 +2462,7 @@ html[data-bg-style="clouds-static"] body {
   bottom: 5px;
   left: 0;
   height: 1px;
-  background: var(--worldline-amber);
+  background: var(--worldline-cyan);
   opacity: .72;
   transform: scaleX(0);
   transform-origin: left center;
@@ -2478,49 +2478,49 @@ html[data-bg-style="clouds-static"] body {
 }
 :root[data-color-scheme="worldline-console"] .lab-public .public-header .nav-hub {
   border-radius: 4px;
-  background: color-mix(in srgb, var(--worldline-khaki) 5%, transparent);
+  background: color-mix(in srgb, var(--worldline-blue) 5%, transparent);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .hero-eyebrow {
-  color: var(--worldline-khaki);
+  color: var(--worldline-blue);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .hero-eyebrow .status-dot {
-  background: var(--worldline-amber);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--worldline-amber) 22%, transparent);
+  background: var(--worldline-cyan);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--worldline-cyan) 22%, transparent);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .collision-figure .detector-rings {
-  stroke: var(--worldline-khaki);
+  stroke: var(--worldline-blue);
   stroke-opacity: .20;
 }
 :root[data-color-scheme="worldline-console"] .lab-public .research-strip {
-  border-color: color-mix(in srgb, var(--worldline-khaki) 22%, var(--line));
-  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-khaki) 3%, transparent), transparent 68%);
+  border-color: color-mix(in srgb, var(--worldline-blue) 22%, var(--line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-blue) 3%, transparent), transparent 68%);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .section-top .eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  color: var(--worldline-khaki);
+  color: var(--worldline-blue);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .section-top .eyebrow::before {
   content: "";
   width: 5px;
   height: 5px;
   flex: 0 0 5px;
-  background: var(--worldline-amber);
-  box-shadow: 0 0 7px color-mix(in srgb, var(--worldline-amber) 18%, transparent);
+  background: var(--worldline-cyan);
+  box-shadow: 0 0 7px color-mix(in srgb, var(--worldline-cyan) 24%, transparent);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .research-tabs button {
   position: relative;
-  border-bottom-color: color-mix(in srgb, var(--worldline-khaki) 16%, var(--line));
+  border-bottom-color: color-mix(in srgb, var(--worldline-blue) 16%, var(--line));
   transition: color .18s ease, border-color .18s ease, background .18s ease;
 }
 :root[data-color-scheme="worldline-console"] .lab-public .research-tabs button:hover {
   color: var(--text);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-khaki) 5%, transparent), transparent 76%);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-blue) 5%, transparent), transparent 76%);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .research-tabs button.active {
-  border-bottom-color: color-mix(in srgb, var(--worldline-amber) 38%, var(--line));
-  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-amber) 7%, transparent), transparent 78%);
+  border-bottom-color: color-mix(in srgb, var(--worldline-cyan) 38%, var(--line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-cyan) 7%, transparent), transparent 78%);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .research-tabs button.active::before {
   content: "";
@@ -2529,14 +2529,14 @@ html[data-bg-style="clouds-static"] body {
   bottom: 25%;
   left: 0;
   width: 2px;
-  background: var(--worldline-amber);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--worldline-amber) 12%, transparent);
+  background: var(--worldline-cyan);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--worldline-cyan) 12%, transparent);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .research-detail,
 :root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card {
   border-radius: 14px;
-  border-color: color-mix(in srgb, var(--worldline-khaki) 18%, var(--line));
-  background: linear-gradient(145deg, color-mix(in srgb, var(--panel-solid) 90%, var(--worldline-khaki) 4%), color-mix(in srgb, var(--surface) 96%, var(--worldline-amber) 4%));
+  border-color: color-mix(in srgb, var(--worldline-blue) 18%, var(--line));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--panel-solid) 90%, var(--worldline-blue) 4%), color-mix(in srgb, var(--surface) 96%, var(--worldline-cyan) 4%));
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 3%, transparent);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .research-detail::before {
@@ -2546,85 +2546,85 @@ html[data-bg-style="clouds-static"] body {
   left: 0;
   width: 44px;
   height: 1px;
-  background: linear-gradient(90deg, var(--worldline-amber), transparent);
+  background: linear-gradient(90deg, var(--worldline-cyan), transparent);
   opacity: .82;
 }
 :root[data-color-scheme="worldline-console"] .lab-public .research-symbol {
-  color: var(--worldline-khaki);
+  color: var(--worldline-blue);
   opacity: .10;
 }
 :root[data-color-scheme="worldline-console"] .lab-public .topic-tags span {
   border-radius: 4px;
-  border-color: color-mix(in srgb, var(--worldline-khaki) 24%, var(--line));
-  background: color-mix(in srgb, var(--worldline-khaki) 4%, transparent);
+  border-color: color-mix(in srgb, var(--worldline-blue) 24%, var(--line));
+  background: color-mix(in srgb, var(--worldline-blue) 4%, transparent);
   color: var(--soft);
   font-family: var(--font-mono);
   letter-spacing: .025em;
 }
 :root[data-color-scheme="worldline-console"] .lab-public .publications-section {
-  border-top-color: color-mix(in srgb, var(--worldline-khaki) 20%, var(--line));
+  border-top-color: color-mix(in srgb, var(--worldline-blue) 20%, var(--line));
 }
 :root[data-color-scheme="worldline-console"] .lab-public .public-paper {
-  border-bottom-color: color-mix(in srgb, var(--worldline-khaki) 15%, var(--line));
+  border-bottom-color: color-mix(in srgb, var(--worldline-blue) 15%, var(--line));
   transition: background .18s ease, border-color .18s ease;
 }
 :root[data-color-scheme="worldline-console"] .lab-public .public-paper:hover {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-amber) 4%, transparent), transparent 70%);
-  border-bottom-color: color-mix(in srgb, var(--worldline-amber) 24%, var(--line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-cyan) 4%, transparent), transparent 70%);
+  border-bottom-color: color-mix(in srgb, var(--worldline-cyan) 24%, var(--line));
   box-shadow: none;
 }
 :root[data-color-scheme="worldline-console"] .lab-public .paper-tag {
   display: inline-block;
   padding: 3px 8px;
-  border: 1px solid color-mix(in srgb, var(--worldline-amber) 28%, var(--line));
+  border: 1px solid color-mix(in srgb, var(--worldline-cyan) 28%, var(--line));
   border-radius: 4px;
-  background: color-mix(in srgb, var(--worldline-amber) 6%, transparent);
-  color: var(--worldline-amber-hot);
+  background: color-mix(in srgb, var(--worldline-cyan) 6%, transparent);
+  color: var(--worldline-cyan-hot);
   font-family: var(--font-mono);
   letter-spacing: .035em;
 }
 :root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card > span {
-  color: var(--worldline-khaki);
+  color: var(--worldline-blue);
   font-family: var(--font-mono);
   letter-spacing: .04em;
 }
 :root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card h3 a {
-  color: var(--worldline-amber);
+  color: var(--worldline-cyan);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card h3 a:hover {
-  color: var(--worldline-amber-hot);
-  text-shadow: 0 0 14px color-mix(in srgb, var(--worldline-amber) 10%, transparent);
+  color: var(--worldline-cyan-hot);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--worldline-cyan) 10%, transparent);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .about-details > div,
 :root[data-color-scheme="worldline-console"] .lab-public .hub-module-list > span {
-  border-bottom-color: color-mix(in srgb, var(--worldline-khaki) 16%, var(--line));
+  border-bottom-color: color-mix(in srgb, var(--worldline-blue) 16%, var(--line));
 }
 :root[data-color-scheme="worldline-console"] .lab-public .hub-module-list > span {
   transition: background .18s ease;
 }
 :root[data-color-scheme="worldline-console"] .lab-public .hub-module-list > span:hover {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-khaki) 5%, transparent), transparent 78%);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--worldline-blue) 5%, transparent), transparent 78%);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .public-footer {
-  border-top-color: color-mix(in srgb, var(--worldline-khaki) 20%, var(--line));
+  border-top-color: color-mix(in srgb, var(--worldline-blue) 20%, var(--line));
 }
 :root[data-color-scheme="worldline-console"] .lab-public .button.primary {
   border-radius: 6px;
-  background: linear-gradient(135deg, var(--worldline-amber-hot), var(--worldline-amber));
-  border-color: var(--worldline-amber);
+  background: linear-gradient(135deg, var(--worldline-cyan-hot), var(--worldline-cyan));
+  border-color: var(--worldline-cyan);
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 10%, transparent);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .button.primary:hover {
-  background: var(--worldline-amber-hot);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--worldline-amber) 12%, transparent);
+  background: var(--worldline-cyan-hot);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--worldline-cyan) 12%, transparent);
 }
 :root[data-color-scheme="worldline-console"] .lab-public .button.ghost {
   border-radius: 6px;
-  border-color: color-mix(in srgb, var(--worldline-khaki) 30%, var(--line));
+  border-color: color-mix(in srgb, var(--worldline-blue) 30%, var(--line));
 }
 :root[data-color-scheme="worldline-console"] .lab-public .button.ghost:hover {
-  background: color-mix(in srgb, var(--worldline-khaki) 7%, transparent);
-  border-color: var(--worldline-khaki);
+  background: color-mix(in srgb, var(--worldline-blue) 7%, transparent);
+  border-color: var(--worldline-blue);
 }
 @keyframes worldline-track-flow { to { stroke-dashoffset: -48; } }
 
@@ -2636,14 +2636,14 @@ html[data-bg-style="clouds-static"] body {
   overflow: hidden;
   pointer-events: none;
   opacity: 0;
-  background: color-mix(in srgb, var(--worldline-screen, #15120f) 10%, transparent);
+  background: color-mix(in srgb, var(--worldline-screen, #07111d) 10%, transparent);
   animation: worldline-shift-flash .9s steps(1, end) both;
 }
 .worldline-shift-overlay::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--worldline-amber-hot, #ffd08a) 10%, transparent) 0, color-mix(in srgb, var(--worldline-amber-hot, #ffd08a) 10%, transparent) 1px, transparent 1px, transparent 4px);
+  background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--worldline-cyan-hot, #c5fbff) 10%, transparent) 0, color-mix(in srgb, var(--worldline-cyan-hot, #c5fbff) 10%, transparent) 1px, transparent 1px, transparent 4px);
   animation: worldline-scanline .9s ease-out both;
 }
 .worldline-shift-overlay::after {
@@ -2654,7 +2654,7 @@ html[data-bg-style="clouds-static"] body {
   top: 34%;
   height: 16%;
   opacity: 0;
-  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--worldline-amber, #e6a24a) 18%, transparent), color-mix(in srgb, var(--worldline-amber, #e6a24a) 3%, transparent), transparent);
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--worldline-cyan, #55e6f2) 18%, transparent), color-mix(in srgb, var(--worldline-cyan, #55e6f2) 3%, transparent), transparent);
   animation: worldline-signal-band .9s steps(2, end) both;
 }
 .worldline-shift-overlay__hud {
@@ -2664,10 +2664,10 @@ html[data-bg-style="clouds-static"] body {
   width: min(420px, calc(100vw - 36px));
   padding: 18px 22px;
   transform: translate(-50%, -50%);
-  border: 1px solid color-mix(in srgb, var(--worldline-amber, #e6a24a) 62%, var(--worldline-khaki, #a79a7d) 10%);
-  background: color-mix(in srgb, var(--worldline-screen, #15120f) 88%, transparent);
-  box-shadow: 0 0 30px color-mix(in srgb, var(--worldline-amber, #e6a24a) 14%, transparent), inset 0 0 24px color-mix(in srgb, var(--worldline-amber, #e6a24a) 4%, transparent);
-  color: var(--worldline-amber-hot, #ffd08a);
+  border: 1px solid color-mix(in srgb, var(--worldline-cyan, #55e6f2) 62%, var(--worldline-blue, #83a9ff) 10%);
+  background: color-mix(in srgb, var(--worldline-screen, #07111d) 88%, transparent);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--worldline-cyan, #55e6f2) 14%, transparent), inset 0 0 24px color-mix(in srgb, var(--worldline-cyan, #55e6f2) 4%, transparent);
+  color: var(--worldline-cyan-hot, #c5fbff);
   text-align: center;
   font-family: var(--font-mono, ui-monospace, monospace);
   letter-spacing: .10em;
@@ -2676,7 +2676,7 @@ html[data-bg-style="clouds-static"] body {
 .worldline-shift-overlay__hud > span,
 .worldline-shift-overlay__hud > small { display: block; font-size: 10px; }
 .worldline-shift-overlay__hud > strong { display: block; margin: 8px 0; font-size: clamp(17px, 3vw, 23px); font-weight: 500; letter-spacing: .16em; }
-.worldline-shift-overlay__hud > small { color: color-mix(in srgb, var(--worldline-amber-hot, #ffd08a) 70%, transparent); letter-spacing: .05em; }
+.worldline-shift-overlay__hud > small { color: color-mix(in srgb, var(--worldline-cyan-hot, #c5fbff) 70%, transparent); letter-spacing: .05em; }
 @keyframes worldline-shift-flash { 0%, 100% { opacity: 0; } 12% { opacity: .9; } 22% { opacity: .14; } 38% { opacity: .68; } 52% { opacity: .08; } 64% { opacity: .42; } 78% { opacity: .04; } }
 @keyframes worldline-scanline { 0% { opacity: 0; transform: translateY(-8%); } 18% { opacity: .8; } 70% { opacity: .32; transform: translateY(4%); } 100% { opacity: 0; transform: translateY(12%); } }
 @keyframes worldline-signal-band { 0%, 100% { opacity: 0; transform: translateY(-12%); } 24% { opacity: .75; transform: translateY(0); } 42% { opacity: .15; transform: translateY(12%); } 54% { opacity: .52; transform: translateY(-5%); } 72% { opacity: 0; transform: translateY(18%); } }

@@ -50,10 +50,10 @@ export const COLOR_SCHEMES = [
     name: '世界线终端',
     subtitle: '《命运石之门》视觉语言启发 · 琥珀读数 · 复古科研终端',
     description: '提取复古电子终端、琥珀色读数与克制的信号干扰；不使用原作角色、标志或美术素材。',
-    colors: ['#15120f', '#e6a24a', '#211b15'],
-    primaryColor: '#e6a24a',
-    baseColor: '#15120f',
-    surfaceColor: '#211b15'
+    colors: ['#07111d', '#55e6f2', '#102436'],
+    primaryColor: '#55e6f2',
+    baseColor: '#07111d',
+    surfaceColor: '#102436'
   }
 ]
 
