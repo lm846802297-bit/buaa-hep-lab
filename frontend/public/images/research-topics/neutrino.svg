@@ -4,7 +4,7 @@
 <style>@media (max-width: 600px) { text { display: none; } }</style>
 <rect width="1000" height="400" fill="url(#bg)"/><rect width="1000" height="400" fill="url(#grid)"/>
 <g font-family="Arial, Helvetica, sans-serif" font-weight="600" paint-order="stroke" stroke="#07111c" stroke-width="3" stroke-linejoin="round">
-<text x="340" y="115" fill="#d9f7ff" font-size="16" font-weight="700">NEUTRINO OSCILLATION</text>
+
 <text x="30" y="140" fill="#a8eafa" font-size="13">FLAVOR STATES</text>
 </g>
 <g fill="none" stroke-width="2.8" stroke-linecap="round">
@@ -23,4 +23,8 @@
 </g>
 <g fill="none" stroke-width="2"><path d="M820 370H978M820 370V278" stroke="#7a9dbb" stroke-opacity=".6"/><path d="M820 368C842 366 849 342 868 327S895 336 911 352 935 361 950 365 967 368 978 369" stroke="#62d9ef"/><path d="M820 368C840 367 851 357 867 345S895 320 914 334 937 359 955 366 969 368 978 369" stroke="#ffc477" stroke-opacity=".8"/></g>
 <g fill="#a6cfe3" font-family="sans-serif" font-size="12" opacity=".82"><text x="36" y="86">ν<tspan baseline-shift="sub" font-size="8">e</tspan></text><text x="36" y="174">ν<tspan baseline-shift="sub" font-size="8">μ</tspan></text><text x="36" y="260">ν<tspan baseline-shift="sub" font-size="8">τ</tspan></text><text x="806" y="315">L/E</text></g>
+<g id="neutrino-title-label">
+  <rect x="330" y="91" width="250" height="38" rx="5" fill="#07111c" fill-opacity=".9" stroke="#244b5b" stroke-opacity=".8"/>
+  <text x="340" y="115" fill="#d9f7ff" font-size="16" font-weight="700">NEUTRINO OSCILLATION</text>
+</g>
 </svg>
