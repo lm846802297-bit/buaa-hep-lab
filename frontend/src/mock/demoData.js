@@ -9,9 +9,9 @@ function formatOffsetDate(offset = 0) {
 }
 export const DEMO_MEMBERS = [
   { id: 1, name: '李华（演示管理员）', real_name: '李华', email: 'admin@example.invalid', role: 'admin', identity: 'teacher', bio: '虚构账号，仅用于展示管理功能。', can_manage_seminars: true, is_tutorial_completed: true, tutorial_completed: true, created_at: '2026-01-10T08:00:00Z' },
-  { id: 2, name: '陈晨（演示组员）', real_name: '陈晨', email: 'member@example.invalid', role: 'member', identity: 'student', bio: '虚构账号：研读非弹性暗物质、热共湮灭与长寿命粒子信号。', can_manage_seminars: true, is_tutorial_completed: true, tutorial_completed: true, created_at: '2026-03-01T09:00:00Z' },
-  { id: 3, name: '示例研究员', real_name: '示例研究员', email: 'researcher@example.invalid', role: 'member', identity: 'postdoc', bio: '虚构研究员账号：研究中微子新相互作用、惰性中微子与电弱相变。', can_manage_seminars: true, is_tutorial_completed: true, created_at: '2026-02-15T10:00:00Z' },
-  { id: 4, name: '示例学生', real_name: '示例学生', email: 'student@example.invalid', role: 'member', identity: 'student', bio: '虚构学生账号：研究对撞机精密测量、位移顶点与暗物质唯象学。', can_manage_seminars: false, is_tutorial_completed: true, created_at: '2026-05-20T14:30:00Z' },
+  { id: 2, name: '陈晨（演示组员）', real_name: '陈晨', email: 'member@example.invalid', role: 'member', identity: 'student', bio: '虚构账号：非弹性暗物质与长寿命粒子。', can_manage_seminars: true, is_tutorial_completed: true, tutorial_completed: true, created_at: '2026-03-01T09:00:00Z' },
+  { id: 3, name: '示例研究员', real_name: '示例研究员', email: 'researcher@example.invalid', role: 'member', identity: 'postdoc', bio: '虚构账号：中微子新相互作用与电弱相变。', can_manage_seminars: true, is_tutorial_completed: true, created_at: '2026-02-15T10:00:00Z' },
+  { id: 4, name: '示例学生', real_name: '示例学生', email: 'student@example.invalid', role: 'member', identity: 'student', bio: '虚构账号：对撞机精密测量与暗物质唯象学。', can_manage_seminars: false, is_tutorial_completed: true, created_at: '2026-05-20T14:30:00Z' },
 ]
 export const DEMO_SITE_CONFIG = {
   initialized: true, user_count: 4, lab_name: `${lab.name}（演示）`, lab_short_name: lab.shortName,
@@ -29,11 +29,11 @@ const seminarTopics = [
 const seminarPaperIds = ['2508.13276', '2509.23925', '2510.20672', '2506.10673', '2409.17243']
 const seminarPresenterIds = [2, 3, 4, 1, 4]
 const seminarAbstracts = [
-  '围绕纯非弹性标量暗物质讨论热共湮灭、质量分裂、一阶相变与长寿命粒子信号；需区分模型假设、基准点和完整参数空间。',
-  '讨论标量介导惰性中微子模型中相变引力波与位移顶点搜索的互补性；灵敏度预测不等于观测证据。',
-  '讨论太阳中微子作为延展源产生的轴矢量轻子第五力及其唯象学约束，重点关注模型定义和适用假设。',
-  '梳理对撞机量子精度极限的成立条件和案例，区分量子信息界、统计误差与具体实验可达精度。',
-  '讨论未来 μ 子对撞机中的长寿命惰性中微子搜索，明确质量、混合、寿命和探测器接受度的依赖。',
+  '讨论热共湮灭、质量分裂、相变与长寿命粒子信号，区分基准点和完整参数空间。',
+  '比较惰性中微子位移顶点与相变引力波；灵敏度预测不等于观测。',
+  '讨论太阳中微子源的轻子第五力及其对缪子 g−2 昼夜信号的影响。',
+  '比较量子 Fisher 信息界与可观测量实际可达精度。',
+  '讨论长寿命惰性中微子搜索对质量、混合、寿命与探测器接受度的依赖。',
 ]
 export const DEMO_SEMINARS = [2, 9, 16, -5, -12].map((offset, i) => {
   const presenterId = seminarPresenterIds[i]
@@ -59,26 +59,21 @@ export const DEMO_ARXIV_PAPERS = DEMO_PAPER_CATALOG.map((p, i) => ({
 export const DEMO_NOTICES = [{ id: 1, title: '欢迎体验粒子物理科研工作台', content: '组员、组会和交流记录均为演示。真实部署请使用管理员初始化向导。', is_pinned: true, created_by: DEMO_MEMBERS[0].name, created_at: formatOffsetDate(-1), priority: 'normal' }]
 export const DEMO_RESOURCES_CATEGORIES = [
   { id: 1, name: '教材', is_default: true }, { id: 2, name: '工具', is_default: true },
-  { id: 3, name: '网站', is_default: true }, { id: 4, name: '综述与数据', is_default: true },
+  { id: 3, name: '综述与数据', is_default: true },
 ]
 export const DEMO_BOOKS = [
-  { title: 'Modern Particle Physics', authors: 'Mark Thomson', category: '教材', description: '粒子物理研究生入门教材，涵盖散射、衰变、标准模型、希格斯与新物理。', url: 'https://www.cambridge.org/cc/titles/modern-particle-physics' },
-  { title: 'Quantum Field Theory and the Standard Model', authors: 'Matthew D. Schwartz', category: '教材', description: '量子场论、规范理论、重整化、标准模型与有效场论的研究生教材。', url: 'https://www.cambridge.org/highereducation/books/quantum-field-theory-and-the-standard-model/A4CD66B998F2C696DCC75B984A7D5799' },
-  { title: 'Review of Particle Physics (2026)', authors: 'Particle Data Group', category: '综述与数据', description: '粒子性质、标准模型综述和实验限制的权威入口；引用时记录版本、条目与勘误。', url: 'https://pdg.lbl.gov/2026/' },
-  { title: 'arXiv · hep-ph', authors: 'arXiv', category: '网站', description: '高能粒子物理唯象学预印本入口；须区分预印本与期刊发表状态。', url: 'https://arxiv.org/list/hep-ph/recent' },
-  { title: 'INSPIRE HEP', authors: 'INSPIRE', category: '工具', description: '高能物理文献检索、作者消歧和引文追踪。', url: 'https://inspirehep.net/' },
-  { title: 'FeynCalc Documentation', authors: 'FeynCalc Collaboration', category: '工具', description: 'Mathematica 中的费曼振幅、Dirac/颜色代数和圈图计算工具文档。', url: 'https://feyncalc.github.io/' },
-  { title: 'FeynRules', authors: 'FeynRules Collaboration', category: '工具', description: '从拉格朗日量导出 Feynman rules 并生成模型文件的工具入口。', url: 'https://feynrules.irmp.ucl.ac.be/' },
-  { title: 'HEPData', authors: 'HEPData', category: '综述与数据', description: '实验发布的数值数据表与协方差信息入口，适用于可追溯的唯象学重解释。', url: 'https://www.hepdata.net/' },
-].map((book, i) => ({ ...book, id: i + 1, original_title: book.title, tutorial_url: book.url, exercise_url: '', github_url: '', download_url: '', cover_url: '', favorite_count: 0, is_favorited: i < 3 || i === 5, created_at: formatOffsetDate(-10) + 'T10:00:00Z' }))
+  { title: 'Modern Particle Physics', authors: 'Mark Thomson', category: '教材', description: '粒子物理教材：散射、衰变、标准模型与新物理。', url: 'https://www.cambridge.org/cc/titles/modern-particle-physics' },
+  { title: 'Quantum Field Theory and the Standard Model', authors: 'Matthew D. Schwartz', category: '教材', description: '量子场论、规范理论、重整化与有效场论。', url: 'https://www.cambridge.org/highereducation/books/quantum-field-theory-and-the-standard-model/A4CD66B998F2C696DCC75B984A7D5799' },
+  { title: 'Review of Particle Physics (2026)', authors: 'Particle Data Group', category: '综述与数据', description: '粒子性质与实验限制；引用时记录版本和勘误。', url: 'https://pdg.lbl.gov/2026/' },
+  { title: 'FeynCalc Documentation', authors: 'FeynCalc Collaboration', category: '工具', description: 'Mathematica 符号计算：Dirac/颜色代数、迹与圈图。', url: 'https://feyncalc.github.io/' },
+  { title: 'FeynRules', authors: 'FeynRules Collaboration', category: '工具', description: '从拉格朗日量导出费曼规则并生成模型文件。', url: 'https://feynrules.irmp.ucl.ac.be/' },
+].map((book, i) => ({ ...book, id: i + 1, original_title: book.title, tutorial_url: book.url, exercise_url: '', github_url: '', download_url: '', cover_url: '', favorite_count: 0, is_favorited: i < 3, created_at: formatOffsetDate(-10) + 'T10:00:00Z' }))
 const DEMO_SEMINAR_BY_PAPER = Object.fromEntries(seminarPaperIds.map((arxivId, i) => [arxivId, seminarIds[i]]))
-export const DEMO_LIBRARY_PAPERS = DEMO_PAPER_CATALOG.map((p, i) => {
-  const seminarId = DEMO_SEMINAR_BY_PAPER[p.id] ?? null
-  return {
-    ...DEMO_ARXIV_PAPERS[i], id: i + 1, authors: p.authors, from_recommendation: true,
-    from_seminar: seminarId !== null, seminar_id: seminarId, metadata_status: 'ready', created_at: formatOffsetDate(-3 - i),
-  }
-})
+export const DEMO_LIBRARY_PAPERS = DEMO_PAPER_CATALOG.map((p, i) => ({
+  ...DEMO_ARXIV_PAPERS[i], id: i + 1, authors: p.authors, from_recommendation: true,
+  from_seminar: p.id in DEMO_SEMINAR_BY_PAPER, seminar_id: DEMO_SEMINAR_BY_PAPER[p.id] ?? null,
+  metadata_status: 'ready', created_at: formatOffsetDate(-3 - i),
+}))
 export const DEMO_PENDING_IMPORTS = []
 export const DEMO_TALKS = []
 export const DEMO_EMAILS = ['文献分享使用说明', '组会摘要填写示例', '资料归档使用说明', '日历导出使用说明'].map((title, i) => ({
