@@ -14,7 +14,7 @@
     "pages:deploy": "wrangler pages deploy ./dist --project-name=buaa-hep-hub --branch=main",
     "check:bundle": "node scripts/check-bundle.mjs",
     "check:module-boundaries": "node ../scripts/check-module-boundaries.mjs",
-    "check:types:cloudflare": "npx --yes --package=typescript@5.9.3 tsc --noEmit -p tsconfig.cloudflare.json"
+    "check:types:cloudflare": "node ../scripts/check-cloudflare-types.mjs"
   },
   "dependencies": {
     "@phosphor-icons/vue": "^2.2.1",
