@@ -336,7 +336,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 .topic-visual-panel img { display:block; width:100%; height:100%; object-fit:cover; object-position:center; }
 .topic-visual-panel figcaption { position:absolute; right:12px; bottom:10px; z-index:1; padding:5px 8px; border:1px solid rgba(160,220,232,.24); border-radius:6px; background:rgba(3,13,21,.72); color:#d2e8ec; font-size:10px; letter-spacing:.04em; }
 .topic-reading-layout { display:grid; grid-template-columns:220px minmax(0,1fr); align-items:start; gap:clamp(24px,3vw,40px); margin-top:4px; }
-.topic-sidebar { position:sticky; top:18px; align-self:start; max-height:calc(100vh - 36px); overflow-y:auto; overscroll-behavior:contain; padding:12px; border:1px solid var(--line); border-radius:14px; background:var(--panel); box-shadow:var(--shadow); scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
+.topic-sidebar { position:sticky; top:18px; align-self:start; box-sizing:border-box; max-height:calc(100vh - 36px); overflow-y:auto; overscroll-behavior:contain; padding:12px; border:1px solid var(--line); border-radius:14px; background:var(--panel); box-shadow:var(--shadow); scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
 .topic-sidebar-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 8px 12px; border-bottom:1px solid var(--line); }
 .topic-sidebar-kicker { color:var(--muted); font-size:10px; letter-spacing:.13em; }
 .topic-sidebar-toggle { display:none; }
@@ -421,7 +421,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 }
 @media(max-width:980px) {
   .topic-reading-layout { grid-template-columns:1fr; gap:12px; }
-  .topic-sidebar { top:8px; z-index:20; max-height:calc(100vh - 16px); padding:8px 10px; background:color-mix(in srgb,var(--panel) 90%,transparent); backdrop-filter:blur(14px); }
+  .topic-sidebar { top:8px; z-index:20; box-sizing:border-box; max-height:calc(100vh - 16px); max-height:calc(100dvh - 16px); padding:8px 10px; background:color-mix(in srgb,var(--panel) 90%,transparent); backdrop-filter:blur(14px); }
   .topic-sidebar-heading { padding:0; border:0; }
   .topic-sidebar-kicker { padding-left:4px; }
   .topic-sidebar-toggle { display:flex; align-items:center; gap:18px; min-height:38px; padding:6px 10px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text); font:inherit; font-size:12px; cursor:pointer; }
