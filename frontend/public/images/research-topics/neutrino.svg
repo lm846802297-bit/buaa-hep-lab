@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" role="img" aria-labelledby="title desc">
 <title id="title">中微子振荡、质量本征态与混合</title><desc id="desc">三种中微子味态沿传播方向演化，示意振荡与混合；右侧三乘三色块仅象征混合矩阵结构，不代表 PMNS 矩阵元的数值。曲线不对应指定振荡参数下的概率计算。</desc>
 <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#050d18"/><stop offset="1" stop-color="#101a30"/></linearGradient><linearGradient id="beam"><stop stop-color="#5ad7f0" stop-opacity="0"/><stop offset=".45" stop-color="#5ad7f0" stop-opacity=".8"/><stop offset="1" stop-color="#5ad7f0" stop-opacity="0"/></linearGradient><radialGradient id="node"><stop stop-color="#efffff"/><stop offset=".35" stop-color="#66dff4"/><stop offset="1" stop-color="#2876c2" stop-opacity=".1"/></radialGradient><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#7b9ce4" stroke-opacity=".09"/></pattern></defs>
-<style>@media (max-width: 600px) { text { display: none; } }</style>
+<style>@media (max-width: 600px) { text { display: none; } } @media (max-width: 600px) { #neutrino-title-label { display: none; } }</style>
 <rect width="1000" height="400" fill="url(#bg)"/><rect width="1000" height="400" fill="url(#grid)"/>
 <g font-family="Arial, Helvetica, sans-serif" font-weight="600" paint-order="stroke" stroke="#07111c" stroke-width="3" stroke-linejoin="round">
 
