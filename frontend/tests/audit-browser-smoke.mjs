@@ -40,7 +40,9 @@ try {
     await page.goto(base, { waitUntil: 'networkidle' })
     await page.locator('.app-shell .lab-public').waitFor()
     await page.locator('h1').click()
-    check(await page.getByRole('button', { name: '切换官网风格' }).isVisible(), `public skin icon is visible at ${width}px`)
+    const themeTrigger = page.getByRole('button', { name: '切换官网风格' })
+    check(await themeTrigger.isVisible(), `public skin icon is visible at ${width}px`)
+    check(await themeTrigger.locator('svg.theme-tuner-icon').isVisible(), `appearance tuner glyph is visible at ${width}px`)
     const tocLinks = page.locator('#public-section-nav-links')
     if (width > 1100) {
       check(await page.getByRole('navigation', { name: '页面目录' }).isVisible(), `section directory is visible at ${width}px`)
@@ -84,10 +86,41 @@ try {
   await publicSkinTrigger.click()
   await publicSkin.selectOption('worldline-console')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
+  const worldlineTuner = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement)
+    const icon = document.querySelector('.theme-tuner-icon')
+    const trigger = document.querySelector('.public-theme-trigger')
+    return {
+      accent: root.getPropertyValue('--accent').trim().toLowerCase(),
+      phosphor: root.getPropertyValue('--worldline-phosphor').trim().toLowerCase(),
+      coreStroke: getComputedStyle(icon.querySelector('.tuner-core')).stroke,
+      orbitStroke: getComputedStyle(icon.querySelector('.tuner-orbit')).stroke,
+      buttonShadow: getComputedStyle(trigger).boxShadow
+    }
+  })
+  check(worldlineTuner.accent === '#e6a64b', 'Worldline Console uses the warm amber primary signal')
+  check(worldlineTuner.phosphor === '#8faa9c', 'Worldline Console defines a desaturated green phosphor tone')
+  check(worldlineTuner.coreStroke !== worldlineTuner.orbitStroke, 'Worldline tuner separates amber core from cool orbital lines')
+  check(worldlineTuner.buttonShadow !== 'none', 'Worldline tuner uses its restrained device-like button shadow')
   check(await page.evaluate(() => localStorage.getItem('labhub_public_color_scheme') === 'worldline-console' && localStorage.getItem('laborbit_color_scheme') !== 'worldline-console'), 'public theme persists separately from workspace preferences')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await page.waitForTimeout(950)
   check(await page.locator('.worldline-shift-overlay').count() === 0, 'worldline transition overlay exits cleanly')
+  await publicSkinTrigger.click()
+  await publicSkin.selectOption('classic-cyan')
+  const classicTuner = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement)
+    const core = document.querySelector('.theme-tuner-icon .tuner-core')
+    return { accent: root.getPropertyValue('--accent').trim().toLowerCase(), coreStroke: getComputedStyle(core).stroke }
+  })
+  check(classicTuner.accent === '#c5e6df', 'classic cyan theme restores its own accent token')
+  check(classicTuner.coreStroke !== worldlineTuner.coreStroke, 'tuner core automatically follows the selected non-terminal skin')
+  await page.waitForTimeout(950)
+  await publicSkinTrigger.click()
+  await publicSkin.selectOption('worldline-console')
+  await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
+  await page.waitForTimeout(950)
+  check(await page.locator('.worldline-shift-overlay').count() === 0, 'worldline transition overlay exits cleanly after restoring the terminal skin')
   const firstResourceCard = page.locator('.physics-resource-card').first()
   await firstResourceCard.hover()
   const hoverShadow = await firstResourceCard.evaluate(el => getComputedStyle(el).boxShadow)

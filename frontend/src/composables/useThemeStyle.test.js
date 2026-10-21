@@ -71,6 +71,11 @@ describe('useThemeStyle', () => {
     expect(colorSchemes[0].primaryColor).toBe('#B85E3F')
     expect(colorSchemes[0].colors).toBeDefined()
     expect(colorSchemes[0].colors.length).toBeGreaterThanOrEqual(3)
+    const worldline = colorSchemes.find(scheme => scheme.id === 'worldline-console')
+    expect(worldline.baseColor).toBe('#121510')
+    expect(worldline.primaryColor).toBe('#e6a64b')
+    expect(worldline.surfaceColor).toBe('#1c211b')
+    expect(worldline.colors).toEqual(['#121510', '#e6a64b', '#1c211b'])
 
     expect(bgOptions).toHaveLength(5)
     expect(bgOptions.map(b => b.id)).toEqual(['paper', 'clouds-static', 'galaxy', 'vanta-fog', 'custom-local'])
