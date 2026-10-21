@@ -193,17 +193,20 @@ def _seed_demo_data(db: Session) -> None:
         db.refresh(prof_shu)
         db.refresh(student1)
 
-        # 2. arXiv 推荐文献（涵盖导师专属高亮推荐）
+        # 2. arXiv 推荐文献：全部使用课题组高能粒子物理唯象学方向的真实公开论文
+        # published_date 记录 arXiv 首次提交日期；journal 单独记录期刊发表信息。
         paper1 = ArxivPaper(
             arxiv_id="2508.13276",
             title="Probing Purely Inelastic Scalar Dark Matter Across Colliders and Gravitational Wave Observatories",
             authors=json.dumps(["Jinhui Guo", "Jia Liu", "Chenhao Peng", "Xiao-Ping Wang"], ensure_ascii=False),
-            abstract="We study a purely inelastic scalar dark matter model in which coannihilation can account for the relic abundance, a strong first-order electroweak phase transition may generate gravitational waves, and a small mass splitting can lead to long-lived collider signatures. These are model-dependent predictions to be evaluated under the paper's stated assumptions.",
+            abstract="We study a purely inelastic scalar dark matter scenario and its complementary phenomenology in relic abundance, electroweak phase transitions, gravitational-wave prospects, and long-lived collider signatures. The predictions depend on the mass splitting and the model parameter choices.",
+            journal="Phys.Rev.D 112 (2025) 115014",
+            source_url="https://arxiv.org/abs/2508.13276",
             primary_category="hep-ph",
             published_date="2025-08-18",
             pdf_url="https://arxiv.org/pdf/2508.13276.pdf",
             recommended_by_id=prof_shu.id,
-            recommend_comment="导师：这篇论文把非弹性标量暗物质、热共湮灭、一阶电弱相变与对撞机长寿命粒子信号联系起来。阅读时请区分模型参数区、未来灵敏度预测与实际观测，并记录相变和质量分裂的假设。",
+            recommend_comment="阅读重点：热共湮灭条件、暗物质质量分裂、一阶相变与长寿命粒子信号。请区分 benchmark、完整参数空间和未来灵敏度预测。",
             is_pinned=True,
         )
 
@@ -211,45 +214,156 @@ def _seed_demo_data(db: Session) -> None:
             arxiv_id="2509.23925",
             title="Probing Scalar-Mediated Sterile Neutrinos with Gravitational Wave and Colliders Signals",
             authors=json.dumps(["Qi Bi", "Jinhui Guo", "Jian Liao", "Jia Liu", "Xiao-Ping Wang"], ensure_ascii=False),
-            abstract="We study a UV-complete model in which a singlet scalar generates a sterile-neutrino Majorana mass and mixes with the Higgs. In parts of parameter space the scalar sector can support a strong first-order electroweak phase transition, while small active-sterile mixing can produce long-lived sterile neutrinos with displaced-vertex signatures. Gravitational-wave and collider prospects are complementary, model-dependent predictions.",
+            abstract="We study a scalar-mediated sterile-neutrino model and compare its model-dependent electroweak phase-transition gravitational-wave prospects with long-lived sterile-neutrino searches through displaced vertices at colliders.",
+            journal="Phys.Rev.D 113 (2026) 095006",
+            source_url="https://arxiv.org/abs/2509.23925",
             primary_category="hep-ph",
             published_date="2025-09-28",
             pdf_url="https://arxiv.org/pdf/2509.23925.pdf",
             recommended_by_id=student1.id,
-            recommend_comment="这篇论文适合讨论标量混合、惰性中微子寿命、电弱相变与引力波预言之间的模型依赖关系。应把预测的探测灵敏度与已经观测到的信号区分开来。",
+            recommend_comment="讨论 Higgs–标量混合、惰性中微子寿命、相变完成条件和位移顶点接受度；灵敏度预测不等于观测证据。",
             is_pinned=False,
         )
 
-        db.add_all([paper1, paper2])
-        db.commit()
-        db.refresh(paper1)
+        paper3 = ArxivPaper(
+            arxiv_id="2510.20672",
+            title="An Axial-Vector Leptophilic Fifth Force Sourced by Solar Neutrinos",
+            authors=json.dumps(["Rundong Fang", "Ji-Heng Guo", "Jia Liu", "Xiao-Ping Wang", "YanLi Zhao"], ensure_ascii=False),
+            abstract="We investigate an axial-vector leptophilic fifth force sourced by solar neutrinos and its phenomenological constraints, with precision observables providing complementary tests under the model assumptions.",
+            journal="Phys.Rev.D 113 (2026) 055041",
+            source_url="https://arxiv.org/abs/2510.20672",
+            primary_category="hep-ph",
+            published_date="2025-10-23",
+            pdf_url="https://arxiv.org/pdf/2510.20672.pdf",
+            recommended_by_id=prof_li.id,
+            recommend_comment="重点核对太阳中微子源的处理、相互作用结构、实验可观测量及约束所依赖的假设。",
+            is_pinned=False,
+        )
 
-        # 3. 组会排期
+        paper4 = ArxivPaper(
+            arxiv_id="2506.10673",
+            title="Ultimate Quantum Precision Limit at Colliders: Conditions and Case Studies",
+            authors=json.dumps(["Tengyu Ai", "Qi Bi", "Yuxin He", "Jia Liu", "Xiao-Ping Wang"], ensure_ascii=False),
+            abstract="We examine the conditions for collider measurements to approach quantum precision limits and discuss representative case studies, distinguishing information-theoretic bounds from practical experimental precision.",
+            journal="Phys.Rev.Lett. 135 (2025) 241804",
+            source_url="https://arxiv.org/abs/2506.10673",
+            primary_category="hep-ph",
+            published_date="2025-06-12",
+            pdf_url="https://arxiv.org/pdf/2506.10673.pdf",
+            recommended_by_id=prof_wang.id,
+            recommend_comment="讨论量子信息界、可观测量构造和实验统计精度之间的关系，注意结论适用的测量与模型条件。",
+            is_pinned=False,
+        )
+
+        paper5 = ArxivPaper(
+            arxiv_id="2409.17243",
+            title="Long-lived Sterile Neutrino Searches at Future Muon Colliders",
+            authors=json.dumps(["Qi Bi", "Jinhui Guo", "Jia Liu", "Yan Luo", "Xiao-Ping Wang"], ensure_ascii=False),
+            abstract="We study future muon-collider sensitivity to long-lived sterile neutrinos and displaced signatures, with reach depending on sterile-neutrino masses, active-sterile mixing, lifetimes, and detector assumptions.",
+            journal="Phys.Rev.D 111 (2025) 075001",
+            source_url="https://arxiv.org/abs/2409.17243",
+            primary_category="hep-ph",
+            published_date="2024-09-25",
+            pdf_url="https://arxiv.org/pdf/2409.17243.pdf",
+            recommended_by_id=student1.id,
+            recommend_comment="阅读时记录质量—混合参数化、寿命与探测器接受度；不要把某一基准点的灵敏度当作普适排除结论。",
+            is_pinned=False,
+        )
+
+        paper6 = ArxivPaper(
+            arxiv_id="2603.17237",
+            title="Ultralight Scalar Dark Matter with Off-Diagonal Flavor Couplings",
+            authors=json.dumps(["Jinhui Guo", "Jia Liu", "Chenhao Peng", "Xiao-Ping Wang", "Hang Zhao"], ensure_ascii=False),
+            abstract="We investigate ultralight scalar dark matter with off-diagonal flavor couplings and discuss complementary probes from time-dependent measurements and flavor observables.",
+            journal="Phys.Rev.D 114 (2026) 015022",
+            source_url="https://arxiv.org/abs/2603.17237",
+            primary_category="hep-ph",
+            published_date="2026-03-18",
+            pdf_url="https://arxiv.org/pdf/2603.17237.pdf",
+            recommended_by_id=prof_wang.id,
+            recommend_comment="关注相干暗物质背景、味非对角耦合和时域/味物理观测之间的互补性，并明确模型参数依赖。",
+            is_pinned=False,
+        )
+
+        paper7 = ArxivPaper(
+            arxiv_id="2610.04971",
+            title="Probing anomalous Wtb couplings through bW spin correlations in top-quark pair production at the HL-LHC",
+            authors=json.dumps(["Qi Bi", "Zekun Li", "Chuntao Liu", "Jia Liu", "Xiao-Ping Wang"], ensure_ascii=False),
+            abstract="We study how b-quark and W-boson spin correlations in top-quark pair production can probe anomalous Wtb couplings and estimate the statistical sensitivity at the HL-LHC.",
+            source_url="https://arxiv.org/abs/2610.04971",
+            primary_category="hep-ph",
+            published_date="2026-10-04",
+            pdf_url="https://arxiv.org/pdf/2610.04971.pdf",
+            recommended_by_id=prof_shu.id,
+            recommend_comment="重点检查自旋关联可观测量、异常耦合参数化、统计假设和 HL-LHC 灵敏度的适用条件。",
+            is_pinned=False,
+        )
+
+        db.add_all([paper1, paper2, paper3, paper4, paper5, paper6, paper7])
+        db.commit()
+
+        # 3. 组会排期：主题、文献和演示状态保持一一对应；时间按 2026-10-21 校准。
         seminar1 = SeminarSchedule(
             date="2026-10-23",
             time="14:30",
-            location="物理楼 302 研讨室（演示数据，实际安排需确认）",
+            location="演示排期，地点待确认",
             presenter_name="张明 (博士生)",
             presenter_id=student1.id,
-            topic="纯非弹性标量暗物质：热共湮灭、相变与对撞机信号",
+            topic="纯非弹性标量暗物质：热共湮灭、相变与长寿命粒子信号",
             paper_id=paper1.id,
             slides_url=None,
-            notes="请提前阅读 arXiv:2508.13276，梳理暗物质质量分裂、热共湮灭条件、一阶电弱相变和长寿命粒子搜索的关联，并区分基准点与完整参数空间。",
+            notes="阅读 arXiv:2508.13276，梳理暗物质质量分裂、热共湮灭、一阶相变和长寿命粒子搜索；区分 benchmark 与完整参数空间。",
             status="upcoming",
         )
         seminar2 = SeminarSchedule(
+            date="2026-10-30",
+            time="14:30",
+            location="演示排期，地点待确认",
+            presenter_name="青年教师",
+            presenter_id=prof_li.id,
+            topic="标量介导惰性中微子：相变引力波与位移顶点",
+            paper_id=paper2.id,
+            slides_url=None,
+            notes="阅读 arXiv:2509.23925，关注 Higgs–标量混合、惰性中微子寿命、相变完成条件和位移顶点接受度。",
+            status="upcoming",
+        )
+        seminar3 = SeminarSchedule(
+            date="2026-11-06",
+            time="14:30",
+            location="演示排期，地点待确认",
+            presenter_name="合作导师",
+            presenter_id=prof_wang.id,
+            topic="太阳中微子源的轴矢量轻子第五力",
+            paper_id=paper3.id,
+            slides_url=None,
+            notes="阅读 arXiv:2510.20672，核对太阳中微子源、相互作用结构、实验可观测量与约束假设。",
+            status="upcoming",
+        )
+        seminar4 = SeminarSchedule(
             date="2026-10-16",
             time="14:30",
-            location="物理楼 302 研讨室",
-            presenter_name="李航 (硕士生)",
-            topic="标量介导的惰性中微子：引力波与对撞机位移顶点",
+            location="演示排期，地点待确认",
+            presenter_name="张明 (博士生)",
+            presenter_id=student1.id,
+            topic="对撞机量子精度极限：可达条件与案例分析",
+            paper_id=paper4.id,
             slides_url=None,
-            paper_id=paper2.id,
-            notes="演示讨论重点：Higgs-标量混合、惰性中微子寿命、相变完成条件及引力波/位移顶点的互补性。所有灵敏度结论均依赖论文给定的模型与实验假设。",
+            notes="阅读 arXiv:2506.10673，区分量子信息界、统计误差与具体实验可达精度。",
             status="completed",
         )
-        db.add_all([seminar1, seminar2])
-
+        seminar5 = SeminarSchedule(
+            date="2026-10-09",
+            time="14:30",
+            location="演示排期，地点待确认",
+            presenter_name="青年教师",
+            presenter_id=prof_li.id,
+            topic="未来 μ 子对撞机中的长寿命惰性中微子搜索",
+            paper_id=paper5.id,
+            slides_url=None,
+            notes="阅读 arXiv:2409.17243，明确质量、混合、寿命和探测器接受度的依赖。",
+            status="completed",
+        )
+        db.add_all([seminar1, seminar2, seminar3, seminar4, seminar5])
         # 4. 高能粒子物理教材与权威综述
         books = [
             ResourceBook(
