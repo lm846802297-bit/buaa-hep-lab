@@ -18,11 +18,11 @@ const topicResources = computed(() => topicDetail.value
 const topicNavigation = computed(() => topicDetail.value?.navigation || [])
 
 const topicVisuals = {
-  dark: { src: '/images/research-topics/dark-matter.svg', alt: '暗物质粒子与靶核相互作用、核反冲及探测器信号的概念示意图；曲线不代表实验数据。' },
-  neutrino: { src: '/images/research-topics/neutrino.svg', alt: '中微子味态传播、振荡及 PMNS 混合矩阵结构的概念示意图；波形和矩阵色块不代表定量计算。' },
-  collider: { src: '/images/research-topics/collider.svg', alt: '多层对撞机探测器、碰撞顶点与粒子径迹的概念示意图；不代表真实事件显示。' },
-  phase: { src: '/images/research-topics/phase-gw.svg', alt: '真空泡成核、扩张、碰撞及引力波信号的概念示意图；波形不代表定量频谱。' },
-  precision: { src: '/images/research-topics/quantum-metrology.svg', alt: 'Bloch 球量子态、相关自旋与测量分布的概念示意图；不表示具体费舍尔信息计算。' },
+  dark: { src: '/images/research-topics/dark-matter.svg', alt: '暗物质晕、靶核、核反冲与液氙探测器的概念示意图；曲线不代表实验数据。' },
+  neutrino: { src: '/images/research-topics/neutrino.svg', alt: '中微子味态振荡传播与 PMNS 混合矩阵结构的概念示意图；矩阵色块和波形不代表定量计算。' },
+  collider: { src: '/images/research-topics/collider.svg', alt: '多层对撞机探测器、粒子径迹、碰撞顶点及缺失横动量的概念示意图；不代表真实事件。' },
+  phase: { src: '/images/research-topics/phase-gw.svg', alt: '真空泡成核、扩张与碰撞以及引力波的概念示意图；波形不代表定量频谱。' },
+  precision: { src: '/images/research-topics/quantum-metrology.svg', alt: 'Bloch 球上的量子态、自旋关联及测量分布的概念示意图；不表示 Fisher 信息计算结果。' },
 }
 const currentTopicVisual = computed(() => topicVisuals[topic.value?.id] || null)
 const activeTopicSection = ref('topic-question')
