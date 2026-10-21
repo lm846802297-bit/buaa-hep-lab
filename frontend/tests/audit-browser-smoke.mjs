@@ -491,8 +491,27 @@ try {
       shadeVariable: shade ? getComputedStyle(shade).getPropertyValue('--bg-dim') : null,
       parentVariable: shade?.parentElement ? getComputedStyle(shade.parentElement).getPropertyValue('--bg-dim') : null,
       shadeOpacity: shade ? getComputedStyle(shade).opacity : null,
+      shadeClass: shade?.className ?? null,
       shadeInlineStyle: shade?.getAttribute('style') ?? null,
       shadeTransition: shade ? getComputedStyle(shade).transition : null,
+      shadeAnimation: shade ? getComputedStyle(shade).animation : null,
+      shadeAnimations: shade ? shade.getAnimations().map(animation => ({
+        type: animation.constructor.name,
+        playState: animation.playState,
+        currentTime: animation.currentTime,
+        timing: animation.effect?.getTiming?.()
+      })) : [],
+      matchedOpacityRules: shade ? Array.from(document.styleSheets).flatMap(sheet => {
+        try {
+          return Array.from(sheet.cssRules)
+            .filter(rule => rule.type === CSSRule.STYLE_RULE && rule.style?.getPropertyValue('opacity') && shade.matches(rule.selectorText))
+            .map(rule => ({
+              selector: rule.selectorText,
+              opacity: rule.style.getPropertyValue('opacity'),
+              important: rule.style.getPropertyPriority('opacity')
+            }))
+        } catch { return [] }
+      }) : [],
       sliderValue: document.querySelector('#bg-dim-slider')?.value ?? null
     }
   })
