@@ -244,6 +244,7 @@ onMounted(() => {
 .topic-local-nav a:hover,.topic-local-nav a:focus-visible { background:var(--surface); color:var(--accent); outline-offset:2px; }
 .topic-section { padding:44px 0; border-bottom:1px solid var(--line); scroll-margin-top:138px; }
 .topic-section h2 { margin:10px 0 18px; font-family:var(--serif); font-size:clamp(26px,3vw,34px); font-weight:400; }
+.topic-section h2[id] { scroll-margin-top:138px; }
 .topic-section>p:not(.eyebrow) { max-width:800px; color:var(--soft); font-size:16px; line-height:1.95; }
 .topic-section .topic-caveat { margin-top:22px; padding:16px 18px; border-left:3px solid var(--accent); background:var(--surface); font-size:14px; }
  .section-intro { margin-bottom:22px; font-size:14px!important; }
