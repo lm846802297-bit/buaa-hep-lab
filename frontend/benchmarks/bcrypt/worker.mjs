@@ -20,14 +20,14 @@ export default {
     try {
       // Log a safe correlation marker before bcrypt work so CPU-limit terminations can be traced.
       // Never log the Authorization token or user-controlled free-form data.
-      console.log(JSON.stringify({
+      console.log({
         benchmark: 'bcrypt-v1',
         sampleId,
         cost: Number.isFinite(input.cost) ? input.cost : null,
         bytes: Number.isFinite(input.bytes) ? input.bytes : null,
         operation: operations.includes(input.operation) ? input.operation : 'invalid',
         event: 'start',
-      }))
+      })
       const result = await runOperation(input)
       return Response.json({ benchmark: 'bcrypt-v1', sampleId, ...result }, { headers: noStore })
     } catch {

@@ -24,14 +24,14 @@ describe('isolated public bcrypt benchmark', () => {
     try {
       const response = await call('/benchmark?sample=trace_123&cost=6&bytes=12&operation=hash')
       expect(response.status).toBe(200)
-      expect(log).toHaveBeenCalledWith(JSON.stringify({
+      expect(log).toHaveBeenCalledWith({
         benchmark: 'bcrypt-v1',
         sampleId: 'trace_123',
         cost: 6,
         bytes: 12,
         operation: 'hash',
         event: 'start',
-      }))
+      })
       expect(JSON.stringify(log.mock.calls)).not.toContain(TEST_TOKEN)
     } finally {
       log.mockRestore()

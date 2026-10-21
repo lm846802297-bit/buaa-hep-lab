@@ -153,7 +153,7 @@ Cloudflare invocation CPU 是整个 Worker 请求的 CPU 总量，包含 URL/令
 
 ### CPU 证据验收
 
-在 [Cloudflare Workers Logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/) 中搜索自定义日志消息里的 `bcrypt-v1` 或具体 sample ID，再按同一请求 URL 的 sample 查询参数关联 invocation log。代码将 sample ID 与 cost/bytes/operation 作为 JSON 字符串写在 bcrypt 之前，因此即使请求因 CPU 限额被中断，也有机会保留关联标记。Cloudflare 会在 invocation log 中提供 CPU 与 wall time；可用 [Query Builder](https://developers.cloudflare.com/workers/observability/query-builder/) 的 `$workers.cpuTimeMs` 和 `$workers.wallTimeMs` 字段核验。总览见 [CPU Time per execution](https://developers.cloudflare.com/workers/observability/metrics-and-analytics/)。按 cost、输入字节数、操作分组；排除 warmup，但保留失败、资源超限和缺失样本数。不能将混合 cost 的总分位数当成单一 cost 的结果。若日志无法与调用级 CPU 关联，继续标记“Cloudflare CPU 未测”，不得用 RTT 代替。
+在 [Cloudflare Workers Logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/) 中搜索自定义日志消息里的 `bcrypt-v1` 或具体 sample ID，再按同一请求 URL 的 sample 查询参数关联 invocation log。代码在 bcrypt 之前通过 `console.log({...})` 输出结构化 JSON 对象，包含 `benchmark`、`sampleId`、`cost`、`bytes`、`operation` 与 `event`；Workers Logs 会索引这些字段。即使请求因 CPU 限额被中断，也有机会保留关联标记。Cloudflare 会在 invocation log 中提供 CPU 与 wall time；可用 [Query Builder](https://developers.cloudflare.com/workers/observability/query-builder/) 的 `$workers.cpuTimeMs` 和 `$workers.wallTimeMs` 字段核验。总览见 [CPU Time per execution](https://developers.cloudflare.com/workers/observability/metrics-and-analytics/)。按 cost、输入字节数、操作分组；排除 warmup，但保留失败、资源超限和缺失样本数。不能将混合 cost 的总分位数当成单一 cost 的结果。若日志无法与调用级 CPU 关联，继续标记“Cloudflare CPU 未测”，不得用 RTT 代替。
 
 验收记录至少包含：cost、操作、输入字节数、n、失败/缺失数、CPU min/p50/p95/p99/max、wall/RTT 分布、套餐/限额、Worker 版本、地区、日志采样率与时间窗口。还需在隔离的非生产认证应用中测完整登录/注册/改密路径和限速开销，评估资源余量并记录维护者的参数选择理由。**Node/workerd 微基准成功不代表生产成本评估完成。**
 
