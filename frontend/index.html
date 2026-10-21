@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" style="background-color: #081f28;">
+<html lang="zh-CN" style="background-color: #F7F5F0;">
   <head>
     <meta charset="UTF-8" />
     <!-- Single Page Apps for GitHub Pages: 恢复 404.html 重定向路径 -->
@@ -18,26 +18,54 @@
     <script>
       (function() {
         try {
-          var savedScheme = localStorage.getItem('labhub_color_scheme');
-          var savedBg = localStorage.getItem('labhub_bg_type');
-          var savedLegacy = localStorage.getItem('labhub_theme_style');
-
-          var scheme = (savedScheme === 'nebula-purple' || savedScheme === 'classic-cyan' || savedScheme === 'custom')
-            ? savedScheme
-            : (savedLegacy === 'galaxy' ? 'nebula-purple' : 'classic-cyan');
-
-          var bgType = (savedBg === 'vanta-fog' || savedBg === 'galaxy' || savedBg === 'clouds-static' || savedBg === 'custom-local')
-            ? savedBg
-            : ((savedLegacy === 'vanta-fog' || savedLegacy === 'galaxy' || savedLegacy === 'clouds-static')
-                ? savedLegacy
-                : 'clouds-static');
-
-          var legacyStyle = scheme === 'nebula-purple' ? 'galaxy' : (scheme === 'custom' ? 'custom' : 'vanta-fog');
-          var bgHex = scheme === 'nebula-purple' ? '#03020a' : '#081f28';
-
-          var doc = document.documentElement;
           var siteBase = '%BASE_URL%'.replace(/\/$/, '');
-          doc.dataset.publicPage = String(window.location.pathname.replace(/\/$/, '') === siteBase);
+          var normalizedPath = window.location.pathname.length > 1
+            ? window.location.pathname.replace(/\/+$/, '')
+            : window.location.pathname;
+          var routePath = normalizedPath;
+          if (siteBase && (normalizedPath === siteBase || normalizedPath.startsWith(siteBase + '/'))) {
+            routePath = normalizedPath.slice(siteBase.length) || '/';
+          }
+          if (!routePath.startsWith('/')) routePath = '/' + routePath;
+          var isPublicRoute = routePath === '/' || routePath === '/people' || routePath === '/events' || routePath.startsWith('/research/');
+
+          // Match the live theme module's storage namespace, with a read-only
+          // fallback for preferences written by older builds.
+          var savedScheme = localStorage.getItem('laborbit_color_scheme') || localStorage.getItem('labhub_color_scheme');
+          var savedBg = localStorage.getItem('laborbit_bg_type') || localStorage.getItem('labhub_bg_type');
+          var savedLegacy = localStorage.getItem('laborbit_theme_style') || localStorage.getItem('labhub_theme_style');
+          var savedCustom = localStorage.getItem('laborbit_custom_color_scheme') || localStorage.getItem('labhub_custom_color_scheme');
+
+          // Public pages use the stable site brand; workspace routes respect the user's saved theme.
+          var scheme = isPublicRoute ? 'quiet-research' : (savedScheme || (
+            savedLegacy === 'galaxy' ? 'nebula-purple' :
+            savedLegacy === 'vanta-fog' || savedLegacy === 'clouds-static' || savedLegacy === 'earth-orbit'
+              ? 'classic-cyan' : 'quiet-research'
+          ));
+          if (!['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'custom'].includes(scheme)) {
+            scheme = 'quiet-research';
+          }
+
+          var legacyBg = ['galaxy', 'vanta-fog', 'clouds-static', 'earth-orbit', 'custom-local'].includes(savedLegacy)
+            ? savedLegacy : 'paper';
+          var bgType = isPublicRoute ? 'paper' : (
+            ['paper', 'galaxy', 'vanta-fog', 'clouds-static', 'custom-local'].includes(savedBg)
+              ? savedBg
+              : (legacyBg === 'earth-orbit' ? 'clouds-static' : legacyBg)
+          );
+          if (!['paper', 'galaxy', 'vanta-fog', 'clouds-static', 'custom-local'].includes(bgType)) {
+            bgType = 'paper';
+          }
+
+          var legacyStyle = scheme === 'quiet-research' && bgType === 'paper' ? 'paper' :
+            scheme === 'nebula-purple' ? 'galaxy' :
+            scheme === 'custom' ? 'custom' :
+            bgType === 'vanta-fog' ? 'vanta-fog' : 'clouds-static';
+          var bgHex = scheme === 'quiet-research' ? '#F7F5F0' :
+            scheme === 'obsidian-gray' ? '#090d16' :
+            scheme === 'nebula-purple' ? '#03020a' : '#081f28';
+          var doc = document.documentElement;
+          doc.dataset.publicPage = String(isPublicRoute);
           doc.setAttribute('data-color-scheme', scheme);
           doc.setAttribute('data-bg-type', bgType);
           doc.setAttribute('data-theme-style', legacyStyle);
@@ -45,13 +73,10 @@
 
           if (scheme === 'custom') {
             try {
-              var rawCustom = localStorage.getItem('labhub_custom_color_scheme');
-              if (rawCustom) {
-                var c = JSON.parse(rawCustom);
-                if (c.baseColor) {
-                  bgHex = c.baseColor;
-                  doc.style.setProperty('--bg', c.baseColor);
-                }
+              var c = savedCustom ? JSON.parse(savedCustom) : null;
+              if (c) {
+                if (c.baseColor) bgHex = c.baseColor;
+                if (c.baseColor) doc.style.setProperty('--bg', c.baseColor);
                 if (c.primaryColor) {
                   doc.style.setProperty('--accent', c.primaryColor);
                   doc.style.setProperty('--focus', c.primaryColor);
@@ -69,12 +94,12 @@
           }
 
           doc.style.backgroundColor = bgHex;
-          var basePath = window.location.pathname.startsWith('/lab-orbit') ? '/lab-orbit' : '';
-          if (bgType === 'clouds-static' && doc.dataset.publicPage !== 'true') {
+          var basePath = siteBase;
+          if (bgType === 'clouds-static' && scheme !== 'quiet-research' && doc.dataset.publicPage !== 'true') {
             doc.style.backgroundImage = "url('" + basePath + "/assets/forecast/forecast-clouds-drift-seamless.jpg')";
-            doc.style.backgroundPosition = "center center";
-            doc.style.backgroundSize = "cover";
-            doc.style.backgroundRepeat = "no-repeat";
+            doc.style.backgroundPosition = 'center center';
+            doc.style.backgroundSize = 'cover';
+            doc.style.backgroundRepeat = 'no-repeat';
           } else {
             doc.style.backgroundImage = 'none';
           }
@@ -88,8 +113,8 @@
     <meta name="x5-fullscreen" content="true" />
     <meta name="x5-page-mode" content="app" />
     <meta name="browsermode" content="application" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#081f28" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#F7F5F0" />
     <meta name="description" content="北京航空航天大学粒子物理研究组（暂定名称）：高能粒子物理唯象学、暗物质、中微子与希格斯物理研究，以及组内科研协作。" />
     <link rel="canonical" href="https://buaa-hep-hub.pages.dev/" />
     <meta name="robots" content="index,follow" />
@@ -105,17 +130,17 @@
 
     <style>
       :root {
-        color-scheme: dark;
+        color-scheme: light;
       }
       html {
-        background-color: #081f28;
+        background-color: #F7F5F0;
         min-height: 100%;
       }
       body {
         margin: 0;
         padding: 0;
         background-color: inherit;
-        color: #f5f8f6;
+        color: #292722;
         min-height: 100%;
       }
       html[data-bg-style="clouds-static"],
@@ -141,6 +166,12 @@
         background-color: #03020a;
         background-image: none;
         color: #f8fafc;
+      }
+      html[data-color-scheme="quiet-research"], html[data-color-scheme="quiet-research"] body {
+        color-scheme: light;
+        background-color: #F7F5F0;
+        background-image: none !important;
+        color: #292722;
       }
       html[data-public-page="true"], html[data-public-page="true"] body {
         background-image: none !important;

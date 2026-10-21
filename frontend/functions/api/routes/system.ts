@@ -52,20 +52,28 @@ app.get('/status', async (c) => {
   const siteSlogan = await getSetting(c.env.DB, 'site_slogan', '课题组科研协作与知识管理平台');
   const siteTitle = await getSetting(c.env.DB, 'site_title', 'LabOrbit');
   const institution = await getSetting(c.env.DB, 'institution', '');
-  const defaultLocation = await getSetting(c.env.DB, 'default_location', '研讨室 / 腾讯会议');
-
-  return c.json({
+  const statusPayload: Record<string, unknown> = {
     initialized,
     setup_token_required: !initialized,
     max_upload_bytes: uploadLimit(c.env),
-    user_count: userCount,
     lab_name: labName,
     lab_short_name: labShortName,
     site_slogan: siteSlogan,
     site_title: siteTitle,
     institution,
-    default_location: defaultLocation,
-  });
+  };
+
+  // The default location may contain an internal room or meeting URL. Only return it
+  // after a valid Bearer session; the public status endpoint is still usable before login.
+  if (c.req.header('Authorization')?.startsWith('Bearer ')) {
+    let authenticated = false;
+    await authMiddleware(c, async () => { authenticated = true; });
+    if (authenticated) {
+      statusPayload.default_location = await getSetting(c.env.DB, 'default_location', '研讨室 / 腾讯会议');
+    }
+  }
+
+  return c.json(statusPayload);
 });
 
 app.post('/setup', async (c) => {

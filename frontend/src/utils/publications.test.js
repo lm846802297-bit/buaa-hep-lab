@@ -31,6 +31,12 @@ describe('approved public bibliography', () => {
     expect(filterPublications(publications, { sort: 'oldest' })[0].year).toBe('2021')
     expect(filterPublications(publications, { query: 'does-not-exist' })).toEqual([])
   })
+  it('includes arXiv primary class only when explicitly verified in the record', () => {
+    const withoutClass = { ...publications[0], primary_class: undefined }
+    const withClass = { ...publications[0], primary_class: 'hep-ph' }
+    expect(publicationBibtex([withoutClass])).not.toContain('primaryClass')
+    expect(publicationBibtex([withClass])).toContain('primaryClass = {hep-ph}')
+  })
   it('exports journal papers and preprints without inventing publication data', () => {
     const preprint = publications.find(p => p.status === 'preprint')
     const text = publicationBibtex([preprint])

@@ -20,7 +20,7 @@ export function publicationBibtex(papers) {
       ...(paper.journal ? { journal: paper.journal } : {}),
       eprint: paper.id,
       archivePrefix: 'arXiv',
-      primaryClass: 'hep-ph',
+      ...(paper.primary_class ? { primaryClass: paper.primary_class } : {}),
       ...(paper.doi ? { doi: paper.doi } : {}),
       url: paper.source_url,
       ...(paper.status === 'preprint' ? { note: 'Preprint' } : {}),

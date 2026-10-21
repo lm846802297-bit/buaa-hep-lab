@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   { path: '/', name: 'PublicHome', component: () => import('../views/PublicHomeView.vue'), meta: { public: true } },
+  { path: '/research/:topic', name: 'ResearchTopic', component: () => import('../views/ResearchTopicView.vue'), props: true, meta: { public: true } },
+  { path: '/people', name: 'PublicPeople', component: () => import('../views/PeopleView.vue'), meta: { public: true } },
+  { path: '/events', name: 'PublicEvents', component: () => import('../views/EventsView.vue'), meta: { public: true } },
   { path: '/learning/:topic?', name: 'Learning', component: () => import('../views/LearningView.vue'), meta: { requiresAuth: true } },
   { path: '/feedback', component: () => import('../views/FeedbackView.vue'), meta: { requiresAuth: true } },
   { path: '/account', component: () => import('../views/AccountView.vue'), meta: { requiresAuth: true } },

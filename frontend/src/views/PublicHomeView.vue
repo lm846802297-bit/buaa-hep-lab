@@ -8,8 +8,12 @@ const selectedYear = ref('all')
 const sortOrder = ref('newest')
 const copyMessage = ref('')
 const years = [...new Set(publications.map(p => p.year))].sort((a, b) => Number(b) - Number(a))
+const reviewNow = ref(new Date())
+const publicationReviews = computed(() => Object.fromEntries(publications.map(paper => [paper.id, publicationReviewStatus(paper.last_verified_at, reviewNow.value)])))
+const resourceReview = computed(() => publicationReviewStatus(publicResourceCheckedAt, reviewNow.value))
 const visiblePapers = computed(() => filterPublications(publications, { category: filter.value, query: query.value, year: selectedYear.value, sort: sortOrder.value }))
 import { filterPublications, publicationBibtex, citationText } from '../utils/publications'
+import { publicationReviewStatus } from '../utils/publicationReview'
 async function copyCitation(paper) {
   try { await navigator.clipboard.writeText(citationText(paper)); copyMessage.value = `已复制 arXiv:${paper.id} 的引用` }
   catch { copyMessage.value = '复制未完成，请使用 BibTeX 下载引用' }
@@ -49,6 +53,7 @@ function downloadBibtex() {
       <button class="menu-toggle button secondary" :aria-expanded="menuOpen" aria-controls="public-navigation" @click="menuOpen = !menuOpen">{{ menuOpen ? '关闭菜单' : '菜单' }}</button>
       <nav id="public-navigation" :class="{ open: menuOpen }" aria-label="官网导航">
         <a href="#research" @click="menuOpen = false">研究方向</a><a href="#publications" @click="menuOpen = false">代表成果</a><a href="#physics-resources" @click="menuOpen = false">物理资源</a><a href="#about" @click="menuOpen = false">关于我们</a>
+        <router-link to="/people" @click="menuOpen = false">团队</router-link><router-link to="/events" @click="menuOpen = false">学术活动</router-link>
         <router-link class="nav-hub" to="/hub">组内协作 <span aria-hidden="true">↗</span></router-link>
       </nav>
     </header>
@@ -89,6 +94,7 @@ function downloadBibtex() {
           <div class="topic-tags"><span v-for="tag in activeDirection.tags" :key="tag">{{ tag }}</span></div>
           <div class="research-evidence"><h4>相关研究选读</h4><ul><li v-for="paper in relatedResearchPapers" :key="paper.id"><a :href="paper.source_url" target="_blank" rel="noopener noreferrer">{{ paper.title }} <span aria-hidden="true">↗</span></a><small>arXiv:{{ paper.id }}</small></li></ul></div>
           <button class="button secondary related-papers" @click="showRelatedPapers(activeDirection.id)">查看相关论文 <span aria-hidden="true">↓</span></button>
+          <router-link class="button ghost topic-detail-link" :to="`/research/${activeDirection.id}`">阅读专题详情 <span aria-hidden="true">↗</span></router-link>
         </article>
       </div>
       <noscript><div class="research-static"><h3>全部研究方向</h3><article v-for="direction in directions" :key="direction.id"><h4>{{ direction.title }}</h4><p>{{ direction.text }}</p><dl><dt>研究问题</dt><dd>{{ direction.question }}</dd><dt>主要方法</dt><dd>{{ direction.methods }}</dd><dt>实验联系</dt><dd>{{ direction.probes }}</dd></dl><p>{{ direction.detail }}</p></article></div></noscript>
@@ -109,7 +115,7 @@ function downloadBibtex() {
             <p class="paper-summary">{{ paper.summary }}</p>
             <p class="paper-journal">{{ paper.journal || '预印本 · 暂未检索到期刊出版记录' }}</p>
             <a v-if="paper.doi" :href="`https://doi.org/${paper.doi}`" target="_blank" rel="noopener noreferrer" class="paper-doi">DOI: {{ paper.doi }}</a>
-            <p class="paper-verification">arXiv:{{ paper.id }} · 元数据核对 {{ paper.last_verified_at }}</p>
+            <p class="paper-verification" :class="{ 'is-stale': publicationReviews[paper.id].status !== 'current' }">arXiv:{{ paper.id }} · {{ publicationReviews[paper.id].label }}</p>
             <div class="paper-actions"><a :href="paper.source_url" target="_blank" rel="noopener noreferrer" :aria-label="`阅读论文 ${paper.id}`">arXiv ↗</a><a :href="paper.inspire_url" target="_blank" rel="noopener noreferrer" :aria-label="`核对论文 ${paper.id} 的 INSPIRE 记录`">INSPIRE ↗</a><button @click="copyCitation(paper)" :aria-label="`复制论文 ${paper.id} 的引用`">复制引用</button></div>
           </div>
         </article>
@@ -123,7 +129,7 @@ function downloadBibtex() {
       <div class="physics-resource-controls" role="group" aria-label="物理资源分类"><button type="button" :aria-pressed="resourceCategory === 'all'" :class="{ selected: resourceCategory === 'all' }" @click="resourceCategory = 'all'">全部资源</button><button v-for="category in resourceCategories" :key="category" type="button" :aria-pressed="resourceCategory === category" :class="{ selected: resourceCategory === category }" @click="resourceCategory = category">{{ category }}</button></div>
       <p class="physics-resource-count" role="status">显示 {{ visibleResources.length }} / {{ publicResources.length }} 项资源</p>
       <div class="physics-resource-grid"><article v-for="resource in visibleResources" :key="resource.id" class="physics-resource-card"><span>{{ resource.category }}</span><h3><a :href="resource.url" target="_blank" rel="noopener noreferrer" :aria-label="resource.name + '（新标签页）'">{{ resource.name }} <span aria-hidden="true">↗</span></a></h3><p>{{ resource.description }}</p></article></div>
-      <p class="physics-resource-note">资源说明核对：{{ publicResourceCheckedAt }}。站内仅提供导航，不代管第三方数据或计算服务。</p>
+      <p class="physics-resource-note" :class="{ 'is-stale': resourceReview.status !== 'current' }">资源说明核对：{{ publicResourceCheckedAt }} · {{ resourceReview.status === 'current' ? '处于 180 天复核周期内' : resourceReview.label }}。站内仅提供导航，不代管第三方数据或计算服务。</p>
     </section>
 
     <section id="about" class="public-section about-section">
@@ -186,6 +192,7 @@ function downloadBibtex() {
 .physics-resource-card h3 a:hover { text-decoration:underline; text-underline-offset:4px; }
 .physics-resource-card p { color:var(--soft); font-size:14px; line-height:1.85; }
 .physics-resource-note { font-size:13px; color:var(--muted); line-height:1.8; margin-top:24px; }
+.physics-resource-note.is-stale { color:var(--warning); font-weight:600; }
 @media(max-width:1100px) { .physics-resource-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:900px) {
   .public-header { flex-wrap:wrap; }
@@ -196,6 +203,8 @@ function downloadBibtex() {
 }
 @media(max-width:650px) { .physics-resource-grid { grid-template-columns:1fr; } .physics-resource-card { padding:20px; } .research-explainer dd { font-size:14px; } }
 .related-papers { margin-top:24px; }
+.topic-detail-link { margin:24px 0 0 8px; min-height:44px; display:inline-flex; align-items:center; gap:10px; }
+@media(max-width:650px) { .topic-detail-link { margin-left:0; } }
 .publication-controls { gap:20px; flex-wrap:wrap; }
 .publication-controls .segmented { flex-wrap:wrap; gap:4px; }
 .publication-controls .segmented button { white-space:normal; }
@@ -208,6 +217,7 @@ function downloadBibtex() {
 .paper-summary { color:var(--soft); font-size:14px; line-height:1.8; margin:12px 0; }
 .paper-doi { color:var(--accent); font-size:14px; overflow-wrap:anywhere; }
 .paper-verification { font-size:12px; color:var(--muted); margin-top:12px; }
+.paper-verification.is-stale { color:var(--warning); font-weight:600; }
 .paper-actions { display:flex; flex-wrap:wrap; gap:16px; margin-top:14px; font-size:14px; color:var(--accent); }
 .paper-actions button { color:inherit; background:transparent; border:0; padding:0; cursor:pointer; font:inherit; }
 .citation-status { color:var(--success); font-size:14px; }

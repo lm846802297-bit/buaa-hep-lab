@@ -14,12 +14,18 @@ const DemoModeBanner = defineAsyncComponent(() => import('./components/DemoModeB
 import { enterPage, leavePage } from './composables/motion'
 import { useTutorial } from './composables/useTutorial'
 import { isDemoMode } from './mock/isDemo'
+import { applyThemeToDOM, currentBgType, currentColorScheme } from './composables/useThemeStyle'
 
 const WorkspaceSession = defineAsyncComponent(() => import('./components/WorkspaceSession.vue'))
 
 const route = useRoute()
 const isPublic = computed(() => !!route.meta.public)
-watch(isPublic, value => { document.documentElement.dataset.publicPage = String(value) }, { immediate: true })
+watch(isPublic, value => {
+  document.documentElement.dataset.publicPage = String(value)
+  // Keep the public site on its brand theme, then restore the user's selected
+  // workspace theme automatically when navigating back into the collaboration area.
+  applyThemeToDOM(currentColorScheme.value, currentBgType.value)
+}, { immediate: true })
 const showNavbar = computed(() => !isPublic.value && !['/login', '/quick-share', '/setup'].includes(route.path))
 const isHome = computed(() => route.path === '/hub')
 const isAssistant = computed(() => route.path === '/assistant')
@@ -64,7 +70,7 @@ function onUpdatePinned(val) {
 <template>
   <div class="app-shell" :class="{ 'is-home': isHome, 'has-sidebar': showNavbar, 'sidebar-collapsed': !isPinned && showNavbar }">
     <WorkspaceSession v-if="showNavbar" />
-    <ForecastAtmosphere v-if="!isPublic" />
+    <ForecastAtmosphere v-if="!isPublic && currentColorScheme !== 'quiet-research'" />
     <MidAutumnMooncakes v-if="!isPublic" />
     <NationalDayCelebration v-if="!isPublic" />
     <a href="#main-content" class="skip-link">跳到主要内容</a>
