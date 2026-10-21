@@ -124,7 +124,7 @@ function onUpdatePinned(val) {
 <template>
   <div class="app-shell" :class="{ 'is-home': isHome, 'has-sidebar': showNavbar, 'sidebar-collapsed': !isPinned && showNavbar }">
     <WorkspaceSession v-if="showNavbar" />
-    <ForecastAtmosphere v-if="!isPublic && currentColorScheme !== 'quiet-research'" />
+    <ForecastAtmosphere v-if="!isPublic && currentBgType !== 'paper'" />
     <MidAutumnMooncakes v-if="!isPublic" />
     <NationalDayCelebration v-if="!isPublic" />
     <a href="#main-content" class="skip-link">跳到主要内容</a>
