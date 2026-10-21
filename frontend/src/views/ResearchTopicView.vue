@@ -457,9 +457,9 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
   .workflow-step { width:32px; height:32px; }
   .topic-visual-panel { height:auto; margin-top:12px; }
   .topic-visual-panel img { height:150px; }
-  .topic-visual-panel figcaption { position:static; text-align:right; border:0; border-top:1px solid rgba(160,220,232,.24); border-radius:0; }
+  .topic-visual-panel figcaption { position:static; text-align:right; border:0; border-top:1px solid rgba(160,220,232,.24); border-radius:0; padding:6px 8px; font-size:11px; line-height:1.45; }
   .topic-visual-labels { display:flex; flex-wrap:wrap; gap:6px; list-style:none; margin:8px 0 20px; padding:0; }
-  .topic-visual-labels li { padding:4px 7px; border:1px solid var(--line); border-radius:999px; background:var(--panel); color:var(--muted); font-size:11px; line-height:1.4; }
+  .topic-visual-labels li { padding:5px 8px; border:1px solid var(--line); border-radius:999px; background:var(--panel); color:var(--muted); font-size:12px; line-height:1.45; }
 }
 @supports not (overflow-x: clip) {
   @media(max-width:760px) {
