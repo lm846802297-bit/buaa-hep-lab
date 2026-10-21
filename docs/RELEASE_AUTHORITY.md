@@ -8,6 +8,12 @@
 
 本次更新保留已有的 main push 自动发布链路，不将它改成仅手动发布。另增加本地 Node/workerd bcrypt 基准步骤和 artifact，并把“已请求的 main 发布但缺少 Cloudflare 凭据”从警告改为失败，避免出现“验证绿灯但没有发布”的误判。Wrangler 部署命令会记录 GitHub Actions 的完整源 SHA。不会在本地执行生产部署，也不会读取或复制任何 secret。
 
+### PR-only 发布授权与主分支保护限制
+
+当前 `.github/workflows/deploy.yml` 在主分支发布候选进入验证阶段时，会通过 GitHub API 检查当前 SHA 是否确实是一个已合并、目标分支为 `main` 的 PR 的合并提交。直接推送产生的普通提交若没有对应的已合并 PR，将使验证失败，因此不会进入生产部署 job。该检查也覆盖在 `main` 上手动触发的发布流程。
+
+这是一项**发布保护补偿措施**，不等于 GitHub 已经禁止直接推送。审计时 `main` 的分支元数据显示 `protected: false`；当前私有仓库的 Rulesets API 返回套餐限制（需要 GitHub Pro，或仓库公开后才可使用相应规则集）。由于课题组代码与研究工作流不应为了启用保护而默认公开，建议保持仓库私有；如果希望 GitHub 在服务端直接阻止未经 PR 的推送，需要在适用的付费方案下启用 `main` 的 PR 与必需状态检查规则。即使暂时无法启用，发布授权检查也必须保留。
+
 Cloudflare 原生 Pages Git Provider 在 2026-10-20 的控制台快照中显示未连接；这不代表没有 GitHub Actions 发布，因为 Actions 使用仓库 secret 调用 Wrangler Direct Upload。该控制台信息是历史快照，不应与最新部署状态混为一谈。
 
 ## 最近一次已验证的 main 发布（PR #3 更新前基线）
