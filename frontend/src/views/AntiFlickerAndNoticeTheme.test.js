@@ -133,4 +133,16 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(baseDialogVue).toContain('frameStyle: [Object, String]')
     expect(baseDialogVue).toContain(':style="frameStyle"')
   })
+  it('registers the optional Worldline Console skin and its accessible transition effect', () => {
+    const themeModule = readFileSync(resolve(__dirname, '../composables/useThemeStyle.js'), 'utf-8')
+    const worldlineEffects = readFileSync(resolve(__dirname, '../components/WorldlineEffects.vue'), 'utf-8')
+    const appVue = readFileSync(resolve(__dirname, '../App.vue'), 'utf-8')
+    expect(themeModule).toContain("id: 'worldline-console'")
+    expect(indexHtml).toContain("'worldline-console'")
+    expect(indexCss).toContain(':root[data-color-scheme="worldline-console"]')
+    expect(appVue).toContain('<WorldlineEffects />')
+    expect(worldlineEffects).toContain('prefers-reduced-motion: reduce')
+    expect(worldlineEffects).toContain('世界线变动')
+  })
+
 })
