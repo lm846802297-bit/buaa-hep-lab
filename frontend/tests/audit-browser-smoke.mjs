@@ -260,6 +260,9 @@ try {
       const illustration = page.locator('.topic-visual-panel img')
       await illustration.evaluate(img => img.decode())
       check(await illustration.evaluate(img => img.complete && img.naturalWidth > 0), `research topic ${topic} illustration loads at ${width}px`)
+      if (width === 390 || width === 1440) {
+        await page.locator('.topic-visual-panel').screenshot({ path: resolve(output, `research-topic-${topic}-illustration-${width}.png`) })
+      }
       check((await illustration.getAttribute('alt'))?.length > 20, `research topic ${topic} illustration has descriptive alternative text`)
       check(await page.locator('.topic-section').count() >= 8, `research topic ${topic} includes the expanded physics guide, workflow, observables, papers and resources`)
       check(await page.locator('#topic-mechanisms').isVisible(), `research topic ${topic} explains its core physics mechanisms`)
