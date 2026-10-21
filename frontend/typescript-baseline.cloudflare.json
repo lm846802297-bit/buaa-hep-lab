@@ -1,0 +1,140 @@
+{
+  "compilerVersion": "5.9.3",
+  "sourceBaselineSha": "1bd3a5ed3839c331358392a90d3e06311c5563d1",
+  "purpose": "Reviewed diagnostics present when the Cloudflare Pages Functions typecheck was first introduced. New diagnostics must fail CI; known entries remain visible and should be reduced over time.",
+  "diagnostics": [
+    {
+      "file": "functions/api/routes/arxiv.ts",
+      "line": 135,
+      "column": 25,
+      "code": "TS2347",
+      "message": "Untyped function calls may not accept type arguments."
+    },
+    {
+      "file": "functions/api/routes/arxiv.ts",
+      "line": 193,
+      "column": 30,
+      "code": "TS2347",
+      "message": "Untyped function calls may not accept type arguments."
+    },
+    {
+      "file": "functions/api/routes/arxiv.ts",
+      "line": 216,
+      "column": 26,
+      "code": "TS2347",
+      "message": "Untyped function calls may not accept type arguments."
+    },
+    {
+      "file": "functions/api/routes/arxiv.ts",
+      "line": 229,
+      "column": 22,
+      "code": "TS2347",
+      "message": "Untyped function calls may not accept type arguments."
+    },
+    {
+      "file": "functions/api/routes/arxiv.ts",
+      "line": 239,
+      "column": 23,
+      "code": "TS2347",
+      "message": "Untyped function calls may not accept type arguments."
+    },
+    {
+      "file": "functions/api/routes/files.ts",
+      "line": 22,
+      "column": 60,
+      "code": "TS2345",
+      "message": "Argument of type 'ArrayBuffer | Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BufferSource'."
+    },
+    {
+      "file": "functions/api/routes/mailbox.ts",
+      "line": 3,
+      "column": 24,
+      "code": "TS2307",
+      "message": "Cannot find module 'node:buffer' or its corresponding type declarations."
+    },
+    {
+      "file": "functions/api/routes/mailbox.ts",
+      "line": 10,
+      "column": 57,
+      "code": "TS2345",
+      "message": "Argument of type 'ArrayBuffer | Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BufferSource'."
+    },
+    {
+      "file": "functions/api/routes/notices.ts",
+      "line": 543,
+      "column": 54,
+      "code": "TS2345",
+      "message": "Argument of type 'unknown' is not assignable to parameter of type 'string'."
+    },
+    {
+      "file": "functions/api/routes/seminars.ts",
+      "line": 900,
+      "column": 25,
+      "code": "TS2347",
+      "message": "Untyped function calls may not accept type arguments."
+    },
+    {
+      "file": "functions/api/routes/seminars.ts",
+      "line": 908,
+      "column": 44,
+      "code": "TS2347",
+      "message": "Untyped function calls may not accept type arguments."
+    },
+    {
+      "file": "functions/api/routes/seminars.ts",
+      "line": 975,
+      "column": 25,
+      "code": "TS2347",
+      "message": "Untyped function calls may not accept type arguments."
+    },
+    {
+      "file": "functions/api/routes/seminars.ts",
+      "line": 1280,
+      "column": 24,
+      "code": "TS2347",
+      "message": "Untyped function calls may not accept type arguments."
+    },
+    {
+      "file": "functions/api/routes/system.ts",
+      "line": 4,
+      "column": 33,
+      "code": "TS2307",
+      "message": "Cannot find module 'node:crypto' or its corresponding type declarations."
+    },
+    {
+      "file": "functions/api/utils/imap.ts",
+      "line": 2,
+      "column": 20,
+      "code": "TS2307",
+      "message": "Cannot find module 'node:crypto' or its corresponding type declarations."
+    },
+    {
+      "file": "functions/api/utils/imap.ts",
+      "line": 3,
+      "column": 24,
+      "code": "TS2307",
+      "message": "Cannot find module 'node:buffer' or its corresponding type declarations."
+    },
+    {
+      "file": "functions/api/utils/imap.ts",
+      "line": 509,
+      "column": 47,
+      "code": "TS2345",
+      "message": "Argument of type '{ secureTransport: string; }' is not assignable to parameter of type 'SocketOptions'."
+    },
+    {
+      "file": "functions/api/utils/smtp.ts",
+      "line": 2,
+      "column": 24,
+      "code": "TS2307",
+      "message": "Cannot find module 'node:buffer' or its corresponding type declarations."
+    },
+    {
+      "file": "functions/api/utils/smtp.ts",
+      "line": 98,
+      "column": 47,
+      "code": "TS2345",
+      "message": "Argument of type '{ secureTransport: string; }' is not assignable to parameter of type 'SocketOptions'."
+    }
+  ]
+}
