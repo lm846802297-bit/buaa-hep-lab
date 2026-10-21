@@ -340,6 +340,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 .topic-sidebar-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 8px 12px; border-bottom:1px solid var(--line); }
 .topic-sidebar-kicker { color:var(--muted); font-size:10px; letter-spacing:.13em; }
 .topic-sidebar-toggle { display:none; }
+.topic-sidebar-toggle:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
 .topic-local-nav { display:flex; flex-direction:column; gap:3px; padding-top:10px; }
 .topic-local-nav a { display:grid; grid-template-columns:22px minmax(0,1fr); align-items:start; gap:7px; padding:9px 8px; border-left:2px solid transparent; border-radius:7px; color:var(--soft); font-size:12px; line-height:1.55; text-decoration:none; transition:background .16s ease,color .16s ease,border-color .16s ease; }
 .topic-nav-index { padding-top:1px; color:var(--muted); font-family:var(--mono,ui-monospace,monospace); font-size:10px; }
@@ -424,6 +425,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
   .topic-sidebar-heading { padding:0; border:0; }
   .topic-sidebar-kicker { padding-left:4px; }
   .topic-sidebar-toggle { display:flex; align-items:center; gap:18px; min-height:38px; padding:6px 10px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text); font:inherit; font-size:12px; cursor:pointer; }
+  .topic-section h2[id] { scroll-margin-top:82px; }
   .topic-local-nav { display:none; max-height:58vh; overflow-y:auto; padding-top:10px; }
   .topic-local-nav.is-open { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px; }
   .topic-local-nav a { padding:8px; }
