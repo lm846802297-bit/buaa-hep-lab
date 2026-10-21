@@ -42,6 +42,7 @@ def test_demo_seminars_link_to_the_matching_phenomenology_papers():
         "2506.10673": ("2026-10-16", "对撞机量子精度极限"),
         "2409.17243": ("2026-10-09", "未来 μ 子对撞机"),
     }
+    expected_topics = [topic for _, topic in expected.values()]
     with SessionLocal() as db:
         papers = {
             paper.arxiv_id: paper
@@ -50,7 +51,7 @@ def test_demo_seminars_link_to_the_matching_phenomenology_papers():
             ).all()
         }
         seminars = db.query(SeminarSchedule).filter(
-            SeminarSchedule.paper_id.in_([paper.id for paper in papers.values()])
+            SeminarSchedule.topic.in_(expected_topics)
         ).all()
         papers_by_pk = {paper.id: paper for paper in papers.values()}
         linked = {papers_by_pk[seminar.paper_id].arxiv_id: seminar for seminar in seminars}
