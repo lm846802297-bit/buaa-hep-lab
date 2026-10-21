@@ -138,6 +138,7 @@ try {
   check(worldlineTuner.blue === '#83a9ff', 'Worldline Console defines a electric-blue worldline signal')
   check(worldlineTuner.coreStroke !== worldlineTuner.orbitStroke, 'Worldline tuner separates cyan core from electric-blue orbital lines')
   check(worldlineTuner.buttonShadow !== 'none', 'Worldline tuner uses its cold phosphor device-like shadow')
+  const technicalBackdrop = page.locator('.worldline-technical-backdrop')
   const particleCanvas = page.locator('.worldline-particle-canvas')
   check(await particleCanvas.evaluate(el => el.classList.contains('is-visible')), 'worldline skin enables the ambient particle canvas')
   check(await particleCanvas.evaluate(el => el.width > 0 && el.height > 0), 'ambient particle canvas has a real drawing surface')
