@@ -81,6 +81,15 @@ import { isDemoMode, initDemoAuth } from '../mock/isDemo'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    // Browser back/forward should restore the previous reading position.
+    if (savedPosition) return savedPosition
+    // Deep links should land on their target after the destination view renders.
+    if (to.hash) return { el: to.hash, top: 24 }
+    // A new route (especially a research topic) must start at the top, not
+    // inherit the previous page's scroll offset.
+    return { top: 0 }
+  },
 })
 
 
