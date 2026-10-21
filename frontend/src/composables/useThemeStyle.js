@@ -9,7 +9,8 @@ export const COLOR_SCHEMES = [
     id: 'quiet-research',
     name: 'Quiet Research（Claude 风格）',
     subtitle: '温暖纸白 · 墨色文字 · 陶土橙 · 编辑式衬线标题',
-    colors: ['#F7F5F0', '#B85E3F', '#FFFEFA'],
+    description: '温暖纸白背景、墨色文字与陶土橙交互，优先保证论文、公式和长文本的可读性。',
+    colors: ['#F7F5F0', '#B85E3F', '#FFFEFA'], 
     primaryColor: '#B85E3F',
     baseColor: '#F7F5F0',
     surfaceColor: '#FFFEFA'
@@ -18,7 +19,8 @@ export const COLOR_SCHEMES = [
     id: 'classic-cyan',
     name: '经典冷青与玄青',
     subtitle: '静谧冷青高光 · 经典玄青基底',
-    colors: ['#081f28', '#c5e6df', '#102f33'], // Base, Primary Accent, Secondary Surface
+    description: '经典冷青高光与玄青基底，适合高对比度的暗色科研工作台。',
+    colors: ['#081f28', '#c5e6df', '#102f33'],  // Base, Primary Accent, Secondary Surface
     primaryColor: '#c5e6df',
     baseColor: '#081f28',
     surfaceColor: '#102f33'
@@ -27,7 +29,8 @@ export const COLOR_SCHEMES = [
     id: 'obsidian-gray',
     name: '曜石碳灰',
     subtitle: '高级冷灰高光 · 纯粹石墨基底',
-    colors: ['#090d16', '#94a3b8', '#161e2e'], // Base, Primary Accent, Secondary Surface
+    description: '中性冷灰高光与石墨基底，减少色彩干扰，同时保留面板层次。',
+    colors: ['#090d16', '#94a3b8', '#161e2e'],  // Base, Primary Accent, Secondary Surface
     primaryColor: '#94a3b8',
     baseColor: '#090d16',
     surfaceColor: '#161e2e'
@@ -36,7 +39,8 @@ export const COLOR_SCHEMES = [
     id: 'nebula-purple',
     name: '星云紫与深曜黑',
     subtitle: '深空星云紫高光 · 曜黑深邃基底',
-    colors: ['#03020a', '#b89bf8', '#16122e'], // Base, Primary Accent, Secondary Surface
+    description: '深空黑紫基底与星云紫高光，适合搭配星空背景和沉浸式工作台。',
+    colors: ['#03020a', '#b89bf8', '#16122e'],  // Base, Primary Accent, Secondary Surface
     primaryColor: '#b89bf8',
     baseColor: '#03020a',
     surfaceColor: '#16122e'
