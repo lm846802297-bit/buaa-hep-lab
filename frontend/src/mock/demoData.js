@@ -15,7 +15,7 @@ export const DEMO_MEMBERS = [
 ]
 export const DEMO_SITE_CONFIG = {
   initialized: true, user_count: 4, lab_name: `${lab.name}（演示）`, lab_short_name: lab.shortName,
-  site_slogan: '高能粒子物理唯象学 · 科研协作', site_title: lab.name, institution: lab.institution,
+  site_slogan: '粒子物理唯象学 · 科研协作', site_title: lab.name, institution: lab.institution,
   default_location: '待确认（演示地点）', invite_code_enabled: true, public_feed_enabled: true, version: 'buaa-hep-demo-1',
 }
 const seminarIds = [101, 102, 103, 100, 99]
@@ -50,13 +50,12 @@ export const DEMO_ARXIV_PAPERS = DEMO_PAPER_CATALOG.map((p, i) => ({
   recommended_at: formatOffsetDate(-2 - i), notes: '演示推荐；摘要为中文导读，推荐人与互动为虚构。',
   likes_count: 0, user_liked: false, is_liked_by_me: false, read: false, is_read_by_me: false, comments: [],
 }))
-export const DEMO_NOTICES = [{ id: 1, title: '欢迎体验粒子物理科研工作台', content: '组员、组会和交流记录均为演示。真实部署请使用管理员初始化向导。', is_pinned: true, created_by: DEMO_MEMBERS[0].name, created_at: formatOffsetDate(-1), priority: 'normal' }]
+export const DEMO_NOTICES = [{ id: 1, title: '欢迎体验粒子物理科研工作台', content: '演示数据；真实部署请运行管理员初始化向导。', is_pinned: true, created_by: DEMO_MEMBERS[0].name, created_at: formatOffsetDate(-1), priority: 'normal' }]
 export const DEMO_RESOURCES_CATEGORIES = [
   { id: 1, name: '教材', is_default: true }, { id: 2, name: '工具', is_default: true },
   { id: 3, name: '综述与数据', is_default: true },
 ]
 export const DEMO_BOOKS = [
-  { title: 'Modern Particle Physics', authors: 'Mark Thomson', category: '教材', description: '粒子物理：散射、衰变与标准模型。', url: 'https://www.cambridge.org/cc/titles/modern-particle-physics' },
   { title: 'Quantum Field Theory and the Standard Model', authors: 'Matthew D. Schwartz', category: '教材', description: '量子场论、重整化、规范理论与 EFT。', url: 'https://www.cambridge.org/highereducation/books/quantum-field-theory-and-the-standard-model/A4CD66B998F2C696DCC75B984A7D5799' },
   { title: 'Review of Particle Physics (2026)', authors: 'Particle Data Group', category: '综述与数据', description: '粒子性质、标准模型综述与实验限制。', url: 'https://pdg.lbl.gov/2026/' },
   { title: 'FeynCalc Documentation', authors: 'FeynCalc Collaboration', category: '工具', description: 'Mathematica 符号计算：Dirac/颜色代数与圈图。', url: 'https://feyncalc.github.io/' },
@@ -71,11 +70,11 @@ export const DEMO_PENDING_IMPORTS = []
 export const DEMO_TALKS = []
 export const DEMO_EMAILS = ['文献分享使用说明', '组会摘要填写示例', '资料归档使用说明', '日历导出使用说明'].map((title, i) => ({
   uid: String(i + 1), id: i + 1, subject: `【演示】${title}`, sender_name: '虚构演示通知', sender_email: 'demo@example.invalid',
-  date: formatOffsetDate(-i) + 'T08:00:00Z', snippet: '虚构示例邮件，不连接真实邮箱。', body_text: '虚构示例邮件，不连接真实邮箱。',
+  date: formatOffsetDate(-i) + 'T08:00:00Z', snippet: '演示邮件，不连接真实邮箱。', body_text: '演示邮件，不连接真实邮箱。',
   body_html: '<p>虚构示例邮件，不连接真实邮箱。</p>', is_read: i > 0, has_attachments: false,
 }))
 export const DEMO_FEEDBACK_ITEMS = [
-  { id: 1, title: '日历导出提醒建议（演示）', content: '希望能够设置提醒时间。', author: DEMO_MEMBERS[1].name, author_id: 2, page: '/seminars', resolved: true, created_at: formatOffsetDate(-3) + 'T10:00:00', replies: [] },
-  { id: 2, title: '文献讨论使用建议（演示）', content: '希望在组会上讨论参考文献。', author: DEMO_MEMBERS[3].name, author_id: 4, page: '/arxiv', resolved: false, created_at: formatOffsetDate(-1) + 'T10:00:00', replies: [] },
+  { id: 1, title: '日历提醒建议（演示）', content: '希望可设置提醒时间。', author: DEMO_MEMBERS[1].name, author_id: 2, page: '/seminars', resolved: true, created_at: formatOffsetDate(-3) + 'T10:00:00', replies: [] },
+  { id: 2, title: '文献讨论建议（演示）', content: '希望组会讨论参考文献。', author: DEMO_MEMBERS[3].name, author_id: 4, page: '/arxiv', resolved: false, created_at: formatOffsetDate(-1) + 'T10:00:00', replies: [] },
 ]
 export const DEMO_FAVORITES = [{ kind: 'paper', target: '2508.13276', saved_at: formatOffsetDate(-1), item: DEMO_ARXIV_PAPERS.find(p => p.arxiv_id === '2508.13276') }, ...[0, 1, 2].map(i => ({ kind: 'book', target: String(i + 1), saved_at: formatOffsetDate(-1), item: DEMO_BOOKS[i] }))]
