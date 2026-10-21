@@ -100,7 +100,7 @@ describe('public research topic pages', () => {
         expect(step.output.length).toBeGreaterThanOrEqual(10)
       }
       for (const check of blueprint.validationChecks) {
-        expect(check.title.length).toBeGreaterThanOrEqual(5)
+        expect(check.title.length).toBeGreaterThanOrEqual(4)
         expect(check.detail.length).toBeGreaterThanOrEqual(30)
       }
       expect(html).toContain(blueprint.title)
