@@ -127,7 +127,7 @@ function onUpdatePinned(val) {
   <div class="app-shell" :class="{ 'is-home': isHome, 'has-sidebar': showNavbar, 'sidebar-collapsed': !isPinned && showNavbar }">
     <WorkspaceSession v-if="showNavbar" />
     <WorldlineEffects />
-    <PublicThemeSwitcher v-if="isPublic" />
+    <PublicThemeSwitcher v-if="isPublic && route.path !== '/'" />
     <ForecastAtmosphere v-if="!isPublic && ['galaxy', 'vanta-fog', 'custom-local', 'earth-orbit'].includes(currentBgType)" />
     <MidAutumnMooncakes v-if="!isPublic" />
     <NationalDayCelebration v-if="!isPublic" />
