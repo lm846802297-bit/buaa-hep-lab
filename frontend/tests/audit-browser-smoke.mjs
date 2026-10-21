@@ -109,7 +109,7 @@ try {
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await expect(page.locator('.worldline-shift-overlay')).toHaveClass(/is-timeline-active/, { timeout: 1500 })
   check(await page.locator('.worldline-shift-overlay').evaluate(el => el.classList.contains('is-timeline-active')), 'worldline keyframes start only after the overlay has been rendered')
-  await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
+  // Sample the readout DOM before screenshot capture; encoding can outlast the 1.8 s transition.
   await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout'), null, { timeout: 1500 })
   await expect(page.locator('.worldline-shift-overlay')).toHaveAttribute('data-phase', 'readout', { timeout: 1500 })
   const readoutSnapshot = await page.evaluate(() => {
