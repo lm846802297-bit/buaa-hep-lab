@@ -261,9 +261,14 @@ try {
       await illustration.evaluate(img => img.decode())
       check(await illustration.evaluate(img => img.complete && img.naturalWidth > 0), `research topic ${topic} illustration loads at ${width}px`)
       if (width === 390 || width === 1440) {
-        await page.locator('.topic-visual-panel').screenshot({ path: resolve(output, `research-topic-${topic}-illustration-${width}.png`) })
+        await page.locator('.topic-visual-wrapper').screenshot({ path: resolve(output, `research-topic-${topic}-illustration-${width}.png`) })
       }
       check((await illustration.getAttribute('alt'))?.length > 20, `research topic ${topic} illustration has descriptive alternative text`)
+      if (width <= 600) {
+        check(await page.locator('.topic-visual-labels').isVisible(), `research topic ${topic} exposes readable mobile illustration labels`)
+        check(await page.locator('.topic-visual-labels li').count() >= 3, `research topic ${topic} shows at least three mobile illustration labels`)
+        check(await page.locator('.topic-visual-panel figcaption').evaluate(el => el.getBoundingClientRect().top >= el.closest('.topic-visual-panel').querySelector('img').getBoundingClientRect().bottom - 1), `research topic ${topic} caption stays below the mobile artwork`)
+      }
       check(await page.locator('.topic-section').count() >= 8, `research topic ${topic} includes the expanded physics guide, workflow, observables, papers and resources`)
       check(await page.locator('#topic-mechanisms').isVisible(), `research topic ${topic} explains its core physics mechanisms`)
       check(await page.locator('#topic-relations').isVisible(), `research topic ${topic} explains key relations and their validity conditions`)
