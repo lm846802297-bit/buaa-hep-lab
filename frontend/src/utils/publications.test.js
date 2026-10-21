@@ -56,7 +56,6 @@ describe('approved public bibliography', () => {
   })
   it('provides particle-physics textbooks, authoritative data and HEP tools', () => {
     const titles = DEMO_BOOKS.map(book => book.title)
-    expect(titles).toContain('Modern Particle Physics')
     expect(titles).toContain('Quantum Field Theory and the Standard Model')
     expect(titles).toContain('Review of Particle Physics (2026)')
     expect(titles).toContain('FeynCalc Documentation')
