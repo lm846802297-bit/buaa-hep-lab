@@ -34,16 +34,6 @@ const isAssistant = computed(() => route.path === '/assistant')
 const isDemo = computed(() => isDemoMode())
 const isExcludedRoute = computed(() => isPublic.value || ['/setup', '/login', '/quick-share'].includes(route.path))
 
-const isPublicPageElement = el => el.matches('.lab-public,.research-topic-page,.people-page,.events-page')
-function enterRoutePage(el, done) {
-  if (isPublic.value || isPublicPageElement(el)) done()
-  else enterPage(el, done)
-}
-function leaveRoutePage(el, done) {
-  if (isPublic.value || isPublicPageElement(el)) done()
-  else leavePage(el, done)
-}
-
 const isPinned = ref(localStorage.getItem('sidebar_pinned') === 'true')
 
 const { openTutorial, closeTutorial, showTutorial } = useTutorial()
@@ -146,7 +136,7 @@ function onUpdatePinned(val) {
     <Navbar v-if="showNavbar" :pinned="isPinned" @update:pinned="onUpdatePinned" />
     <main id="main-content" :class="!showNavbar ? 'public-workspace' : (isHome ? 'home-workspace' : (isAssistant ? 'assistant-workspace' : 'workspace'))">
       <router-view v-slot="{ Component }">
-        <Transition :css="false" mode="out-in" @enter="enterRoutePage" @leave="leaveRoutePage">
+        <Transition :css="false" mode="out-in" @enter="enterPage" @leave="leavePage">
           <KeepAlive include="AssistantView">
             <component :is="Component" :key="route.path" />
           </KeepAlive>
