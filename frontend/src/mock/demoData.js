@@ -9,9 +9,9 @@ function formatOffsetDate(offset = 0) {
 }
 export const DEMO_MEMBERS = [
   { id: 1, name: '李华（演示管理员）', real_name: '李华', email: 'admin@example.invalid', role: 'admin', identity: 'teacher', bio: '虚构账号，仅用于展示管理功能。', can_manage_seminars: true, is_tutorial_completed: true, tutorial_completed: true, created_at: '2026-01-10T08:00:00Z' },
-  { id: 2, name: '陈晨（演示组员）', real_name: '陈晨', email: 'member@example.invalid', role: 'member', identity: 'student', bio: '虚构账号，粒子物理文献研读示例。', can_manage_seminars: true, is_tutorial_completed: true, tutorial_completed: true, created_at: '2026-03-01T09:00:00Z' },
-  { id: 3, name: '示例研究员', real_name: '示例研究员', email: 'researcher@example.invalid', role: 'member', identity: 'postdoc', bio: '虚构研究员账号。', can_manage_seminars: true, is_tutorial_completed: true, created_at: '2026-02-15T10:00:00Z' },
-  { id: 4, name: '示例学生', real_name: '示例学生', email: 'student@example.invalid', role: 'member', identity: 'student', bio: '虚构学生账号。', can_manage_seminars: false, is_tutorial_completed: true, created_at: '2026-05-20T14:30:00Z' },
+  { id: 2, name: '陈晨（演示组员）', real_name: '陈晨', email: 'member@example.invalid', role: 'member', identity: 'student', bio: '虚构账号：研读非弹性暗物质、热共湮灭与长寿命粒子信号。', can_manage_seminars: true, is_tutorial_completed: true, tutorial_completed: true, created_at: '2026-03-01T09:00:00Z' },
+  { id: 3, name: '示例研究员', real_name: '示例研究员', email: 'researcher@example.invalid', role: 'member', identity: 'postdoc', bio: '虚构研究员账号：研究中微子新相互作用、惰性中微子与电弱相变。', can_manage_seminars: true, is_tutorial_completed: true, created_at: '2026-02-15T10:00:00Z' },
+  { id: 4, name: '示例学生', real_name: '示例学生', email: 'student@example.invalid', role: 'member', identity: 'student', bio: '虚构学生账号：研究对撞机精密测量、位移顶点与暗物质唯象学。', can_manage_seminars: false, is_tutorial_completed: true, created_at: '2026-05-20T14:30:00Z' },
 ]
 export const DEMO_SITE_CONFIG = {
   initialized: true, user_count: 4, lab_name: `${lab.name}（演示）`, lab_short_name: lab.shortName,
