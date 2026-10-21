@@ -8,7 +8,8 @@
 1. **Email HTML isolation** — untrusted email HTML is moved from Vue `v-html` rendering into a sandboxed iframe with no script, same-origin, form, popup, or top-navigation permissions. A restrictive CSP blocks network connections and remote images by default. Embedded `data:` images and inline styles remain available.
 2. **URL scraper hardening** — the public event scraper rejects non-HTTP(S) URLs, user-info, IP-literal targets, local/reserved hostnames, and nonstandard ports. Redirects are handled manually and each target is revalidated. HTML/text response types are checked and each page is capped at 1 MB.
 3. **FastAPI notice authorization** — teacher/admin checks use the existing canonical `User.role` field instead of nonexistent `User.identity`. The regression matrix covers owner, other student, teacher, and admin for both update and delete.
-4. **Self-hosted Docker configuration** — the repository no longer supplies a committed JWT signing key or a predictable default invite code through Compose. Operators must provide both `LABHUB_SECRET_KEY` (at least 32 characters) and a unique `LABHUB_INVITE_CODE` before starting the container.
+4. **Cloudflare notice authorization contract** — D1's `users` schema explicitly contains both `role` and `identity`; the Workers route's `user.identity === 'teacher'` check is supported by that schema and should not be mechanically rewritten to match FastAPI. A separate Workers route test now covers owner, another student, a teacher identity, and an admin for both update and delete.
+5. **Self-hosted Docker configuration** — the repository no longer supplies a committed JWT signing key or a predictable default invite code through Compose. Operators must provide both `LABHUB_SECRET_KEY` (at least 32 characters) and a unique `LABHUB_INVITE_CODE` before starting the container.
 
 ## Important limitations and follow-ups
 
