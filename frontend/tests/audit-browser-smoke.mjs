@@ -454,8 +454,30 @@ try {
   check(await stylePage.locator('html').getAttribute('data-bg-type') === 'galaxy', 'galaxy background card applies')
   await stylePage.locator('.galaxy-atmosphere-canvas canvas.is-rendered').waitFor({ state: 'visible', timeout: 20000 })
   const dimSlider = stylePage.getByRole('slider', { name: '背景遮罩暗化程度' })
-  await dimSlider.evaluate(el => { el.value = '20'; el.dispatchEvent(new Event('input', { bubbles: true })) })
-  check(await stylePage.evaluate(() => Math.abs(Number(getComputedStyle(document.querySelector('.atmosphere-shade')).opacity) - 0.2) < 0.02), 'background dim slider changes the visible overlay opacity')
+  await dimSlider.focus()
+  await dimSlider.press('Home')
+  for (let i = 0; i < 20; i++) await dimSlider.press('ArrowRight')
+  await stylePage.waitForFunction(() => {
+    const shade = document.querySelector('.atmosphere-shade')
+    return shade && Math.abs(Number(getComputedStyle(shade).opacity) - 0.2) < 0.02
+  }, null, { timeout: 3000 }).catch(() => {})
+  const dimState = await stylePage.evaluate(() => {
+    const slider = document.querySelector('#bg-dim-slider')
+    const shade = document.querySelector('.atmosphere-shade')
+    return {
+      sliderValue: slider?.value ?? null,
+      rootInline: document.documentElement.style.getPropertyValue('--bg-dim'),
+      rootComputed: getComputedStyle(document.documentElement).getPropertyValue('--bg-dim'),
+      shadeOpacity: shade ? getComputedStyle(shade).opacity : null,
+      shadeClass: shade?.className ?? null,
+      bgType: document.documentElement.dataset.bgType
+    }
+  })
+  console.log('Background dim interaction state: ' + JSON.stringify(dimState))
+  check(Number(dimState.sliderValue) === 20 &&
+    Math.abs(Number(dimState.rootInline) - 0.2) < 0.02 &&
+    Math.abs(Number(dimState.shadeOpacity) - 0.2) < 0.02,
+    'background dim slider changes the visible overlay opacity')
   await stylePage.getByRole('button', { name: /恢复默认/ }).click()
   check(await stylePage.evaluate(() => {
     const expected = Number(getComputedStyle(document.documentElement).getPropertyValue('--bg-dim'))
