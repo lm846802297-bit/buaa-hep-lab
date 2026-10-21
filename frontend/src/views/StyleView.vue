@@ -456,9 +456,9 @@ onMounted(() => {
           <div class="theme-card-header">
             <div class="theme-card-title-group">
               <div class="theme-title-row">
-              <h3 class="theme-title">{{ scheme.name }}</h3>
-              <span v-if="scheme.id === 'quiet-research'" class="theme-default-badge">默认风格</span>
-            </div>
+                <h3 class="theme-title">{{ scheme.name }}</h3>
+                <span v-if="scheme.id === 'quiet-research'" class="theme-default-badge">默认风格</span>
+              </div>
               <p class="theme-subtitle">{{ scheme.subtitle }}</p>
             </div>
             <div class="theme-active-indicator" v-if="currentColorScheme === scheme.id">
