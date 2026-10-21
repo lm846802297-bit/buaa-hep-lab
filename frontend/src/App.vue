@@ -14,13 +14,18 @@ const DemoModeBanner = defineAsyncComponent(() => import('./components/DemoModeB
 import { enterPage, leavePage } from './composables/motion'
 import { useTutorial } from './composables/useTutorial'
 import { isDemoMode } from './mock/isDemo'
-import { currentColorScheme } from './composables/useThemeStyle'
+import { applyThemeToDOM, currentBgType, currentColorScheme } from './composables/useThemeStyle'
 
 const WorkspaceSession = defineAsyncComponent(() => import('./components/WorkspaceSession.vue'))
 
 const route = useRoute()
 const isPublic = computed(() => !!route.meta.public)
-watch(isPublic, value => { document.documentElement.dataset.publicPage = String(value) }, { immediate: true })
+watch(isPublic, value => {
+  document.documentElement.dataset.publicPage = String(value)
+  // Keep the public site on its brand theme, then restore the user's selected
+  // workspace theme automatically when navigating back into the collaboration area.
+  applyThemeToDOM(currentColorScheme.value, currentBgType.value)
+}, { immediate: true })
 const showNavbar = computed(() => !isPublic.value && !['/login', '/quick-share', '/setup'].includes(route.path))
 const isHome = computed(() => route.path === '/hub')
 const isAssistant = computed(() => route.path === '/assistant')

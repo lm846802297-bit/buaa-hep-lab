@@ -7,8 +7,8 @@ export const DEFAULT_GLASS_STYLE = 'solid'
 export const COLOR_SCHEMES = [
   {
     id: 'quiet-research',
-    name: '安静研究（推荐）',
-    subtitle: '温暖纸白 · 墨色文字 · 克制陶土橙',
+    name: 'Quiet Research（Claude 风格）',
+    subtitle: '温暖纸白 · 墨色文字 · 陶土橙 · 编辑式衬线标题',
     colors: ['#F7F5F0', '#B85E3F', '#FFFEFA'],
     primaryColor: '#B85E3F',
     baseColor: '#F7F5F0',
@@ -42,6 +42,10 @@ export const COLOR_SCHEMES = [
     surfaceColor: '#16122e'
   }
 ]
+
+// Derive supported IDs from the theme registry so the selector and runtime
+// validation cannot silently drift apart. "custom" is a user-created scheme.
+const SUPPORTED_COLOR_SCHEME_IDS = new Set([...COLOR_SCHEMES.map(({ id }) => id), 'custom'])
 
 export const BG_OPTIONS = [
   {
@@ -120,6 +124,36 @@ export const CUSTOM_COLOR_SCHEME_KEY = 'laborbit_custom_color_scheme'
 export const GLASS_STYLE_KEY = 'laborbit_glass_style'
 export const BG_DIM_KEY = 'laborbit_bg_dim_percent_v2'
 export const DEFAULT_BG_DIM = 100
+
+const LEGACY_STORAGE_NAMESPACE_MIGRATION_KEY = 'laborbit_storage_namespace_v20261021'
+
+// Older first-paint code used labhub_* while the live theme module persists
+// laborbit_*. Copy only missing values; never overwrite a current preference.
+export function migrateLegacyStorageNamespace() {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return
+  try {
+    if (localStorage.getItem(LEGACY_STORAGE_NAMESPACE_MIGRATION_KEY)) return
+    const keyPairs = [
+      [COLOR_SCHEME_KEY, 'labhub_color_scheme'],
+      [BG_TYPE_KEY, 'labhub_bg_type'],
+      [LEGACY_STORAGE_KEY, 'labhub_theme_style'],
+      [CUSTOM_COLOR_SCHEME_KEY, 'labhub_custom_color_scheme'],
+      [GLASS_STYLE_KEY, 'labhub_glass_style'],
+      [BG_DIM_KEY, 'labhub_bg_dim_percent_v2'],
+      ['laborbit_bg_video_paused', 'labhub_bg_video_paused']
+    ]
+    for (const [currentKey, legacyKey] of keyPairs) {
+      if (localStorage.getItem(currentKey) !== null) continue
+      const legacyValue = localStorage.getItem(legacyKey)
+      if (legacyValue !== null) localStorage.setItem(currentKey, legacyValue)
+    }
+    localStorage.setItem(LEGACY_STORAGE_NAMESPACE_MIGRATION_KEY, '1')
+  } catch (e) {
+    console.warn('Failed to migrate legacy appearance preferences:', e)
+  }
+}
+
+migrateLegacyStorageNamespace()
 
 export function migratePreviousDefaultUsers() {
   if (typeof window === 'undefined') return
@@ -521,12 +555,13 @@ function getInitialColorScheme() {
   if (typeof window === 'undefined') return DEFAULT_COLOR_SCHEME
   try {
     const saved = localStorage.getItem(COLOR_SCHEME_KEY)
-    if (saved === 'quiet-research' || saved === 'obsidian-gray' || saved === 'classic-cyan' || saved === 'nebula-purple' || saved === 'custom') {
+    if (SUPPORTED_COLOR_SCHEME_IDS.has(saved)) {
       return saved
     }
     // 从旧版兼容器迁移
     const legacy = localStorage.getItem(LEGACY_STORAGE_KEY)
     if (legacy === 'earth-orbit') return 'classic-cyan'
+    if (legacy === 'custom') return 'custom'
     if (legacy === 'galaxy') return 'nebula-purple'
     if (legacy === 'vanta-fog' || legacy === 'clouds-static') return 'classic-cyan'
   } catch (e) {
@@ -547,6 +582,8 @@ function getInitialBgType() {
     if (legacy === 'galaxy' || legacy === 'vanta-fog' || legacy === 'clouds-static') {
       return legacy
     }
+    if (legacy === 'earth-orbit') return 'clouds-static'
+    if (legacy === 'custom-local') return 'custom-local'
   } catch (e) {
     console.warn('Failed to read bg type from localStorage:', e)
   }
@@ -607,7 +644,13 @@ export function applyThemeToDOM(scheme = currentColorScheme.value, bg = currentB
     if (!bg || bg === 'clouds-static' || bg === 'earth-orbit') actualBg = 'clouds-static'
   }
 
-  if (actualScheme !== 'quiet-research' && actualScheme !== 'obsidian-gray' && actualScheme !== 'classic-cyan' && actualScheme !== 'nebula-purple' && actualScheme !== 'custom') {
+  // Public routes use the site brand without mutating the saved workspace preference.
+  if (doc.getAttribute?.('data-public-page') === 'true' || doc.dataset?.publicPage === 'true') {
+    actualScheme = 'quiet-research'
+    actualBg = 'paper'
+  }
+
+  if (!SUPPORTED_COLOR_SCHEME_IDS.has(actualScheme)) {
     actualScheme = DEFAULT_COLOR_SCHEME
   }
 
@@ -700,7 +743,7 @@ applyThemeToDOM(currentColorScheme.value, currentBgType.value)
 
 export function useThemeStyle() {
   function setColorScheme(scheme) {
-    if (scheme !== 'quiet-research' && scheme !== 'obsidian-gray' && scheme !== 'classic-cyan' && scheme !== 'nebula-purple' && scheme !== 'custom') return
+    if (!SUPPORTED_COLOR_SCHEME_IDS.has(scheme)) return
     currentColorScheme.value = scheme
     currentThemeStyle.value = resolveLegacyTheme(scheme, currentBgType.value)
     applyThemeToDOM(scheme, currentBgType.value)

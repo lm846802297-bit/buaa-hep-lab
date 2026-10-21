@@ -437,6 +437,7 @@ onMounted(() => {
       <div class="section-title-row">
         <div>
           <h2>界面配色方案</h2>
+          <p class="style-section-note">协作空间支持独立选择主题；Quiet Research（Claude 风格）是其中一个可选方案。公开官网始终使用 Quiet Research，不会被这里的个人设置改变。</p>
         </div>
       </div>
       <div class="theme-cards-grid">
@@ -1464,6 +1465,14 @@ onMounted(() => {
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.style-section-note {
+  margin-top: 8px;
+  max-width: 860px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
 }
 
 /* 界面风格切换卡片 */

@@ -10,13 +10,22 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
   const noticeMarqueeVue = readFileSync(resolve(__dirname, '../components/NoticeMarquee.vue'), 'utf-8')
   const assistantVue = readFileSync(resolve(__dirname, 'AssistantView.vue'), 'utf-8')
 
-  it('uses Quiet Research for first paint without overwriting saved theme preferences', () => {
-    expect(indexHtml).toContain("var scheme = savedScheme ||")
-    expect(indexHtml).toContain("'quiet-research'")
+  it('uses Quiet Research on public routes and preserves the selected workspace theme', () => {
+    expect(indexHtml).toContain("localStorage.getItem('laborbit_color_scheme')")
+    expect(indexHtml).toContain("localStorage.getItem('labhub_color_scheme')")
+    expect(indexHtml).toContain("var scheme = isPublicRoute ? 'quiet-research' : (savedScheme ||")
+    expect(indexHtml).toContain("routePath === '/'")
+    expect(indexHtml).toContain("routePath === '/people'")
+    expect(indexHtml).toContain("routePath === '/events'")
+    expect(indexHtml).toContain("routePath.startsWith('/research/')")
+    expect(indexHtml).toContain('doc.dataset.publicPage = String(isPublicRoute)')
+    expect(indexHtml).toContain("var bgType = isPublicRoute ? 'paper' : (")
+    expect(indexHtml).toContain("['paper', 'galaxy', 'vanta-fog', 'clouds-static', 'custom-local'].includes(savedBg)")
     expect(indexHtml).toContain("var bgHex = scheme === 'quiet-research' ? '#F7F5F0'")
     expect(indexHtml).toContain('name="theme-color" content="#F7F5F0"')
     expect(indexHtml).toContain('name="color-scheme" content="light dark"')
     expect(indexHtml).toContain("if (bgType === 'clouds-static' && scheme !== 'quiet-research'")
+    expect(indexHtml).not.toContain('</script>ipt>')
   })
 
   it('defines --panel-solid in :root and classic-cyan', () => {

@@ -88,6 +88,46 @@ describe('useThemeStyle', () => {
     expect(document.documentElement.setAttribute).toHaveBeenCalledWith('data-bg-type', 'galaxy')
   })
 
+  it('keeps a selected workspace theme while public routes temporarily use Quiet Research', async () => {
+    store['laborbit_color_scheme'] = 'obsidian-gray'
+    store['laborbit_bg_type'] = 'galaxy'
+    attrs['data-public-page'] = 'true'
+
+    const { currentColorScheme, currentBgType, applyThemeToDOM } = await import('./useThemeStyle')
+
+    // The active workspace preference remains dark even while the public page is rendered.
+    expect(currentColorScheme.value).toBe('obsidian-gray')
+    expect(currentBgType.value).toBe('galaxy')
+    expect(attrs['data-color-scheme']).toBe('quiet-research')
+    expect(attrs['data-bg-type']).toBe('paper')
+    expect(localStorage.setItem).not.toHaveBeenCalledWith('laborbit_color_scheme', 'quiet-research')
+    expect(localStorage.setItem).not.toHaveBeenCalledWith('laborbit_bg_type', 'paper')
+
+    // Leaving the public routes restores the saved workspace theme and background.
+    attrs['data-public-page'] = 'false'
+    applyThemeToDOM(currentColorScheme.value, currentBgType.value)
+    expect(attrs['data-color-scheme']).toBe('obsidian-gray')
+    expect(attrs['data-bg-type']).toBe('galaxy')
+  })
+
+  it('migrates older labhub appearance keys only when the current preference is missing', async () => {
+    store['laborbit_color_scheme'] = 'obsidian-gray'
+    store['labhub_color_scheme'] = 'nebula-purple'
+    store['labhub_bg_type'] = 'galaxy'
+    store['labhub_theme_style'] = 'galaxy'
+    store['labhub_glass_style'] = 'frosted'
+
+    const { currentColorScheme, currentBgType, currentGlassStyle } = await import('./useThemeStyle')
+
+    expect(currentColorScheme.value).toBe('obsidian-gray')
+    expect(currentBgType.value).toBe('galaxy')
+    expect(currentGlassStyle.value).toBe('frosted')
+    expect(store['laborbit_color_scheme']).toBe('obsidian-gray')
+    expect(store['laborbit_bg_type']).toBe('galaxy')
+    expect(store['laborbit_theme_style']).toBe('galaxy')
+    expect(store['laborbit_glass_style']).toBe('frosted')
+  })
+
   it('supports toggling glass styles between liquid and frosted', async () => {
     const { useThemeStyle, currentGlassStyle, glassOptions, setGlassStyle } = await import('./useThemeStyle')
     expect(glassOptions).toHaveLength(3)
@@ -119,6 +159,12 @@ describe('useThemeStyle', () => {
     expect(store['laborbit_theme_style']).toBe('earth-orbit')
     expect(store['laborbit_glass_style']).toBe('liquid')
     expect(store[DEFAULT_MIGRATION_KEY]).toBe('1')
+  })
+
+  it('keeps Quiet Research available alongside every pre-existing theme', async () => {
+    const { colorSchemes } = await import('./useThemeStyle')
+    expect(colorSchemes.map(s => s.id)).toEqual(['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple'])
+    expect(colorSchemes[0].name).toContain('Claude 风格')
   })
 
   it('keeps Quiet Research as the default for new users without stored preferences', async () => {

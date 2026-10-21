@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" style="background-color: #081f28;">
+<html lang="zh-CN" style="background-color: #F7F5F0;">
   <head>
     <meta charset="UTF-8" />
     <!-- Single Page Apps for GitHub Pages: 恢复 404.html 重定向路径 -->
@@ -18,24 +18,41 @@
     <script>
       (function() {
         try {
-          var savedScheme = localStorage.getItem('labhub_color_scheme');
-          var savedBg = localStorage.getItem('labhub_bg_type');
-          var savedLegacy = localStorage.getItem('labhub_theme_style');
-          var savedCustom = localStorage.getItem('labhub_custom_color_scheme');
+          var siteBase = '%BASE_URL%'.replace(/\/$/, '');
+          var normalizedPath = window.location.pathname.length > 1
+            ? window.location.pathname.replace(/\/+$/, '')
+            : window.location.pathname;
+          var routePath = normalizedPath;
+          if (siteBase && (normalizedPath === siteBase || normalizedPath.startsWith(siteBase + '/'))) {
+            routePath = normalizedPath.slice(siteBase.length) || '/';
+          }
+          if (!routePath.startsWith('/')) routePath = '/' + routePath;
+          var isPublicRoute = routePath === '/' || routePath === '/people' || routePath === '/events' || routePath.startsWith('/research/');
 
-          // Preserve explicit preferences. New installations start in Quiet Research.
-          var scheme = savedScheme || (
+          // Match the live theme module's storage namespace, with a read-only
+          // fallback for preferences written by older builds.
+          var savedScheme = localStorage.getItem('laborbit_color_scheme') || localStorage.getItem('labhub_color_scheme');
+          var savedBg = localStorage.getItem('laborbit_bg_type') || localStorage.getItem('labhub_bg_type');
+          var savedLegacy = localStorage.getItem('laborbit_theme_style') || localStorage.getItem('labhub_theme_style');
+          var savedCustom = localStorage.getItem('laborbit_custom_color_scheme') || localStorage.getItem('labhub_custom_color_scheme');
+
+          // Public pages use the stable site brand; workspace routes respect the user's saved theme.
+          var scheme = isPublicRoute ? 'quiet-research' : (savedScheme || (
             savedLegacy === 'galaxy' ? 'nebula-purple' :
             savedLegacy === 'vanta-fog' || savedLegacy === 'clouds-static' || savedLegacy === 'earth-orbit'
               ? 'classic-cyan' : 'quiet-research'
-          );
+          ));
           if (!['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'custom'].includes(scheme)) {
             scheme = 'quiet-research';
           }
 
           var legacyBg = ['galaxy', 'vanta-fog', 'clouds-static', 'earth-orbit', 'custom-local'].includes(savedLegacy)
             ? savedLegacy : 'paper';
-          var bgType = savedBg || (legacyBg === 'earth-orbit' ? 'clouds-static' : legacyBg);
+          var bgType = isPublicRoute ? 'paper' : (
+            ['paper', 'galaxy', 'vanta-fog', 'clouds-static', 'custom-local'].includes(savedBg)
+              ? savedBg
+              : (legacyBg === 'earth-orbit' ? 'clouds-static' : legacyBg)
+          );
           if (!['paper', 'galaxy', 'vanta-fog', 'clouds-static', 'custom-local'].includes(bgType)) {
             bgType = 'paper';
           }
@@ -48,8 +65,7 @@
             scheme === 'obsidian-gray' ? '#090d16' :
             scheme === 'nebula-purple' ? '#03020a' : '#081f28';
           var doc = document.documentElement;
-          var siteBase = '%BASE_URL%'.replace(/\/$/, '');
-          doc.dataset.publicPage = String(window.location.pathname.replace(/\/$/, '') === siteBase);
+          doc.dataset.publicPage = String(isPublicRoute);
           doc.setAttribute('data-color-scheme', scheme);
           doc.setAttribute('data-bg-type', bgType);
           doc.setAttribute('data-theme-style', legacyStyle);
@@ -78,7 +94,7 @@
           }
 
           doc.style.backgroundColor = bgHex;
-          var basePath = window.location.pathname.startsWith('/lab-orbit') ? '/lab-orbit' : '';
+          var basePath = siteBase;
           if (bgType === 'clouds-static' && scheme !== 'quiet-research' && doc.dataset.publicPage !== 'true') {
             doc.style.backgroundImage = "url('" + basePath + "/assets/forecast/forecast-clouds-drift-seamless.jpg')";
             doc.style.backgroundPosition = 'center center';
@@ -89,7 +105,7 @@
           }
         } catch (e) {}
       })();
-    </script>ipt>
+    </script>
     <link rel="icon" type="image/svg+xml" href="/assets/LO_logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
