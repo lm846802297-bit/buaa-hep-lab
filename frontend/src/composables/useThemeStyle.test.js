@@ -144,6 +144,41 @@ describe('useThemeStyle', () => {
     expect(attrs['data-bg-type']).toBe('galaxy')
   })
 
+  it('persists public-site skin independently from the workspace preference', async () => {
+    store['laborbit_color_scheme'] = 'obsidian-gray'
+    store['laborbit_bg_type'] = 'galaxy'
+    store['labhub_public_color_scheme'] = 'classic-cyan'
+    attrs['data-public-page'] = 'true'
+
+    const {
+      currentColorScheme,
+      currentBgType,
+      publicColorScheme,
+      useThemeStyle,
+      applyThemeToDOM
+    } = await import('./useThemeStyle')
+    const { setPublicColorScheme } = useThemeStyle()
+
+    expect(currentColorScheme.value).toBe('obsidian-gray')
+    expect(currentBgType.value).toBe('galaxy')
+    expect(publicColorScheme.value).toBe('classic-cyan')
+    expect(attrs['data-color-scheme']).toBe('classic-cyan')
+    expect(attrs['data-bg-type']).toBe('paper')
+
+    setPublicColorScheme('nebula-purple')
+    expect(publicColorScheme.value).toBe('nebula-purple')
+    expect(store['labhub_public_color_scheme']).toBe('nebula-purple')
+    expect(attrs['data-color-scheme']).toBe('nebula-purple')
+    expect(store['laborbit_color_scheme']).toBe('obsidian-gray')
+    expect(store['laborbit_bg_type']).toBe('galaxy')
+
+    // A workspace route still restores the workspace's own palette and background.
+    attrs['data-public-page'] = 'false'
+    applyThemeToDOM(currentColorScheme.value, currentBgType.value)
+    expect(attrs['data-color-scheme']).toBe('obsidian-gray')
+    expect(attrs['data-bg-type']).toBe('galaxy')
+  })
+
   it('migrates older labhub appearance keys only when the current preference is missing', async () => {
     store['laborbit_color_scheme'] = 'obsidian-gray'
     store['labhub_color_scheme'] = 'nebula-purple'
