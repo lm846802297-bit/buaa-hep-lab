@@ -209,36 +209,16 @@ app.post('/items/:id/score', async (c) => {
 
 ### 1. SQLite 自建模式数据库运维
 
-- **本地数据库文件**：默认存储在 `./data/labhub.db`。
-- **字段追加策略（加法迁移）**：
-  在 `backend/migrations.py` 中编写容错更新逻辑：
-  ```python
-  def run_migrations(engine):
-      with engine.connect() as conn:
-          try:
-              conn.execute(text("ALTER TABLE items ADD COLUMN score REAL DEFAULT 0.0;"))
-              conn.commit()
-          except Exception:
-              pass  # 字段已存在时安全跳过
-  ```
+- 本地数据库文件、模型和迁移入口以当前 `backend/` 配置为准；不要假定历史文档中的路径或数据库文件名仍然准确。
+- 优先使用可追踪、可重复、可验证的迁移，并分别测试空库与已有数据。
+- 不要用 `except Exception: pass` 吞掉所有迁移错误。只有明确识别的“迁移已应用/列已存在”情形才可以安全处理；其他异常必须显式失败并保留诊断信息。
 
 ### 2. Cloudflare D1 边缘数据库运维
 
-通过 Wrangler CLI 在 `frontend/` 目录执行：
-```bash
-cd frontend
-
-# 查看线上数据表字段
-npx wrangler d1 execute labhub-db --remote --command="PRAGMA table_info(seminars);"
-
-# 执行无损字段添加
-npx wrangler d1 execute labhub-db --remote --command="ALTER TABLE seminars ADD COLUMN custom_tag TEXT DEFAULT '';"
-
-# 执行迁移脚本
-npx wrangler d1 execute labhub-db --remote --file=../scripts/your_migration.sql
-```
-> [!IMPORTANT]
-> 严禁在线上直接执行 `DROP TABLE`。涉及字段类型或重构时，一律先新建列并回填默认值。
+- 资源绑定和数据库名称必须从当前 `frontend/wrangler.json` 读取；不得照抄旧示例中的 `labhub-db` 或其他历史资源名。
+- 迁移 SQL 的审查源以当前 `scripts/schema_d1.sql` 及仓库中版本化迁移为准。先在本地/隔离环境验证，再通过 PR 审查迁移与回滚/前向修复方案。
+- 远程只读检查、远程写入与生产迁移是不同风险等级。未经用户明确授权，不运行带 `--remote` 的写入/迁移命令，不在生产数据库试验，也不把临时 DDL 当作正式迁移流程。
+- 如任务确实需要生产操作，先说明目标资源、精确命令、影响、备份/恢复计划与验证方法，等待用户明确批准后再执行。
 
 ---
 
