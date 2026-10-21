@@ -451,4 +451,9 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
   .workflow-step { width:32px; height:32px; }
   .topic-visual-panel { height:150px; margin-top:12px; }
 }
+@supports not (overflow-x: clip) {
+  @media(max-width:760px) {
+    .topic-sidebar { position:static; max-height:none; overflow:visible; }
+  }
+}
 </style>
