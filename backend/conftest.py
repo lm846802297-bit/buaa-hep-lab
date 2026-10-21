@@ -4,6 +4,8 @@ import tempfile
 import pytest
 
 os.environ["SEED_DEMO_DATA"] = "1"
+# Explicit test-only invite code; never rely on a production fallback.
+os.environ["LABHUB_INVITE_CODE"] = "TEST-INVITE-2026"
 _test_database = tempfile.TemporaryDirectory(prefix="labhub-pytest-")
 os.environ["LABHUB_DB_PATH"] = os.path.join(_test_database.name, "test.db")
 
