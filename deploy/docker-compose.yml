@@ -15,4 +15,6 @@ services:
     environment:
       LABHUB_INVITE_CODE: "${LABHUB_INVITE_CODE:?Set a unique LABHUB_INVITE_CODE before starting}"
       LABHUB_SECRET_KEY: "${LABHUB_SECRET_KEY:?Set a random LABHUB_SECRET_KEY of at least 32 characters}"
+      # Required only when running the explicit clean-database bootstrap command.
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD-}"
       LABHUB_DB_PATH: /app/data/labhub.db

@@ -48,7 +48,7 @@ const BLOCKED_HOST_SUFFIXES = [
  * resolution results here, so IP literals and local/reserved hostnames are
  * rejected and every redirect is validated independently.
  */
-export function validatePublicHttpUrl(input: string): URL {
+export function validatePublicHttpUrl(input: string, allowedHosts?: readonly string[]): URL {
   let url: URL;
   try {
     url = new URL(input);
@@ -62,8 +62,9 @@ export function validatePublicHttpUrl(input: string): URL {
   if (url.username || url.password) {
     throw new Error('不允许包含用户名或密码的网址');
   }
-  if (url.port && !['80', '443'].includes(url.port)) {
-    throw new Error('仅允许标准 HTTP/HTTPS 端口');
+  // URL normalizes the protocol's default port to an empty string.
+  if (url.port) {
+    throw new Error('仅允许 HTTP/HTTPS 协议默认端口');
   }
 
   const hostname = url.hostname.toLowerCase().replace(/\.$/, '');
@@ -88,6 +89,15 @@ export function validatePublicHttpUrl(input: string): URL {
     !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label)
   )) {
     throw new Error('网址主机名无效');
+  }
+
+  if (allowedHosts) {
+    const normalizedAllowedHosts = allowedHosts
+      .map(host => host.trim().toLowerCase().replace(/\.$/, ''))
+      .filter(Boolean);
+    if (!normalizedAllowedHosts.includes(hostname)) {
+      throw new Error('目标域名不在管理员配置的可信域名白名单中');
+    }
   }
 
   url.hostname = hostname;
@@ -515,11 +525,11 @@ export function parsePageHtml(html: string, pageUrl: string): ExtractedPageMeta 
   };
 }
 
-async function fetchWithTimeout(url: string, timeoutMs: number): Promise<string> {
+async function fetchWithTimeout(url: string, timeoutMs: number, allowedHosts: readonly string[]): Promise<string> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    let currentUrl = validatePublicHttpUrl(url);
+    let currentUrl = validatePublicHttpUrl(url, allowedHosts);
 
     for (let redirects = 0; ; redirects++) {
       const res = await fetch(currentUrl.href, {
@@ -537,7 +547,7 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<string>
         await discardResponseBody(res);
         if (!location) throw new Error('上游重定向缺少 Location');
         if (redirects >= MAX_REDIRECTS) throw new Error('网页重定向次数超过限制');
-        currentUrl = validatePublicHttpUrl(new URL(location, currentUrl).href);
+        currentUrl = validatePublicHttpUrl(new URL(location, currentUrl).href, allowedHosts);
         continue;
       }
 
@@ -590,10 +600,24 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<string>
   }
 }
 
-export async function scrapeUrlDeep(targetUrl: string): Promise<ScrapedResult> {
+export async function scrapeUrlDeep(targetUrl: string, allowedHosts: readonly string[] = []): Promise<ScrapedResult> {
+  if (allowedHosts.length === 0) {
+    return {
+      success: false,
+      url: targetUrl,
+      title: '',
+      combined_text: '',
+      pages_scraped: [],
+      poster_candidates: [],
+      best_poster_url: '',
+      registration_url: '',
+      error: '网页抓取功能尚未配置可信域名白名单'
+    };
+  }
+
   let validUrl = '';
   try {
-    validUrl = validatePublicHttpUrl(targetUrl.trim()).href;
+    validUrl = validatePublicHttpUrl(targetUrl.trim(), allowedHosts).href;
   } catch (err: any) {
     return {
       success: false,
@@ -615,7 +639,7 @@ export async function scrapeUrlDeep(targetUrl: string): Promise<ScrapedResult> {
   const textSections: string[] = [];
 
   try {
-    const mainHtml = await fetchWithTimeout(validUrl, FETCH_TIMEOUT_MS);
+    const mainHtml = await fetchWithTimeout(validUrl, FETCH_TIMEOUT_MS, allowedHosts);
     const mainParsed = parsePageHtml(mainHtml, validUrl);
 
     mainTitle = mainParsed.title;
@@ -655,7 +679,7 @@ export async function scrapeUrlDeep(targetUrl: string): Promise<ScrapedResult> {
     if (subpagesToFetch.length > 0) {
       const subPromises = subpagesToFetch.map(async (link) => {
         try {
-          const subHtml = await fetchWithTimeout(link.url, SUBPAGE_TIMEOUT_MS);
+          const subHtml = await fetchWithTimeout(link.url, SUBPAGE_TIMEOUT_MS, allowedHosts);
           const subParsed = parsePageHtml(subHtml, link.url);
 
           if (!overallRegistrationUrl && subParsed.registrationUrl) {

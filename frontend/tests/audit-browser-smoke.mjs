@@ -376,6 +376,39 @@ try {
   await loginPage.waitForURL('**/login?redirect=**')
   check(loginPage.url().includes('/login?redirect=/learning/eft'), 'anonymous learning navigation redirects to login with its target preserved')
   await loggedOut.close()
+
+  // Exercise the email HTML isolation boundary in a real Chromium document.
+  const emailIsolationPage = await browser.newPage()
+  const trackingRequests = []
+  emailIsolationPage.on('request', request => {
+    if (request.url().includes('tracker.invalid')) trackingRequests.push(request.url())
+  })
+  await emailIsolationPage.goto(base, { waitUntil: 'networkidle' })
+  const csp = "default-src 'none'; img-src data:; style-src 'unsafe-inline'; font-src data:; connect-src 'none'; media-src data:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
+  const maliciousPayload = '</body><script>parent.__emailHtmlExecuted = true</script><img src="https://tracker.invalid/pixel"><body>'
+  const emailHtmlDocument = '<!doctype html><html lang="und"><head><meta charset="utf-8">' +
+    '<meta http-equiv="Content-Security-Policy" content="' + csp + '">' +
+    '<meta name="referrer" content="no-referrer"></head><body>' + maliciousPayload + '</body></html>'
+  await emailIsolationPage.evaluate(documentHtml => new Promise(resolveLoad => {
+    window.__emailHtmlExecuted = false
+    const frame = document.createElement('iframe')
+    frame.id = 'audit-email-html'
+    frame.setAttribute('sandbox', '')
+    frame.referrerPolicy = 'no-referrer'
+    frame.addEventListener('load', () => resolveLoad(true), { once: true })
+    frame.srcdoc = documentHtml
+    document.body.appendChild(frame)
+  }), emailHtmlDocument)
+  await emailIsolationPage.waitForTimeout(200)
+  check(await emailIsolationPage.evaluate(() => window.__emailHtmlExecuted === false), 'sandboxed email HTML cannot execute script in the parent context')
+  check(await emailIsolationPage.evaluate(() => {
+    const frame = document.querySelector('#audit-email-html')
+    try { void frame.contentWindow.document; return false } catch (error) { return error?.name === 'SecurityError' }
+  }), 'sandboxed email HTML has an opaque origin inaccessible to the parent')
+  check(trackingRequests.length === 0, 'email CSP blocks remote tracking image requests')
+  check(await emailIsolationPage.locator('#audit-email-html').getAttribute('sandbox') === '', 'email iframe grants no sandbox permissions')
+  await emailIsolationPage.close()
+
   await writeFile(resolve(output, 'browser-checks.json'), JSON.stringify({ checks, total: checks.length }, null, 2))
   console.log(`Browser verification: ${checks.length} checks passed.`)
 } finally { await browser.close(); server.close() }
