@@ -17,6 +17,9 @@ const topicResources = computed(() => topicDetail.value
   : [])
 const contentReview = computed(() => publicationReviewStatus(publicContentIndexCheckedAt))
 onMounted(() => {
+  // The view is mounted after the outgoing route has completed its transition.
+  // Reset here so the old page's scroll offset cannot leak into the new topic.
+  window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   document.title = topic.value
     ? `${topic.value.title} | BUAA HEP Hub`
     : '研究专题不存在 | BUAA HEP Hub'
