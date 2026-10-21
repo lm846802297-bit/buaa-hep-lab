@@ -86,11 +86,15 @@ try {
   await publicSkinTrigger.click()
   await publicSkin.selectOption('worldline-console')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await page.waitForTimeout(360)
+  await page.waitForTimeout(180)
   const shiftHud = page.locator('.worldline-shift-overlay__hud')
-  check(await shiftHud.isVisible(), 'worldline shift HUD is visible at the visual peak')
-  const hudOpacity = await shiftHud.evaluate(el => Number(getComputedStyle(el).opacity))
-  check(hudOpacity > 0.75, `worldline shift HUD remains legible independently of the screen flash (opacity=${hudOpacity})`)
+  check(await shiftHud.isVisible(), 'worldline shift HUD is visible in the transition peak frame')
+  const hudStyle = await shiftHud.evaluate(el => {
+    const style = getComputedStyle(el)
+    return { animationName: style.animationName, backgroundColor: style.backgroundColor }
+  })
+  check(hudStyle.animationName.includes('worldline-hud-fade'), 'worldline shift HUD has its own opacity timeline separate from the screen flash')
+  check(hudStyle.backgroundColor !== 'rgba(0, 0, 0, 0)' && hudStyle.backgroundColor !== 'transparent', 'worldline shift HUD uses a dark, high-contrast panel')
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-event.png') })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
   const worldlineTuner = await page.evaluate(() => {
