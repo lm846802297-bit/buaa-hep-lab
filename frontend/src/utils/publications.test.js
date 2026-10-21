@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { filterPublications, publicationBibtex, citationText } from './publications'
 import { publications, publicationCategories, directions } from '../content/lab'
-import { DEMO_ARXIV_PAPERS } from '../mock/demoData'
+import { DEMO_ARXIV_PAPERS, DEMO_BASE_DATE_STR, DEMO_BOOKS, DEMO_LIBRARY_PAPERS, DEMO_RESOURCES_CATEGORIES, DEMO_SEMINARS } from '../mock/demoData'
 
 describe('approved public bibliography', () => {
   it('publishes exactly the group-approved 16 papers, 6 categories and 5 directions', () => {
@@ -29,6 +29,36 @@ describe('approved public bibliography', () => {
       expect(paper.published_date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
       expect(paper.published_date).toBe(publications.find(p => p.id === paper.arxiv_id).arxivSubmitted)
     }
+  })
+  it('uses real group phenomenology papers for every demo seminar', () => {
+    const expectedPaperIds = ['2508.13276', '2509.23925', '2510.20672', '2506.10673', '2409.17243']
+    expect(DEMO_SEMINARS).toHaveLength(expectedPaperIds.length)
+    for (const [i, seminar] of DEMO_SEMINARS.entries()) {
+      expect(seminar.presentations).toHaveLength(1)
+      expect(seminar.presentations[0].arxiv_id).toBe(expectedPaperIds[i])
+      expect(publications.some(paper => paper.id === expectedPaperIds[i])).toBe(true)
+      expect(seminar.abstract).not.toMatch(/JWST|galaxy|lightcurve|astrophys/i)
+    }
+    expect(DEMO_SEMINARS.slice(0, 3).every(s => s.date > DEMO_BASE_DATE_STR && s.status === 'upcoming')).toBe(true)
+    expect(DEMO_SEMINARS.slice(3).every(s => s.date < DEMO_BASE_DATE_STR && s.status === 'completed')).toBe(true)
+  })
+  it('links the demo library papers to the seminars that actually discuss them', () => {
+    for (const paper of DEMO_LIBRARY_PAPERS) {
+      const seminar = DEMO_SEMINARS.find(s => s.presentations.some(p => p.arxiv_id === paper.arxiv_id))
+      expect(paper.from_seminar).toBe(Boolean(seminar))
+      expect(paper.seminar_id).toBe(seminar?.id ?? null)
+    }
+  })
+  it('provides particle-physics textbooks, authoritative data and HEP tools', () => {
+    const titles = DEMO_BOOKS.map(book => book.title)
+    expect(titles).toContain('Modern Particle Physics')
+    expect(titles).toContain('Quantum Field Theory and the Standard Model')
+    expect(titles).toContain('Review of Particle Physics (2026)')
+    expect(titles).toContain('FeynCalc Documentation')
+    expect(titles).toContain('FeynRules')
+    const categoryNames = DEMO_RESOURCES_CATEGORIES.map(category => category.name)
+    expect(DEMO_BOOKS.every(book => categoryNames.includes(book.category))).toBe(true)
+    expect(DEMO_BOOKS.map(book => book.title).join(' ')).not.toMatch(/JWST|galaxy formation|astrophysics/i)
   })
   it('distinguishes arXiv submission date from journal citation year', () => {
     const paper = publications.find(p => p.id === '2510.20672')
