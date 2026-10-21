@@ -123,6 +123,18 @@ export const THEME_STYLES = [
 
 const COLOR_SCHEME_KEY = 'laborbit_color_scheme'
 const BG_TYPE_KEY = 'laborbit_bg_type'
+export const PUBLIC_COLOR_SCHEME_KEY = 'labhub_public_color_scheme'
+const PUBLIC_COLOR_SCHEME_IDS = new Set(COLOR_SCHEMES.map(({ id }) => id))
+
+function getInitialPublicColorScheme() {
+  try {
+    const saved = localStorage.getItem(PUBLIC_COLOR_SCHEME_KEY)
+    if (PUBLIC_COLOR_SCHEME_IDS.has(saved)) return saved
+  } catch (e) {
+    console.warn('Failed to read public color scheme from localStorage:', e)
+  }
+  return DEFAULT_COLOR_SCHEME
+}
 const LEGACY_STORAGE_KEY = 'laborbit_theme_style'
 export const DEFAULT_MIGRATION_KEY = 'laborbit_default_v20261021_quiet_research'
 export const CUSTOM_COLOR_SCHEME_KEY = 'laborbit_custom_color_scheme'
@@ -597,6 +609,8 @@ function getInitialBgType() {
 
 export const currentColorScheme = ref(getInitialColorScheme())
 export const currentBgType = ref(getInitialBgType())
+// Public-site appearance is persisted separately and never overwrites workspace preferences.
+export const publicColorScheme = ref(getInitialPublicColorScheme())
 
 // 兼容器：保留 currentThemeStyle 响应式对象
 function resolveLegacyTheme(scheme, bg) {
@@ -649,9 +663,10 @@ export function applyThemeToDOM(scheme = currentColorScheme.value, bg = currentB
     if (!bg || bg === 'clouds-static' || bg === 'earth-orbit') actualBg = 'clouds-static'
   }
 
-  // Public routes use the site brand without mutating the saved workspace preference.
+  // Public routes use their own saved palette and keep the quiet paper background.
+  // This state is independent from the signed-in workspace preference.
   if (doc.getAttribute?.('data-public-page') === 'true' || doc.dataset?.publicPage === 'true') {
-    actualScheme = 'quiet-research'
+    actualScheme = publicColorScheme.value
     actualBg = 'paper'
   }
 
@@ -760,6 +775,22 @@ export function useThemeStyle() {
     }
   }
 
+  function setPublicColorScheme(scheme) {
+    if (!PUBLIC_COLOR_SCHEME_IDS.has(scheme)) return
+    publicColorScheme.value = scheme
+    try {
+      localStorage.setItem(PUBLIC_COLOR_SCHEME_KEY, scheme)
+    } catch (e) {
+      console.warn('Failed to save public color scheme to localStorage:', e)
+    }
+    if (typeof document !== 'undefined' && (
+      document.documentElement?.getAttribute?.('data-public-page') === 'true' ||
+      document.documentElement?.dataset?.publicPage === 'true'
+    )) {
+      applyThemeToDOM(currentColorScheme.value, currentBgType.value)
+    }
+  }
+
   function setBgType(bgType) {
     if (bgType !== 'paper' && bgType !== 'galaxy' && bgType !== 'vanta-fog' && bgType !== 'clouds-static' && bgType !== 'custom-local') return
     currentBgType.value = bgType
@@ -793,6 +824,8 @@ export function useThemeStyle() {
   return {
     currentColorScheme,
     currentBgType,
+    publicColorScheme,
+    setPublicColorScheme,
     isBgVideoPaused,
     setBgVideoPaused,
     toggleBgVideoPaused,
