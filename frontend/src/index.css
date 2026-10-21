@@ -3112,14 +3112,14 @@ html[data-bg-style="clouds-static"] body {
   animation-duration: 1.10s;
   animation-delay: .16s;
 }
-/* Pause all shift-specific keyframes until the overlay is present in a rendered frame. */
+/* Disable shift keyframes until the overlay is present in a rendered frame; re-adding them starts at frame zero. */
 .worldline-shift-overlay:not(.is-timeline-active),
 .worldline-shift-overlay:not(.is-timeline-active)::before,
 .worldline-shift-overlay:not(.is-timeline-active)::after,
 .worldline-shift-overlay:not(.is-timeline-active) *,
 .worldline-technical-backdrop.is-shifting:not(.is-timeline-active) .worldline-backdrop-shift-wave,
 .worldline-technical-backdrop.is-shifting:not(.is-timeline-active) .worldline-backdrop-shift-wave * {
-  animation-play-state: paused !important;
+  animation: none !important;
 }
 
 @media (max-width: 639px) {
