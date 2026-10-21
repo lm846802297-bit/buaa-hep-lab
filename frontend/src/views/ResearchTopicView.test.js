@@ -26,7 +26,7 @@ describe('public research topic pages', () => {
       expect(html).toContain(item.label)
       expect(html).toContain(item.heading)
     }
-    expect(html).toContain(`${topic.title} · 目录`)
+    expect(html).toContain('FIELD INDEX')
     expect(html).toContain('非弹性暗物质与核反冲')
     expect(html).toContain('Ωχ h² ≈ 0.12')
     expect(html).toContain('https://lz.lbl.gov/')
