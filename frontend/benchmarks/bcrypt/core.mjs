@@ -11,12 +11,13 @@ export async function runOperation({ cost, bytes, operation }) {
   if (!costs.includes(cost) || !cases.includes(bytes) || !operations.includes(operation)) {
     throw new Error('Unsupported benchmark case')
   }
-  if (operation === 'control') {
-    // Authenticated no-bcrypt request baseline: retains the same validation/response/log path.
-    return { cost, bytes, operation, ok: true }
-  }
+  // Keep synthetic-input preparation identical across control/hash/compare groups.
   const password = passwordFor(bytes)
   const fixture = fixtures[`${cost}:${bytes}`]
+  if (operation === 'control') {
+    // Authenticated no-bcrypt request baseline; all request validation/logging/response work still runs.
+    return { cost, bytes, operation, ok: true }
+  }
   if (operation === 'hash') {
     const hash = await bcrypt.hash(password, cost)
     if (bcrypt.getRounds(hash) !== cost || hash.length !== 60) throw new Error('Invalid generated hash')
