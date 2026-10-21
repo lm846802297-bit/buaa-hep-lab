@@ -86,18 +86,12 @@ try {
   await publicSkinTrigger.click()
   await page.evaluate(() => {
     window.__worldlinePhaseLog = []
-    const capture = () => {
-      const phase = document.querySelector('.worldline-shift-overlay')?.getAttribute('data-phase') || 'idle'
-      const phases = window.__worldlinePhaseLog
-      if (phases[phases.length - 1] !== phase) phases.push(phase)
-    }
-    const observer = new MutationObserver(capture)
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-phase'] })
-    window.__worldlinePhaseObserver = observer
+    window.__worldlinePhaseListener = event => window.__worldlinePhaseLog.push(event.detail)
+    window.addEventListener('worldline:phase', window.__worldlinePhaseListener)
   })
   await publicSkin.selectOption('worldline-console')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await expect(page.locator('.worldline-shift-overlay')).toHaveAttribute('data-phase', 'decay', { timeout: 1800 })
+  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('readout'), null, { timeout: 1200 })
   const technicalBackdrop = page.locator('.worldline-technical-backdrop')
   check(await technicalBackdrop.isVisible(), 'Worldline Console enables the clockwork and scientific-drawing background')
   check(await technicalBackdrop.evaluate(el => el.classList.contains('is-shifting')), 'worldline transition activates the technical backdrop during the event')
@@ -142,7 +136,8 @@ try {
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
   check(!(await technicalBackdrop.evaluate(el => el.classList.contains('is-shifting'))), 'technical backdrop returns to its idle state after the worldline transition')
   const phaseLog = await page.evaluate(() => {
-    window.__worldlinePhaseObserver?.disconnect()
+    if (window.__worldlinePhaseListener) window.removeEventListener('worldline:phase', window.__worldlinePhaseListener)
+    delete window.__worldlinePhaseListener
     return Array.isArray(window.__worldlinePhaseLog) ? window.__worldlinePhaseLog : []
   })
   const expectedPhases = ['ignite', 'propagate', 'disrupt', 'readout', 'decay', 'idle']

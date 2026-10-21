@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { currentColorScheme, publicColorScheme } from '../composables/useThemeStyle'
 
@@ -23,6 +23,7 @@ let animationFrameId = null
 let shiftTimerId = null
 let burstTimerId = null
 let phaseTimerIds = []
+let shiftStartFrameId = null
 let mediaQuery = null
 let resizeHandler = null
 let visibilityHandler = null
@@ -431,8 +432,17 @@ function stopAnimation(clear = true) {
   if (clear) clearCanvas()
 }
 
+function setShiftPhase(phase) {
+  shiftPhase.value = phase
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('worldline:phase', { detail: phase }))
+  }
+}
+
 function clearShiftTimers() {
   if (typeof window === 'undefined') return
+  if (shiftStartFrameId !== null) window.cancelAnimationFrame(shiftStartFrameId)
+  shiftStartFrameId = null
   if (shiftTimerId !== null) window.clearTimeout(shiftTimerId)
   if (burstTimerId !== null) window.clearTimeout(burstTimerId)
   phaseTimerIds.forEach(timerId => window.clearTimeout(timerId))
@@ -444,7 +454,7 @@ function clearShiftTimers() {
 function scheduleShiftPhase(delay, phase) {
   const timerId = window.setTimeout(() => {
     phaseTimerIds = phaseTimerIds.filter(id => id !== timerId)
-    if (mounted && isShifting.value && !reducedMotion.value) shiftPhase.value = phase
+    if (mounted && isShifting.value && !reducedMotion.value) setShiftPhase(phase)
   }, delay)
   phaseTimerIds.push(timerId)
 }
@@ -453,32 +463,43 @@ function triggerShift() {
   if (!mounted || typeof window === 'undefined' || reducedMotion.value) return
   clearShiftTimers()
   shiftKey.value += 1
+  const currentShiftKey = shiftKey.value
   isShifting.value = true
-  shiftPhase.value = 'ignite'
+  setShiftPhase('ignite')
   burstParticles = []
   shockwaves = []
   impactFlashes = []
 
-  // One coordinated 1.32 s sequence: ignition -> propagation -> disruption -> readout -> decay.
-  scheduleShiftPhase(100, 'propagate')
-  scheduleShiftPhase(260, 'disrupt')
-  scheduleShiftPhase(360, 'readout')
-  scheduleShiftPhase(900, 'decay')
+  // Wait for Vue to mount the overlay, then start one coordinated 1.32 s timeline.
+  // This prevents a slow SVG/layout pass from consuming the early phases before they can paint.
+  nextTick(() => {
+    if (!mounted || !isShifting.value || reducedMotion.value || shiftKey.value !== currentShiftKey) return
+    shiftStartFrameId = window.requestAnimationFrame(() => {
+      shiftStartFrameId = null
+      if (!mounted || !isShifting.value || reducedMotion.value || shiftKey.value !== currentShiftKey) return
 
-  burstTimerId = window.setTimeout(() => {
-    burstTimerId = null
-    if (!mounted || !isShifting.value || reducedMotion.value) return
-    createBurst()
-    startAnimation()
-  }, 150)
+      scheduleShiftPhase(100, 'propagate')
+      scheduleShiftPhase(260, 'disrupt')
+      scheduleShiftPhase(360, 'readout')
+      scheduleShiftPhase(900, 'decay')
 
-  shiftTimerId = window.setTimeout(() => {
-    isShifting.value = false
-    shiftPhase.value = 'idle'
-    shiftTimerId = null
-    phaseTimerIds.forEach(timerId => window.clearTimeout(timerId))
-    phaseTimerIds = []
-  }, 1320)
+      burstTimerId = window.setTimeout(() => {
+        burstTimerId = null
+        if (!mounted || !isShifting.value || reducedMotion.value || shiftKey.value !== currentShiftKey) return
+        createBurst()
+        startAnimation()
+      }, 150)
+
+      shiftTimerId = window.setTimeout(() => {
+        isShifting.value = false
+        setShiftPhase('idle')
+        shiftTimerId = null
+        phaseTimerIds.forEach(timerId => window.clearTimeout(timerId))
+        phaseTimerIds = []
+      }, 1320)
+      startAnimation()
+    })
+  })
   startAnimation()
 }
 
@@ -491,7 +512,7 @@ function handleVisibilityChange() {
     pointer.active = false
     clearShiftTimers()
     isShifting.value = false
-    shiftPhase.value = 'idle'
+    setShiftPhase('idle')
     burstParticles = []
     shockwaves = []
     impactFlashes = []
@@ -538,7 +559,7 @@ watch(reducedMotion, reduced => {
     localPulses = []
     clearShiftTimers()
     isShifting.value = false
-    shiftPhase.value = 'idle'
+    setShiftPhase('idle')
     burstParticles = []
     shockwaves = []
     impactFlashes = []
