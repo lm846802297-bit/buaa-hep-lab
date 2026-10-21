@@ -20,19 +20,17 @@ describe('public research topic pages', () => {
     expect(html).toContain(topic.question)
     expect(html).toContain(topic.methods)
     expect(html).toContain(topic.probes)
-    expect(html).toContain('本页导航')
-    expect(html).toContain('核心物理机制与研究对象')
+    for (const item of researchTopicDetails.dark.navigation) {
+      expect(html).toContain(`href="#${item.target}"`)
+      expect(html).toContain(`id="${item.target}"`)
+      expect(html).toContain(item.label)
+      expect(html).toContain(item.heading)
+    }
+    expect(html).toContain(`${topic.title} · 目录`)
     expect(html).toContain('非弹性暗物质与核反冲')
     expect(html).toContain('Ωχ h² ≈ 0.12')
     expect(html).toContain('https://lz.lbl.gov/')
     expect(html).toContain('target="_blank" rel="noopener noreferrer"')
-    expect(html).toContain('从理论模型到可检验结论')
-    expect(html).toContain('关键关系式：公式、含义与适用边界')
-    expect(html).toContain('研究中必须明确的假设与常见误判')
-    expect(html).toContain('如何从导读进入实际研究')
-    expect(html).toContain('关系式与方法的参考依据')
-    expect(html).toContain('结果应该如何判读')
-    expect(html).toContain('本方向常用的专业资源')
     expect(html).toContain('LUX-ZEPLIN (LZ)')
     expect(html).toContain('PandaX')
     expect(html).toContain('不声称独立复现论文计算')
@@ -53,11 +51,24 @@ describe('public research topic pages', () => {
       })
       const html = await renderToString(app)
       expect(html).toContain(topic.title)
+      const navigation = researchTopicDetails[topic.id].navigation
+      expect(navigation).toHaveLength(12)
+      expect(new Set(navigation.map(item => item.target)).size).toBe(navigation.length)
+      const topicTerms = {
+        dark: '候选者与机制',
+        neutrino: '质量与新相互作用',
+        collider: '希格斯与顶夸克',
+        phase: '有效势与泡成核',
+        precision: 'Fisher 信息与自旋',
+      }
+      expect(navigation.some(item => item.label.includes(topicTerms[topic.id]))).toBe(true)
+      for (const item of navigation) {
+        expect(html).toContain(`href="#${item.target}"`)
+        expect(html).toContain(`id="${item.target}"`)
+        expect(html).toContain(item.label)
+        expect(html).toContain(item.heading)
+      }
       expect(html).toContain(researchTopicDetails[topic.id].mechanisms[0].title)
-      expect(html).toContain('从理论模型到可检验结论')
-      expect(html).toContain('关键关系式：公式、含义与适用边界')
-      expect(html).toContain('研究中必须明确的假设与常见误判')
-      expect(html).toContain('本方向常用的专业资源')
       expect(html).toContain('href="#topic-resources"')
     }
   })
