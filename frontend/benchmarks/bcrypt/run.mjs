@@ -42,7 +42,9 @@ if (values.runtime === 'cloudflare') {
     bindings: { BENCHMARK_TOKEN: 'local-workerd-benchmark-token-do-not-use-externally-2026' } }))
   invoke = async params => {
     const response = await mf.dispatchFetch(`http://benchmark.invalid/benchmark?${new URLSearchParams(params)}`, { headers: { Authorization: 'Bearer local-workerd-benchmark-token-do-not-use-externally-2026' } })
-    if (!response.ok || (await response.json()).ok !== true) throw new Error(`Local runtime failure: ${response.status}`)
+    if (!response.ok) throw new Error(`Local runtime failure: ${response.status}`)
+    const result = await response.json()
+    if (result.benchmark !== 'bcrypt-v1' || result.sampleId !== params.sample || result.cost !== Number(params.cost) || result.bytes !== Number(params.bytes) || result.operation !== params.operation || result.ok !== true) throw new Error('Invalid local runtime benchmark response')
   }
 } else {
   invoke = params => runOperation({ cost: Number(params.cost), bytes: Number(params.bytes), operation: params.operation })
