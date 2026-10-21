@@ -2,6 +2,8 @@
 
 ## 逐站、逐页面的功能拆解与可迁移设计方案
 
+> **与本站设计系统的关系：** 本文记录外部物理研究组网站的可观察模式和候选功能，不是本站 UI 规范。本站当前配色、字体、组件、页面布局和交互视觉统一以根目录 `design.md` 的 Quiet Research 规则为准。本文中对白色、海军蓝或其他站点视觉的描述仅用于说明被研究对象，不覆盖本站默认主题；不复制任何机构的商标、Logo 或专属资产。
+
 -   **研究对象：** BUAA HEP Hub（公开官网）与 `/hub` 受保护的组内工作台
 -   **对标站点：** MIT Center for Theoretical Physics -- a Leinweber
     Institute、Kavli IPMU、CERN Theory、DESY Theory Group、Harvard High

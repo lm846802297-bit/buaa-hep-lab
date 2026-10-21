@@ -675,3 +675,50 @@ export const publications = [
     "citation_title": "Challenges for a QCD Axion at the 10 MeV Scale"
   }
 ]
+
+
+// Public profile review date. This is editorial review metadata, not a claim of a complete roster.
+export const publicContentReviewedAt = '2026-10-20'
+
+// Only confirmed public profiles are exposed. Do not add student names, personal contacts,
+// unpublished CV details, or internal member records without explicit approval.
+export const publicPeople = [
+  {
+    id: 'advisor',
+    name: advisorProfile.name,
+    english: advisorProfile.english,
+    groupRole: '课题组导师',
+    institution: advisorProfile.institution,
+    title: advisorProfile.title,
+    field: advisorProfile.field,
+    intro: advisorProfile.intro,
+    topics: advisorProfile.topics,
+    source_url: advisorProfile.source,
+    last_verified_at: '2026-10-20',
+    visibility: 'public',
+  },
+  ...collaborators.map((person, index) => ({
+    id: `academic-guidance-${index + 1}`,
+    name: person.name,
+    english: person.english,
+    groupRole: person.groupRole,
+    institution: person.institution,
+    title: person.title,
+    field: person.field,
+    intro: person.intro,
+    topics: person.topics,
+    source_url: person.source,
+    last_verified_at: '2026-10-20',
+    visibility: 'public',
+  })),
+]
+
+/**
+ * Public event record contract (only records explicitly approved for public release):
+ * id, title, speaker, start_at, end_at (ISO 8601 with offset), timezone,
+ * location, abstract, series_id, visibility='public', status='scheduled'|'cancelled'|'completed',
+ * materials_url?, source_url, last_verified_at.
+ * Keep internal seminar schedules in authenticated APIs; never derive this list from D1.
+ */
+export const publicSeminarSeries = []
+export const publicEvents = []

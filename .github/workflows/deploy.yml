@@ -46,6 +46,14 @@ jobs:
         run: npx --prefix frontend playwright install --with-deps chromium
       - name: Browser smoke checks
         run: node frontend/tests/audit-browser-smoke.mjs
+      - name: Upload Chromium audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-audit-evidence
+          path: frontend/test-results/audit/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Isolated Pages runtime security smoke checks
         run: node scripts/verify-cloudflare.mjs
       - uses: actions/upload-artifact@v4

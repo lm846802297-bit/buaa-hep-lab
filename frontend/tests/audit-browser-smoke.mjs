@@ -2,7 +2,7 @@ import { chromium, expect } from '@playwright/test'
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
 import { readFile, stat, mkdir, writeFile } from 'node:fs/promises'
-import { resolve, extname } from 'node:path'
+import { resolve, extname, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('../dist', import.meta.url))
@@ -10,10 +10,15 @@ const output = resolve(process.env.AUDIT_OUTPUT_DIR || fileURLToPath(new URL('..
 await mkdir(output, { recursive: true })
 const server = createServer(async (req, res) => {
   try {
-    const path = new URL(req.url, 'http://local.invalid').pathname
-    let file = resolve(root, '.' + path)
-    if (!file.startsWith(root)) { res.writeHead(403).end(); return }
-    try { if (!(await stat(file)).isFile()) file = resolve(root, 'index.html') } catch { file = resolve(root, 'index.html') }
+    const pathname = new URL(req.url, 'http://local.invalid').pathname
+    let file = resolve(root, '.' + pathname)
+    if (file !== root && !file.startsWith(root + sep)) { res.writeHead(403).end(); return }
+    try {
+      const info = await stat(file)
+      if (info.isDirectory()) file = resolve(file, 'index.html')
+      else if (!info.isFile()) file = resolve(root, 'index.html')
+    } catch { file = resolve(root, 'index.html') }
+    if (file !== root && !file.startsWith(root + sep)) { res.writeHead(403).end(); return }
     const data = await readFile(file)
     const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.json': 'application/json' }
     res.writeHead(200, { 'Content-Type': types[extname(file)] || 'application/octet-stream' }).end(data)
@@ -95,6 +100,35 @@ try {
   check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'expanded mobile menu fits viewport')
   await page.getByRole('navigation', { name: '官网导航' }).getByRole('link', { name: '物理资源', exact: true }).click()
   check(new URL(page.url()).hash === '#physics-resources' && await page.getByRole('button', { name: '菜单', exact: true }).getAttribute('aria-expanded') === 'false', 'mobile resource navigation reaches its section and closes the menu')
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 })
+    for (const topic of ['dark', 'neutrino', 'collider', 'phase', 'precision']) {
+      await page.goto(`${base}/research/${topic}`, { waitUntil: 'networkidle' })
+      await page.locator('.research-topic-page').waitFor()
+      check(await page.locator('h1').isVisible(), `research topic ${topic} renders at ${width}px`)
+      check(await page.locator('.topic-section').count() === 4, `research topic ${topic} has motivation, methods, observables and papers`)
+      check(await page.locator('.topic-publications a[href^="https://arxiv.org/abs/"]').count() === 2, `research topic ${topic} links its two selected papers`)
+      check(await page.locator('meta[name="robots"]').getAttribute('content') === 'index,follow', `research topic ${topic} is indexable`)
+      check(await page.locator('link[rel="canonical"]').getAttribute('href') === `https://buaa-hep-hub.pages.dev/research/${topic}`, `research topic ${topic} has a route-specific canonical URL`)
+      check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `research topic ${topic} fits ${width}px without horizontal overflow`)
+      if (topic === 'dark') await page.screenshot({ path: resolve(output, `research-topic-dark-${width}.png`), fullPage: true })
+    }
+    await page.goto(`${base}/research/not-a-real-topic`, { waitUntil: 'networkidle' })
+    check(await page.getByRole('heading', { name: '没有找到这个研究专题。' }).isVisible(), `unknown research topic has a recovery state at ${width}px`)
+    await page.goto(`${base}/people`, { waitUntil: 'networkidle' })
+    check(await page.getByRole('heading', { name: '团队与学术指导' }).isVisible(), `public people directory renders at ${width}px`)
+    check(await page.locator('.person-card').count() === 2, 'only the two approved public academic profiles render')
+    check(await page.locator('.person-card a[href^="https://"]').count() === 2, 'public people cards link to official profiles')
+    check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `public people directory fits ${width}px`)
+    if (width === 390 || width === 1440) await page.screenshot({ path: resolve(output, `people-${width}.png`), fullPage: true })
+    await page.goto(`${base}/events`, { waitUntil: 'networkidle' })
+    check(await page.getByRole('heading', { name: '学术活动' }).isVisible(), `public events page renders at ${width}px`)
+    check(await page.getByText('目前没有已核验的近期公开活动。组内内部组会不会自动发布到此页面。').isVisible(), 'no unreviewed or internal seminar records are shown publicly')
+    check(await page.getByRole('button', { name: /下载公开日历/ }).isDisabled(), 'calendar export is disabled until a verified public event exists')
+    check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `public events page fits ${width}px`)
+    if (width === 390 || width === 1440) await page.screenshot({ path: resolve(output, `events-${width}.png`), fullPage: true })
+  }
+  check(!requested.some(url => new URL(url).pathname.startsWith('/api/')), 'public homepage, research, people and events pages never request internal APIs')
   check(errors.length === 0, `no public page runtime errors: ${errors.join('; ')}`)
   await anonymous.close()
 
@@ -104,6 +138,15 @@ try {
   check(await staticPage.locator('a[href="https://arxiv.org/abs/2210.09335"]').count() > 0, 'static HTML includes approved research links')
   check(await staticPage.locator('.research-static article').count() === 5, 'all five detailed research descriptions are readable without JavaScript')
   check(await staticPage.locator('.physics-resource-card a').count() === 9, 'all public resource links work without JavaScript')
+  for (const route of [
+    { path: '/research/dark', heading: '暗物质与暗扇区' },
+    { path: '/people', heading: '团队与学术指导' },
+    { path: '/events', heading: '学术活动' },
+  ]) {
+    await staticPage.goto(base + route.path)
+    check(await staticPage.getByRole('heading', { name: route.heading, exact: true }).isVisible(), `public route ${route.path} renders without JavaScript`)
+    check(await staticPage.locator('link[rel="canonical"]').getAttribute('href') === `https://buaa-hep-hub.pages.dev${route.path}`, `public route ${route.path} has static canonical metadata`)
+  }
   await nojs.close()
 
   const privateContext = await browser.newContext({ viewport: { width: 390, height: 844 } })
@@ -114,6 +157,14 @@ try {
     await privatePage.locator('.app-shell.has-sidebar').waitFor()
     check(await privatePage.locator('meta[name="robots"]').getAttribute('content') === 'noindex,nofollow', `internal route ${route} is noindex`)
     check(await privatePage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${route} fits 390px`)
+  }
+  await privatePage.setViewportSize({ width: 1440, height: 900 })
+  for (const route of ['/hub', '/library', '/seminars']) {
+    await privatePage.goto(base + route + '?demo=1', { waitUntil: 'networkidle' })
+    await privatePage.locator('.app-shell.has-sidebar').waitFor()
+    check(await privatePage.locator('meta[name="robots"]').getAttribute('content') === 'noindex,nofollow', `internal route ${route} is noindex on desktop`)
+    check(await privatePage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${route} fits 1440px`)
+    await privatePage.screenshot({ path: resolve(output, `internal-${route.slice(1)}-1440.png`), fullPage: true })
   }
   check(privateErrors.length === 0, `no internal route runtime errors: ${privateErrors.join('; ')}`)
   // Static, non-confidential learning notes use the existing workspace session.
@@ -169,6 +220,17 @@ try {
   const loggedOut = await browser.newContext()
   const loginPage = await loggedOut.newPage()
   await loginPage.route('**/api/system/status', route => route.fulfill({ json: { initialized: true } }))
+  for (const width of [390, 1440]) {
+    await loginPage.setViewportSize({ width, height: 900 })
+    await loginPage.goto(base + '/login', { waitUntil: 'networkidle' })
+    await loginPage.getByRole('heading', { name: '欢迎登录' }).waitFor()
+    const loginForm = loginPage.locator('form').filter({ hasText: '登录邮箱' })
+    check(await loginForm.locator('input[type="email"]').isVisible(), `login email field renders at ${width}px`)
+    check(await loginForm.locator('input[type="password"]').isVisible(), `login password field renders at ${width}px`)
+    check(await loginPage.locator('meta[name="robots"]').getAttribute('content') === 'noindex,nofollow', `login page is noindex at ${width}px`)
+    check(await loginPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `login page fits ${width}px`)
+    await loginPage.screenshot({ path: resolve(output, `login-${width}.png`), fullPage: true })
+  }
   await loginPage.goto(base + '/hub')
   await loginPage.waitForURL('**/login?redirect=**')
   check(loginPage.url().includes('/login'), 'anonymous workbench access redirects to login')

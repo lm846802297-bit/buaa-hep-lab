@@ -1,73 +1,46 @@
-
 /hub
   X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/login
+/hub/*
   X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/setup
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/account
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/seminars
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
 /library
   X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/arxiv
+/library/*
   X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/resources
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/mailbox
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/notices
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/favorites
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/feedback
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/admin/*
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/assistant
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/quick-share
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
-/style
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
 /learning
   X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
 /learning/*
   X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
-
+/feedback
+  X-Robots-Tag: noindex, nofollow
+/account
+  X-Robots-Tag: noindex, nofollow
+/favorites
+  X-Robots-Tag: noindex, nofollow
+/admin
+  X-Robots-Tag: noindex, nofollow
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+/login
+  X-Robots-Tag: noindex, nofollow
+/arxiv
+  X-Robots-Tag: noindex, nofollow
+/seminars
+  X-Robots-Tag: noindex, nofollow
+/resources
+  X-Robots-Tag: noindex, nofollow
+/mailbox
+  X-Robots-Tag: noindex, nofollow
+/notices
+  X-Robots-Tag: noindex, nofollow
+/quick-share
+  X-Robots-Tag: noindex, nofollow
+/setup
+  X-Robots-Tag: noindex, nofollow
+/assistant
+  X-Robots-Tag: noindex, nofollow
+/assistant/*
+  X-Robots-Tag: noindex, nofollow
+/style
+  X-Robots-Tag: noindex, nofollow
+/style/*
+  X-Robots-Tag: noindex, nofollow

@@ -151,7 +151,7 @@ import { syncHomeGridLayoutFromCloud } from '../composables/useHomeGridEngine'
 import WaveInput from '../components/WaveInput.vue'
 import { useSiteConfig } from '../composables/useSiteConfig'
 
-const { siteConfig } = useSiteConfig()
+const { siteConfig, fetchSiteStatus } = useSiteConfig()
 const router = useRouter()
 const route = useRoute()
 const isRegister = ref(false)
@@ -227,6 +227,7 @@ const handleLogin = async () => {
   try {
     const data = await authApi.login(loginForm.value.email, loginForm.value.password)
     remember(data)
+    await fetchSiteStatus(true)
     await syncHomeGridLayoutFromCloud({ uploadLocalIfCloudEmpty: true }).catch(() => {})
     router.push(route.query.redirect || '/hub')
   } catch (error) {
@@ -248,6 +249,7 @@ const handleRegister = async () => {
       regForm.value.invite_code
     )
     remember(data)
+    await fetchSiteStatus(true)
     await syncHomeGridLayoutFromCloud({ uploadLocalIfCloudEmpty: true }).catch(() => {})
     try {
       localStorage.setItem('laborbit_color_scheme', 'classic-cyan')

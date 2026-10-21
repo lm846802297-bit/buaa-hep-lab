@@ -38,13 +38,20 @@ try {
   check(status.initialized, false, 'empty deployment is not initialized');
   check(status.setup_token_required, true, 'first administrator requires deployment code');
   check(status.max_upload_bytes, 1048576, 'D1-only upload size is advertised');
-  const setup = { admin_name: 'Local verification admin', admin_email: 'local-admin@example.invalid', admin_password: randomBytes(18).toString('hex'), lab_name: 'Local verification lab', lab_short_name: 'TEST', institution: 'Test', invite_code: 'LOCAL-TEST-ONLY', default_location: '' };
+  check(Object.hasOwn(status, 'user_count'), false, 'anonymous status does not expose group size');
+  check(Object.hasOwn(status, 'default_location'), false, 'anonymous status does not expose internal meeting location');
+  const setup = { admin_name: 'Local verification admin', admin_email: 'local-admin@example.invalid', admin_password: randomBytes(18).toString('hex'), lab_name: 'Local verification lab', lab_short_name: 'TEST', institution: 'Test', invite_code: 'LOCAL-TEST-ONLY', default_location: 'Local verification room' };
   check((await post('/system/setup', setup)).status, 403, 'untrusted visitor cannot claim administrator');
-  check((await (await request('/system/status')).json()).user_count, 0, 'failed setup has no side effects');
+  check((await (await request('/system/status')).json()).initialized, false, 'failed setup has no side effects');
   const created = await post('/system/setup', { ...setup, setup_token: setupToken });
   assert.equal(created.status, 200, await created.clone().text()); count++;
   const admin = await created.json();
   check(admin.user.role, 'admin', 'owner receives admin role');
+  const publicStatus = await (await request('/system/status')).json();
+  check(Object.hasOwn(publicStatus, 'user_count'), false, 'initialized public status does not expose group size');
+  check(Object.hasOwn(publicStatus, 'default_location'), false, 'initialized public status does not expose internal meeting location');
+  const adminStatus = await (await request('/system/status', { headers: { Authorization: `Bearer ${admin.access_token}` } })).json();
+  check(adminStatus.default_location, 'Local verification room', 'authenticated status retains the configured default location');
   check((await post('/system/setup', { ...setup, setup_token: setupToken })).status, 400, 'initialization cannot repeat');
   check((await request('/auth/me')).status, 401, 'anonymous requests are rejected');
   check((await request('/auth/me', { headers: { Authorization: `Bearer ${admin.access_token}` } })).status, 200, 'issued token works on protected endpoints');
@@ -107,6 +114,7 @@ try {
   check(Number(blocked.headers.get('Retry-After')) > 0, true, 'throttle includes Retry-After');
   status = await (await request('/system/status')).json();
   check(status.initialized, true, 'successful setup persists');
+  check(Object.hasOwn(status, 'user_count'), false, 'final public status still omits group size');
   console.log(`Cloudflare runtime verification: ${count} checks passed (ephemeral local database, no R2).`);
 } finally { await mf.dispose(); }
 

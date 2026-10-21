@@ -21,29 +21,38 @@ describe('useSiteConfig Composable', () => {
     expect(siteConfig.defaultLocation).toBeDefined()
   })
 
-  it('fetches site status and updates reactive state accordingly', async () => {
+  it('updates branding from the public status response without assuming private fields are public', async () => {
     systemApi.getStatus.mockResolvedValueOnce({
       initialized: true,
-      user_count: 5,
       lab_name: '量子信息与计算实验室',
       lab_short_name: 'QICLab',
       site_slogan: '连接物理与代码的桥梁',
       site_title: 'QICLab-Hub',
       institution: '前沿交叉科学研究院',
-      default_location: '理化大楼 1801',
     })
 
     const { siteConfig, fetchSiteStatus } = useSiteConfig()
     await fetchSiteStatus(true)
 
     expect(siteConfig.initialized).toBe(true)
-    expect(siteConfig.userCount).toBe(5)
+    expect(siteConfig.userCount).toBe(0)
     expect(siteConfig.labName).toBe('量子信息与计算实验室')
     expect(siteConfig.labShortName).toBe('QICLab')
     expect(siteConfig.siteSlogan).toBe('连接物理与代码的桥梁')
     expect(siteConfig.institution).toBe('前沿交叉科学研究院')
-    expect(siteConfig.defaultLocation).toBe('理化大楼 1801')
+    expect(siteConfig.defaultLocation).toBe('研讨室 / 腾讯会议')
     expect(siteConfig.loaded).toBe(true)
+  })
+
+  it('accepts a default location only when the server includes it for an authenticated session', async () => {
+    systemApi.getStatus.mockResolvedValueOnce({
+      initialized: true,
+      default_location: '理化大楼 1801',
+    })
+
+    const { siteConfig, fetchSiteStatus } = useSiteConfig()
+    await fetchSiteStatus(true)
+    expect(siteConfig.defaultLocation).toBe('理化大楼 1801')
   })
 
   it('allows manual updating of local config dynamically', () => {

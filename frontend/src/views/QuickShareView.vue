@@ -13,7 +13,7 @@ import WaveInput from '../components/WaveInput.vue'
 import SpottyHorseButton from '../components/SpottyHorseButton.vue'
 import { useSiteConfig } from '../composables/useSiteConfig'
 
-const { siteConfig } = useSiteConfig()
+const { siteConfig, fetchSiteStatus } = useSiteConfig()
 const route = useRoute()
 const isLoggedIn = ref(false), checking = ref(true), loginEmail = ref(''), loginPw = ref(''), loggingIn = ref(false)
 const loading = ref(false), errorMsg = ref(''), loginError = ref(''), submitError = ref(''), preview = ref(null), comment = ref(''), submitting = ref(false), success = ref(false)
@@ -41,7 +41,7 @@ async function handleQuickLogin() {
   try {
     const data = await authApi.login(loginEmail.value, loginPw.value)
     localStorage.setItem('laborbit_token', data.access_token); localStorage.setItem('laborbit_user', JSON.stringify(data.user))
-    isLoggedIn.value = true; loginPw.value = ''; await fetchPaper()
+    isLoggedIn.value = true; loginPw.value = ''; await fetchSiteStatus(true); await fetchPaper()
   } catch (error) { loginError.value = `登录失败：${error.message}` }
   finally { loggingIn.value = false }
 }
