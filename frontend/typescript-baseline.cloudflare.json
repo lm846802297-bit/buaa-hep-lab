@@ -1,8 +1,9 @@
 {
   "compilerVersion": "5.9.3",
   "sourceBaselineSha": "1bd3a5ed3839c331358392a90d3e06311c5563d1",
-  "purpose": "Reviewed diagnostics present when the Cloudflare Pages Functions typecheck was first introduced. New diagnostics must fail CI; known entries remain visible and should be reduced over time.",
-  "diagnostics": [
+  "purpose": "All 19 diagnostics found when this check was introduced were fixed and verified on resolvedAtSha. The active diagnostics list is intentionally empty; any new diagnostic must fail CI.",
+  "diagnostics": [],
+  "resolvedDiagnostics": [
     {
       "file": "functions/api/routes/arxiv.ts",
       "line": 135,
@@ -136,5 +137,6 @@
       "code": "TS2345",
       "message": "Argument of type '{ secureTransport: string; }' is not assignable to parameter of type 'SocketOptions'."
     }
-  ]
+  ],
+  "resolvedAtSha": "19060a241f4275369bd35b1fdcb267752754d7e7"
 }
