@@ -1,6 +1,6 @@
 # SEC-04：bcrypt cost 6 / 7 / 8 基准与生产评估边界
 
-日期：2026-10-21，Asia/Shanghai。**历史 Node/workerd 基准已完成，但其原始记录对应旧的基准 Worker 源码；本 PR 增加了 fail-closed 的访问令牌检查，CI 会在当前精确 SHA 上重新运行本地基准并上传证据。Cloudflare production 的 bcrypt 调用级 CPU 仍未测；生产 cost 保持 6。**
+日期：2026-10-21，Asia/Shanghai。**当前受令牌保护的基准 Worker 已通过最新本地 CI，精确 run、artifact、源码 SHA 与结果见下文。Cloudflare production 的 bcrypt 调用级 CPU 仍未测；生产 cost 保持 6。历史 Windows 数据只作为旧基线，不与当前 CI 运行时直接比较。**
 
 ## 可复现方法
 
@@ -61,33 +61,33 @@ node frontend/benchmarks/bcrypt/run.mjs --runtime workerd --samples 50 --warmup 
 | workerd | 72 | compare-mismatch | 7 | 7.047 | 7.452 | 7.900 |
 | workerd | 72 | compare-mismatch | 8 | 13.014 | 13.718 | 14.639 |
 
-## 当前基准代码版本的 CI 证据（2026-10-21）
+## 当前基准代码的最新 CI 证据（2026-10-21）
 
-- 测量代码的 PR head：393bc647358312716363dbf46a2d86be4e9d1f5e；base：fb287b4fac1a7c45e02ee3d1e276ebdabf476269。
-- [GitHub Actions run 39539889039](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39539889039) 已完成：validate=success，deploy=skipped。新增的 Wrangler bundle dry-run 也通过，未执行部署。
-- Artifact：bcrypt-local-evidence，ID 12319566248（从上述 Actions run 页面下载）。包含 node.json 与 workerd.json；每份均有 1,320 行：1,200 个测量样本、120 次预热、24 个分组、0 次失败。artifact 保留期为 90 天。
-- 两份报告的 environment.revision 均为 16234844d352b25a1237023db23804831db21cb0，是 base 与测量 head 的合并测试提交（父提交分别为 fb287b4fac1a7c45e02ee3d1e276ebdabf476269 与 393bc647358312716363dbf46a2d86be4e9d1f5e），不是分支 head。
-- 当前 CI runner：Linux x64、AMD EPYC 9V45、2 个逻辑 CPU、Node v24.22.0、bcryptjs 3.0.3、Wrangler 4.131.0、workerd 1.20260910.1；兼容日期 2026-09-17，nodejs_compat。
-- 源码 SHA-256（UTF-8 文本，换行统一为 LF）：core.mjs=ed47f24cc7b024cc2864b76920644329993a0a0582fd2579a3fb639477e1f774；fixtures.json=ac02d2fd5379fc83260564c0cbdffacc43dc914d32a73917b5e9519fcd1d3cf5；worker.mjs=34a45efc858c82b92fb395b515d410dadc1b0540f199ee4c36b33f9f1a83727b；run.mjs=0b09542bdccbdaf8ce36437d659ca81b4c659301cffdecb786833382767b33cb；wrangler.jsonc=469258fa7de68b56e464e4e1a0821bd3479673f36905f2f97e5601819ee48e5b；frontend/package-lock.json=6343f35eeaecf50c73e99bd56ec19e5dcfd16dc68c88a2fb0a501099ba6e44f8。
+- [GitHub Actions run 39540579851](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39540579851) 已完成：\`validate=success\`、\`deploy=skipped\`。Wrangler bundle \`--dry-run\`、测试、构建与本地基准均通过；未部署 Worker 或生产。
+- 测量时的 PR head：\`dbdaf51408dd02e060c4bf6b233e2095c4aa388d\`。PR API 的 base SHA 字段为 \`fb287b4fac1a7c45e02ee3d1e276ebdabf476269\`；但该次 Actions merge-test commit \`5349e9664654f56e5d08675ea06d6203d8cd0e35\` 的父提交是当前 \`refs/heads/main=51c0eba7607e92a4788cec9da867fe1396233598\` 与上述 PR head。审计中同时保留 PR API base 字段与实际 merge-test 父提交，不把它们混为一谈。
+- Artifact：\`bcrypt-local-evidence\`，ID \`12318789589\`，保留至 2027-01-19（90 天）。包含 \`node.json\` 与 \`workerd.json\`；每份 1,320 行：1,200 个测量样本、120 次预热、24 个分组、0 次失败。
+- 两份报告的 \`environment.revision\` 均为 \`5349e9664654f56e5d08675ea06d6203d8cd0e35\`，是 GitHub Actions 的合并测试提交，不是 PR 分支 head。后续文档更新不改变下列基准代码文件；源 SHA 用于确认数据对应的实际执行代码。
+- Runner：Linux x64、AMD EPYC 9V74、2 个逻辑 CPU、Node v24.22.0、bcryptjs 3.0.3、Wrangler 4.131.0、workerd 1.20260910.1；兼容日期 2026-09-17，\`nodejs_compat\`。
+- 源码 SHA-256（UTF-8，换行统一为 LF）：\`core.mjs\` = \`ed47f24cc7b024cc2864b76920644329993a0a0582fd2579a3fb639477e1f774\`；\`fixtures.json\` = \`ac02d2fd5379fc83260564c0cbdffacc43dc914d32a73917b5e9519fcd1d3cf5\`；\`worker.mjs\` = \`34a45efc858c82b92fb395b515d410dadc1b0540f199ee4c36b33f9f1a83727b\`；\`run.mjs\` = \`2b42e0cc4a9a44619cf7952d6c40b93500876bd1e578e0a5e5c0e9d7543dabe1\`；\`wrangler.jsonc\` = \`469258fa7de68b56e464e4e1a0821bd3479673f36905f2f97e5601819ee48e5b\`；\`frontend/package-lock.json\` = \`6343f35eeaecf50c73e99bd56ec19e5dcfd16dc68c88a2fb0a501099ba6e44f8\`.
 
-下表来自当前基准代码的 CI artifact。每个分组 n=50；每个 cost 单元按“12 字节输入 p50/p95；72 字节输入 p50/p95”列出，单位 ms。p99 没有列出，因为 n=50 时 nearest-rank p99 就等于最大值，尾部估计不稳定。
+下表来自上述 artifact。每组 n=50；每个 cost 单元按“12 字节输入 p50/p95；72 字节输入 p50/p95”列出，单位 ms。n=50 时 nearest-rank p99 等于最大值，尾部估计不稳定，因此不列 p99。
 
 | Runtime | 操作 | cost 6：12B；72B | cost 7：12B；72B | cost 8：12B；72B |
 |---|---|---:|---:|---:|
-| Node | control | 0.077/0.237；0.058/0.255 | 0.074/0.248；0.074/0.223 | 0.074/0.318；0.059/0.217 |
-| Node | hash | 3.842/4.474；3.846/4.778 | 7.316/7.713；7.288/7.834 | 14.249/15.745；14.205/15.875 |
-| Node | compare-match | 3.837/4.221；3.836/4.998 | 7.301/8.065；7.282/7.704 | 14.258/16.848；14.205/16.262 |
-| Node | compare-mismatch | 3.826/4.377；3.835/4.255 | 7.273/9.021；7.287/8.061 | 14.201/14.802；14.225/15.576 |
-| workerd | control | 1.870/2.727；1.806/3.494 | 1.899/3.595；1.766/3.097 | 1.797/4.202；1.774/3.308 |
-| workerd | hash | 6.306/8.625；6.155/8.028 | 10.076/13.472；10.225/12.435 | 17.548/21.976；17.663/21.562 |
-| workerd | compare-match | 6.417/7.874；6.427/10.911 | 10.117/16.131；10.255/12.950 | 17.594/20.914；17.565/20.113 |
-| workerd | compare-mismatch | 6.316/7.450；6.518/8.395 | 10.178/11.902；10.206/12.915 | 17.465/21.612；17.615/20.070 |
+| Node | control | 0.077/0.186；0.084/0.220 | 0.089/0.245；0.080/0.196 | 0.078/0.192；0.076/0.210 |
+| Node | hash | 4.842/5.363；4.847/5.262 | 9.281/10.146；9.250/9.599 | 18.248/19.566；18.217/19.060 |
+| Node | compare-match | 4.787/5.087；4.778/5.154 | 9.282/9.958；9.218/9.813 | 18.181/18.924；18.215/19.556 |
+| Node | compare-mismatch | 4.791/5.168；4.776/5.298 | 9.220/9.560；9.251/9.981 | 18.179/18.820；18.154/18.867 |
+| workerd | control | 1.463/2.536；1.375/2.795 | 1.371/2.138；1.386/1.965 | 1.415/2.958；1.394/2.940 |
+| workerd | hash | 6.722/7.588；6.294/8.127 | 10.724/13.457；10.909/13.847 | 20.339/24.855；20.334/25.001 |
+| workerd | compare-match | 6.253/8.154；6.377/7.934 | 11.023/13.459；10.729/12.741 | 20.223/24.093；20.409/24.280 |
+| workerd | compare-mismatch | 6.257/7.870；6.595/8.081 | 10.923/13.537；11.037/14.658 | 20.516/24.821；20.197/24.067 |
 
 **结果解释：**
-- Node 的 process.cpuUsage 原始记录中，hash 的 CPU p50 约为 cost 6：3.85 ms、cost 7：7.32 ms、cost 8：14.25 ms；control 约为 0.06–0.08 ms。它是当前 CI Node 进程的 CPU，不是 Cloudflare CPU。
-- workerd 的 control wall p50 约为 1.77–1.90 ms；hash/compare 的 wall p50 约为 cost 6：6.15–6.52 ms、cost 7：10.08–10.26 ms、cost 8：17.46–17.66 ms。它包含 dispatchFetch、本地调度、IPC、序列化与响应解析，不能当作 CPU。
-- control 组与 bcrypt 组使用同一 Worker fetch 路径；control 还执行相同的合成输入准备、fixture 查找、参数验证、起始日志与响应构造，只跳过 bcrypt 运算。起始日志在 bcrypt 前写出，便于追踪可能因 CPU 限额而中断的请求。
-- 这些数据支持一个有限结论：在此 CI runner 上，cost 从 6 升至 7 或 8 会显著增加计算开销；它们不能证明 Cloudflare 生产 CPU 预算充足，也不能据此决定调高 cost。生产 cost 继续保持 6，直到线上调用级 CPU 与完整认证路径证据齐备。
+- Node 的 \`process.cpuUsage\` 原始记录中，hash 的 CPU p50 约为 cost 6：4.84 ms、cost 7：9.27 ms、cost 8：18.22 ms；control 约为 0.08–0.09 ms。这是 CI Node 进程 CPU，不是 Cloudflare CPU。
+- workerd 的 control wall p50 约为 1.37–1.69 ms；hash/compare 的 wall p50 约为 cost 6：6.29–6.72 ms、cost 7：10.72–11.16 ms、cost 8：20.20–20.72 ms。它包含 dispatchFetch、本地调度、IPC、序列化和响应解析，不能当作 CPU。
+- Node 与 workerd 现在都通过同一 Worker fetch/auth/参数校验/日志/响应路径；control 与 bcrypt 组使用相同的合成输入准备和 fixture 查找，control 只跳过 bcrypt。样本关联日志在 bcrypt 前写出。
+- CI runner 硬件在相邻运行间发生变化，绝对毫秒数可能随机器而变。当前数据仅说明此 runner 上 cost 增大显著增加计算开销；不能证明 Cloudflare CPU 预算充足，也不能据此提高生产 cost。
 
 ### 当前 Pages 认证路径盘点
 
@@ -97,6 +97,7 @@ node frontend/benchmarks/bcrypt/run.mjs --runtime workerd --samples 50 --warmup 
 - POST /auth/register：校验密码与邀请码、查询邮箱后执行 bcrypt.hash(password, 6)，随后写入 D1 并处理关联记录。
 - PUT /account/credentials：先对 current_password 执行 bcrypt.compare；如果提交 new_password，则校验后执行 bcrypt.hash(new_password, 6)，更新邮箱/哈希/token_version 并签发新 token。该路径使用 protectAuthAttempts('credentials')。
 - 管理员 POST /auth/members：执行 bcrypt.hash(password, 6) 后创建账号。
+- `frontend/functions/api/routes/system.ts` 的首次 `POST /setup`：只有在系统尚无用户且 `SETUP_TOKEN` 有效时，才对首个管理员密码执行 `bcrypt.hash(..., 6)`；这是一次性初始化路径，不属于日常登录，但属于完整的源码调用点清单。
 
 frontend/tests/security.test.ts 已有基于 SQLite 的 D1 适配器测试，覆盖凭据更新、token_version 失效和认证限速等功能；这些是功能/安全回归，不是 Cloudflare CPU 基准，也不等于生产完整路径的 CPU 验收。旧 FastAPI backend 使用独立的 Python bcrypt 实现，未包含在当前 Pages 发布工作流中；除非有独立生产部署证据，不应将它与 Pages 运行数据混合。
 
@@ -109,7 +110,7 @@ frontend/tests/security.test.ts 已有基于 SQLite 的 D1 适配器测试，覆
 - 不在 Worker 内用 `Date.now()` / `performance.now()` 测纯计算：线上计时器只随 I/O 推进，可能得到 0。参见 [Cloudflare timers](https://developers.cloudflare.com/workers/runtime-apis/performance/)。
 - 2026-10-20 的 Cloudflare Pages production dashboard 快照记录了过去 24h 聚合 CPU 数据（早于 main 部署 run 39529826480）：2,058 次成功 invocation、0 错误、25 子请求、0 CPU 超限；CPU P50 2.209 ms、P75 2.854 ms、P99 11.222 ms、P99.9 23.375 ms。此数据包含该 Pages 项目的所有 Functions 调用，未按路由、操作、cost 分类；样本数是总 invocation 数，不是每个分位数对应的 bcrypt 样本量。不能把聚合 P99 当成 cost 6，也不能把它用于预测 cost 7/8。
 - 未测生产套餐、CPU 限额、Cloudflare 硬件/地区、冷启动、并发、D1 延迟及完整登录/注册/改密路径。每环境仅单次批次，不能推断真实用户分布或 CPU 额度余量；CI 测量同样只提供当地 runner 的结果。
-- Cloudflare 当前公开的 [Workers limits 文档](https://developers.cloudflare.com/workers/platform/limits/)列出 Workers Free 每次 HTTP 请求 10 ms CPU 限额，Workers Paid 默认 30 秒（可配置）；本项目实际账户套餐与该 Worker 的有效限额尚未核实。若实际使用 Free 计划，cost 7/8 的线上基准可能出现 CPU 超限；应将超限记录为测量结果，不反复重试或据本地 wall time 推断。
+- Cloudflare 官方 [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) 文档列出 Workers Free 每次 HTTP 请求 10 ms CPU 限额；Workers Paid 默认 30 秒，可按配置提高，最高 5 分钟。Pages Functions 计费按 Workers 规则处理（见 [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/)）。本项目实际账户套餐与该 Worker 的有效限额尚未核实。若实际使用 Free 计划，cost 7/8 的线上基准可能出现 CPU 超限；应将超限记录为测量结果，不反复重试，也不能据本地 wall time 推断。
 - Node 单次 CPU 和本地 workerd 耗时均不能证明 cost 6/7/8 满足生产预算。**不据此调高生产 cost，也不宣称当前 cost 已经通过生产成本评估。** 成本强度与 CPU 预算之间的最终取舍需维护者依据生产等效数据记录批准理由。
 
 ## 可追溯的基准与 CI 证据
@@ -142,12 +143,36 @@ node node_modules/wrangler/bin/wrangler.js secret put BENCHMARK_TOKEN --config b
 ```powershell
 $secure = Read-Host "Enter BENCHMARK_TOKEN" -AsSecureString
 $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-try { $env:BENCHMARK_TOKEN = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) } finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
-node benchmarks/bcrypt/run.mjs --runtime cloudflare --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 50 --warmup 5 --out cloudflare-benchmark.json
-Remove-Item Env:BENCHMARK_TOKEN
+try {
+  $env:BENCHMARK_TOKEN = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
+} finally {
+  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+}
+try {
+  node benchmarks/bcrypt/run.mjs --runtime cloudflare --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 1 --warmup 1 --out cloudflare-pilot.json
+  if ($LASTEXITCODE -ne 0) { throw "Pilot recorded failures; inspect cloudflare-pilot.json and stop before a full run." }
+} finally {
+  Remove-Item Env:BENCHMARK_TOKEN -ErrorAction SilentlyContinue
+  if ($secure) { $secure.Dispose() }
+}
 ```
 
-将 `ACCOUNT` 替换为 Cloudflare 返回的实际账户子域。只使用自己创建并确认所有权的 Worker URL；URL 限制只是防止误用，不是对域名所有权的认证。runner 通过 HTTPS 的 Authorization header 发送 token，不会将 token 写入输出 JSON。命令返回的 wall/RTT 包含网络开销，**不能直接当作 Worker CPU**。
+将 `ACCOUNT` 替换为 Cloudflare 返回的实际账户子域。
+
+只有在 pilot 的 48 个请求均无失败、Cloudflare invocation log 能按 sample ID 关联 CPU、且已确认套餐/限额后，才执行完整扫描。重新安全输入 token（使用上面的 SecureString 模式），再运行：
+
+\`\`\`powershell
+try {
+  node benchmarks/bcrypt/run.mjs --runtime cloudflare --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 50 --warmup 5 --out cloudflare-benchmark.json
+  if ($LASTEXITCODE -ne 0) { throw "Full run recorded failures; preserve the JSON and investigate rather than retrying blindly." }
+} finally {
+  Remove-Item Env:BENCHMARK_TOKEN -ErrorAction SilentlyContinue
+  if ($secure) { $secure.Dispose() }
+}
+\`\`\`
+
+Cloudflare 默认参数现为 pilot（1 次测量 + 1 次预热）；完整模式必须显式指定 \`--samples 50 --warmup 5\`。完整模式总计 1,320 次请求，若 Free CPU 限额导致 cost 7/8 超限，应保留失败证据并停止，不要循环重试。
+只使用自己创建并确认所有权的 Worker URL；URL 限制只是防止误用，不是对域名所有权的认证。runner 通过 HTTPS 的 Authorization header 发送 token，不会将 token 写入输出 JSON。命令返回的 wall/RTT 包含网络开销，**不能直接当作 Worker CPU**。
 
 Cloudflare invocation CPU 是整个 Worker 请求的 CPU 总量，包含 URL/令牌校验、bcrypt、日志与 JSON 响应开销，不是纯 bcrypt 指令时间。若要估计哈希的增量成本，应同时测量相同 Worker 的受保护 no-op/control 基线；否则把结果明确标记为“每次基准 invocation CPU”，不要称作纯 bcrypt CPU。
 
