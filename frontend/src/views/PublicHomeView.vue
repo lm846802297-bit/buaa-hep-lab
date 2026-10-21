@@ -55,7 +55,7 @@ function downloadBibtex() {
       </a>
       <button class="menu-toggle button secondary" :aria-expanded="menuOpen" aria-controls="public-navigation" @click="menuOpen = !menuOpen">{{ menuOpen ? '关闭菜单' : '菜单' }}</button>
       <nav id="public-navigation" :class="{ open: menuOpen }" aria-label="官网导航">
-        <a href="#research" @click="menuOpen = false">研究方向</a><a href="#publications" @click="menuOpen = false">代表成果</a><a href="#physics-resources" @click="menuOpen = false">物理资源</a><a href="#about" @click="menuOpen = false">关于我们</a>
+        <a href="#research" @click="menuOpen = false">研究方向</a><a href="#research-guides" @click="menuOpen = false">专题导读</a><a href="#publications" @click="menuOpen = false">代表成果</a><a href="#physics-resources" @click="menuOpen = false">物理资源</a><a href="#about" @click="menuOpen = false">关于我们</a>
         <router-link to="/people" @click="menuOpen = false">团队</router-link><router-link to="/events" @click="menuOpen = false">学术活动</router-link>
         <router-link class="nav-hub" to="/hub">组内协作 <span aria-hidden="true">↗</span></router-link>
       </nav>
@@ -67,7 +67,7 @@ function downloadBibtex() {
         <div class="hero-eyebrow"><span class="status-dot"></span> {{ lab.english }}</div>
         <h1>从微观粒子，<br>探寻<span>物理的新边界。</span></h1>
         <p class="hero-intro">{{ lab.intro }}</p>
-        <div class="hero-actions"><a href="#research" class="button primary">探索研究方向 <span aria-hidden="true">↗</span></a><a href="#publications" class="button ghost">阅读代表论文 <span aria-hidden="true">↓</span></a></div>
+        <div class="hero-actions"><a href="#research" class="button primary">探索研究方向 <span aria-hidden="true">↗</span></a><a href="#research-guides" class="button secondary">专题导读 <span aria-hidden="true">↓</span></a><a href="#publications" class="button ghost">阅读代表论文 <span aria-hidden="true">↓</span></a></div>
         <div class="hero-affiliation"><span>BEIHANG UNIVERSITY</span><span>{{ lab.name }} <small v-if="lab.provisional">/ 暂定名称</small></span></div>
       </div>
       <figure class="collision-figure">
@@ -96,9 +96,12 @@ function downloadBibtex() {
           <dl class="research-explainer"><div><dt>研究问题</dt><dd>{{ activeDirection.question }}</dd></div><div><dt>主要方法</dt><dd>{{ activeDirection.methods }}</dd></div><div><dt>实验联系</dt><dd>{{ activeDirection.probes }}</dd></div></dl>
           <p class="research-scope">{{ activeDirection.detail }}</p>
           <div class="topic-tags"><span v-for="tag in activeDirection.tags" :key="tag">{{ tag }}</span></div>
+          <router-link class="topic-guide-entry" :to="`/research/${activeDirection.id}`" :aria-label="`阅读${activeDirection.title}专题导读`">
+            <div><span>RESEARCH GUIDE / 深入阅读</span><strong>进入{{ activeDirection.title }}专题导读</strong><small>关键关系式 · 适用条件 · 分析流程 · 专业资源</small></div>
+            <span class="topic-guide-arrow" aria-hidden="true">↗</span>
+          </router-link>
           <div class="research-evidence"><h4>相关研究选读</h4><ul><li v-for="paper in relatedResearchPapers" :key="paper.id"><a :href="paper.source_url" target="_blank" rel="noopener noreferrer">{{ paper.title }} <span aria-hidden="true">↗</span></a><small>arXiv:{{ paper.id }}</small></li></ul></div>
           <button class="button secondary related-papers" @click="showRelatedPapers(activeDirection.id)">查看相关论文 <span aria-hidden="true">↓</span></button>
-          <router-link class="button ghost topic-detail-link" :to="`/research/${activeDirection.id}`">阅读专题详情 <span aria-hidden="true">↗</span></router-link>
         </article>
       </div>
       <noscript><div class="research-static"><h3>全部研究方向</h3><article v-for="direction in directions" :key="direction.id"><h4>{{ direction.title }}</h4><p>{{ direction.text }}</p><dl><dt>研究问题</dt><dd>{{ direction.question }}</dd><dt>主要方法</dt><dd>{{ direction.methods }}</dd><dt>实验联系</dt><dd>{{ direction.probes }}</dd></dl><p>{{ direction.detail }}</p></article></div></noscript>
