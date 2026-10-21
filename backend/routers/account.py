@@ -25,6 +25,15 @@ class ProfileInput(BaseModel):
     real_name: str = Field('', max_length=100)
     nickname: str = Field('', max_length=50)
 
+    @field_validator('real_name')
+    @classmethod
+    def non_blank_real_name_when_provided(cls, value):
+        # The field may be omitted for a partial profile update, but an explicitly
+        # supplied whitespace-only value must not silently overwrite the profile.
+        if not value:
+            raise ValueError('真实姓名不能为空')
+        return value
+
 
 @router.put('/profile', response_model=UserOut)
 def profile(body: ProfileInput, user=Depends(get_current_user), db: Session = Depends(get_db)):
