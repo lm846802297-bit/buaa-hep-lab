@@ -1,0 +1,12 @@
+---
+trigger: always_on
+description: Mandatory BUAA HEP repository and parallel-development rules for all tasks
+---
+
+# Mandatory repository instructions
+
+Before editing, read `AGENTS.md`, `docs/PARALLEL_DEVELOPMENT_WORKFLOW.md`, and for implementation work `.agents/skills/vibe-coding-lab-orbit/SKILL.md`.
+
+Before any source-file write, list every planned repository-relative path and run `node scripts/agent-preflight.mjs --paths <path1> <path2> ...`. If it fails, the branch is stale, or any open PR shares a planned path, stop before editing. Coordinate ownership or choose non-overlapping work. Do not use `--allow-overlap` or `--allow-stale-base` unless the user explicitly authorizes the exception. If `gh` CLI is unavailable, perform the equivalent read-only GitHub check and record base SHA, open PR HEAD SHAs, and changed-file lists.
+
+Use a dedicated task branch and PR; never push directly to `main`. Validate current HEAD SHA. Do not deploy or write to production resources without explicit user authorization. `AGENTS.md` is the source of truth.
