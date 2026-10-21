@@ -13,6 +13,13 @@ description: >-
 
 本 Skill 为开发者和 AI Agent（如 Antigravity, Claude Code, Cursor, Windsurf, Codex 等）提供利用 **Vibe-Coding（人类主导需求与交互审美 + AI 执行全栈代码研发）** 高效定制、二次开发与课题组迁移的完整标准作业程序（SOP）。
 
+## 仓库协作与安全前置要求（优先级高于本 Skill 的历史示例）
+
+- 本仓库的统一规则入口是根目录 `AGENTS.md` 与 `docs/PARALLEL_DEVELOPMENT_WORKFLOW.md`；不同工具的项目指令文件只做入口适配，不得复制出相互矛盾的流程。
+- 在任何代码写入前，先明确计划修改的路径并执行 `node scripts/agent-preflight.mjs --paths <path1> <path2> ...`。预检失败或报告开放 PR 路径交集时必须停止写入并协调；覆盖选项只能在用户明确授权后使用。若没有 `gh` CLI，完成等价的只读 GitHub 检查并记录证据。
+- 未经用户明确授权，不执行生产部署、远程 D1 写入/迁移或其他会改变生产数据与资源的操作。远程资源名称以当前 `frontend/wrangler.json` 为准，本文的历史示例不是可直接执行的生产操作指令。
+- 测试套件数量会变化；验收依据是当前 HEAD 的实际测试结果与 CI，而不是本文或历史记录中的固定数量。
+
 ---
 
 ## 快速导航
@@ -367,7 +374,7 @@ Vibe-Coding 的核心是“大胆重构，严格测试”。任何代码交付�
 ```bash
 npm --prefix frontend test
 ```
-- **合格基准**：57 个测试套件、369+ 个单元测试必须 **100% 全部通过 (Zero Failures)**；
+- **合格基准**：当前 HEAD 上实际发现的测试套件与测试必须全部通过（Zero Failures）；不要把历史套件/测试数量写成固定门槛。PR 的最终验证以该 HEAD 对应的 GitHub Actions 结果为准。
 - 若修改了界面文案或数据结构，必须同步更新对应的 `*.test.js` 文件。
 
 ### 2. 静态构建与 Pages 生产打包检查
