@@ -338,6 +338,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 .topic-visual-panel::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(90deg,rgba(4,14,22,.08),transparent 45%,rgba(4,14,22,.18)); }
 .topic-visual-panel img { display:block; width:100%; height:100%; object-fit:cover; object-position:center; }
 .topic-visual-panel figcaption { position:absolute; right:12px; bottom:10px; z-index:1; padding:5px 8px; border:1px solid rgba(160,220,232,.24); border-radius:6px; background:rgba(3,13,21,.72); color:#d2e8ec; font-size:10px; letter-spacing:.04em; }
+.topic-visual-labels { display:none; }
 .topic-reading-layout { display:grid; grid-template-columns:220px minmax(0,1fr); align-items:start; gap:clamp(24px,3vw,40px); margin-top:4px; }
 .topic-sidebar { position:sticky; top:18px; align-self:start; box-sizing:border-box; max-height:calc(100vh - 36px); overflow-y:auto; overscroll-behavior:contain; padding:12px; border:1px solid var(--line); border-radius:14px; background:var(--panel); box-shadow:var(--shadow); scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
 .topic-sidebar-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 8px 12px; border-bottom:1px solid var(--line); }
@@ -452,7 +453,11 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
   .topic-resource-grid { grid-template-columns:1fr; }
   .topic-workflow li { grid-template-columns:36px minmax(0,1fr); gap:10px; }
   .workflow-step { width:32px; height:32px; }
-  .topic-visual-panel { height:150px; margin-top:12px; }
+  .topic-visual-panel { height:auto; margin-top:12px; }
+  .topic-visual-panel img { height:150px; }
+  .topic-visual-panel figcaption { position:static; text-align:right; border:0; border-top:1px solid rgba(160,220,232,.24); border-radius:0; }
+  .topic-visual-labels { display:flex; flex-wrap:wrap; gap:6px; list-style:none; margin:8px 0 20px; padding:0; }
+  .topic-visual-labels li { padding:4px 7px; border:1px solid var(--line); border-radius:999px; background:var(--panel); color:var(--muted); font-size:11px; line-height:1.4; }
 }
 @supports not (overflow-x: clip) {
   @media(max-width:760px) {
