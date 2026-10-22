@@ -219,7 +219,7 @@ try {
   check(desktopBlueprint.grid, 'Worldline shell retains its technical-paper grid fallback')
   check(desktopBlueprint.figurePosition === 'absolute' && Math.abs(desktopBlueprint.figureLeft - desktopBlueprint.heroLeft) < 3 && Math.abs(desktopBlueprint.figureWidth - desktopBlueprint.heroWidth) < 3, 'desktop blueprint art spans the full hero composition')
   check(desktopBlueprint.figureBackground.includes('/images/particle-accelerator-blueprint.avif') && !desktopBlueprint.figureHasPhoto, 'desktop blueprint mode uses one complete local image without duplicate photo layers')
-  check(desktopBlueprint.figureBackgroundSize === 'auto 100%' && desktopBlueprint.figureBackgroundPosition.includes('right'), 'desktop blueprint mode preserves the full reference image aspect ratio without cropping')
+  check(desktopBlueprint.figureBackgroundSize === 'auto 100%' && (desktopBlueprint.figureBackgroundPosition.startsWith('100%') || desktopBlueprint.figureBackgroundPosition.includes('right')), 'desktop blueprint mode preserves the full reference image aspect ratio without cropping')
   check(await page.getByText('Scientific Atelier · 粒子加速器蓝图概念插画', { exact: true }).isVisible(), 'blueprint source note remains visible without a false external license link')
 
   await page.setViewportSize({ width: 390, height: 844 })
