@@ -172,7 +172,9 @@ jobs:
       - name: Install Chromium for high-impact UI changes
         if: needs.changes.outputs.browser == '1'
         timeout-minutes: 5
-        run: npx --prefix frontend playwright install --with-deps chromium
+        # GitHub-hosted Ubuntu runners already provide Chromium's system libraries.
+        # Avoid apt mirror upgrades here; install only the Playwright browser binary.
+        run: npx --prefix frontend playwright install chromium
       - name: Browser smoke checks
         if: needs.changes.outputs.browser == '1'
         run: node frontend/tests/audit-browser-smoke.mjs
