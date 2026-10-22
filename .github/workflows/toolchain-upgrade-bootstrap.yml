@@ -1,0 +1,106 @@
+name: Toolchain upgrade bootstrap (no deployment)
+
+on:
+  push:
+    branches:
+      - upgrade/frontend-toolchain-vite8-vitest5-tailwind4
+
+permissions:
+  contents: write
+
+concurrency:
+  group: toolchain-bootstrap-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-candidate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Resolve lockfile for the staged toolchain upgrade
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Clean install from generated lockfile
+        run: npm ci
+
+      - name: Run frontend unit and security tests
+        run: npm test
+
+      - name: Build production frontend
+        run: npm run build
+
+      - name: Build demo frontend
+        env:
+          GITHUB_PAGES: 'true'
+          VITE_DEMO_MODE: 'true'
+        run: npm run build
+
+      - name: Capture dependency audit reports
+        shell: bash
+        run: |
+          set +e
+          npm audit --json > npm-audit-toolchain-full.json 2> npm-audit-toolchain-full.stderr
+          full_status=$?
+          npm audit --omit=dev --json > npm-audit-toolchain-production.json 2> npm-audit-toolchain-production.stderr
+          production_status=$?
+          set -e
+          printf '%s\n' "$full_status" > npm-audit-toolchain-full.exit
+          printf '%s\n' "$production_status" > npm-audit-toolchain-production.exit
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          for (const [label, path] of [
+            ['All dependencies', 'npm-audit-toolchain-full.json'],
+            ['Production dependencies', 'npm-audit-toolchain-production.json'],
+          ]) {
+            const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+            console.log(label + ': ' + JSON.stringify(report.metadata?.vulnerabilities ?? report.error ?? {}));
+          }
+          NODE
+
+      - name: Upload staged build and audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: toolchain-upgrade-stage-evidence
+          path: |
+            frontend/package.json
+            frontend/package-lock.json
+            frontend/dist
+            frontend/dist-demo
+            frontend/npm-audit-toolchain-full.json
+            frontend/npm-audit-toolchain-full.stderr
+            frontend/npm-audit-toolchain-full.exit
+            frontend/npm-audit-toolchain-production.json
+            frontend/npm-audit-toolchain-production.stderr
+            frontend/npm-audit-toolchain-production.exit
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Commit lockfile only after clean install, tests, and both builds pass
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! git diff --quiet -- frontend/package.json; then
+            echo "::error::The resolver changed package.json; refusing an automatic commit."
+            exit 1
+          fi
+          if git diff --quiet -- frontend/package-lock.json; then
+            echo "Lockfile already matches package.json; no commit needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/package-lock.json
+          git commit -m "build: lock staged toolchain dependency versions"
+          git push origin HEAD:refs/heads/upgrade/frontend-toolchain-vite8-vitest5-tailwind4
