@@ -1069,8 +1069,9 @@ try {
   await expect(stylePage.locator('html')).not.toHaveAttribute('data-custom-font', /.+/)
   check(await stylePage.evaluate(() => !document.documentElement.style.getPropertyValue('--font').includes('CustomUnifiedFont')), 'clearing the unified font restores the system font stack')
 
-  // The homepage layout switch must route into a functioning editor and back out cleanly.
-  await stylePage.locator('#section-home-layout input[type="checkbox"]').check()
+  // The native checkbox is intentionally visually hidden; interact with the visible switch surface.
+  // The subsequent route and editor assertions verify that the real control still works end to end.
+  await stylePage.locator('#section-home-layout .apple-switch').click()
   await stylePage.waitForURL('**/hub')
   await expect(stylePage.getByRole('button', { name: '完成', exact: true })).toBeVisible()
   check(await stylePage.locator('.edit-bar-info').textContent().then(t => t.includes('桌面排版编辑模式')), 'homepage layout switch opens the actual edit mode')
