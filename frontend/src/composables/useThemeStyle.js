@@ -1,6 +1,8 @@
 import { ref } from 'vue'
 
 export const DEFAULT_COLOR_SCHEME = 'quiet-research'
+// Public-site default is the reference-matched Worldline blueprint; workspace remains independent.
+export const DEFAULT_PUBLIC_COLOR_SCHEME = 'worldline-console'
 export const DEFAULT_BG_TYPE = 'paper'
 export const DEFAULT_GLASS_STYLE = 'solid'
 
@@ -147,7 +149,7 @@ function getInitialPublicColorScheme() {
   } catch (e) {
     console.warn('Failed to read public color scheme from localStorage:', e)
   }
-  return DEFAULT_COLOR_SCHEME
+  return DEFAULT_PUBLIC_COLOR_SCHEME
 }
 const LEGACY_STORAGE_KEY = 'laborbit_theme_style'
 export const DEFAULT_MIGRATION_KEY = 'laborbit_default_v20261021_quiet_research'
