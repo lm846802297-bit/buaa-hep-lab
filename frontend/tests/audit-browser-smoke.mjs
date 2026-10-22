@@ -206,7 +206,7 @@ try {
   check(
     readoutSnapshot.hudBackgroundColor !== 'rgba(0, 0, 0, 0)'
       && readoutSnapshot.hudBackgroundColor !== 'transparent'
-      && !/^rgba?\\(\\s*0\\s*,\\s*0\\s*,\\s*0/.test(readoutSnapshot.hudBackgroundColor),
+      && !/^rgba?\(\s*0\s*,\s*0\s*,\s*0/.test(readoutSnapshot.hudBackgroundColor),
     'worldline shift HUD uses a light, high-contrast paper panel'
   )
   await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('decay') && window.__worldlineDecaySnapshot, null, { timeout: 1500 })
@@ -721,7 +721,13 @@ try {
     await expect(stylePage.locator('html')).toHaveAttribute('data-color-scheme', schemeIds[i])
     check(await schemeCards.nth(i).getAttribute('aria-pressed') === 'true', `color scheme card ${schemeIds[i]} updates its active state`)
     check(await stylePage.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().length > 0), `color scheme ${schemeIds[i]} supplies an accent color`)
-    if (schemeIds[i] === 'worldline-console') await stylePage.waitForTimeout(950)
+    if (schemeIds[i] === 'worldline-console' || schemeIds[i] === 'custom') {
+      const themeTransition = stylePage.locator('.worldline-shift-overlay')
+      await expect(themeTransition).toBeVisible()
+      await expect(themeTransition.locator('.worldline-shift-overlay__hud')).toHaveCount(0)
+      check(!(await themeTransition.innerText()).includes('世界线变动'), `theme card ${schemeIds[i]} transition contains no Worldline Shift text`)
+      await expect(themeTransition).toHaveCount(0, { timeout: 2500 })
+    }
   }
 
   // Custom theme presets, form editing, and save must all reach the real DOM/storage.
