@@ -49,7 +49,7 @@ export const COLOR_SCHEMES = [
     id: 'worldline-console',
     name: '世界线蓝图',
     subtitle: '暖白科学蓝图 · 深蓝线稿 · 复古终端读数',
-    description: '以纸白工程图纸、机械草图与物理公式为底；以深蓝终端标记、少量琥珀读数和短时信号异常表现世界线变动。',
+    description: '暖白工程纸与深蓝线稿为主，物理公式和少量琥珀信号作为点缀。',
     colors: ['#F4F1E9', '#29415D', '#FFFEFA'],
     primaryColor: '#29415D',
     baseColor: '#F4F1E9',
