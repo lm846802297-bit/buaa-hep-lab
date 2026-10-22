@@ -13,7 +13,7 @@ describe('Public academic website', () => {
     expect(html).toContain('暂定名称')
     // Keep exactly one collaboration entry in the header navigation,
     // styled prominently rather than duplicated as a second CTA.
-    expect(html).toContain('class="nav-hub"')
+    expect(html.match(/class="nav-hub"/g)).toHaveLength(1)
     expect(html).toContain('href="/hub"')
     expect(html).not.toContain('header-hub-cta')
     expect(html).toContain('组内协作')
