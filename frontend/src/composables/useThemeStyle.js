@@ -47,13 +47,13 @@ export const COLOR_SCHEMES = [
   },
   {
     id: 'worldline-console',
-    name: '世界线终端',
-    subtitle: '《命运石之门》视觉语言启发 · 琥珀读数 · 复古科研终端',
-    description: '提取复古电子终端、琥珀色读数与克制的信号干扰；不使用原作角色、标志或美术素材。',
-    colors: ['#07111d', '#ffb347', '#1d170f'],
-    primaryColor: '#ffb347',
-    baseColor: '#07111d',
-    surfaceColor: '#1d170f'
+    name: '世界线蓝图',
+    subtitle: '暖白科学蓝图 · 深蓝线稿 · 复古终端读数',
+    description: '暖白工程纸与深蓝线稿为主，物理公式和少量琥珀信号作为点缀。',
+    colors: ['#F4F1E9', '#29415D', '#FFFEFA'],
+    primaryColor: '#29415D',
+    baseColor: '#F4F1E9',
+    surfaceColor: '#FFFEFA'
   }
 ]
 
@@ -154,7 +154,7 @@ export const DEFAULT_MIGRATION_KEY = 'laborbit_default_v20261021_quiet_research'
 export const CUSTOM_COLOR_SCHEME_KEY = 'laborbit_custom_color_scheme'
 export const GLASS_STYLE_KEY = 'laborbit_glass_style'
 export const BG_DIM_KEY = 'laborbit_bg_dim_percent_v2'
-export const DEFAULT_BG_DIM = 100
+export const DEFAULT_BG_DIM = 35
 
 const LEGACY_STORAGE_NAMESPACE_MIGRATION_KEY = 'laborbit_storage_namespace_v20261021'
 
@@ -730,7 +730,7 @@ export function applyThemeToDOM(scheme = currentColorScheme.value, bg = currentB
           doc.style.removeProperty(v)
         }
       })
-      const baseBg = actualScheme === 'quiet-research' ? '#F7F5F0' : (actualScheme === 'worldline-console' ? '#07111d' : (actualScheme === 'obsidian-gray' ? '#090d16' : (actualScheme === 'nebula-purple' ? '#03020a' : '#081f28')))
+      const baseBg = actualScheme === 'quiet-research' ? '#F7F5F0' : (actualScheme === 'worldline-console' ? (actualBg === 'paper' ? '#F4F1E9' : '#07111d') : (actualScheme === 'obsidian-gray' ? '#090d16' : (actualScheme === 'nebula-purple' ? '#03020a' : '#081f28')))
       doc.style.backgroundColor = baseBg
     }
 

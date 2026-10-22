@@ -71,6 +71,11 @@ describe('useThemeStyle', () => {
     expect(colorSchemes[0].primaryColor).toBe('#B85E3F')
     expect(colorSchemes[0].colors).toBeDefined()
     expect(colorSchemes[0].colors.length).toBeGreaterThanOrEqual(3)
+    const worldline = colorSchemes.find(scheme => scheme.id === 'worldline-console')
+    expect(worldline.baseColor).toBe('#F4F1E9')
+    expect(worldline.primaryColor).toBe('#29415D')
+    expect(worldline.surfaceColor).toBe('#FFFEFA')
+    expect(worldline.colors).toEqual(['#F4F1E9', '#29415D', '#FFFEFA'])
 
     expect(bgOptions).toHaveLength(5)
     expect(bgOptions.map(b => b.id)).toEqual(['paper', 'clouds-static', 'galaxy', 'vanta-fog', 'custom-local'])
@@ -271,4 +276,13 @@ describe('useThemeStyle', () => {
     expect(isBgVideoPaused.value).toBe(false)
     expect(localStorage.setItem).toHaveBeenCalledWith('laborbit_bg_video_paused', 'false')
   })
+  it('provides a visible description for every theme card and a readable wallpaper dim default', async () => {
+    const { colorSchemes, bgOptions, glassOptions, DEFAULT_BG_DIM } = await import('./useThemeStyle')
+    for (const option of [...colorSchemes, ...bgOptions, ...glassOptions]) {
+      expect(typeof option.description).toBe('string')
+      expect(option.description.trim().length).toBeGreaterThan(0)
+    }
+    expect(DEFAULT_BG_DIM).toBe(35)
+  })
+
 })

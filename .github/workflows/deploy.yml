@@ -73,7 +73,7 @@ jobs:
           retention-days: 14
       - name: Teaching benchmark consistency checks
         run: python frontend/public/learning/two_body_decay.py
-      - name: Public entry budget and prerender verification
+      - name: Initial JavaScript measurements and prerender verification
         run: npm --prefix frontend run check:bundle
       - name: Install browser for route and layout smoke checks
         run: npx --prefix frontend playwright install --with-deps chromium
@@ -97,7 +97,9 @@ jobs:
 
   deploy:
     needs: validate
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    # A squash merge whose title contains [skip-prod-deploy] still runs main validation,
+    # but deliberately skips publication for that one release candidate.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[skip-prod-deploy]')
     runs-on: ubuntu-latest
     permissions:
       contents: read

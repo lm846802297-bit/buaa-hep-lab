@@ -128,7 +128,7 @@ function onUpdatePinned(val) {
     <WorkspaceSession v-if="showNavbar" />
     <WorldlineEffects />
     <PublicThemeSwitcher v-if="isPublic && route.path !== '/'" />
-    <ForecastAtmosphere v-if="!isPublic && ['galaxy', 'vanta-fog', 'custom-local', 'earth-orbit'].includes(currentBgType)" />
+    <ForecastAtmosphere v-if="!isPublic && currentBgType !== 'paper'" />
     <MidAutumnMooncakes v-if="!isPublic" />
     <NationalDayCelebration v-if="!isPublic" />
     <a href="#main-content" class="skip-link">跳到主要内容</a>
@@ -136,7 +136,8 @@ function onUpdatePinned(val) {
     <Navbar v-if="showNavbar" :pinned="isPinned" @update:pinned="onUpdatePinned" />
     <main id="main-content" :class="!showNavbar ? 'public-workspace' : (isHome ? 'home-workspace' : (isAssistant ? 'assistant-workspace' : 'workspace'))">
       <router-view v-slot="{ Component }">
-        <Transition :css="false" mode="out-in" @enter="enterPage" @leave="leavePage">
+        <component v-if="isPublic" :is="Component" :key="route.path" />
+        <Transition v-else :css="false" mode="out-in" @enter="enterPage" @leave="leavePage">
           <KeepAlive include="AssistantView">
             <component :is="Component" :key="route.path" />
           </KeepAlive>

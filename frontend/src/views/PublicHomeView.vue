@@ -105,10 +105,10 @@ function downloadBibtex() {
           <dl class="research-explainer"><div><dt>研究问题</dt><dd>{{ activeDirection.question }}</dd></div><div><dt>主要方法</dt><dd>{{ activeDirection.methods }}</dd></div><div><dt>实验联系</dt><dd>{{ activeDirection.probes }}</dd></div></dl>
           <p class="research-scope">{{ activeDirection.detail }}</p>
           <div class="topic-tags"><span v-for="tag in activeDirection.tags" :key="tag">{{ tag }}</span></div>
-          <a class="topic-guide-entry" :href="`/research/${activeDirection.id}`" :aria-label="`阅读${activeDirection.title}专题导读`">
+          <router-link class="topic-guide-entry" :to="`/research/${activeDirection.id}`" :aria-label="`阅读${activeDirection.title}专题导读`">
             <div><span>RESEARCH GUIDE / 深入阅读</span><strong>进入{{ activeDirection.title }}专题导读</strong><small>关键关系式 · 适用条件 · 分析流程 · 专业资源</small></div>
             <span class="topic-guide-arrow" aria-hidden="true">↗</span>
-          </a>
+          </router-link>
           <div class="research-evidence"><h4>相关研究选读</h4><ul><li v-for="paper in relatedResearchPapers" :key="paper.id"><a :href="paper.source_url" target="_blank" rel="noopener noreferrer">{{ paper.title }} <span aria-hidden="true">↗</span></a><small>arXiv:{{ paper.id }}</small></li></ul></div>
           <button class="button secondary related-papers" @click="showRelatedPapers(activeDirection.id)">查看相关论文 <span aria-hidden="true">↓</span></button>
         </article>

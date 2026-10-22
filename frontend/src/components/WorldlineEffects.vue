@@ -9,6 +9,7 @@ const isShifting = ref(false)
 const reducedMotion = ref(false)
 const shiftKey = ref(0)
 const shiftPhase = ref('idle')
+const showShiftHud = ref(true)
 const shiftTimelineActive = ref(false)
 
 const excludedRoutes = ['/login', '/setup', '/quick-share']
@@ -24,7 +25,6 @@ let animationFrameId = null
 let shiftTimerId = null
 let burstTimerId = null
 let phaseTimerIds = []
-let shiftStartFrameId = null
 let mediaQuery = null
 let resizeHandler = null
 let visibilityHandler = null
@@ -42,19 +42,27 @@ let localPulses = []
 let pointer = { x: 0, y: 0, active: false }
 
 const particleTones = [
-  { color: '85, 230, 242', weight: 0.52 },
-  { color: '131, 169, 255', weight: 0.35 },
-  { color: '255, 77, 134', weight: 0.13 }
+  { variable: '--worldline-cyan', fallback: '85, 230, 242', weight: 0.52 },
+  { variable: '--worldline-blue', fallback: '131, 169, 255', weight: 0.35 },
+  { variable: '--worldline-anomaly', fallback: '255, 77, 134', weight: 0.13 }
 ]
+
+function readThemeTone(variable, fallback) {
+  const match = getComputedStyle(document.documentElement).getPropertyValue(variable).trim().match(/^#([a-f\d]{6})$/i)
+  if (!match) return fallback
+  const color = parseInt(match[1], 16)
+  return `${color >> 16 & 255}, ${color >> 8 & 255}, ${color & 255}`
+}
 
 function pickTone() {
   const value = Math.random()
   let sum = 0
   for (const tone of particleTones) {
     sum += tone.weight
-    if (value <= sum) return tone.color
+    if (value <= sum) return readThemeTone(tone.variable, tone.fallback)
   }
-  return particleTones[0].color
+  const fallback = particleTones[0]
+  return readThemeTone(fallback.variable, fallback.fallback)
 }
 
 function clearCanvas() {
@@ -135,7 +143,7 @@ function drawAmbient(time, delta) {
       ctx.moveTo(lines[i], lines[i + 1])
       ctx.lineTo(lines[i + 2], lines[i + 3])
     }
-    ctx.strokeStyle = `rgba(85, 197, 225, ${connectionAlphas[bin]})`
+    ctx.strokeStyle = `rgba(${readThemeTone('--worldline-blue', '131, 169, 255')}, ${connectionAlphas[bin]})`
     ctx.lineWidth = 0.65
     ctx.stroke()
   }
@@ -151,11 +159,11 @@ function drawAmbient(time, delta) {
         ctx.lineTo(particle.x, particle.y)
       }
     }
-    ctx.strokeStyle = 'rgba(85, 230, 242, 0.14)'
+    ctx.strokeStyle = `rgba(${readThemeTone('--worldline-cyan', '85, 230, 242')}, 0.14)`
     ctx.lineWidth = 0.8
     ctx.stroke()
     const radius = 18 + 3 * Math.sin(time * 0.006)
-    ctx.strokeStyle = 'rgba(85, 230, 242, 0.34)'
+    ctx.strokeStyle = `rgba(${readThemeTone('--worldline-cyan', '85, 230, 242')}, 0.34)`
     ctx.lineWidth = 0.9
     ctx.beginPath()
     ctx.arc(pointer.x, pointer.y, radius, 0, Math.PI * 2)
@@ -307,7 +315,7 @@ function drawBurst(delta) {
               y: (particle.y + other.y) / 2,
               radius: 1.2,
               life: 1,
-              tone: particle.tone === other.tone ? particle.tone : '197, 251, 255'
+              tone: particle.tone === other.tone ? particle.tone : readThemeTone('--worldline-cyan-hot', '197, 251, 255')
             })
             if (impactFlashes.length > 12) impactFlashes.shift()
             particle.hasCollided = true
@@ -442,8 +450,6 @@ function setShiftPhase(phase) {
 
 function clearShiftTimers() {
   if (typeof window === 'undefined') return
-  if (shiftStartFrameId !== null) window.cancelAnimationFrame(shiftStartFrameId)
-  shiftStartFrameId = null
   if (shiftTimerId !== null) window.clearTimeout(shiftTimerId)
   if (burstTimerId !== null) window.clearTimeout(burstTimerId)
   phaseTimerIds.forEach(timerId => window.clearTimeout(timerId))
@@ -460,8 +466,9 @@ function scheduleShiftPhase(delay, phase) {
   phaseTimerIds.push(timerId)
 }
 
-function triggerShift() {
+function triggerShift({ showHud = true } = {}) {
   if (!mounted || typeof window === 'undefined' || reducedMotion.value) return
+  showShiftHud.value = showHud
   clearShiftTimers()
   shiftKey.value += 1
   const currentShiftKey = shiftKey.value
@@ -472,39 +479,35 @@ function triggerShift() {
   shockwaves = []
   impactFlashes = []
 
-  // Wait for Vue to mount the overlay, then start one coordinated 1.8 s timeline.
-  // This prevents a slow SVG/layout pass from consuming the early phases before they can paint.
+  // Mount the overlay first, then start its timers independently of requestAnimationFrame.
+  // Animation frames can be paused or throttled in background tabs; they must not gate
+  // phase progression or the cleanup timer.
   nextTick(() => {
     if (!mounted || !isShifting.value || reducedMotion.value || shiftKey.value !== currentShiftKey) return
-    shiftStartFrameId = window.requestAnimationFrame(() => {
-      shiftStartFrameId = null
+
+    shiftTimelineActive.value = true
+    scheduleShiftPhase(130, 'propagate')
+    scheduleShiftPhase(350, 'disrupt')
+    scheduleShiftPhase(490, 'readout')
+    scheduleShiftPhase(1220, 'decay')
+
+    burstTimerId = window.setTimeout(() => {
+      burstTimerId = null
       if (!mounted || !isShifting.value || reducedMotion.value || shiftKey.value !== currentShiftKey) return
-
-      shiftTimelineActive.value = true
-      scheduleShiftPhase(130, 'propagate')
-      scheduleShiftPhase(350, 'disrupt')
-      scheduleShiftPhase(490, 'readout')
-      scheduleShiftPhase(1220, 'decay')
-
-      burstTimerId = window.setTimeout(() => {
-        burstTimerId = null
-        if (!mounted || !isShifting.value || reducedMotion.value || shiftKey.value !== currentShiftKey) return
-        createBurst()
-        startAnimation()
-      }, 150)
-
-      shiftTimerId = window.setTimeout(() => {
-        isShifting.value = false
-        shiftTimelineActive.value = false
-        setShiftPhase('idle')
-        shiftTimerId = null
-        phaseTimerIds.forEach(timerId => window.clearTimeout(timerId))
-        phaseTimerIds = []
-      }, 1800)
+      createBurst()
       startAnimation()
-    })
+    }, 150)
+
+    shiftTimerId = window.setTimeout(() => {
+      isShifting.value = false
+      shiftTimelineActive.value = false
+      setShiftPhase('idle')
+      shiftTimerId = null
+      phaseTimerIds.forEach(timerId => window.clearTimeout(timerId))
+      phaseTimerIds = []
+    }, 1800)
+    startAnimation()
   })
-  startAnimation()
 }
 
 function handleMotionPreferenceChange(event) {
@@ -582,14 +585,14 @@ watch(() => route.path, (next, previous) => {
 watch([currentColorScheme, publicColorScheme], ([nextWorkspace, nextPublic], [previousWorkspace, previousPublic]) => {
   if (route.meta.public) {
     if (nextPublic !== previousPublic && (nextPublic === 'worldline-console' || previousPublic === 'worldline-console')) {
-      triggerShift()
+      triggerShift({ showHud: false })
     }
     return
   }
 
   if (excludedRoutes.includes(route.path)) return
   if (nextWorkspace !== previousWorkspace && (nextWorkspace === 'worldline-console' || previousWorkspace === 'worldline-console')) {
-    triggerShift()
+    triggerShift({ showHud: false })
   }
 })
 
@@ -638,8 +641,8 @@ onBeforeUnmount(() => {
 <template>
   <svg v-if="isWorldlineActive" class="worldline-technical-backdrop" :class="{ 'is-shifting': isShifting, 'is-timeline-active': shiftTimelineActive }" :data-phase="shiftPhase" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
     <defs>
-      <pattern id="worldline-draft-grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#83a9ff" stroke-opacity=".24" stroke-width=".55"/><path d="M16 0V32M0 16H32" fill="none" stroke="#55e6f2" stroke-opacity=".12" stroke-width=".35"/></pattern>
-      <radialGradient id="worldline-backdrop-glow"><stop offset="0" stop-color="#55e6f2" stop-opacity=".12"/><stop offset="1" stop-color="#55e6f2" stop-opacity="0"/></radialGradient>
+      <pattern id="worldline-draft-grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="var(--worldline-blue)" stroke-opacity=".24" stroke-width=".55"/><path d="M16 0V32M0 16H32" fill="none" stroke="var(--worldline-cyan)" stroke-opacity=".12" stroke-width=".35"/></pattern>
+      <radialGradient id="worldline-backdrop-glow"><stop offset="0" stop-color="var(--worldline-cyan)" stop-opacity=".12"/><stop offset="1" stop-color="var(--worldline-cyan)" stop-opacity="0"/></radialGradient>
       <g id="worldline-gear-drawing" fill="none" stroke="currentColor"><circle r="112" stroke-width="1.2" stroke-dasharray="10 5"/><circle r="101" stroke-width=".65" stroke-dasharray="2 7"/><circle r="78"/><circle r="61" stroke-width=".6" stroke-dasharray="3 4"/><circle r="25" stroke-width="1.1"/><circle r="8"/><path d="M0-99V-27M0 27V99M-99 0H-27M27 0H99M-70-70L-19-19M19 19L70 70M70-70L19-19M-19 19L-70 70" stroke-width=".8"/><path d="M0-78L9-12L0 0L-9-12ZM78 0L12 9L0 0L12-9Z" stroke-width=".7"/><path d="M-5-116H5M-5 116H5M-116-5V5M116-5V5" stroke-width="3"/></g>
       <g id="worldline-drafting-reticle" fill="none" stroke="currentColor"><circle r="84" stroke-width=".8"/><circle r="68" stroke-width=".6" stroke-dasharray="2 5"/><circle r="36" stroke-width=".7"/><path d="M-112 0H112M0-112V112M-79-79L79 79M79-79L-79 79" stroke-width=".55"/><path d="M0-96L-5-84H5ZM96 0L84-5V5ZM0 96L-5 84H5ZM-96 0L-84-5V5Z" stroke-width=".8"/><circle r="4" stroke-width="1.2"/></g>
     </defs>
@@ -648,7 +651,7 @@ onBeforeUnmount(() => {
       <circle class="worldline-backdrop-shift-wave__ring worldline-backdrop-shift-wave__ring--outer" cx="800" cy="500" r="72" stroke-width="1.2" stroke-dasharray="3 9"/>
       <circle class="worldline-backdrop-shift-wave__ring worldline-backdrop-shift-wave__ring--inner" cx="800" cy="500" r="48" stroke-width="1.8"/>
       <path d="M800 360V430M800 570V640M660 500H730M870 500H940M701 401L750 450M850 550L899 599M899 401L850 450M750 550L701 599" stroke-width=".9" stroke-dasharray="5 6"/>
-      <circle cx="800" cy="500" r="5" fill="#ff4d86" stroke="none"/>
+      <circle cx="800" cy="500" r="5" fill="var(--worldline-anomaly)" stroke="none"/>
     </g>
     <g class="worldline-backdrop-drafting"><path d="M0 170H1600M0 500H1600M0 820H1600M240 0V1000M800 0V1000M1370 0V1000" stroke="currentColor" stroke-width=".5" stroke-dasharray="2 9"/><path d="M70 90H430V390M1150 95H1515V420M75 690V920H450M1050 680H1515V930" fill="none" stroke="currentColor" stroke-width=".7"/><path d="M70 90h22m-22 0v22M430 390h-22m22 0v-22M1150 95h22m-22 0v22M1515 420h-22m22 0v-22M75 690h22m-22 0v22M450 920h-22m22 0v-22" stroke="currentColor" stroke-width="1.5"/></g>
     <g class="worldline-backdrop-gear" transform="translate(260 190) scale(1.18)"><g class="worldline-backdrop-gear-rotor"><use href="#worldline-gear-drawing"/></g></g>
@@ -659,8 +662,8 @@ onBeforeUnmount(() => {
     <g class="worldline-backdrop-gear" transform="translate(145 785) scale(.46)"><g class="worldline-backdrop-gear-rotor"><use href="#worldline-gear-drawing"/></g></g>
     <g class="worldline-backdrop-gear" transform="translate(1050 900) scale(.62)"><g class="worldline-backdrop-gear-rotor worldline-backdrop-gear-rotor--reverse"><use href="#worldline-gear-drawing"/></g></g>
     <g class="worldline-backdrop-reticle" transform="translate(810 300) scale(.82)"><use href="#worldline-drafting-reticle"/></g><g class="worldline-backdrop-reticle worldline-backdrop-reticle--slow" transform="translate(1210 735) scale(.72)"><use href="#worldline-drafting-reticle"/></g>
-    <g class="worldline-backdrop-orbit"><ellipse cx="1110" cy="515" rx="310" ry="105" transform="rotate(-28 1110 515)" fill="none" stroke="currentColor" stroke-width=".9" stroke-dasharray="3 8"/><ellipse cx="1110" cy="515" rx="260" ry="76" transform="rotate(34 1110 515)" fill="none" stroke="#55e6f2" stroke-opacity=".68" stroke-width=".65"/><path d="M800 515C930 390 1090 660 1280 455S1480 390 1570 510" fill="none" stroke="#83a9ff" stroke-width="1.1" stroke-dasharray="5 8"/><circle cx="1280" cy="455" r="3" fill="#ff4d86" stroke="none"/><circle cx="1002" cy="481" r="2" fill="#55e6f2" stroke="none"/></g>
-    <g class="worldline-backdrop-instrument" transform="translate(1260 110)"><rect width="245" height="126" rx="2" fill="#07111d" fill-opacity=".22" stroke="currentColor" stroke-width=".8"/><path d="M14 26H231M14 100H231M14 42H231M14 58H231M14 74H231M14 90H231" stroke="currentColor" stroke-opacity=".34" stroke-width=".45" stroke-dasharray="2 4"/><path d="M18 88L38 81L52 84L68 53L81 72L99 67L116 34L128 78L144 65L163 71L181 45L196 60L226 51" fill="none" stroke="#55e6f2" stroke-width="1.1"/><text x="14" y="16">SIGNAL TRACE / SCHEMATIC</text><text x="14" y="116">ILLUSTRATIVE DISPLAY · NOT DATA</text></g>
+    <g class="worldline-backdrop-orbit"><ellipse cx="1110" cy="515" rx="310" ry="105" transform="rotate(-28 1110 515)" fill="none" stroke="currentColor" stroke-width=".9" stroke-dasharray="3 8"/><ellipse cx="1110" cy="515" rx="260" ry="76" transform="rotate(34 1110 515)" fill="none" stroke="var(--worldline-cyan)" stroke-opacity=".68" stroke-width=".65"/><path d="M800 515C930 390 1090 660 1280 455S1480 390 1570 510" fill="none" stroke="var(--worldline-blue)" stroke-width="1.1" stroke-dasharray="5 8"/><circle cx="1280" cy="455" r="3" fill="var(--worldline-anomaly)" stroke="none"/><circle cx="1002" cy="481" r="2" fill="var(--worldline-cyan)" stroke="none"/></g>
+    <g class="worldline-backdrop-instrument" transform="translate(1260 110)"><rect width="245" height="126" rx="2" fill="var(--worldline-screen)" fill-opacity=".22" stroke="currentColor" stroke-width=".8"/><path d="M14 26H231M14 100H231M14 42H231M14 58H231M14 74H231M14 90H231" stroke="currentColor" stroke-opacity=".34" stroke-width=".45" stroke-dasharray="2 4"/><path d="M18 88L38 81L52 84L68 53L81 72L99 67L116 34L128 78L144 65L163 71L181 45L196 60L226 51" fill="none" stroke="var(--worldline-cyan)" stroke-width="1.1"/><text x="14" y="16">SIGNAL TRACE / SCHEMATIC</text><text x="14" y="116">ILLUSTRATIVE DISPLAY · NOT DATA</text></g>
     <g class="worldline-backdrop-notes"><text x="75" y="145">FIELD NOTES / 01</text><text x="75" y="164">MODEL → OBSERVABLE</text><text x="480" y="390">SYMMETRY / CONSERVATION</text><text x="890" y="155">TEMPORAL REFERENCE</text><text x="1320" y="600">SIGNAL / TRACE</text><text x="75" y="955">FROM THE INFINITESIMAL TO THE INFINITE</text><text x="1230" y="955">WORLDLINE CONSOLE · VISUAL LAYER</text></g>
     <g class="worldline-backdrop-crosshairs" fill="none" stroke="currentColor"><path d="M680 650h52m-26-26v52M1530 765h42m-21-21v42M390 540h38m-19-19v38" stroke-width=".8"/><circle cx="706" cy="650" r="9" stroke-width=".65"/><circle cx="1551" cy="765" r="7" stroke-width=".65"/><circle cx="409" cy="540" r="5" stroke-width=".65"/><path d="M706 650L800 515M409 540L260 190M1551 765L1450 785" stroke-width=".5" stroke-dasharray="2 5"/></g>
   </svg>
@@ -684,7 +687,8 @@ onBeforeUnmount(() => {
     <div class="worldline-shift-overlay__glitch worldline-shift-overlay__glitch--a"></div>
     <div class="worldline-shift-overlay__glitch worldline-shift-overlay__glitch--b"></div>
     <div class="worldline-shift-overlay__glitch worldline-shift-overlay__glitch--c"></div>
-    <div class="worldline-shift-overlay__hud">
+    <!-- Text HUD is reserved for route transitions; theme switches pass showHud: false. -->
+    <div v-if="showShiftHud" class="worldline-shift-overlay__hud">
       <span>WORLDLINE SHIFT / FIELD RECONFIGURATION</span>
       <strong>世界线变动</strong>
       <div class="worldline-shift-overlay__meter"><span></span></div>

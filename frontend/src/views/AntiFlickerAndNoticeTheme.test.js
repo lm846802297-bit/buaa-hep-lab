@@ -26,7 +26,7 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(indexHtml).toContain("var bgHex = scheme === 'quiet-research' ? '#F7F5F0'")
     expect(indexHtml).toContain('name="theme-color" content="#F7F5F0"')
     expect(indexHtml).toContain('name="color-scheme" content="light dark"')
-    expect(indexHtml).toContain("if (bgType === 'clouds-static' && scheme !== 'quiet-research'")
+    expect(indexHtml).toContain("if (bgType === 'clouds-static' && doc.dataset.publicPage !== 'true')")
     expect(indexHtml).not.toContain('</script>ipt>')
   })
 
@@ -37,6 +37,11 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(styleViewVue).toContain("scheme.id === 'quiet-research'")
     expect(styleViewVue).toContain('class="theme-default-badge">默认风格</span>')
     expect(styleViewVue).toContain('handleColorSchemeSelect(scheme)')
+  })
+
+  it('keeps appearance anchor accents theme-token driven', () => {
+    expect(styleViewVue).toContain('border-color: color-mix(in srgb, var(--accent) 40%, var(--line));')
+    expect(styleViewVue).not.toContain('border-color: rgba(184, 155, 248, 0.4);')
   })
 
   it('exposes an independent public skin selector on every public route', () => {
@@ -63,7 +68,7 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
 
   it('allows dynamic and local backgrounds when Quiet Research is selected', () => {
     const appVue = readFileSync(resolve(__dirname, '../App.vue'), 'utf-8')
-    expect(appVue).toContain("['galaxy', 'vanta-fog', 'custom-local', 'earth-orbit'].includes(currentBgType)")
+    expect(appVue).toContain("currentBgType !== 'paper'")
     expect(appVue).not.toContain("currentColorScheme !== 'quiet-research'")
     expect(styleViewVue).toContain('{{ bg.description || bg.subtitle }}')
   })
@@ -136,6 +141,14 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(baseDialogVue).toContain('frameStyle: [Object, String]')
     expect(baseDialogVue).toContain(':style="frameStyle"')
   })
+  it('keeps the compact sidebar and background controls independent of Quiet Research', () => {
+    expect(indexCss).toContain('--sidebar: 88px;')
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="solid"] .app-shell .glass-card')
+    expect(indexCss).toContain(':root[data-color-scheme="quiet-research"][data-glass-style="frosted"] .app-shell .glass-card')
+    expect(indexCss).not.toContain(':root[data-color-scheme="quiet-research"] .forecast-atmosphere {\\n  display: none !important;')
+    expect(indexHtml).toContain("if (bgType === 'clouds-static' && doc.dataset.publicPage !== 'true')")
+  })
+
   it('registers the optional Worldline Console skin and its accessible transition effect', () => {
     const themeModule = readFileSync(resolve(__dirname, '../composables/useThemeStyle.js'), 'utf-8')
     const worldlineEffects = readFileSync(resolve(__dirname, '../components/WorldlineEffects.vue'), 'utf-8')
@@ -148,6 +161,14 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(appVue).toContain('<WorldlineEffects />')
     expect(worldlineEffects).toContain('prefers-reduced-motion: reduce')
     expect(worldlineEffects).toContain('世界线变动')
+    const worldlinePaperPalette = indexCss.match(/:root\[data-color-scheme="worldline-console"\]\[data-bg-style="paper"\]\s*\{([^}]+)\}/)?.[1]
+    expect(worldlinePaperPalette).toContain('color-scheme: light;')
+    expect(worldlinePaperPalette).toContain('--bg: #F4F1E9;')
+    expect(worldlinePaperPalette).toContain('--accent: #29415D;')
+    expect(indexHtml).toContain("scheme === 'worldline-console' ? (bgType === 'paper' ? '#F4F1E9' : '#07111d')")
+    expect(indexCss).toContain('mix-blend-mode: multiply')
+    expect(worldlineEffects).toContain('stroke="var(--worldline-blue)"')
+    expect(worldlineEffects).not.toContain('#83a9ff')
   })
 
 })

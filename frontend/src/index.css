@@ -41,7 +41,8 @@ body,#app { min-height:100%; margin:0; }
 .app-shell.has-sidebar { padding-left:var(--sidebar); transition: padding-left .4s cubic-bezier(.4, 0, .2, 1); }
 .app-shell.has-sidebar.sidebar-collapsed { padding-left: 0; }
 .forecast-atmosphere { position:fixed; inset:0; z-index:-2; pointer-events:none; background-color:var(--bg); overflow:hidden; transform:translate3d(0,0,0); -webkit-transform:translate3d(0,0,0); backface-visibility:hidden; -webkit-backface-visibility:hidden; will-change:transform; }
-.atmosphere-shade { position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,.38),rgba(0,0,0,.06) 65%,rgba(0,0,0,.18)),linear-gradient(0deg,rgba(0,0,0,.65),transparent 55%); opacity:var(--bg-dim, 1); transition:opacity .15s ease-out; pointer-events:none; transform:translate3d(0,0,0); -webkit-transform:translate3d(0,0,0); backface-visibility:hidden; -webkit-backface-visibility:hidden; }
+/* Keep the user-controlled dim slider synchronous: a paused background-tab transition can leave the composited shade at its stale start opacity. */
+.atmosphere-shade { position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,.38),rgba(0,0,0,.06) 65%,rgba(0,0,0,.18)),linear-gradient(0deg,rgba(0,0,0,.65),transparent 55%); opacity:var(--bg-dim, 1); pointer-events:none; transform:translate3d(0,0,0); -webkit-transform:translate3d(0,0,0); backface-visibility:hidden; -webkit-backface-visibility:hidden; }
 .is-home .atmosphere-shade { background:linear-gradient(90deg,rgba(0,0,0,.38),rgba(0,0,0,.06) 65%,rgba(0,0,0,.18)),linear-gradient(0deg,rgba(0,0,0,.65),transparent 55%); }
 .forecast-sidebar { position:fixed; z-index:40; top:0; bottom:0; left:0; width:var(--sidebar); display:flex; align-items:center; flex-direction:column; padding:16px 0 20px; border-right:1px solid var(--line); background:var(--panel); backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px); transition: transform .4s cubic-bezier(.4, 0, .2, 1); }
 @media (min-width: 651px) {
@@ -1841,8 +1842,7 @@ html[data-bg-style="clouds-static"] body {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-:root[data-color-scheme="quiet-research"] .sidebar-edge-trigger,
-:root[data-color-scheme="quiet-research"] .pin-anchor-wrapper {
+:root[data-color-scheme="quiet-research"] .sidebar-edge-trigger {
   display: none !important;
 }
 :root[data-color-scheme="quiet-research"] .forecast-sidebar.is-collapsed,
@@ -2382,22 +2382,84 @@ html[data-bg-style="clouds-static"] body {
   --theme-tuner-button-shadow: 0 6px 18px rgb(0 0 0 / 22%), inset 0 1px 0 color-mix(in srgb, var(--text) 7%, transparent);
   --theme-tuner-button-hover-shadow: 0 8px 24px rgb(0 0 0 / 26%), 0 0 0 3px color-mix(in srgb, var(--worldline-cyan) 24%, transparent), 0 0 18px color-mix(in srgb, var(--worldline-blue) 8%, transparent), inset 0 1px 0 color-mix(in srgb, var(--text) 9%, transparent);
 }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] {
+  color-scheme: light;
+  --bg: #F4F1E9;
+  --panel: rgba(255, 254, 250, .94);
+  --panel-solid: #FFFEFA;
+  --surface: #F0EDE5;
+  --raised: #E9E4DA;
+  --glass: rgba(255, 254, 250, .86);
+  --text: #202B38;
+  --soft: #3D4B5C;
+  --muted: #667380;
+  --accent: #29415D;
+  --accent-strong: #1E334B;
+  --accent-ink: #FFFFFF;
+  --line: rgba(41, 65, 93, .20);
+  --warning: #8D5E21;
+  --warning-bg: #F6ECDD;
+  --danger: #9C443B;
+  --danger-bg: #F8E8E5;
+  --danger-border: #E6BDB8;
+  --success: #326A51;
+  --focus: #9A6432;
+  --font: Inter, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --serif: Georgia, "Noto Serif SC", "Songti SC", "SimSun", serif;
+  --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  --radius: 8px;
+  --shadow: 0 2px 12px rgb(32 43 56 / 8%), 0 0 18px color-mix(in srgb, var(--worldline-blue) 2%, transparent);
+  --worldline-screen: #F4F1E9;
+  --worldline-cyan: #527A82;
+  --worldline-cyan-hot: #29415D;
+  --worldline-blue: #3B5C7A;
+  --worldline-anomaly: #B96D49;
+  --worldline-hardware: #8B8D87;
+  --worldline-hardware-text: #53616A;
+  --worldline-device-coral: #B96D53;
+  --worldline-cyan-ambient: color-mix(in srgb, var(--worldline-cyan) 4%, transparent);
+  --worldline-blue-ambient: color-mix(in srgb, var(--worldline-blue) 3%, transparent);
+  --worldline-screenline: rgba(41, 65, 93, .018);
+  --theme-tuner-ring: color-mix(in srgb, var(--text) 72%, var(--worldline-blue) 28%);
+  --theme-tuner-axis: color-mix(in srgb, var(--worldline-blue) 38%, transparent);
+  --theme-tuner-core: var(--worldline-cyan);
+  --theme-tuner-core-fill: color-mix(in srgb, var(--worldline-cyan) 14%, transparent);
+  --theme-tuner-core-hover-fill: color-mix(in srgb, var(--worldline-cyan) 22%, transparent);
+  --theme-tuner-node: var(--worldline-device-coral);
+  --theme-tuner-node-stroke: var(--panel-solid);
+  --theme-tuner-button-border: color-mix(in srgb, var(--worldline-blue) 28%, var(--line) 72%);
+  --theme-tuner-button-background: linear-gradient(145deg, color-mix(in srgb, var(--panel-solid) 96%, var(--worldline-blue) 4%), var(--surface));
+  --theme-tuner-button-shadow: 0 2px 10px rgb(32 43 56 / 8%);
+  --theme-tuner-button-hover-shadow: 0 4px 14px rgb(32 43 56 / 12%), 0 0 0 3px color-mix(in srgb, var(--worldline-cyan) 10%, transparent);
+}
 :root[data-color-scheme="worldline-console"][data-bg-style="paper"] body {
   background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse at 16% 0%, var(--worldline-cyan-ambient), transparent 38%),
-    radial-gradient(ellipse at 88% 14%, var(--worldline-blue-ambient), transparent 34%),
-    repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 6px);
+    linear-gradient(to right, rgba(41, 65, 93, .04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(41, 65, 93, .04) 1px, transparent 1px),
+    linear-gradient(to right, rgba(41, 65, 93, .016) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(41, 65, 93, .016) 1px, transparent 1px),
+    radial-gradient(ellipse at 78% 24%, var(--worldline-cyan-ambient), transparent 40%),
+    radial-gradient(ellipse at 12% 74%, var(--worldline-blue-ambient), transparent 36%),
+    repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 8px);
+  background-size: 32px 32px, 32px 32px, 8px 8px, 8px 8px, auto, auto, auto;
   background-attachment: fixed;
 }
 :root[data-color-scheme="worldline-console"][data-public-page="true"] .lab-public {
+  background-color: var(--bg);
   background-image:
-    radial-gradient(ellipse at 16% 0%, var(--worldline-cyan-ambient), transparent 38%),
-    radial-gradient(ellipse at 88% 14%, var(--worldline-blue-ambient), transparent 34%),
-    repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 6px);
+    linear-gradient(to right, rgba(41, 65, 93, .04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(41, 65, 93, .04) 1px, transparent 1px),
+    linear-gradient(to right, rgba(41, 65, 93, .016) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(41, 65, 93, .016) 1px, transparent 1px),
+    radial-gradient(ellipse at 78% 24%, var(--worldline-cyan-ambient), transparent 40%),
+    radial-gradient(ellipse at 12% 74%, var(--worldline-blue-ambient), transparent 36%),
+    repeating-linear-gradient(0deg, var(--worldline-screenline) 0, var(--worldline-screenline) 1px, transparent 1px, transparent 8px);
+  background-size: 32px 32px, 32px 32px, 8px 8px, 8px 8px, auto, auto, auto;
   background-attachment: fixed;
 }
-:root[data-color-scheme="worldline-console"] ::selection { background: color-mix(in srgb, var(--worldline-cyan) 34%, transparent); color: #fff8ea; }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] ::selection { background: color-mix(in srgb, var(--worldline-cyan) 16%, #FFFFFF); color: var(--text); }
+:root[data-color-scheme="worldline-console"]:not([data-bg-style="paper"]) ::selection { background: color-mix(in srgb, var(--worldline-cyan) 34%, transparent); color: #fff8ea; }
 :root[data-color-scheme="worldline-console"] input:focus,
 :root[data-color-scheme="worldline-console"] select:focus,
 :root[data-color-scheme="worldline-console"] textarea:focus {
@@ -3164,4 +3226,73 @@ html[data-bg-style="clouds-static"] body {
     transition-duration: .01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+
+/* Blueprint refinement: keep the public paper skin quiet and legible; dark workspace backgrounds retain their original palette. */
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-technical-backdrop { opacity: .22; mix-blend-mode: multiply; }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-technical-backdrop .worldline-backdrop-gear { opacity: .54; }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-technical-backdrop .worldline-backdrop-reticle { opacity: .48; }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-technical-backdrop .worldline-backdrop-orbit { opacity: .30; }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-technical-backdrop .worldline-backdrop-instrument { opacity: .48; }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-technical-backdrop .worldline-backdrop-notes { opacity: .40; }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-particle-canvas { opacity: .22; mix-blend-mode: multiply; }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-particle-canvas.is-visible { opacity: .26; }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .lab-public .public-hero h1,
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .lab-public .section-top h2,
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .lab-public .research-detail h3,
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .lab-public .collaboration-section h2 { font-family: var(--serif); font-weight: 400; letter-spacing: -.035em; }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .lab-public .collision-figure {
+  border: 1px solid color-mix(in srgb, var(--worldline-hardware) 36%, var(--line));
+  border-radius: 3px;
+  background: var(--panel-solid);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .76), 0 12px 30px rgb(32 43 56 / 8%);
+}
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .lab-public .collision-figure::before { opacity: .44; border-color: color-mix(in srgb, var(--worldline-hardware) 24%, var(--line)); }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .lab-public .collision-figure::after {
+  background: color-mix(in srgb, var(--panel-solid) 94%, transparent);
+  color: var(--worldline-hardware-text);
+  border-left-color: var(--worldline-device-coral);
+}
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .lab-public .collision-figure figcaption { color: var(--muted); border-top-color: var(--line); }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .lab-public .research-detail,
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .lab-public .physics-resource-card {
+  background: color-mix(in srgb, var(--panel-solid) 96%, var(--worldline-blue) 4%);
+  border-color: color-mix(in srgb, var(--worldline-blue) 18%, var(--line));
+  box-shadow: 0 2px 10px rgb(32 43 56 / 5%);
+}
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .lab-public .paper-tag {
+  color: var(--worldline-cyan-hot);
+  border-color: color-mix(in srgb, var(--worldline-blue) 24%, var(--line));
+  background: color-mix(in srgb, var(--worldline-blue) 5%, var(--panel-solid));
+}
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-shift-overlay {
+  --worldline-screen: #F4F1E9;
+  --worldline-cyan: #527A82;
+  --worldline-cyan-hot: #29415D;
+  --worldline-blue: #3B5C7A;
+  --worldline-anomaly: #B96D49;
+}
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-shift-overlay::before,
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-shift-overlay__glitch { mix-blend-mode: multiply; }
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-shift-overlay__hud {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--worldline-cyan) 5%, transparent), transparent 54%), color-mix(in srgb, var(--worldline-screen) 96%, transparent);
+  color: var(--text);
+  box-shadow: 0 12px 32px rgb(32 43 56 / 14%), inset 0 0 0 1px rgba(255, 255, 255, .70);
+  text-shadow: none;
+}
+:root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-shift-overlay__meter > span { background: linear-gradient(90deg, var(--worldline-cyan), var(--worldline-blue), var(--worldline-device-coral)); box-shadow: none; }
+@media (hover: hover) and (pointer: fine) {
+  :root[data-color-scheme="worldline-console"][data-bg-style="paper"] .panel:hover,
+  :root[data-color-scheme="worldline-console"][data-bg-style="paper"] .glass-card:hover,
+  :root[data-color-scheme="worldline-console"][data-bg-style="paper"] .theme-card:hover,
+  :root[data-color-scheme="worldline-console"][data-bg-style="paper"] .public-paper:hover,
+  :root[data-color-scheme="worldline-console"][data-bg-style="paper"] .research-detail:hover,
+  :root[data-color-scheme="worldline-console"][data-bg-style="paper"] .physics-resource-card:hover {
+    box-shadow: 0 8px 24px rgb(32 43 56 / 8%), 0 0 0 1px color-mix(in srgb, var(--worldline-blue) 12%, transparent);
+  }
+}
+@media (max-width: 639px) {
+  :root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-technical-backdrop { opacity: .16; }
+  :root[data-color-scheme="worldline-console"][data-bg-style="paper"] .worldline-particle-canvas.is-visible { opacity: .18; }
 }
