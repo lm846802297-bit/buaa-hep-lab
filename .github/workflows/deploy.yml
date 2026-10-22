@@ -169,12 +169,16 @@ jobs:
       - name: Teaching benchmark check
         if: needs.changes.outputs.learning == '1'
         run: python frontend/public/learning/two_body_decay.py
-      - name: Install Chromium for high-impact UI changes
+      - name: Install Chromium and CJK fonts for high-impact UI changes
         if: needs.changes.outputs.browser == '1'
-        timeout-minutes: 5
-        # GitHub-hosted Ubuntu runners already provide Chromium's system libraries.
-        # Avoid apt mirror upgrades here; install only the Playwright browser binary.
-        run: npx --prefix frontend playwright install chromium
+        timeout-minutes: 7
+        # Install the browser without a broad apt dependency upgrade. Add a CJK font
+        # so retained desktop/mobile screenshots can be reviewed with legible Chinese.
+        run: |
+          npx --prefix frontend playwright install chromium
+          sudo apt-get install -y fonts-wqy-zenhei
+          fc-cache -f
+          fc-list :lang=zh | grep -q .
       - name: Browser smoke checks
         if: needs.changes.outputs.browser == '1'
         run: node frontend/tests/audit-browser-smoke.mjs
