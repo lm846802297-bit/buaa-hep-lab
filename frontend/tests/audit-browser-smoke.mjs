@@ -737,6 +737,16 @@ try {
   const schemeCards = stylePage.locator('#section-color .theme-card[role="button"]')
   check(await schemeCards.count() === schemeIds.length, 'all five color scheme cards render')
   for (let i = 0; i < schemeIds.length; i++) {
+    if (schemeIds[i] === 'worldline-console' || schemeIds[i] === 'custom') {
+      await stylePage.evaluate(() => {
+        window.__themeShiftPhaseLog = []
+        window.__themeShiftStartedAt = performance.now()
+        window.__themeShiftListener = event => {
+          window.__themeShiftPhaseLog.push({ phase: event.detail, at: Math.round(performance.now()) })
+        }
+        window.addEventListener('worldline:phase', window.__themeShiftListener)
+      })
+    }
     await schemeCards.nth(i).click()
     await expect(stylePage.locator('html')).toHaveAttribute('data-color-scheme', schemeIds[i])
     check(await schemeCards.nth(i).getAttribute('aria-pressed') === 'true', `color scheme card ${schemeIds[i]} updates its active state`)
@@ -746,7 +756,29 @@ try {
       await expect(themeTransition).toBeVisible()
       await expect(themeTransition.locator('.worldline-shift-overlay__hud')).toHaveCount(0)
       check(!(await themeTransition.innerText()).includes('世界线变动'), `theme card ${schemeIds[i]} transition contains no Worldline Shift text`)
-      await expect(themeTransition).toHaveCount(0, { timeout: 2500 })
+      try {
+        await expect(themeTransition).toHaveCount(0, { timeout: 2500 })
+      } catch (error) {
+        const diagnostic = await stylePage.evaluate(() => {
+          const overlay = document.querySelector('.worldline-shift-overlay')
+          return {
+            elapsedMs: Math.round(performance.now() - (window.__themeShiftStartedAt || performance.now())),
+            visibilityState: document.visibilityState,
+            hasFocus: document.hasFocus(),
+            phases: window.__themeShiftPhaseLog || [],
+            overlayPhase: overlay?.getAttribute('data-phase') || null,
+            timelineActive: Boolean(overlay?.classList.contains('is-timeline-active')),
+            hudPresent: Boolean(overlay?.querySelector('.worldline-shift-overlay__hud')),
+            overlayOpacity: overlay ? getComputedStyle(overlay).opacity : null
+          }
+        })
+        throw new Error('theme transition did not clean up: ' + JSON.stringify(diagnostic) + '; cause=' + error.message)
+      } finally {
+        await stylePage.evaluate(() => {
+          if (window.__themeShiftListener) window.removeEventListener('worldline:phase', window.__themeShiftListener)
+          delete window.__themeShiftListener
+        })
+      }
     }
   }
 
