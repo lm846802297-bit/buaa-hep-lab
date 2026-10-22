@@ -779,7 +779,21 @@ try {
       await expect(themeTransition.locator('.worldline-shift-overlay__hud')).toHaveCount(0)
       check(!(await themeTransition.innerText()).includes('世界线变动'), `theme card ${schemeIds[i]} transition contains no Worldline Shift text`)
       try {
-        await expect(themeTransition).toHaveCount(0, { timeout: 2500 })
+        // Wait for the component's semantic end state instead of assuming that
+        // the 1.8 s animation timer runs on wall-clock time under CI load.
+        await stylePage.waitForFunction(() =>
+          Array.isArray(window.__themeShiftPhaseLog) &&
+          window.__themeShiftPhaseLog.some(entry => entry.phase === 'idle'),
+          null,
+          { timeout: 6000 }
+        )
+        const phases = await stylePage.evaluate(() => (window.__themeShiftPhaseLog || []).map(entry => entry.phase))
+        const expectedPhases = ['ignite', 'propagate', 'disrupt', 'readout', 'decay', 'idle']
+        check(
+          phases.length === expectedPhases.length && expectedPhases.every((phase, index) => phases[index] === phase),
+          `theme transition emits the complete phase sequence: ${phases.join(' -> ')}`
+        )
+        await expect(themeTransition).toHaveCount(0, { timeout: 1000 })
       } catch (error) {
         const diagnostic = await stylePage.evaluate(() => {
           const overlay = document.querySelector('.worldline-shift-overlay')
@@ -788,6 +802,7 @@ try {
             visibilityState: document.visibilityState,
             hasFocus: document.hasFocus(),
             phases: window.__themeShiftPhaseLog || [],
+            overlayPresent: Boolean(overlay),
             overlayPhase: overlay?.getAttribute('data-phase') || null,
             timelineActive: Boolean(overlay?.classList.contains('is-timeline-active')),
             hudPresent: Boolean(overlay?.querySelector('.worldline-shift-overlay__hud')),
