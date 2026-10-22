@@ -1,0 +1,100 @@
+name: SEC-04 dependency audit (no deployment)
+
+on:
+  push:
+    branches:
+      - audit/sec04-dependency-review
+  pull_request:
+    branches:
+      - final-audit
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sec04-dependency-audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run frontend test suite
+        run: npm test
+
+      - name: Capture full and production-only npm audit reports
+        shell: bash
+        run: |
+          set +e
+          npm audit --json > npm-audit-full.json 2> npm-audit-full.stderr
+          full_status=$?
+          npm audit --omit=dev --json > npm-audit-production.json 2> npm-audit-production.stderr
+          production_status=$?
+          set -e
+          printf '%s\n' "$full_status" > npm-audit-full.exit
+          printf '%s\n' "$production_status" > npm-audit-production.exit
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+
+          const reports = [
+            ['All dependencies', 'npm-audit-full.json', 'npm-audit-full.exit'],
+            ['Production dependencies only', 'npm-audit-production.json', 'npm-audit-production.exit'],
+          ];
+          const lines = ['## SEC-04 dependency audit', '', '| Scope | Critical | High | Moderate | Low | Info | npm exit |', '|---|---:|---:|---:|---:|---:|---:|'];
+          let failedToRetrieveReport = false;
+
+          for (const [scope, reportPath, exitPath] of reports) {
+            let report;
+            try {
+              report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            } catch (error) {
+              console.error(`Could not parse ${reportPath}: ${error.message}`);
+              failedToRetrieveReport = true;
+              continue;
+            }
+            const v = report.metadata?.vulnerabilities;
+            if (!v) {
+              console.error(`No vulnerability metadata in ${reportPath}; npm may have failed before producing an audit report.`);
+              console.error(JSON.stringify(report.error ?? report, null, 2));
+              failedToRetrieveReport = true;
+              continue;
+            }
+            const exitCode = fs.readFileSync(exitPath, 'utf8').trim();
+            lines.push(`| ${scope} | ${v.critical ?? 0} | ${v.high ?? 0} | ${v.moderate ?? 0} | ${v.low ?? 0} | ${v.info ?? 0} | ${exitCode} |`);
+            console.log(`${scope}: ${JSON.stringify(v)} (npm exit ${exitCode})`);
+          }
+
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
+          if (failedToRetrieveReport) process.exitCode = 1;
+          NODE
+
+      - name: Validate isolated bcrypt Worker bundle without deployment
+        run: npx wrangler deploy --dry-run --outdir /tmp/sec04-bcrypt-dry-run --config benchmarks/bcrypt/wrangler.jsonc
+
+      - name: Upload audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec04-dependency-audit
+          path: |
+            frontend/npm-audit-full.json
+            frontend/npm-audit-full.stderr
+            frontend/npm-audit-full.exit
+            frontend/npm-audit-production.json
+            frontend/npm-audit-production.stderr
+            frontend/npm-audit-production.exit
+          if-no-files-found: warn
+          retention-days: 14
