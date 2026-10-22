@@ -168,7 +168,7 @@ function downloadBibtex() {
             decoding="async"
           >
         </Transition>
-        <svg viewBox="0 0 600 600" role="img" aria-labelledby="collision-title collision-description">
+        <svg viewBox="0 0 600 600" role="img" :aria-hidden="heroVisualMode !== 'blueprint'" aria-labelledby="collision-title collision-description">
           <title id="collision-title">叠加在 CMS 探测器照片上的粒子径迹示意</title>
           <desc id="collision-description">圆形几何环与向外延伸的粒子径迹是叠加在真实 CMS 探测器照片上的装饰性视觉元素，并非该照片对应的真实碰撞事件数据。</desc>
           <defs>
