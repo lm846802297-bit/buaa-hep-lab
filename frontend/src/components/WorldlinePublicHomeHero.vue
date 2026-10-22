@@ -56,19 +56,20 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
         
       </div>
 
-      <figure class="worldline-detector-figure">
+      <figure class="worldline-detector-figure" :aria-label="heroVisualMode === 'blueprint' ? activeHeroVisual.alt : undefined">
         <div class="worldline-visual-controls" role="group" aria-label="首页右侧主视觉模式">
           <button v-for="mode in heroVisualModes" :key="mode.id" type="button" :class="{ active: heroVisualMode === mode.id }" :aria-pressed="heroVisualMode === mode.id" @click="heroVisualMode = mode.id">{{ mode.label }}</button>
         </div>
         <Transition name="worldline-image" mode="out-in">
-          <img :key="activeHeroVisual.id" class="worldline-detector-photo" :src="activeHeroVisual.src" :alt="activeHeroVisual.alt" loading="eager" fetchpriority="high" decoding="async">
+          <img v-if="heroVisualMode !== 'blueprint'" :key="activeHeroVisual.id" class="worldline-detector-photo" :src="activeHeroVisual.src" :alt="activeHeroVisual.alt" loading="eager" fetchpriority="high" decoding="async">
         </Transition>
-        <svg v-if="heroVisualMode === 'blueprint'" class="worldline-track-overlay" viewBox="0 0 600 600" fill="none" aria-hidden="true"><g stroke="currentColor" stroke-width="1" opacity=".42"><circle cx="300" cy="300" r="48"/><circle cx="300" cy="300" r="88"/><circle cx="300" cy="300" r="135"/><circle cx="300" cy="300" r="180"/><circle cx="300" cy="300" r="225"/><circle cx="300" cy="300" r="264"/><ellipse cx="300" cy="300" rx="264" ry="98" transform="rotate(-27 300 300)"/><ellipse cx="300" cy="300" rx="250" ry="145" transform="rotate(28 300 300)"/><path d="M18 300h564M300 18v564M88 88l424 424M512 88L88 512" stroke-dasharray="3 8"/></g><g stroke="#dca65d" stroke-width="1.35" stroke-linecap="round" opacity=".58"><path d="M300 300C350 290 405 294 510 305"/><path d="M300 300Q392 230 510 150" stroke-dasharray="4 8"/><path d="M300 300Q240 360 150 460" stroke-dasharray="4 8"/></g><circle cx="300" cy="300" r="12" fill="#fff1ce" stroke="#dca65d" stroke-width="3"/></svg>
         <figcaption class="worldline-image-credit">
-          <a :href="activeHeroVisual.photoPage" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.photoCredit }}</a>
-          <span><a :href="activeHeroVisual.licenseUrl" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.licenseLabel }}</a> · {{ activeHeroVisual.photoNote }}</span>
+          <a v-if="activeHeroVisual.photoPage" :href="activeHeroVisual.photoPage" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.photoCredit }}</a>
+          <span v-else>{{ activeHeroVisual.photoCredit }}</span>
+          <span v-if="activeHeroVisual.licenseUrl"><a :href="activeHeroVisual.licenseUrl" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.licenseLabel }}</a> · {{ activeHeroVisual.photoNote }}</span>
+          <span v-else>{{ activeHeroVisual.photoNote }}</span>
           <span>{{ activeHeroVisual.caption }}</span>
-          <span class="worldline-sr-only">conceptual particle tracks are illustrative only and do not represent the actual collision event shown in this detector photograph. 蓝图中的粒子轨迹为概念示意，并非该照片对应的真实碰撞事件数据。</span>
+          <span class="worldline-sr-only">The blueprint is conceptual artwork, not experimental event data. ATLAS detector photographs and event displays retain their original source and license attribution.</span>
         </figcaption>
       </figure>
       <div class="worldline-affiliation">{{ lab.name }}<template v-if="lab.provisional"> / 暂定名称</template></div>
@@ -138,12 +139,20 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 .worldline-actions .worldline-text-action { border-color: transparent; border-bottom-color: var(--wl-line); background: transparent; }
 .worldline-detector-figure { position: absolute; z-index: 1; top: 0; right: 0; bottom: 0; width: 66%; margin: 0; overflow: hidden; background: #d9dfe0; }
 .worldline-detector-figure::before { position: absolute; z-index: 2; inset: 0; background: linear-gradient(90deg, var(--wl-paper) 0%, rgba(244,241,233,.84) 8%, rgba(244,241,233,.25) 29%, transparent 50%), linear-gradient(0deg, rgba(244,241,233,.14), transparent 35%); content: ''; pointer-events: none; }
+.worldline-home.visual-blueprint .worldline-blueprint-layer { display: none; }
+.worldline-home.visual-blueprint .worldline-detector-figure {
+  top: 0; right: 0; bottom: 0; left: 0; width: 100%;
+  background-color: var(--wl-paper);
+  background-image: url('/images/particle-accelerator-blueprint.avif');
+  background-position: center; background-repeat: no-repeat; background-size: cover;
+}
+.worldline-home.visual-blueprint .worldline-detector-figure::before { display: none; }
+.worldline-home.visual-blueprint .worldline-image-credit { right: 22px; left: auto; max-width: min(80%, 520px); }
 .worldline-detector-photo { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: saturate(.78) contrast(.96); transition: filter .25s ease, opacity .22s ease; }
 .worldline-image-enter-active, .worldline-image-leave-active { transition: opacity .22s ease; }
 .worldline-image-enter-from, .worldline-image-leave-to { opacity: 0; }
 .visual-terminal .worldline-detector-photo { filter: saturate(.96) contrast(1.04); }
 .visual-photo .worldline-detector-photo { filter: saturate(.84) contrast(.98); }
-.worldline-track-overlay { position: absolute; z-index: 2; inset: 4% 0 5% 8%; width: 90%; height: 90%; color: rgba(226,235,239,.82); mix-blend-mode: screen; pointer-events: none; }
 .worldline-visual-controls { position: absolute; z-index: 5; top: clamp(18px, 3vw, 42px); right: clamp(16px, 3vw, 42px); display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; padding: 4px; border: 1px solid rgba(41,65,93,.22); background: rgba(255,254,250,.92); box-shadow: 0 4px 18px rgba(25,39,54,.08); }
 .worldline-visual-controls button { min-height: 32px; padding: 7px 10px; border: 1px solid transparent; background: transparent; color: #354353; font-size: 11px; white-space: nowrap; cursor: pointer; }
 .worldline-visual-controls button.active { background: #25384b; color: #fffdf7; }
@@ -169,6 +178,8 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   .worldline-detector-figure::before { background: linear-gradient(90deg, var(--wl-paper) 0%, rgba(244,241,233,.92) 9%, rgba(244,241,233,.48) 36%, transparent 70%); }
 }
 @media (max-width: 820px) {
+  .worldline-home.visual-blueprint .worldline-detector-figure { position: relative; inset: auto; width: calc(100% + 44px); height: auto; aspect-ratio: 16 / 9; margin: 20px -22px 0; }
+  .worldline-home.visual-blueprint .worldline-image-credit { right: 8px; bottom: 8px; left: 8px; max-width: none; }
   .worldline-header { width: calc(100% - 32px); min-height: 66px; padding: 10px 0; }
   .worldline-brand-mark { width: 30px; height: 30px; }
   .worldline-brand strong { font-size: 14px; }
