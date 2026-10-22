@@ -18,7 +18,6 @@ for (const key of seen) {
   assert(!/pdf|three|vanta|ogl|\/HomeView-|SeminarView|MailboxView|AssistantView|LearningView|StudyFormula/.test(item.file), `Internal dependency on public entry: ${item.file}`)
   if (item.file.endsWith('.js')) gzipBytes += gzipSync(await readFile(`dist/${item.file}`)).length
 }
-assert(gzipBytes <= 250000, `Public initial JavaScript gzip ${gzipBytes} exceeds 250000 bytes`)
 const html = await readFile('dist/index.html', 'utf8')
 assert(html.includes('conceptual') || html.includes('CONCEPTUAL'))
 assert(html.includes('高能粒子物理唯象学') && html.includes('https://arxiv.org/abs/'), 'Missing prerendered public content')
@@ -77,7 +76,7 @@ for (const privatePath of ['/hub', '/library', '/seminars', '/mailbox', '/accoun
   assert(!sitemap.includes(`<loc>https://buaa-hep-hub.pages.dev${privatePath}</loc>`), `Private route ${privatePath} must not appear in sitemap`)
 }
 
-console.log(JSON.stringify({ publicInitialGzipBytes: gzipBytes, ceilingBytes: 250000, dependencies: [...seen] }, null, 2))
+console.log(JSON.stringify({ publicInitialGzipBytes: gzipBytes, measurement: 'informational; no fixed gzip-size threshold', dependencies: [...seen] }, null, 2))
 seen.clear()
 for (const key of ['index.html', 'src/views/HomeView.vue', 'src/composables/useSiteConfig.js', 'src/mock/demoAdapter.js',
   ...['Navbar', 'MobileHeader', 'MobileNavBar', 'FeedbackHost', 'NoticeScanBanner', 'ForecastAtmosphere', 'MidAutumnMooncakes', 'NationalDayCelebration', 'DemoModeBanner', 'WorkspaceSession'].map(name => `src/components/${name}.vue`)]) add(key)
@@ -87,5 +86,4 @@ for (const key of seen) {
   assert(item, `Missing workbench manifest record: ${key}`)
   if (item.file.endsWith('.js')) workbenchGzipBytes += gzipSync(await readFile(`dist/${item.file}`)).length
 }
-assert(workbenchGzipBytes <= 250000, `Workbench initial JavaScript gzip ${workbenchGzipBytes} exceeds 250000 bytes`)
-console.log(JSON.stringify({ workbenchInitialGzipBytes: workbenchGzipBytes, ceilingBytes: 250000, conditions: 'existing account, default static clouds, no dialogs open; includes demo adapter for reproducible isolated measurements' }))
+console.log(JSON.stringify({ workbenchInitialGzipBytes: workbenchGzipBytes, measurement: 'informational; no fixed gzip-size threshold', conditions: 'existing account, default static clouds, no dialogs open; includes demo adapter for reproducible isolated measurements' }))

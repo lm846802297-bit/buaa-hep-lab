@@ -73,7 +73,7 @@ jobs:
           retention-days: 14
       - name: Teaching benchmark consistency checks
         run: python frontend/public/learning/two_body_decay.py
-      - name: Public entry budget and prerender verification
+      - name: Initial JavaScript measurements and prerender verification
         run: npm --prefix frontend run check:bundle
       - name: Install browser for route and layout smoke checks
         run: npx --prefix frontend playwright install --with-deps chromium
