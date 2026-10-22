@@ -44,13 +44,14 @@ try {
     if (width === 2048) {
       const composition = await page.locator('.worldline-home').evaluate(root => {
         const header = root.querySelector('.worldline-header').getBoundingClientRect()
+        const hero = root.querySelector('.worldline-hero').getBoundingClientRect()
         const copy = root.querySelector('.worldline-copy').getBoundingClientRect()
         const figure = root.querySelector('.worldline-detector-figure').getBoundingClientRect()
-        return { headerLeft: header.left, headerWidth: header.width, copyLeft: copy.left, figureLeft: figure.left, viewportWidth: innerWidth }
+        return { headerLeft: header.left, headerWidth: header.width, copyLeft: copy.left, figureLeft: figure.left, figureWidth: figure.width, heroLeft: hero.left, heroWidth: hero.width, viewportWidth: innerWidth }
       })
       check(Math.abs(composition.headerLeft - (2048 - 1216) / 2) < 3 && Math.abs(composition.headerWidth - 1216) < 3, '2048px reference layout centers the 1216px header')
       check(Math.abs(composition.copyLeft - ((2048 - 1216) / 2 + 96)) < 3, '2048px reference layout aligns the hero title 96px inside the header grid')
-      check(Math.abs(composition.figureLeft - 2048 * .34) < 4, '2048px reference layout starts the detector image at the right-hand 34% boundary')
+      check(Math.abs(composition.figureLeft - composition.heroLeft) < 3 && Math.abs(composition.figureWidth - composition.heroWidth) < 3, '2048px blueprint reference image spans the complete hero composition')
     }
     if (width === 1440) {
       const figure = page.locator('.worldline-detector-figure')
@@ -177,7 +178,11 @@ try {
       check(await page.locator('.worldline-detector-photo').getAttribute('alt') !== '', label + ' mode has descriptive alternative text')
       check(await page.locator('.worldline-detector-figure').evaluate(el => getComputedStyle(el).backgroundImage === 'none'), label + ' mode does not retain the full blueprint behind its own photograph')
       const expectedLicense = storedMode === 'photo' ? 'CC BY-SA 4.0' : 'CC BY-SA 3.0'
-      check(await page.getByRole('link', { name: expectedLicense, exact: true }).count() === 1, label + ' mode updates image attribution and license')
+      const expectedCredit = storedMode === 'photo' ? /ATLAS detector · photo by SimonWaldherr/ : /ATLAS Collaboration · 4-muon event display/
+      check(await page.getByRole('link', { name: expectedCredit }).count() === 1, label + ' mode links the correct image source attribution')
+      const licenseLink = page.getByRole('link', { name: expectedLicense, exact: true })
+      check(await licenseLink.count() === 1, label + ' mode updates image attribution and license')
+      check(await licenseLink.getAttribute('href') === (storedMode === 'photo' ? 'https://creativecommons.org/licenses/by-sa/4.0/' : 'https://creativecommons.org/licenses/by-sa/3.0/'), label + ' mode links to the matching license text')
     }
   }
   await heroModeGroup.getByRole('button', { name: '蓝图叠加', exact: true }).click()
