@@ -188,6 +188,8 @@ try {
     window.__worldlineDecaySnapshot = null
     window.__worldlinePhaseLog = []
   })
+  await page.bringToFront()
+  await page.waitForFunction(() => document.visibilityState === 'visible')
   await page.locator('.topic-guide-entry').first().click()
   // Capture the short transition before waiting for the lazy-loaded destination view.
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
@@ -253,6 +255,8 @@ try {
   await firstResourceCard.hover()
   const hoverShadow = await firstResourceCard.evaluate(el => getComputedStyle(el).boxShadow)
   check(hoverShadow !== 'none', 'worldline mode provides visible hover feedback on resource cards')
+  await page.bringToFront()
+  await page.waitForFunction(() => document.visibilityState === 'visible')
   await page.evaluate(() => {
     window.__peopleRoutePhases = []
     window.__peopleRouteStart = performance.now()
@@ -266,7 +270,25 @@ try {
     throw new Error('public people route did not render; url=' + page.url() + '; pageErrors=' + errors.slice(-5).join(' | ') + '; consoleErrors=' + consoleErrors.slice(-5).join(' | ') + '; failedRequests=' + failedRequests.slice(-5).join(' | ') + '; body=' + bodyText + '; cause=' + error.message)
   })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'worldline skin carries across public route navigation')
-  await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 3000 })
+  try {
+    await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 3000 })
+  } catch (error) {
+    const diagnostic = await page.evaluate(() => {
+      const overlay = document.querySelector('.worldline-shift-overlay')
+      return {
+        route: location.pathname,
+        elapsedMs: Math.round(performance.now() - (window.__peopleRouteStart || performance.now())),
+        visibilityState: document.visibilityState,
+        hasFocus: document.hasFocus(),
+        phases: window.__peopleRoutePhases || [],
+        overlayPhase: overlay?.getAttribute('data-phase') || null,
+        timelineActive: Boolean(overlay?.classList.contains('is-timeline-active')),
+        hudPresent: Boolean(overlay?.querySelector('.worldline-shift-overlay__hud')),
+        overlayOpacity: overlay ? getComputedStyle(overlay).opacity : null
+      }
+    })
+    throw new Error('Worldline people-route transition did not clean up: ' + JSON.stringify(diagnostic) + '; cause=' + error.message)
+  }
   const peopleRoutePhases = await page.evaluate(() => (window.__peopleRoutePhases || []).map(entry => entry.phase))
   const expectedPeopleRoutePhases = ['ignite', 'propagate', 'disrupt', 'readout', 'decay', 'idle']
   check(expectedPeopleRoutePhases.every((phase, index) => {
