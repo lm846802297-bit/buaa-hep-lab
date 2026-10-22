@@ -6,14 +6,14 @@ export const publicHeroVisualModes = [
   {
     id: 'blueprint',
     label: '蓝图叠加',
-    src: 'https://upload.wikimedia.org/wikipedia/commons/f/f3/CMS_detector_%282%29.jpg',
-    alt: 'CERN 地下实验区内的 CMS 紧凑型缪子线圈粒子探测器实景照片。',
-    photoPage: 'https://commons.wikimedia.org/wiki/File:CMS_detector_(2).jpg',
-    photoCredit: 'CMS detector · photo by zipckr (Flickr)',
-    licenseLabel: 'CC BY 2.0',
-    licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
-    photoNote: 'cropped; scientific overlays added',
-    caption: '理论 · 模型 · 信号'
+    src: '/images/particle-accelerator-blueprint.avif',
+    alt: '暖白工程蓝图、机械齿轮、粒子加速器与碰撞轨迹组成的概念插画；并非真实实验事件显示图。',
+    photoPage: null,
+    photoCredit: 'Scientific Atelier · 粒子加速器蓝图概念插画',
+    licenseLabel: null,
+    licenseUrl: null,
+    photoNote: '课题组提供的视觉参考图 · 非实验数据',
+    caption: 'SCIENTIFIC ATELIER · BLUEPRINT'
   },
   {
     id: 'photo',
