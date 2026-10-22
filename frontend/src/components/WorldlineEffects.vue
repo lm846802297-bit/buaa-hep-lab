@@ -9,6 +9,7 @@ const isShifting = ref(false)
 const reducedMotion = ref(false)
 const shiftKey = ref(0)
 const shiftPhase = ref('idle')
+const showShiftHud = ref(true)
 const shiftTimelineActive = ref(false)
 
 const excludedRoutes = ['/login', '/setup', '/quick-share']
@@ -468,8 +469,9 @@ function scheduleShiftPhase(delay, phase) {
   phaseTimerIds.push(timerId)
 }
 
-function triggerShift() {
+function triggerShift({ showHud = true } = {}) {
   if (!mounted || typeof window === 'undefined' || reducedMotion.value) return
+  showShiftHud.value = showHud
   clearShiftTimers()
   shiftKey.value += 1
   const currentShiftKey = shiftKey.value
@@ -590,14 +592,14 @@ watch(() => route.path, (next, previous) => {
 watch([currentColorScheme, publicColorScheme], ([nextWorkspace, nextPublic], [previousWorkspace, previousPublic]) => {
   if (route.meta.public) {
     if (nextPublic !== previousPublic && (nextPublic === 'worldline-console' || previousPublic === 'worldline-console')) {
-      triggerShift()
+      triggerShift({ showHud: false })
     }
     return
   }
 
   if (excludedRoutes.includes(route.path)) return
   if (nextWorkspace !== previousWorkspace && (nextWorkspace === 'worldline-console' || previousWorkspace === 'worldline-console')) {
-    triggerShift()
+    triggerShift({ showHud: false })
   }
 })
 
@@ -692,7 +694,7 @@ onBeforeUnmount(() => {
     <div class="worldline-shift-overlay__glitch worldline-shift-overlay__glitch--a"></div>
     <div class="worldline-shift-overlay__glitch worldline-shift-overlay__glitch--b"></div>
     <div class="worldline-shift-overlay__glitch worldline-shift-overlay__glitch--c"></div>
-    <div class="worldline-shift-overlay__hud">
+    <div v-if="showShiftHud" class="worldline-shift-overlay__hud">
       <span>WORLDLINE SHIFT / FIELD RECONFIGURATION</span>
       <strong>世界线变动</strong>
       <div class="worldline-shift-overlay__meter"><span></span></div>

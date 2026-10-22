@@ -123,28 +123,17 @@ try {
   await publicSkin.selectOption('worldline-console')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
   check(await page.evaluate(() => localStorage.getItem('labhub_public_color_scheme') === 'worldline-console' && localStorage.getItem('laborbit_color_scheme') !== 'worldline-console'), 'public theme persists separately from workspace preferences')
-  await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
-  await expect(page.locator('.worldline-shift-overlay')).toHaveClass(/is-timeline-active/, { timeout: 1500 })
-  check(await page.locator('.worldline-shift-overlay').evaluate(el => el.classList.contains('is-timeline-active')), 'worldline keyframes start only after the overlay has been rendered')
-  // Read the phase-locked snapshot captured at the event boundary; later screenshots
-  // must not be able to advance the live DOM past readout before assertions run.
-  await page.waitForFunction(() => window.__worldlineReadoutSnapshot, null, { timeout: 1500 })
+  const shiftOverlay = page.locator('.worldline-shift-overlay')
+  await expect(shiftOverlay).toBeVisible()
+  await expect(shiftOverlay).toHaveClass(/is-timeline-active/, { timeout: 1500 })
+  await expect(shiftOverlay.locator('.worldline-shift-overlay__dial')).toBeVisible()
+  await expect(shiftOverlay.locator('.worldline-shift-overlay__glitch')).toHaveCount(3)
+  await expect(shiftOverlay.locator('.worldline-shift-overlay__hud')).toHaveCount(0)
+  check(!(await shiftOverlay.innerText()).includes('世界线变动'), 'theme switching plays visual effects without the Worldline Shift text')
+  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('disrupt'), null, { timeout: 1500 })
+  await page.screenshot({ path: resolve(output, 'worldline-1440-theme-transition-no-hud.png') })
+  await expect(shiftOverlay).toHaveCount(0, { timeout: 2500 })
   check(await page.locator('html').getAttribute('data-bg-style') === 'paper', 'public Worldline theme keeps the paper background independent from workspace preferences')
-  const readoutSnapshot = await page.evaluate(() => window.__worldlineReadoutSnapshot || null)
-  check(readoutSnapshot?.phase === 'readout', 'worldline HUD snapshot belongs to the readout DOM phase: ' + readoutSnapshot?.phase)
-  await page.screenshot({ path: resolve(output, 'worldline-1440-shift-readout.png') })
-  check(Boolean(readoutSnapshot.backdropVisible), 'Worldline Console enables the clockwork and scientific-drawing background')
-  check(Boolean(readoutSnapshot.backdropShifting), 'worldline transition activates the technical backdrop during readout')
-  check(readoutSnapshot.ringCount === 2, 'worldline transition draws two expanding instrument-wave rings')
-  check(Boolean(readoutSnapshot.hudVisible), 'worldline shift HUD has a rendered panel during readout')
-  check(readoutSnapshot.hudAnimationName === 'none', 'worldline HUD is phase-locked instead of racing a wall-clock fade')
-  check(Number(readoutSnapshot.hudOpacity) >= 0.98, 'worldline HUD is fully readable during readout: ' + readoutSnapshot.hudOpacity)
-  check(
-    readoutSnapshot.hudBackgroundColor !== 'rgba(0, 0, 0, 0)'
-      && readoutSnapshot.hudBackgroundColor !== 'transparent'
-      && !/^rgba?\(\s*0\s*,\s*0\s*,\s*0/.test(readoutSnapshot.hudBackgroundColor),
-    'worldline shift HUD uses a light, high-contrast paper panel'
-  )
   const worldlineTuner = await page.evaluate(() => {
     const root = getComputedStyle(document.documentElement)
     const icon = document.querySelector('.theme-tuner-icon')
@@ -170,20 +159,7 @@ try {
   check(await particleCanvas.evaluate(el => el.classList.contains('is-visible')), 'worldline skin enables the ambient particle canvas')
   check(await particleCanvas.evaluate(el => el.width > 0 && el.height > 0), 'ambient particle canvas has a real drawing surface')
   check(await particleCanvas.evaluate(el => el.width <= innerWidth * 1.5 + 1 && el.height <= innerHeight * 1.5 + 1), 'particle canvas caps device-pixel-ratio at 1.5x for performance')
-  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('decay') && window.__worldlineDecaySnapshot, null, { timeout: 1500 })
-  const decaySnapshot = await page.evaluate(() => window.__worldlineDecaySnapshot || null)
-  check(decaySnapshot?.phase === 'decay', 'worldline HUD reaches the decay DOM phase: ' + decaySnapshot?.phase)
-  check(decaySnapshot?.animationName === 'worldline-hud-decay', 'worldline HUD starts its dedicated decay animation: ' + decaySnapshot?.animationName)
-  await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
-  check(!(await technicalBackdrop.evaluate(el => el.classList.contains('is-shifting'))), 'technical backdrop returns to idle after the worldline transition')
-  const phaseLog = await page.evaluate(() => {
-    if (window.__worldlinePhaseListener) window.removeEventListener('worldline:phase', window.__worldlinePhaseListener)
-    delete window.__worldlinePhaseListener
-    return Array.isArray(window.__worldlinePhaseLog) ? window.__worldlinePhaseLog : []
-  })
-  const expectedPhases = ['ignite', 'propagate', 'disrupt', 'readout', 'decay', 'idle']
-  const phasePositions = expectedPhases.map(phase => phaseLog.indexOf(phase))
-  check(phasePositions.every((position, index) => position >= 0 && (index === 0 || position > phasePositions[index - 1])), 'worldline timeline follows ignite → propagate → disrupt → readout → decay → idle')
+  check(!(await technicalBackdrop.evaluate(el => el.classList.contains('is-shifting'))), 'technical backdrop returns to idle after the theme transition')
   await page.screenshot({ path: resolve(output, 'worldline-1440-technical-backdrop.png') })
   await page.screenshot({ path: resolve(output, 'worldline-1440-first-screen.png') })
   await page.mouse.move(700, 150)
@@ -206,9 +182,46 @@ try {
   check(await technicalBackdrop.evaluate(el => Number(getComputedStyle(el).opacity) <= 0.2), 'clockwork drawings reduce opacity on mobile to protect readability')
   await page.screenshot({ path: resolve(output, 'worldline-390-first-screen.png') })
   await page.setViewportSize({ width: 1440, height: 900 })
-  await page.goto(`${base}/research/dark`, { waitUntil: 'networkidle' })
+  await page.evaluate(() => {
+    window.__worldlineReadoutSnapshot = null
+    window.__worldlineDecaySnapshot = null
+    window.__worldlinePhaseLog = []
+  })
+  await page.locator('.topic-guide-entry').first().click()
   await expect(page.locator('.research-topic-page')).toBeVisible()
+  await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
+  await expect(page.locator('.worldline-shift-overlay__hud')).toBeVisible()
+  await expect(page.locator('.worldline-shift-overlay')).toHaveClass(/is-timeline-active/, { timeout: 1500 })
+  check(await page.locator('.worldline-shift-overlay').evaluate(el => el.classList.contains('is-timeline-active')), 'route-triggered worldline keyframes start after the overlay is rendered')
+  await page.waitForFunction(() => window.__worldlineReadoutSnapshot, null, { timeout: 1500 })
+  const readoutSnapshot = await page.evaluate(() => window.__worldlineReadoutSnapshot || null)
+  check(readoutSnapshot?.phase === 'readout', 'route-triggered HUD snapshot belongs to the readout DOM phase: ' + readoutSnapshot?.phase)
+  await page.screenshot({ path: resolve(output, 'worldline-1440-shift-readout.png') })
+  check(Boolean(readoutSnapshot.backdropVisible), 'Worldline Console enables the clockwork and scientific-drawing background')
+  check(Boolean(readoutSnapshot.backdropShifting), 'route-triggered transition activates the technical backdrop during readout')
+  check(readoutSnapshot.ringCount === 2, 'route-triggered transition draws two expanding instrument-wave rings')
+  check(Boolean(readoutSnapshot.hudVisible), 'route transition retains the HUD readout panel')
+  check(readoutSnapshot.hudAnimationName === 'none', 'worldline HUD is phase-locked instead of racing a wall-clock fade')
+  check(Number(readoutSnapshot.hudOpacity) >= 0.98, 'worldline HUD is fully readable during readout: ' + readoutSnapshot.hudOpacity)
+  check(
+    readoutSnapshot.hudBackgroundColor !== 'rgba(0, 0, 0, 0)'
+      && readoutSnapshot.hudBackgroundColor !== 'transparent'
+      && !/^rgba?\\(\\s*0\\s*,\\s*0\\s*,\\s*0/.test(readoutSnapshot.hudBackgroundColor),
+    'worldline shift HUD uses a light, high-contrast paper panel'
+  )
+  await page.waitForFunction(() => window.__worldlinePhaseLog?.includes('decay') && window.__worldlineDecaySnapshot, null, { timeout: 1500 })
+  const decaySnapshot = await page.evaluate(() => window.__worldlineDecaySnapshot || null)
+  check(decaySnapshot?.phase === 'decay', 'route-triggered HUD reaches the decay DOM phase: ' + decaySnapshot?.phase)
+  check(decaySnapshot?.animationName === 'worldline-hud-decay', 'route-triggered HUD starts its dedicated decay animation: ' + decaySnapshot?.animationName)
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
+  const phaseLog = await page.evaluate(() => {
+    if (window.__worldlinePhaseListener) window.removeEventListener('worldline:phase', window.__worldlinePhaseListener)
+    delete window.__worldlinePhaseListener
+    return Array.isArray(window.__worldlinePhaseLog) ? window.__worldlinePhaseLog : []
+  })
+  const expectedPhases = ['ignite', 'propagate', 'disrupt', 'readout', 'decay', 'idle']
+  const phasePositions = expectedPhases.map(phase => phaseLog.indexOf(phase))
+  check(phasePositions.every((position, index) => position >= 0 && (index === 0 || position > phasePositions[index - 1])), 'route-triggered worldline timeline follows ignite → propagate → disrupt → readout → decay → idle')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'Worldline Console palette persists on the detailed research-topic route')
   check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Worldline research-topic detail has no desktop horizontal overflow')
   await page.screenshot({ path: resolve(output, 'worldline-1440-topic-dark.png'), fullPage: true })
@@ -257,6 +270,8 @@ try {
   await peopleSkin.selectOption('quiet-research')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'quiet-research', 'standard academic skin can be restored')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
+  await expect(page.locator('.worldline-shift-overlay__hud')).toHaveCount(0)
+  check(!(await page.locator('.worldline-shift-overlay').innerText()).includes('世界线变动'), 'switching away from Worldline Console keeps the transition visual-only')
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await peopleSkinTrigger.click()
@@ -267,6 +282,8 @@ try {
   await peopleSkinTrigger.click()
   await page.getByRole('combobox', { name: '选择官网皮肤风格' }).selectOption('quiet-research')
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
+  await expect(page.locator('.worldline-shift-overlay__hud')).toHaveCount(0)
+  check(!(await page.locator('.worldline-shift-overlay').innerText()).includes('世界线变动'), 'theme switching stays free of the Worldline Shift text')
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
   await page.goto(base, { waitUntil: 'networkidle' })
   check(!requested.some(url => new URL(url).pathname.startsWith('/api/')), 'anonymous homepage does not access internal APIs')
