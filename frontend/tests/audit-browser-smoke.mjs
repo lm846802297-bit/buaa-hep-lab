@@ -820,6 +820,9 @@ try {
   await bgCards.nth(2).click()
   check(await stylePage.locator('html').getAttribute('data-bg-type') === 'galaxy', 'galaxy background card applies')
   await stylePage.locator('.galaxy-atmosphere-canvas canvas.is-rendered').waitFor({ state: 'visible', timeout: 20000 })
+  // CSS transitions can remain at their start value while this tab is backgrounded.
+  await stylePage.bringToFront()
+  await stylePage.waitForFunction(() => document.visibilityState === 'visible')
   const dimSlider = stylePage.getByRole('slider', { name: '背景遮罩暗化程度' })
   await dimSlider.scrollIntoViewIfNeeded()
   // Seed the native range position without firing input; the real keyboard action
@@ -843,16 +846,9 @@ try {
       shadeOpacity: shade ? getComputedStyle(shade).opacity : null,
       shadeDimVar: shade ? getComputedStyle(shade).getPropertyValue('--bg-dim').trim() : null,
       shadeInlineOpacity: shade?.style.opacity ?? null,
+      visibilityState: document.visibilityState,
+      hasFocus: document.hasFocus(),
       shadeClass: shade?.className ?? null,
-      matchingShadeRules: Array.from(document.styleSheets).flatMap(sheet => {
-        try {
-          return Array.from(sheet.cssRules)
-            .filter(rule => rule.selectorText?.includes('atmosphere-shade'))
-            .map(rule => ({ selector: rule.selectorText, opacity: rule.style?.opacity ?? '', cssText: rule.cssText }))
-        } catch {
-          return []
-        }
-      }),
       bgType: document.documentElement.dataset.bgType
     }
   })
