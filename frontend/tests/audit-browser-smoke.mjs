@@ -841,7 +841,18 @@ try {
       rootInline: document.documentElement.style.getPropertyValue('--bg-dim'),
       rootComputed: getComputedStyle(document.documentElement).getPropertyValue('--bg-dim'),
       shadeOpacity: shade ? getComputedStyle(shade).opacity : null,
+      shadeDimVar: shade ? getComputedStyle(shade).getPropertyValue('--bg-dim').trim() : null,
+      shadeInlineOpacity: shade?.style.opacity ?? null,
       shadeClass: shade?.className ?? null,
+      matchingShadeRules: Array.from(document.styleSheets).flatMap(sheet => {
+        try {
+          return Array.from(sheet.cssRules)
+            .filter(rule => rule.selectorText?.includes('atmosphere-shade'))
+            .map(rule => ({ selector: rule.selectorText, opacity: rule.style?.opacity ?? '', cssText: rule.cssText }))
+        } catch {
+          return []
+        }
+      }),
       bgType: document.documentElement.dataset.bgType
     }
   })
