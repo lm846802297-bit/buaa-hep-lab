@@ -219,6 +219,9 @@ jobs:
           done
           fc-cache -f
           fc-list :lang=zh | grep -q .
+          # apt creates its archive lock and partial directory as root; restore
+          # runner ownership so actions/cache can read and persist the cache.
+          sudo chown -R "$USER":"$USER" "$RUNNER_TEMP/apt-archives"
       - name: Browser smoke checks
         if: needs.changes.outputs.browser == '1'
         run: node frontend/tests/audit-browser-smoke.mjs
