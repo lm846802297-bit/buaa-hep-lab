@@ -13,16 +13,16 @@ describe('Public academic website', () => {
     expect(html).toContain('暂定名称')
     // Keep exactly one collaboration entry in the header navigation,
     // styled prominently rather than duplicated as a second CTA.
-    expect(html.match(/class="nav-hub"/g)).toHaveLength(1)
+    expect(html.match(/class="worldline-hub-link"/g)).toHaveLength(1)
     expect(html).toContain('href="/hub"')
     expect(html).not.toContain('header-hub-cta')
     expect(html).toContain('组内协作')
     // The reference composition is implemented as a responsive blueprint hero,
     // while all existing public content sections remain on the page.
-    expect(html).toContain('class="hero-blueprint-decor"')
-    expect(html).toContain('class="hero-title"')
+    expect(html).toContain('class="worldline-blueprint-layer"')
+    expect(html).toContain('id="worldline-hero-title"')
     expect(html).toContain('Particle Physics')
-    expect(html).toContain('class="detector-photo"')
+    expect(html).toContain('class="worldline-detector-photo"')
     expect(html).toContain('https://upload.wikimedia.org/wikipedia/commons/f/f3/CMS_detector_%282%29.jpg')
     expect(html).toContain('首页右侧主视觉模式')
     expect(html).toContain('蓝图叠加')
