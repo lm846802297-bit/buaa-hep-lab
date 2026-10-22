@@ -144,7 +144,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   top: 0; right: 0; bottom: 0; left: 0; width: 100%;
   background-color: var(--wl-paper);
   background-image: url('/images/particle-accelerator-blueprint.avif');
-  background-position: center; background-repeat: no-repeat; background-size: cover;
+  background-position: right center; background-repeat: no-repeat; background-size: auto 100%;
 }
 .worldline-home.visual-blueprint .worldline-detector-figure::before { display: none; }
 .worldline-home.visual-blueprint .worldline-image-credit { right: 22px; left: auto; max-width: min(80%, 520px); }
