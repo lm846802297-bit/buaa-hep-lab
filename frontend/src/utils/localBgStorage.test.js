@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
+const NativeURL = globalThis.URL
+
 describe('localBgStorage', () => {
   let mockStore = new Map()
 
@@ -43,10 +45,11 @@ describe('localBgStorage', () => {
     }
 
     global.indexedDB = mockIDB
-    global.URL = {
-      createObjectURL: vi.fn(() => 'blob:mock-url'),
-      revokeObjectURL: vi.fn()
-    }
+    // Keep URL constructible: Vitest's module resolver and dependencies use new URL().
+    // Override only the object-URL methods needed by this test.
+    global.URL = class MockURL extends NativeURL {}
+    global.URL.createObjectURL = vi.fn(() => 'blob:mock-url')
+    global.URL.revokeObjectURL = vi.fn()
     global.window = {
       dispatchEvent: vi.fn()
     }
@@ -60,7 +63,7 @@ describe('localBgStorage', () => {
 
   afterEach(() => {
     delete global.indexedDB
-    delete global.URL
+    global.URL = NativeURL
     delete global.window
     delete global.CustomEvent
   })

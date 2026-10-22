@@ -5,10 +5,43 @@ import { directions, publicPeople, publicEvents, publicSeminarSeries } from '../
 
 const manifest = JSON.parse(await readFile('dist/.vite/manifest.json', 'utf8'))
 const seen = new Set()
+
+// Vite/Rolldown versions can expose a non-entry chunk under a different manifest
+// key while retaining its source/name/file metadata. Resolve only a unique JS
+// entry for the requested source; never skip a missing dependency or relax a budget.
+function resolveManifestKey(key) {
+  if (manifest[key]) return key
+
+  const normalized = key.replace(/^\.\//, '').replace(/\?.*$/, '')
+  const basename = normalized.split('/').pop()
+  const stem = basename.replace(/\.(vue|js|ts|tsx|jsx)$/, '')
+  const matches = Object.entries(manifest).filter(([candidate, item]) => {
+    if (!item.file?.endsWith('.js')) return false
+    const candidatePath = candidate.replace(/^\.\//, '').replace(/\?.*$/, '')
+    const sourcePath = typeof item.src === 'string'
+      ? item.src.replace(/^\.\//, '').replace(/\?.*$/, '')
+      : ''
+    const fileName = item.file.split('/').pop()
+    return candidatePath === normalized
+      || sourcePath === normalized
+      || item.name === stem
+      || fileName === basename
+      || fileName.startsWith(`${stem}-`)
+  })
+
+  assert.equal(
+    matches.length,
+    1,
+    `Missing or ambiguous manifest record: ${key}; matching JS keys: ${matches.map(([candidate]) => candidate).join(', ') || '(none)'}`
+  )
+  return matches[0][0]
+}
+
 function add(key) {
-  if (seen.has(key)) return
-  seen.add(key)
-  for (const dependency of manifest[key]?.imports || []) add(dependency)
+  const resolvedKey = resolveManifestKey(key)
+  if (seen.has(resolvedKey)) return
+  seen.add(resolvedKey)
+  for (const dependency of manifest[resolvedKey]?.imports || []) add(dependency)
 }
 add('index.html'); add('src/views/PublicHomeView.vue')
 let gzipBytes = 0
