@@ -138,6 +138,11 @@ try {
   if (await publicSkin.inputValue() === 'worldline-console') {
     await publicSkin.selectOption('quiet-research')
     await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
+    await page.evaluate(() => {
+      window.__worldlineReadoutSnapshot = null
+      window.__worldlineDecaySnapshot = null
+      window.__worldlinePhaseLog = []
+    })
   }
   await publicSkin.selectOption('worldline-console')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
