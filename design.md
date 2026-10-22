@@ -63,7 +63,7 @@
 
 公开首页的数据内容与主题视觉分层维护：`PublicHomeView.vue` 负责研究、论文、资源与团队等共享内容；`PublicHomeHero.vue` 只负责按访客选择分发主题首页外壳。每个主题的首页视觉应放在独立组件中，使用独立的类名前缀和组件作用域样式；主题专属的布局、装饰、动效和断点不得通过未限定的全局选择器修改其他主题。跨主题真正共用的导航语义、内容数据、可访问性规则和设计令牌可以复用，但不能把某个主题的英雄区布局当作所有主题的默认布局。
 
-世界线首页由 `WorldlinePublicHomeHero.vue` 独立实现；Quiet Research、Classic Cyan、Obsidian Gray 与 Nebula Purple 分别由同名主题组件作为独立入口，目前复用 `DefaultPublicHomeHero.vue` 以保留既有构图，主题专属重构可在各自组件中逐步进行。切换主题时应只切换相应的视觉组件，不重置共享内容状态或工作台偏好。后续新增/改造其他主题时，应分别建立主题组件与作用域样式，并以浏览器测试验证：主题切换、首屏构图、图片与署名、桌面/手机断点、键盘操作、减少动态效果，以及未选中主题的 DOM/CSS 不受影响。共享主色令牌仍由 `useThemeStyle.js` 统一管理；组件独立不意味着复制研究数据或分叉认证、路由与业务逻辑。
+世界线首页由 `WorldlinePublicHomeHero.vue` 独立实现；Quiet Research、Classic Cyan、Obsidian Gray 与 Nebula Purple 分别由 `QuietResearchPublicHomeHero.vue`、`ClassicCyanPublicHomeHero.vue`、`ObsidianGrayPublicHomeHero.vue` 与 `NebulaPurplePublicHomeHero.vue` 独立实现。每个组件拥有自己的首页模板、布局、响应式规则和主视觉模式样式，不再依赖共享的默认首页英雄区组件。切换主题时只挂载相应视觉组件，不重置共享研究内容或工作台偏好。新增主题时也必须建立独立主题组件，并通过浏览器测试验证主题切换、首屏构图、图片与署名、桌面/手机断点、键盘操作、减少动态效果，以及未选中主题的 DOM/CSS 不受影响。共享主色令牌仍由 `useThemeStyle.js` 统一管理；组件独立不意味着复制研究数据或分叉认证、路由与业务逻辑。
 
 ### 世界线蓝图（worldline-console）视觉约定
 
