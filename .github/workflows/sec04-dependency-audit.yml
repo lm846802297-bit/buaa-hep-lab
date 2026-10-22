@@ -98,3 +98,86 @@ jobs:
             frontend/npm-audit-production.exit
           if-no-files-found: warn
           retention-days: 14
+
+  nonbreaking-remediation-candidate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install original locked dependencies
+        run: npm ci
+
+      - name: Propose only semver-compatible audit fixes
+        shell: bash
+        run: |
+          set +e
+          npm audit fix --no-fund > npm-audit-fix.log 2>&1
+          status=$?
+          set -e
+          printf '%s\\n' "$status" > npm-audit-fix.exit
+          echo "npm audit fix exited with $status. This step intentionally does not use --force; remaining major-version fixes will be left unresolved for manual review."
+          cat npm-audit-fix.log
+
+      - name: Validate candidate lockfile with clean install
+        run: npm ci
+
+      - name: Run frontend tests against candidate lockfile
+        run: npm test
+
+      - name: Validate isolated Worker candidate bundle without deployment
+        run: npx wrangler deploy --dry-run --outdir /tmp/sec04-bcrypt-candidate --config benchmarks/bcrypt/wrangler.jsonc
+
+      - name: Capture candidate vulnerability reports
+        shell: bash
+        run: |
+          set +e
+          npm audit --json > npm-audit-candidate-full.json 2> npm-audit-candidate-full.stderr
+          full_status=$?
+          npm audit --omit=dev --json > npm-audit-candidate-production.json 2> npm-audit-candidate-production.stderr
+          production_status=$?
+          set -e
+          printf '%s\\n' "$full_status" > npm-audit-candidate-full.exit
+          printf '%s\\n' "$production_status" > npm-audit-candidate-production.exit
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const reports = [
+            ['Candidate all dependencies', 'npm-audit-candidate-full.json'],
+            ['Candidate production dependencies', 'npm-audit-candidate-production.json'],
+          ];
+          const lines = ['## Semver-compatible remediation candidate', '', '| Scope | Critical | High | Moderate | Low | Total |', '|---|---:|---:|---:|---:|---:|'];
+          for (const [scope, path] of reports) {
+            const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const v = report.metadata?.vulnerabilities;
+            if (!v) throw new Error(`No vulnerability metadata in ${path}`);
+            lines.push(`| ${scope} | ${v.critical ?? 0} | ${v.high ?? 0} | ${v.moderate ?? 0} | ${v.low ?? 0} | ${v.total ?? 0} |`);
+            console.log(`${scope}: ${JSON.stringify(v)}`);
+          }
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\\n') + '\\n');
+          NODE
+
+      - name: Upload candidate package files and audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec04-nonbreaking-remediation-candidate
+          path: |
+            frontend/package.json
+            frontend/package-lock.json
+            frontend/npm-audit-fix.log
+            frontend/npm-audit-fix.exit
+            frontend/npm-audit-candidate-full.json
+            frontend/npm-audit-candidate-full.stderr
+            frontend/npm-audit-candidate-full.exit
+            frontend/npm-audit-candidate-production.json
+            frontend/npm-audit-candidate-production.stderr
+            frontend/npm-audit-candidate-production.exit
+          if-no-files-found: warn
+          retention-days: 14
