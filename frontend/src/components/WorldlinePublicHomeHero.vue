@@ -67,6 +67,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
           <a :href="activeHeroVisual.photoPage" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.photoCredit }}</a>
           <span><a :href="activeHeroVisual.licenseUrl" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.licenseLabel }}</a> · {{ activeHeroVisual.photoNote }}</span>
           <span>{{ activeHeroVisual.caption }}</span>
+          <span class="worldline-sr-only">蓝图中的粒子轨迹为概念示意，并非该照片对应的真实碰撞事件数据。</span>
         </figcaption>
       </figure>
     </section>
@@ -145,6 +146,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 .worldline-visual-controls button:focus-visible, .worldline-navigation a:focus-visible, .worldline-actions a:focus-visible { outline: 2px solid #527a82; outline-offset: 3px; }
 .worldline-image-credit { position: absolute; z-index: 4; right: 22px; bottom: 12px; left: 20%; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 5px 16px; padding: 7px 10px; background: rgba(255,254,250,.88); color: #344252; font: 500 9px/1.5 var(--font, Arial, sans-serif); }
 .worldline-image-credit a { color: inherit; text-underline-offset: 2px; }
+.worldline-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .visual-photo .worldline-detector-figure::before, .visual-terminal .worldline-detector-figure::before { background: linear-gradient(90deg, var(--wl-paper) 0%, rgba(244,241,233,.62) 8%, rgba(244,241,233,.08) 28%, transparent 45%), linear-gradient(0deg, rgba(244,241,233,.1), transparent 32%); }
 @media (min-width: 1600px) {
   .worldline-hero { padding-left: max(5vw, calc((100vw - 1720px) / 2)); }
@@ -179,7 +181,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   .worldline-actions a { min-height: 42px; padding: 10px 11px; gap: 12px; font-size: 12px; }
   .worldline-bottom-route { position: absolute; z-index: 4; right: 22px; bottom: 18px; left: 22px; justify-content: space-between; margin: 0; font-size: 8px; letter-spacing: .12em; }
   .worldline-bottom-route i { flex: 1; max-width: 34px; }
-  .worldline-detector-figure { top: 300px; bottom: 0; width: 100%; height: 460px; }
+  .worldline-detector-figure { position: relative; top: auto; right: auto; bottom: auto; width: calc(100% + 44px); height: 360px; margin: 20px -22px 0; }
   .worldline-detector-figure::before { background: linear-gradient(180deg, var(--wl-paper) 0%, rgba(244,241,233,.9) 7%, rgba(244,241,233,.18) 28%, transparent 48%), linear-gradient(0deg, rgba(244,241,233,.12), transparent 24%); }
   .worldline-visual-controls { top: 14px; right: 12px; left: 12px; justify-content: center; gap: 2px; padding: 3px; }
   .worldline-visual-controls button { min-height: 30px; padding: 6px 8px; font-size: 10px; }
