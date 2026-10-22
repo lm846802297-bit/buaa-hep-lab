@@ -134,7 +134,7 @@ describe('useThemeStyle', () => {
     }
   })
 
-  it('keeps a selected workspace theme while public routes temporarily use Quiet Research', async () => {
+  it('keeps a selected workspace theme while public routes use the independent Worldline public default', async () => {
     store['laborbit_color_scheme'] = 'obsidian-gray'
     store['laborbit_bg_type'] = 'galaxy'
     attrs['data-public-page'] = 'true'
@@ -144,9 +144,9 @@ describe('useThemeStyle', () => {
     // The active workspace preference remains dark even while the public page is rendered.
     expect(currentColorScheme.value).toBe('obsidian-gray')
     expect(currentBgType.value).toBe('galaxy')
-    expect(attrs['data-color-scheme']).toBe('quiet-research')
+    expect(attrs['data-color-scheme']).toBe('worldline-console')
     expect(attrs['data-bg-type']).toBe('paper')
-    expect(localStorage.setItem).not.toHaveBeenCalledWith('laborbit_color_scheme', 'quiet-research')
+    expect(localStorage.setItem).not.toHaveBeenCalledWith('laborbit_color_scheme', 'worldline-console')
     expect(localStorage.setItem).not.toHaveBeenCalledWith('laborbit_bg_type', 'paper')
 
     // Leaving the public routes restores the saved workspace theme and background.
