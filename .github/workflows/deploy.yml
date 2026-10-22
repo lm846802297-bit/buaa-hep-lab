@@ -82,6 +82,7 @@ jobs:
       - name: Initial JavaScript measurements and prerender verification
         run: npm --prefix frontend run check:bundle
       - name: Install browser for route and layout smoke checks
+        timeout-minutes: 5
         run: npx --prefix frontend playwright install --with-deps chromium
       - name: Browser smoke checks
         run: node frontend/tests/audit-browser-smoke.mjs
