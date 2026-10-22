@@ -14,7 +14,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
 
 # Cancel obsolete PR runs, but never cancel an active main release.
 concurrency:
@@ -45,7 +44,6 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
           PUSH_BEFORE_SHA: ${{ github.event.before || '' }}
           TARGET_SHA: ${{ github.sha }}
-          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
           if [[ -n "$PR_BASE_SHA" ]]; then
@@ -76,7 +74,7 @@ jobs:
               frontend/public/learning/*|frontend/src/content/learning.js) learning=1 ;;
             esac
             case "$file" in
-              frontend/functions/*|frontend/wrangler.json|scripts/schema_d1.sql|scripts/verify-cloudflare.mjs|.github/workflows/deploy.yml)
+              frontend/functions/*|frontend/wrangler.json|frontend/package.json|frontend/package-lock.json|scripts/schema_d1.sql|scripts/verify-cloudflare.mjs|.github/workflows/deploy.yml)
                 cloudflare=1 ;;
             esac
             case "$file" in
@@ -184,6 +182,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: read
       pull-requests: read
       deployments: write
     steps:
