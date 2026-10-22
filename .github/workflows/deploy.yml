@@ -97,7 +97,9 @@ jobs:
 
   deploy:
     needs: validate
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    # A squash merge whose title contains [skip-prod-deploy] still runs main validation,
+    # but deliberately skips publication for that one release candidate.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[skip-prod-deploy]')
     runs-on: ubuntu-latest
     permissions:
       contents: read
