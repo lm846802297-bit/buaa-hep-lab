@@ -11,7 +11,17 @@ describe('Public academic website', () => {
     const html = await renderToString(app)
     expect(html).toContain('高能粒子物理唯象学')
     expect(html).toContain('暂定名称')
+    // Keep the collaboration destination in both the primary navigation (A)
+    // and a prominent, direct-access header CTA (B).
+    expect(html).toContain('class="nav-hub"')
     expect(html).toContain('href="/hub"')
+    expect(html).toContain('class="header-hub-cta"')
+    expect(html).toContain('aria-label="进入组内协作空间"')
+    // The reference composition is implemented as a responsive blueprint hero,
+    // while all existing public content sections remain on the page.
+    expect(html).toContain('class="hero-blueprint-decor"')
+    expect(html).toContain('class="hero-title"')
+    expect(html).toContain('Particle Physics')
     expect(html).toContain('aria-label="切换官网风格"')
     expect(html).toContain('BibTeX')
     expect(html).toContain('aria-label="导师：王小平"')
