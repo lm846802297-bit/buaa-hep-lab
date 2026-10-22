@@ -45,7 +45,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 
       <div class="worldline-copy">
         <div class="worldline-eyebrow"><span aria-hidden="true"></span> PARTICLE PHYSICS PHENOMENOLOGY</div>
-        <h1 id="worldline-hero-title">Particle Physics<br><span>Research Group</span></h1>
+        <h1 id="worldline-hero-title">Particle Physics<br><span>Research<br>Group</span></h1>
         <p class="worldline-intro">{{ lab.intro }}</p>
         <div class="worldline-actions">
           <a href="#research" class="worldline-primary-action">探索研究方向 <span aria-hidden="true">→</span></a>
@@ -94,7 +94,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   background-size: 8px 8px, 8px 8px, 40px 40px, 40px 40px, auto;
   font-family: var(--font, Inter, Arial, sans-serif);
 }
-.worldline-header { position: relative; z-index: 10; display: flex; align-items: center; gap: clamp(12px, 2vw, 34px); min-height: 76px; padding: 12px clamp(22px, 4.2vw, 72px); border-bottom: 1px solid var(--wl-line); background: rgba(250,248,242,.88); }
+.worldline-header { position: relative; z-index: 10; display: flex; align-items: center; gap: clamp(12px, 2vw, 34px); width: min(calc(100% - 64px), 1216px); min-height: 64px; margin-inline: auto; padding: 8px 0; border-bottom: 1px solid var(--wl-line); background: rgba(250,248,242,.88); }
 .worldline-brand { display: inline-flex; align-items: center; gap: 10px; flex: 0 0 auto; color: var(--wl-ink); text-decoration: none; }
 .worldline-brand-mark { width: 36px; height: 36px; stroke: currentColor; stroke-width: 1.2; }
 .worldline-brand span { display: grid; gap: 2px; }
@@ -107,7 +107,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 .worldline-navigation .worldline-hub-link { padding: 10px 14px; border: 1px solid var(--wl-line); background: rgba(255,255,255,.64); }
 .worldline-menu-toggle { display: none; }
 .worldline-home :deep(.public-theme-switcher) { flex: 0 0 auto; }
-.worldline-hero { position: relative; display: grid; grid-template-columns: minmax(0, .96fr) minmax(0, 1.04fr); align-items: center; min-height: clamp(660px, calc(100svh - 76px), 880px); padding: clamp(44px, 5.3vw, 92px) clamp(24px, 5vw, 86px) 64px; }
+.worldline-hero { position: relative; display: grid; grid-template-columns: minmax(0, .96fr) minmax(0, 1.04fr); align-items: center; min-height: clamp(660px, calc(100svh - 64px), 880px); padding: clamp(44px, 5.3vw, 92px) clamp(24px, 5vw, 86px) 64px clamp(24px, calc((100vw - 1216px) / 2 + 96px), 480px); }
 .worldline-blueprint-layer { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; color: rgba(41,65,93,.32); }
 .worldline-gear { position: absolute; width: clamp(180px, 24vw, 380px); height: auto; }
 .worldline-gear-left { top: -5%; left: -7%; }
@@ -120,10 +120,10 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 .worldline-coordinate { position: absolute; color: rgba(41,65,93,.66); font: 500 9px/1.8 var(--font, Arial, sans-serif); letter-spacing: .17em; }
 .coordinate-left { bottom: 10%; left: 26%; }
 .coordinate-right { right: 2%; bottom: 10%; writing-mode: vertical-rl; }
-.worldline-copy { position: relative; z-index: 3; width: min(760px, 100%); padding-block: 12px 26px; }
+.worldline-copy { position: relative; z-index: 3; width: min(600px, 100%); padding-block: 12px 26px; }
 .worldline-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; color: var(--wl-muted); font-size: 10px; letter-spacing: .2em; }
 .worldline-eyebrow span { width: 24px; height: 1px; background: #527a82; }
-.worldline-copy h1 { max-width: 790px; margin: 0; color: #141a21; font: 400 clamp(52px, 5.2vw, 94px)/.98 var(--serif, Georgia, 'Times New Roman', serif); letter-spacing: -.055em; }
+.worldline-copy h1 { max-width: 600px; margin: 0; color: #141a21; font: 400 clamp(52px, 4.2vw, 88px)/.98 var(--serif, Georgia, 'Times New Roman', serif); letter-spacing: -.055em; }
 .worldline-copy h1 span { color: #1d3046; }
 .worldline-intro { max-width: 530px; margin: 24px 0 0; color: #485463; font: 400 clamp(14px, 1vw, 17px)/1.75 var(--serif, Georgia, serif); }
 .worldline-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 26px; }
@@ -134,7 +134,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 .worldline-actions .worldline-text-action { border-color: transparent; border-bottom-color: var(--wl-line); background: transparent; }
 .worldline-bottom-route { display: flex; align-items: center; gap: 12px; max-width: 660px; margin-top: clamp(48px, 8vh, 90px); color: #4f5d6a; font-size: 9px; font-weight: 600; letter-spacing: .2em; }
 .worldline-bottom-route i { display: block; width: clamp(28px, 7vw, 100px); height: 1px; background: var(--wl-line); }
-.worldline-detector-figure { position: absolute; z-index: 1; top: 0; right: 0; bottom: 0; width: 61%; margin: 0; overflow: hidden; background: #d9dfe0; }
+.worldline-detector-figure { position: absolute; z-index: 1; top: 0; right: 0; bottom: 0; width: 66%; margin: 0; overflow: hidden; background: #d9dfe0; }
 .worldline-detector-figure::before { position: absolute; z-index: 2; inset: 0; background: linear-gradient(90deg, var(--wl-paper) 0%, rgba(244,241,233,.84) 8%, rgba(244,241,233,.25) 29%, transparent 50%), linear-gradient(0deg, rgba(244,241,233,.14), transparent 35%); content: ''; pointer-events: none; }
 .worldline-detector-photo { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: saturate(.78) contrast(.96); transition: filter .25s ease; }
 .visual-terminal .worldline-detector-photo { filter: saturate(.96) contrast(1.04); }
@@ -149,11 +149,12 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 .worldline-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .visual-photo .worldline-detector-figure::before, .visual-terminal .worldline-detector-figure::before { background: linear-gradient(90deg, var(--wl-paper) 0%, rgba(244,241,233,.62) 8%, rgba(244,241,233,.08) 28%, transparent 45%), linear-gradient(0deg, rgba(244,241,233,.1), transparent 32%); }
 @media (min-width: 1600px) {
-  .worldline-hero { padding-left: max(5vw, calc((100vw - 1720px) / 2)); }
-  .worldline-copy h1 { font-size: clamp(76px, 5vw, 106px); }
+  .worldline-hero { padding-left: clamp(24px, calc((100vw - 1216px) / 2 + 96px), 480px); }
+  .worldline-copy { width: min(600px, 100%); }
+  .worldline-copy h1 { font-size: clamp(76px, 4.2vw, 88px); }
 }
 @media (max-width: 1120px) {
-  .worldline-header { gap: 16px; padding-inline: 24px; }
+  .worldline-header { width: calc(100% - 48px); gap: 16px; padding-inline: 0; }
   .worldline-navigation { gap: 12px; }
   .worldline-navigation a { font-size: 12px; }
   .worldline-brand small { display: none; }
@@ -164,7 +165,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   .worldline-detector-figure::before { background: linear-gradient(90deg, var(--wl-paper) 0%, rgba(244,241,233,.92) 9%, rgba(244,241,233,.48) 36%, transparent 70%); }
 }
 @media (max-width: 820px) {
-  .worldline-header { min-height: 66px; padding: 10px 16px; }
+  .worldline-header { width: calc(100% - 32px); min-height: 66px; padding: 10px 0; }
   .worldline-brand-mark { width: 30px; height: 30px; }
   .worldline-brand strong { font-size: 14px; }
   .worldline-menu-toggle { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; margin-left: auto; padding: 8px 11px; border: 1px solid var(--wl-line); background: rgba(255,255,255,.75); color: var(--wl-ink); font-size: 12px; }
