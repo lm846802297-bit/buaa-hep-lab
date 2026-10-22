@@ -127,8 +127,8 @@ try {
   const heroModeGroup = page.getByRole('group', { name: '首页右侧主视觉模式' })
   check(await heroModeGroup.getByRole('button').count() === 3, 'homepage hero exposes three adjustable visual modes')
   for (const [label, className, storedMode] of [
-    ['实景照片', 'hero-visual-photo', 'photo'],
-    ['世界线终端', 'hero-visual-terminal', 'terminal'],
+    ['ATLAS 实景', 'hero-visual-photo', 'photo'],
+    ['碰撞事件', 'hero-visual-terminal', 'terminal'],
     ['蓝图叠加', '', 'blueprint']
   ]) {
     await heroModeGroup.getByRole('button', { name: label, exact: true }).click()
@@ -140,6 +140,18 @@ try {
     }, className)
     check(await heroModeGroup.getByRole('button', { name: label, exact: true }).getAttribute('aria-pressed') === 'true', label + ' mode reports the selected state')
     check(await page.evaluate(() => localStorage.getItem('labhub_public_hero_visual_mode')) === storedMode, label + ' mode persists independently')
+    const expectedImagePath = label === 'ATLAS 实景'
+      ? 'CERN_ATLAS_Detector.jpg'
+      : label === '碰撞事件'
+        ? 'Event_display_of_a_4-muon_candidate_in_the_ATLAS_detector.png'
+        : 'CMS_detector_%282%29.jpg'
+    await page.waitForFunction(path => {
+      const image = document.querySelector('.detector-photo')
+      return Boolean(image && image.src.includes(path) && image.complete && image.naturalWidth > 0)
+    }, expectedImagePath, { timeout: 20000 })
+    check(await page.locator('.detector-photo').getAttribute('alt') !== '', label + ' mode has descriptive alternative text')
+    const expectedLicense = label === 'ATLAS 实景' ? 'CC BY-SA 4.0' : label === '碰撞事件' ? 'CC BY-SA 3.0' : 'CC BY 2.0'
+    check(await page.getByRole('link', { name: expectedLicense, exact: true }).count() === 1, label + ' mode updates image attribution and license')
   }
   await heroModeGroup.getByRole('button', { name: '蓝图叠加', exact: true }).click()
   await page.waitForFunction(() => !document.querySelector('.lab-public')?.classList.contains('hero-visual-photo') && !document.querySelector('.lab-public')?.classList.contains('hero-visual-terminal'))
