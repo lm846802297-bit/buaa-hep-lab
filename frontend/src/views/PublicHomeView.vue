@@ -311,7 +311,7 @@ function downloadBibtex() {
   .public-header .menu-toggle { display:flex; font-size:13px; min-height:44px; }
   #public-navigation { display:none; order:5; width:100%; flex-wrap:wrap; gap:12px 22px; padding:8px 0 14px; }
   #public-navigation.open { display:flex; }
-  .public-header .nav-hub { border-left:0; padding-left:0; }
+  .public-header .nav-hub { border-left:1px solid var(--text); padding:0 15px; }
   .public-hero { grid-template-columns:minmax(0,1fr) minmax(0,.92fr); min-height:570px; padding:44px 0; }
   .blueprint-gear-large { width:240px; }
 }
