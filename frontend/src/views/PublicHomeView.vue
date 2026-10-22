@@ -438,6 +438,15 @@ h1.hero-title span { color:var(--accent); }
   --raised: #e7e9e9;
   --panel: #f7f5ef;
   --panel-solid: #f7f5ef;
+  --theme-tuner-ring: #526b82;
+  --theme-tuner-axis: #526b82;
+  --theme-tuner-core: #263f5a;
+  --theme-tuner-core-fill: rgb(38 63 90 / 12%);
+  --theme-tuner-node: #263f5a;
+  --theme-tuner-node-stroke: #f7f5ef;
+  --theme-tuner-button-border: #c8cdd1;
+  --theme-tuner-button-background: #f7f5ef;
+  --theme-tuner-button-shadow: 0 4px 12px rgb(32 42 54 / 9%);
   --atelier-paper: color-mix(in srgb, var(--bg) 91%, #f3efe4);
   background-color: var(--atelier-paper);
   background-image:
@@ -708,7 +717,24 @@ h2, .section-top h2, .about-section h2, .collaboration-section h2 {
   }
   .detector-photo { mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 100%); object-position: 50% 50%; }
   .collision-figure > svg { opacity: .58; }
-  .collision-figure figcaption { left: 18px; right: 18px; bottom: 68px; display: grid; gap: 5px; font-size: 8px; }
+  .collision-figure figcaption {
+    left: 12px;
+    right: 12px;
+    bottom: 64px;
+    box-sizing: border-box;
+    display: grid;
+    gap: 5px;
+    padding: 9px 10px;
+    border: 1px solid color-mix(in srgb, #263f5a 22%, transparent);
+    background: rgb(247 245 239 / 94%);
+    color: #263f5a;
+    font-size: 10px;
+    line-height: 1.5;
+    letter-spacing: .01em;
+    text-shadow: none;
+    backdrop-filter: blur(6px);
+  }
+  .collision-figure figcaption a { color: #263f5a; text-decoration: underline; text-underline-offset: 2px; }
   .blueprint-gear-large { left: -180px; top: -50px; }
   .blueprint-gear-small { left: auto; right: -70px; bottom: 22%; }
   .equation-top { right: 16px; top: 16px; font-size: 13px; }
