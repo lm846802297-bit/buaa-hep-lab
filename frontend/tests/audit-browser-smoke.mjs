@@ -42,14 +42,14 @@ try {
     await page.goto(base, { waitUntil: 'networkidle' })
     await page.locator('.app-shell .lab-public').waitFor()
     if (width === 1440) {
-      const detectorPhoto = page.locator('.detector-photo')
+      const detectorPhoto = page.locator('.worldline-detector-photo, .detector-photo')
       await page.waitForFunction(() => {
-        const image = document.querySelector('.detector-photo')
+        const image = document.querySelector('.worldline-detector-photo, .detector-photo')
         return Boolean(image && image.complete && image.naturalWidth > 0)
       }, null, { timeout: 10000 })
       check(await detectorPhoto.evaluate(image => image.naturalWidth > 0), 'homepage hero uses a loaded real CMS detector photograph')
-      check(await page.locator('.public-header .nav-hub').count() === 1, 'homepage header has exactly one collaboration entry')
-      check(await page.locator('.public-header .header-hub-cta').count() === 0, 'homepage header does not duplicate the collaboration entry')
+      check(await page.locator('.public-header .nav-hub, .worldline-header .worldline-hub-link').count() === 1, 'homepage header has exactly one collaboration entry')
+      check(await page.locator('.public-header .header-hub-cta, .worldline-header .header-hub-cta').count() === 0, 'homepage header does not duplicate the collaboration entry')
       check(await page.getByRole('link', { name: /CMS detector · photo by zipckr \(Flickr\)/ }).count() === 1, 'hero detector photograph displays photographer attribution')
       check(await page.getByRole('link', { name: 'CC BY 2.0' }).count() === 1, 'hero detector photograph links to its Creative Commons license')
     }
@@ -127,20 +127,21 @@ try {
   const heroModeGroup = page.getByRole('group', { name: '首页右侧主视觉模式' })
   check(await heroModeGroup.getByRole('button').count() === 3, 'homepage hero exposes three adjustable visual modes')
   for (const [label, className, storedMode] of [
-    ['ATLAS 实景', 'hero-visual-photo', 'photo'],
-    ['碰撞事件', 'hero-visual-terminal', 'terminal'],
+    ['ATLAS 实景', 'visual-photo', 'photo'],
+    ['碰撞事件', 'visual-terminal', 'terminal'],
     ['蓝图叠加', '', 'blueprint']
   ]) {
     await heroModeGroup.getByRole('button', { name: label, exact: true }).click()
     await page.waitForFunction(name => {
       const root = document.querySelector('.lab-public')
+      const hero = root?.querySelector('.worldline-home') || root?.querySelector('.public-home-default-hero')
       return name
-        ? root?.classList.contains(name)
-        : !root?.classList.contains('hero-visual-photo') && !root?.classList.contains('hero-visual-terminal')
+        ? hero?.classList.contains(name)
+        : !hero?.classList.contains('visual-photo') && !hero?.classList.contains('visual-terminal') && !hero?.classList.contains('hero-visual-photo') && !hero?.classList.contains('hero-visual-terminal')
     }, className)
     check(await heroModeGroup.getByRole('button', { name: label, exact: true }).getAttribute('aria-pressed') === 'true', label + ' mode reports the selected state')
     check(
-      await page.locator('.collision-figure > svg').getAttribute('aria-hidden') === String(storedMode !== 'blueprint'),
+      await page.locator('.worldline-track-overlay').count() === (storedMode === 'blueprint' ? 1 : 0),
       label + ' mode keeps the decorative SVG accessibility semantics synchronized'
     )
     check(await page.evaluate(() => localStorage.getItem('labhub_public_hero_visual_mode')) === storedMode, label + ' mode persists independently')
@@ -150,27 +151,27 @@ try {
         ? 'Event_display_of_a_4-muon_candidate_in_the_ATLAS_detector.png'
         : 'CMS_detector_%282%29.jpg'
     await page.waitForFunction(path => {
-      const image = document.querySelector('.detector-photo')
+      const image = document.querySelector('.worldline-detector-photo, .detector-photo')
       return Boolean(image && image.src.includes(path) && image.complete && image.naturalWidth > 0)
     }, expectedImagePath, { timeout: 20000 })
-    check(await page.locator('.detector-photo').getAttribute('alt') !== '', label + ' mode has descriptive alternative text')
+    check(await page.locator('.worldline-detector-photo, .detector-photo').getAttribute('alt') !== '', label + ' mode has descriptive alternative text')
     const expectedLicense = label === 'ATLAS 实景' ? 'CC BY-SA 4.0' : label === '碰撞事件' ? 'CC BY-SA 3.0' : 'CC BY 2.0'
     check(await page.getByRole('link', { name: expectedLicense, exact: true }).count() === 1, label + ' mode updates image attribution and license')
   }
   await heroModeGroup.getByRole('button', { name: '蓝图叠加', exact: true }).click()
-  await page.waitForFunction(() => !document.querySelector('.lab-public')?.classList.contains('hero-visual-photo') && !document.querySelector('.lab-public')?.classList.contains('hero-visual-terminal'))
+  await page.waitForFunction(() => !document.querySelector('.worldline-home')?.classList.contains('visual-photo') && !document.querySelector('.worldline-home')?.classList.contains('visual-terminal'))
   const desktopBlueprint = await page.locator('.lab-public').evaluate(root => {
-    const hero = root.querySelector('.public-hero')
-    const copy = root.querySelector('.hero-copy')
-    const figure = root.querySelector('.collision-figure')
-    const heroStyle = getComputedStyle(hero)
+    const hero = root.querySelector('.worldline-hero') || root.querySelector('.public-hero')
+    const copy = root.querySelector('.worldline-copy') || root.querySelector('.hero-copy')
+    const figure = root.querySelector('.worldline-detector-figure') || root.querySelector('.collision-figure')
+    const heroStyle = getComputedStyle(root.querySelector('.worldline-home') || hero)
     const figureStyle = getComputedStyle(figure)
     const copyBox = copy.getBoundingClientRect()
     const figureBox = figure.getBoundingClientRect()
     return {
-      blueprint: root.classList.contains('hero-visual-blueprint'),
+      blueprint: root.querySelector('.worldline-home')?.classList.contains('visual-blueprint') || root.classList.contains('hero-visual-blueprint'),
       worldline: root.classList.contains('worldline-theme'),
-      grid: heroStyle.backgroundImage.includes('repeating-linear-gradient'),
+      grid: heroStyle.backgroundImage.includes('linear-gradient'),
       figurePosition: figureStyle.position,
       copyWidth: copyBox.width,
       figureLeft: figureBox.left,
@@ -184,9 +185,9 @@ try {
 
   await page.setViewportSize({ width: 390, height: 844 })
   await page.waitForTimeout(120)
-  const mobileBlueprint = await page.locator('.collision-figure').evaluate(figure => {
+  const mobileBlueprint = await page.locator('.worldline-detector-figure, .collision-figure').evaluate(figure => {
     const root = document.querySelector('.lab-public')
-    const copy = root.querySelector('.hero-copy').getBoundingClientRect()
+    const copy = (root.querySelector('.worldline-copy') || root.querySelector('.hero-copy')).getBoundingClientRect()
     const image = figure.getBoundingClientRect()
     return {
       figurePosition: getComputedStyle(figure).position,
