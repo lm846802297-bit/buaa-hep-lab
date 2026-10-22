@@ -99,7 +99,7 @@ try {
   const publicSkinTrigger = page.getByRole('button', { name: '切换官网风格' })
   check(await publicSkinTrigger.isVisible(), 'public skin icon is visible in the homepage navigation')
   const themeIconBox = await publicSkinTrigger.boundingBox()
-  const hubLinkBox = await page.locator('.public-header .nav-hub').boundingBox()
+  const hubLinkBox = await page.locator('.public-header .nav-hub, .worldline-header .worldline-hub-link').boundingBox()
   check(Boolean(themeIconBox && hubLinkBox && themeIconBox.x >= hubLinkBox.x + hubLinkBox.width), 'homepage theme icon follows navigation without overlap')
   await publicSkinTrigger.click()
   const publicSkin = page.getByRole('combobox', { name: '选择官网皮肤风格' })
