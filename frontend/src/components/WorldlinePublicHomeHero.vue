@@ -71,7 +71,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
           <span class="worldline-sr-only">conceptual particle tracks are illustrative only and do not represent the actual collision event shown in this detector photograph. 蓝图中的粒子轨迹为概念示意，并非该照片对应的真实碰撞事件数据。</span>
         </figcaption>
       </figure>
-      <div class="worldline-affiliation">北航粒子物理研究组 / 暂定名称</div>
+      <div class="worldline-affiliation">{{ lab.name }}<template v-if="lab.provisional"> / 暂定名称</template></div>
     </section>
   </div>
 </template>
