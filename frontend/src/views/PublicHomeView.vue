@@ -97,6 +97,14 @@ function downloadBibtex() {
         <div class="hero-affiliation"><span>BEIHANG UNIVERSITY · HIGH-ENERGY PHYSICS</span><span>{{ lab.name }} <small v-if="lab.provisional">/ 暂定名称</small></span></div>
       </div>
       <figure class="collision-figure">
+        <img
+          class="detector-photo"
+          src="https://cms-results.web.cern.ch/cms-results/public-results/figures/cms_detector.jpg"
+          alt="CMS 粒子探测器内部的真实照片，展示同心排列的探测器模块与精密仪器结构。"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+        >
         <svg viewBox="0 0 600 600" role="img" aria-labelledby="collision-title collision-description">
           <title id="collision-title">粒子碰撞探测器概念图</title>
           <desc id="collision-description">精密探测器的多层圆形结构、碰撞中心和向外延伸的粒子径迹。此为装饰性概念示意，并非真实实验数据。</desc>
@@ -104,7 +112,6 @@ function downloadBibtex() {
             <radialGradient id="collision-glow"><stop stop-color="#fff3cf" stop-opacity=".95"/><stop offset=".08" stop-color="#f4b45b" stop-opacity=".7"/><stop offset=".25" stop-color="#347dc1" stop-opacity=".24"/><stop offset="1" stop-color="#347dc1" stop-opacity="0"/></radialGradient>
             <linearGradient id="detector-metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d4d8d7" stop-opacity=".9"/><stop offset=".5" stop-color="#657b8b" stop-opacity=".5"/><stop offset="1" stop-color="#c9a875" stop-opacity=".65"/></linearGradient>
           </defs>
-          <circle cx="300" cy="300" r="290" fill="url(#collision-glow)"/>
           <g class="detector-rings" fill="none">
             <circle v-for="r in [48,88,135,180,225,264]" :key="r" cx="300" cy="300" :r="r"/>
             <ellipse cx="300" cy="300" rx="264" ry="98" transform="rotate(-27 300 300)"/>
@@ -128,7 +135,10 @@ function downloadBibtex() {
           <circle class="collision-core" cx="300" cy="300" r="12"/>
           <g class="collision-annotations" fill="currentColor"><text x="438" y="94">μ⁺</text><text x="478" y="418">χ</text><text x="105" y="464">μ⁻</text><text x="340" y="284">p → ← p</text><text x="318" y="582">EVENT DISPLAY / CONCEPTUAL</text></g>
         </svg>
-        <figcaption><span>COLLISIONS · DETECTORS · DATA</span><span>理论 · 模型 · 信号</span></figcaption>
+        <figcaption>
+          <a href="https://cms-results.web.cern.ch/cms-results/public-results/detector-performance/index.html" target="_blank" rel="noopener noreferrer">CMS detector interior · CMS Collaboration / CERN</a>
+          <span>理论 · 模型 · 信号</span>
+        </figcaption>
       </figure>
     </section>
     <div class="research-strip"><span>高能粒子物理唯象学</span><span>暗物质</span><span>中微子</span><span>希格斯物理</span><span>超出标准模型</span></div>
@@ -383,9 +393,12 @@ h1.hero-title span { color:var(--accent); }
 .hero-intro { max-width:490px; color:var(--soft); font-size:15px; line-height:1.85; }
 .hero-actions { display:flex; flex-wrap:wrap; gap:10px; margin:28px 0 36px; }.hero-actions a { gap:18px; min-height:48px; }
 .hero-affiliation { display:flex; flex-direction:column; gap:8px; font-size:12px; color:var(--soft); }.hero-affiliation>span:first-child { font-size:9px; color:var(--muted); letter-spacing:.19em; }.hero-affiliation small { color:var(--muted); font-size:11px; }
-.collision-figure { margin:0 -20px 0 -8px; color:var(--accent); position:relative; filter:drop-shadow(0 12px 26px color-mix(in srgb,var(--accent) 10%,transparent)); }
-.collision-figure::before { content:""; position:absolute; inset:5%; border-radius:50%; background:radial-gradient(circle,color-mix(in srgb,var(--accent) 14%,transparent),transparent 68%); }
-.collision-figure>svg { display:block; width:100%; overflow:visible; position:relative; }
+.collision-figure { margin:0 -20px 0 -8px; color:var(--accent); position:relative; isolation:isolate; filter:drop-shadow(0 12px 26px color-mix(in srgb,var(--accent) 10%,transparent)); }
+.collision-figure::before { content:""; position:absolute; z-index:0; inset:5%; border-radius:50%; background:radial-gradient(circle,color-mix(in srgb,var(--accent) 14%,transparent),transparent 68%); }
+.detector-photo { position:absolute; z-index:1; inset:4%; width:92%; height:92%; object-fit:cover; border-radius:50%; opacity:.92; mix-blend-mode:multiply; filter:saturate(.82) contrast(1.08); mask-image:radial-gradient(circle,#000 0 66%,transparent 79%); }
+.collision-figure>svg { display:block; width:100%; overflow:visible; position:relative; z-index:2; }
+.collision-figure figcaption a { color:var(--muted); text-decoration:underline; text-decoration-color:color-mix(in srgb,var(--muted) 45%,transparent); text-underline-offset:3px; }
+.collision-figure figcaption a:hover { color:var(--accent); }
 .detector-rings { stroke:currentColor; stroke-opacity:.28; stroke-width:.8; }
 .detector-segments { opacity:.9; }
 .collision-tracks { stroke:color-mix(in srgb,var(--accent) 78%,#4c91c7); stroke-width:1.45; filter:drop-shadow(0 0 2px color-mix(in srgb,var(--accent) 26%,transparent)); }
