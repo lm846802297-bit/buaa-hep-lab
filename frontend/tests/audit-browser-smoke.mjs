@@ -139,7 +139,7 @@ try {
     await heroModeGroup.getByRole('button', { name: label, exact: true }).click()
     await page.waitForFunction(name => {
       const root = document.querySelector('.lab-public')
-      const hero = root?.querySelector('.worldline-home') || root?.querySelector('.public-home-default-hero')
+      const hero = root?.querySelector('.worldline-home') || root?.querySelector('[data-public-home-theme]')
       return name
         ? hero?.classList.contains(name)
         : !hero?.classList.contains('visual-photo') && !hero?.classList.contains('visual-terminal') && !hero?.classList.contains('hero-visual-photo') && !hero?.classList.contains('hero-visual-terminal')
