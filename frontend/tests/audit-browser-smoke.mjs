@@ -924,7 +924,6 @@ try {
   check(await stylePage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Quiet Research style page remains horizontally usable on mobile')
   check(styleErrors.length === 0, `appearance settings produce no browser runtime errors: ${styleErrors.join('; ')}`)
   await styleContext.close()
-  }
 
   await writeFile(resolve(output, 'browser-checks.json'), JSON.stringify({ checks, total: checks.length }, null, 2))
   console.log(`Browser verification: ${checks.length} checks passed.`)
