@@ -953,7 +953,12 @@ try {
     'background dim slider changes the visible overlay opacity')
   const dimResetButton = stylePage.locator('.bg-dim-reset-btn')
   await stylePage.bringToFront()
-  await dimResetButton.scrollIntoViewIfNeeded()
+  // The page has continuously animated background layers; Playwright's locator scroll
+  // waits for a stable bounding box and can time out before the occlusion audit runs.
+  // Use a synchronous browser scroll, then still verify the real viewport and hit target.
+  await dimResetButton.evaluate(button => {
+    button.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' })
+  })
   const resetHitTest = await dimResetButton.evaluate(button => {
     const rect = button.getBoundingClientRect()
     const x = rect.left + rect.width / 2
