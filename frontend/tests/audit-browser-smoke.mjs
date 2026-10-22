@@ -956,18 +956,24 @@ try {
   await dimResetButton.scrollIntoViewIfNeeded()
   const resetHitTest = await dimResetButton.evaluate(button => {
     const rect = button.getBoundingClientRect()
-    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
+    const x = rect.left + rect.width / 2
+    const y = rect.top + rect.height / 2
+    const hit = document.elementFromPoint(x, y)
     return {
       button: button.className,
+      x,
+      y,
+      inViewport: rect.top >= 0 && rect.bottom <= window.innerHeight && rect.left >= 0 && rect.right <= window.innerWidth,
       hitTag: hit?.tagName ?? null,
       hitClass: typeof hit?.className === 'string' ? hit.className : '',
       hitIsButton: hit === button || button.contains(hit)
     }
   })
   console.log('Background dim reset hit test: ' + JSON.stringify(resetHitTest))
-  check(resetHitTest.hitIsButton, 'background dim reset button is not obscured by another UI layer')
-  await stylePage.mouse.move(0, 0)
-  await dimResetButton.click()
+  check(resetHitTest.inViewport && resetHitTest.hitIsButton, 'background dim reset button is visible in the viewport and not obscured')
+  // The hit-test above proves the target is unobstructed. Click its measured center
+  // directly to avoid Playwright re-running auto-scroll on a continuously animated page.
+  await stylePage.mouse.click(resetHitTest.x, resetHitTest.y)
   await stylePage.waitForFunction(() => {
     const shade = document.querySelector('.atmosphere-shade')
     return shade && Math.abs(Number(getComputedStyle(shade).opacity) - 0.35) < 0.02
