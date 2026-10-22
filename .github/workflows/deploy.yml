@@ -107,7 +107,7 @@ jobs:
             cloudflare=1
             build=1
           fi
-          if [[ "$browser" == 1 ]]; then build=1; fi
+          if [[ "$browser" == 1 || "$pages_deploy" == 1 ]]; then build=1; fi
 
           need_node=0
           if [[ "$frontend_tests" == 1 || "$build" == 1 || "$cloudflare" == 1 ]]; then need_node=1; fi
@@ -143,6 +143,15 @@ jobs:
         run: |
           npm --prefix frontend run build
           npm --prefix frontend run check:bundle
+      - name: Upload validated Pages build
+        if: needs.changes.outputs.pages_deploy == '1'
+        uses: actions/upload-artifact@v4
+        with:
+          name: validated-pages-build
+          path: frontend/dist
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
       - uses: actions/setup-python@v5
         if: needs.changes.outputs.need_python == '1'
         with:
@@ -191,9 +200,12 @@ jobs:
       deployments: write
     steps:
       - uses: actions/checkout@v4
-      - name: Require a merged PR with successful PR CI
+      - name: Require merged PR validation and assess artifact reuse
+        id: authorize
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy_production)
         uses: actions/github-script@v7
+        env:
+          PAGES_DEPLOY: ${{ needs.changes.outputs.pages_deploy }}
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -221,17 +233,92 @@ jobs:
               core.setFailed(`Refusing release: PR #${pr.number} has no successful validation run for exact head ${pr.head.sha}.`);
               return;
             }
-            core.info(`Release authorized by merged PR #${pr.number}; exact-head CI run #${runs[0].run_number} passed.`);
+
+            let reuseArtifact = false;
+            let reason = 'this release does not need a Pages artifact';
+            if (process.env.PAGES_DEPLOY === '1') {
+              const [prCommit, mergedCommit] = await Promise.all([
+                github.rest.repos.getCommit({ owner, repo, ref: pr.head.sha }),
+                github.rest.repos.getCommit({ owner, repo, ref: sha }),
+              ]);
+              const sameTree = prCommit.data.commit.tree.sha === mergedCommit.data.commit.tree.sha;
+              if (sameTree) {
+                const { data: artifactData } = await github.rest.actions.listWorkflowRunArtifacts({
+                  owner, repo, run_id: runs[0].id,
+                });
+                const artifact = artifactData.artifacts.find((item) =>
+                  item.name === 'validated-pages-build' && !item.expired
+                );
+                if (artifact) {
+                  reuseArtifact = true;
+                  reason = 'PR and merged commit have identical trees; validated artifact is available';
+                  core.setOutput('pr_run_id', String(runs[0].id));
+                } else {
+                  reason = 'PR artifact is missing or expired; revalidate and rebuild the merged tree';
+                }
+              } else {
+                reason = 'merged tree differs from PR validation tree; revalidate and rebuild the merged tree';
+              }
+            }
+            core.setOutput('reuse_artifact', reuseArtifact ? 'true' : 'false');
+            core.info(`Release authorized by PR #${pr.number}; exact-head CI run #${runs[0].run_number} passed.`);
+            core.info(`Build reuse: ${reuseArtifact ? 'enabled' : 'disabled'} (${reason}).`);
       - uses: actions/setup-node@v4
+        if: needs.changes.outputs.pages_deploy == '1' || (github.event_name == 'workflow_dispatch' && inputs.deploy_production)
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Install release dependencies
+        if: needs.changes.outputs.pages_deploy == '1' || (github.event_name == 'workflow_dispatch' && inputs.deploy_production)
         run: npm --prefix frontend ci
-      - name: Build the release
+      - name: Revalidate frontend tests when the merged tree differs
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.authorize.outputs.reuse_artifact != 'true' && needs.changes.outputs.frontend_tests == '1'
+        run: npm --prefix frontend test
+      - uses: actions/setup-python@v5
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.authorize.outputs.reuse_artifact != 'true' && (needs.changes.outputs.backend_tests == '1' || needs.changes.outputs.learning == '1')
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements-test.txt
+      - name: Revalidate FastAPI when the merged tree differs
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.authorize.outputs.reuse_artifact != 'true' && needs.changes.outputs.backend_tests == '1'
+        env:
+          LABHUB_SECRET_KEY: isolated-ci-test-secret-never-for-production-32-plus
+          LABHUB_DB_PATH: /tmp/buaa-hep-merged-ci.db
+          SEED_DEMO_DATA: '1'
+        run: |
+          pip install -r backend/requirements-test.txt
+          python -m pytest backend -q
+      - name: Revalidate teaching benchmark when the merged tree differs
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.authorize.outputs.reuse_artifact != 'true' && needs.changes.outputs.learning == '1'
+        run: python frontend/public/learning/two_body_decay.py
+      - name: Install Chromium when the merged tree differs
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.authorize.outputs.reuse_artifact != 'true' && needs.changes.outputs.browser == '1'
+        timeout-minutes: 5
+        run: npx --prefix frontend playwright install --with-deps chromium
+      - name: Revalidate browser smoke when the merged tree differs
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.authorize.outputs.reuse_artifact != 'true' && needs.changes.outputs.browser == '1'
+        run: node frontend/tests/audit-browser-smoke.mjs
+      - name: Revalidate Cloudflare runtime when the merged tree differs
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.authorize.outputs.reuse_artifact != 'true' && needs.changes.outputs.cloudflare == '1'
+        run: node scripts/verify-cloudflare.mjs
+      - name: Download validated Pages build
+        if: needs.changes.outputs.pages_deploy == '1' && steps.authorize.outputs.reuse_artifact == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: validated-pages-build
+          run-id: ${{ steps.authorize.outputs.pr_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: frontend/dist
+      - name: Verify downloaded build exists
+        if: needs.changes.outputs.pages_deploy == '1' && steps.authorize.outputs.reuse_artifact == 'true'
+        run: test -s frontend/dist/index.html
+      - name: Build the release when reuse is unsafe or unavailable
+        if: (github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.authorize.outputs.reuse_artifact != 'true') || (github.event_name == 'workflow_dispatch' && inputs.deploy_production && steps.authorize.outputs.reuse_artifact != 'true')
         run: npm --prefix frontend run build
-      - name: Check public pages and initial dependencies
+      - name: Check public pages when a fresh build was required
+        if: (github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.authorize.outputs.reuse_artifact != 'true') || (github.event_name == 'workflow_dispatch' && inputs.deploy_production && steps.authorize.outputs.reuse_artifact != 'true')
         run: npm --prefix frontend run check:bundle
       - name: Isolated Cloudflare check for manual releases
         if: github.event_name == 'workflow_dispatch' && inputs.deploy_production
