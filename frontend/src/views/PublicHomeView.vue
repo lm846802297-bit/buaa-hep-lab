@@ -1,9 +1,55 @@
 <script setup>
-import { computed, onMounted, ref, nextTick } from 'vue'
+import { computed, onMounted, ref, nextTick, watch } from 'vue'
 import PublicThemeSwitcher from '../components/PublicThemeSwitcher.vue'
 import PublicSectionNav from '../components/PublicSectionNav.vue'
+import { useThemeStyle } from '../composables/useThemeStyle'
 import { lab, advisorProfile, collaborators, directions, publications, publicationCategories, publicResources, publicResourceCheckedAt } from '../content/lab'
+const { publicColorScheme } = useThemeStyle()
 const menuOpen = ref(false)
+const HERO_VISUAL_MODE_KEY = 'labhub_public_hero_visual_mode'
+const heroVisualModes = [
+  {
+    id: 'blueprint',
+    label: '蓝图叠加',
+    src: 'https://upload.wikimedia.org/wikipedia/commons/f/f3/CMS_detector_%282%29.jpg',
+    alt: 'CERN 地下实验区内的 CMS 紧凑型缪子线圈粒子探测器实景照片。',
+    photoPage: 'https://commons.wikimedia.org/wiki/File:CMS_detector_(2).jpg',
+    photoCredit: 'CMS detector · photo by zipckr (Flickr)',
+    licenseLabel: 'CC BY 2.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+    photoNote: 'cropped; scientific overlays added',
+    caption: '理论 · 模型 · 信号'
+  },
+  {
+    id: 'photo',
+    label: 'ATLAS 实景',
+    src: 'https://commons.wikimedia.org/wiki/Special:FilePath/CERN_ATLAS_Detector.jpg?width=1600',
+    alt: 'CERN 大型强子对撞机 ATLAS 粒子探测器的全景实景照片。',
+    photoPage: 'https://commons.wikimedia.org/wiki/File:CERN_ATLAS_Detector.jpg',
+    photoCredit: 'ATLAS detector · photo by SimonWaldherr',
+    licenseLabel: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    photoNote: 'image cropped to fit the hero',
+    caption: 'ATLAS · CERN · LHC'
+  },
+  {
+    id: 'terminal',
+    label: '碰撞事件',
+    src: 'https://commons.wikimedia.org/wiki/Special:FilePath/Event_display_of_a_4-muon_candidate_in_the_ATLAS_detector.png?width=1440',
+    alt: 'ATLAS Collaboration 发布的四缪子候选事例真实重建事件显示图。',
+    photoPage: 'https://commons.wikimedia.org/wiki/File:Event_display_of_a_4-muon_candidate_in_the_ATLAS_detector.png',
+    photoCredit: 'ATLAS Collaboration · 4-muon event display',
+    licenseLabel: 'CC BY-SA 3.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
+    photoNote: 'real event display; no additional tracks added',
+    caption: 'EVENT DISPLAY · 4 MUONS'
+  }
+]
+const heroVisualMode = ref('blueprint')
+const activeHeroVisual = computed(() => heroVisualModes.find(mode => mode.id === heroVisualMode.value) || heroVisualModes[0])
+watch(heroVisualMode, mode => {
+  try { localStorage.setItem(HERO_VISUAL_MODE_KEY, mode) } catch {}
+})
 const filter = ref('all')
 const query = ref('')
 const selectedYear = ref('all')
@@ -38,6 +84,10 @@ const resourceCategory = ref('all')
 const resourceCategories = [...new Set(publicResources.map(resource => resource.category))]
 const visibleResources = computed(() => publicResources.filter(resource => resourceCategory.value === 'all' || resource.category === resourceCategory.value))
 onMounted(() => {
+  try {
+    const savedMode = localStorage.getItem(HERO_VISUAL_MODE_KEY)
+    if (heroVisualModes.some(mode => mode.id === savedMode)) heroVisualMode.value = savedMode
+  } catch {}
   document.title = `${lab.name}${lab.provisional ? '（暂定）' : ''} | ${lab.field}`
 
   // A cross-page hash link can arrive before Vue has rendered the target section.
@@ -55,7 +105,7 @@ function downloadBibtex() {
 </script>
 
 <template>
-  <div class="lab-public">
+  <div class="lab-public" :class="{ 'worldline-theme': publicColorScheme === 'worldline-console', 'hero-visual-blueprint': heroVisualMode === 'blueprint', 'hero-visual-photo': heroVisualMode === 'photo', 'hero-visual-terminal': heroVisualMode === 'terminal' }">
     <PublicSectionNav />
     <header class="public-header">
       <a href="#top" class="public-brand" aria-label="课题组首页" @click="menuOpen = false">
@@ -97,15 +147,28 @@ function downloadBibtex() {
         <div class="hero-affiliation"><span>BEIHANG UNIVERSITY · HIGH-ENERGY PHYSICS</span><span>{{ lab.name }} <small v-if="lab.provisional">/ 暂定名称</small></span></div>
       </div>
       <figure class="collision-figure">
-        <img
-          class="detector-photo"
-          src="https://upload.wikimedia.org/wikipedia/commons/f/f3/CMS_detector_%282%29.jpg"
-          alt="CERN 地下实验区内的 CMS 紧凑型缪子线圈粒子探测器实景照片。"
-          loading="eager"
-          fetchpriority="high"
-          decoding="async"
-        >
-        <svg viewBox="0 0 600 600" role="img" aria-labelledby="collision-title collision-description">
+        <div class="hero-visual-controls" role="group" aria-label="首页右侧主视觉模式">
+          <button
+            v-for="mode in heroVisualModes"
+            :key="mode.id"
+            type="button"
+            :class="{ active: heroVisualMode === mode.id }"
+            :aria-pressed="heroVisualMode === mode.id"
+            @click="heroVisualMode = mode.id"
+          >{{ mode.label }}</button>
+        </div>
+        <Transition name="hero-image" mode="out-in">
+          <img
+            :key="activeHeroVisual.id"
+            class="detector-photo"
+            :src="activeHeroVisual.src"
+            :alt="activeHeroVisual.alt"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          >
+        </Transition>
+        <svg viewBox="0 0 600 600" role="img" :aria-hidden="heroVisualMode !== 'blueprint'" aria-labelledby="collision-title collision-description">
           <title id="collision-title">叠加在 CMS 探测器照片上的粒子径迹示意</title>
           <desc id="collision-description">圆形几何环与向外延伸的粒子径迹是叠加在真实 CMS 探测器照片上的装饰性视觉元素，并非该照片对应的真实碰撞事件数据。</desc>
           <defs>
@@ -136,9 +199,9 @@ function downloadBibtex() {
           <g class="collision-annotations" fill="currentColor"><text x="438" y="94">μ⁺</text><text x="478" y="418">χ</text><text x="105" y="464">μ⁻</text><text x="340" y="284">p → ← p</text><text x="318" y="582">EVENT DISPLAY / CONCEPTUAL</text></g>
         </svg>
         <figcaption>
-          <a href="https://commons.wikimedia.org/wiki/File:CMS_detector_(2).jpg" target="_blank" rel="noopener noreferrer">CMS detector · photo by zipckr (Flickr)</a>
-          <span><a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</a> · cropped; scientific overlays added</span>
-          <span>理论 · 模型 · 信号</span>
+          <a :href="activeHeroVisual.photoPage" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.photoCredit }}</a>
+          <span><a :href="activeHeroVisual.licenseUrl" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.licenseLabel }}</a> · {{ activeHeroVisual.photoNote }}</span>
+          <span>{{ activeHeroVisual.caption }}</span>
         </figcaption>
       </figure>
     </section>
@@ -424,7 +487,7 @@ h1.hero-title span { color:var(--accent); }
 /* High-fidelity Scientific Atelier pass: keep the existing application routes,
    navigation and content, but bring the entire public page into the reference's
    warm paper / engineering-blueprint visual language. */
-.lab-public {
+.lab-public.worldline-theme{
   /* Match the reference image's cool ink-and-navy palette rather than the
      default rust accent; preserve the theme switcher's behavior elsewhere. */
   --accent: #263f5a;
@@ -456,26 +519,26 @@ h1.hero-title span { color:var(--accent); }
     radial-gradient(ellipse at 87% 18%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 38%);
   background-size: 12px 12px, 12px 12px, auto, auto;
 }
-.public-header {
+.lab-public.worldline-theme .public-header{
   width: min(100% - 64px, 1512px);
   min-height: 76px;
   border-bottom-color: color-mix(in srgb, var(--text) 25%, transparent);
   background: color-mix(in srgb, var(--atelier-paper) 88%, transparent);
   backdrop-filter: blur(8px);
 }
-.public-brand strong { font-family: var(--serif, Georgia, serif); letter-spacing: -.025em; font-size: 18px; }
-.public-brand small { letter-spacing: .035em; }
-.public-header nav { gap: clamp(12px, 1.8vw, 28px); }
-.public-header nav > a:not(.nav-hub) { font-family: var(--serif, Georgia, serif); font-size: 14px; color: var(--text); }
-.public-header nav > a:not(.nav-hub):hover { text-decoration: underline; text-underline-offset: 7px; }
-.public-header .nav-hub {
+.lab-public.worldline-theme .public-brand strong{ font-family: var(--serif, Georgia, serif); letter-spacing: -.025em; font-size: 18px; }
+.lab-public.worldline-theme .public-brand small{ letter-spacing: .035em; }
+.lab-public.worldline-theme .public-header nav{ gap: clamp(12px, 1.8vw, 28px); }
+.lab-public.worldline-theme .public-header nav > a:not(.nav-hub){ font-family: var(--serif, Georgia, serif); font-size: 14px; color: var(--text); }
+.lab-public.worldline-theme .public-header nav > a:not(.nav-hub):hover{ text-decoration: underline; text-underline-offset: 7px; }
+.lab-public.worldline-theme .public-header .nav-hub{
   border-radius: 3px;
   min-height: 42px;
   padding-inline: 18px;
   box-shadow: 0 3px 0 color-mix(in srgb, var(--text) 14%, transparent);
   font-family: var(--serif, Georgia, serif);
 }
-.public-hero {
+.lab-public.worldline-theme .public-hero{
   width: 100%;
   max-width: none;
   min-height: min(820px, calc(100svh - 76px));
@@ -487,7 +550,7 @@ h1.hero-title span { color:var(--accent); }
   overflow: hidden;
   border-bottom: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
 }
-.public-hero::before {
+.lab-public.worldline-theme .public-hero::before{
   z-index: -3;
   opacity: .76;
   background-image:
@@ -497,7 +560,7 @@ h1.hero-title span { color:var(--accent); }
   background-size: 6px 6px, 6px 6px, auto;
   mask-image: linear-gradient(to bottom, #000 0%, #000 86%, transparent 100%);
 }
-.public-hero::after {
+.lab-public.worldline-theme .public-hero::after{
   z-index: -2;
   left: -3vw;
   width: 49vw;
@@ -508,19 +571,19 @@ h1.hero-title span { color:var(--accent); }
     radial-gradient(circle at 75% 83%, transparent 0 54px, color-mix(in srgb, var(--muted) 65%, transparent) 55px 56px, transparent 57px),
     radial-gradient(circle at 75% 83%, transparent 0 75px, color-mix(in srgb, var(--muted) 45%, transparent) 76px 77px, transparent 78px);
 }
-.hero-blueprint-decor { z-index: 1; overflow: visible; }
-.blueprint-gear-large { width: clamp(250px, 28vw, 430px); left: -150px; top: -55px; opacity: .32; }
-.blueprint-gear-small { width: clamp(180px, 19vw, 290px); left: 40%; bottom: -110px; opacity: .3; }
-.blueprint-equation { text-shadow: 0 1px 0 var(--atelier-paper); }
-.equation-top { top: 30px; right: 3%; font-size: clamp(15px, 1.65vw, 25px); }
-.equation-bottom { bottom: 14%; left: 8%; font-size: clamp(19px, 2.1vw, 31px); }
-.coordinate-left { left: max(22px, calc((100vw - 1280px) / 2 - 105px)); bottom: 15%; max-width: 125px; }
-.coordinate-right { right: 2%; bottom: 11%; max-width: 110px; }
-.hero-copy { position: relative; z-index: 3; max-width: 690px; padding-right: clamp(16px, 3vw, 44px); }
-.hero-eyebrow { color: var(--text); font-size: 10px; letter-spacing: .24em; margin-bottom: 28px; }
-.status-dot { border-radius: 0; width: 32px; height: 1px; box-shadow: none; }
-.eyebrow-rule { display: none; }
-h1.hero-title {
+.lab-public.worldline-theme .hero-blueprint-decor{ z-index: 1; overflow: visible; }
+.lab-public.worldline-theme .blueprint-gear-large{ width: clamp(250px, 28vw, 430px); left: -150px; top: -55px; opacity: .32; }
+.lab-public.worldline-theme .blueprint-gear-small{ width: clamp(180px, 19vw, 290px); left: 40%; bottom: -110px; opacity: .3; }
+.lab-public.worldline-theme .blueprint-equation{ text-shadow: 0 1px 0 var(--atelier-paper); }
+.lab-public.worldline-theme .equation-top{ top: 30px; right: 3%; font-size: clamp(15px, 1.65vw, 25px); }
+.lab-public.worldline-theme .equation-bottom{ bottom: 14%; left: 8%; font-size: clamp(19px, 2.1vw, 31px); }
+.lab-public.worldline-theme .coordinate-left{ left: max(22px, calc((100vw - 1280px) / 2 - 105px)); bottom: 15%; max-width: 125px; }
+.lab-public.worldline-theme .coordinate-right{ right: 2%; bottom: 11%; max-width: 110px; }
+.lab-public.worldline-theme .hero-copy{ position: relative; z-index: 3; max-width: 690px; padding-right: clamp(16px, 3vw, 44px); }
+.lab-public.worldline-theme .hero-eyebrow{ color: var(--text); font-size: 10px; letter-spacing: .24em; margin-bottom: 28px; }
+.lab-public.worldline-theme .status-dot{ border-radius: 0; width: 32px; height: 1px; box-shadow: none; }
+.lab-public.worldline-theme .eyebrow-rule{ display: none; }
+.lab-public.worldline-theme h1.hero-title{
   font-size: clamp(54px, 6.1vw, 98px);
   line-height: .94;
   letter-spacing: -.065em;
@@ -528,14 +591,14 @@ h1.hero-title {
   color: color-mix(in srgb, var(--text) 94%, #101010);
   text-wrap: balance;
 }
-h1.hero-title span { color: var(--accent); }
-.hero-intro { max-width: 500px; font-family: var(--serif, Georgia, serif); font-size: clamp(15px, 1.12vw, 18px); line-height: 1.65; color: var(--text); }
-.hero-actions { gap: 12px; margin: 26px 0 42px; }
-.hero-actions a { border-radius: 2px; min-height: 50px; padding-inline: 20px; font-family: var(--serif, Georgia, serif); font-size: 14px; }
-.hero-actions .button.primary { box-shadow: 0 4px 0 color-mix(in srgb, var(--text) 12%, transparent); }
-.hero-affiliation { border-top: 1px solid color-mix(in srgb, var(--text) 22%, transparent); padding-top: 16px; max-width: 490px; }
-.hero-affiliation > span:first-child { letter-spacing: .2em; font-size: 9px; }
-.collision-figure {
+.lab-public.worldline-theme h1.hero-title span{ color: var(--accent); }
+.lab-public.worldline-theme .hero-intro{ max-width: 500px; font-family: var(--serif, Georgia, serif); font-size: clamp(15px, 1.12vw, 18px); line-height: 1.65; color: var(--text); }
+.lab-public.worldline-theme .hero-actions{ gap: 12px; margin: 26px 0 42px; }
+.lab-public.worldline-theme .hero-actions a{ border-radius: 2px; min-height: 50px; padding-inline: 20px; font-family: var(--serif, Georgia, serif); font-size: 14px; }
+.lab-public.worldline-theme .hero-actions .button.primary{ box-shadow: 0 4px 0 color-mix(in srgb, var(--text) 12%, transparent); }
+.lab-public.worldline-theme .hero-affiliation{ border-top: 1px solid color-mix(in srgb, var(--text) 22%, transparent); padding-top: 16px; max-width: 490px; }
+.lab-public.worldline-theme .hero-affiliation > span:first-child{ letter-spacing: .2em; font-size: 9px; }
+.lab-public.worldline-theme .collision-figure{
   position: absolute;
   z-index: 2;
   inset: 0 0 0 auto;
@@ -545,7 +608,7 @@ h1.hero-title span { color: var(--accent); }
   overflow: hidden;
   filter: none;
 }
-.collision-figure::before {
+.lab-public.worldline-theme .collision-figure::before{
   z-index: 2;
   inset: 0;
   border-radius: 0;
@@ -554,7 +617,7 @@ h1.hero-title span { color: var(--accent); }
     linear-gradient(0deg, color-mix(in srgb, var(--atelier-paper) 82%, transparent) 0%, transparent 20%, transparent 86%, color-mix(in srgb, var(--atelier-paper) 35%, transparent) 100%),
     repeating-linear-gradient(0deg, transparent 0 5px, color-mix(in srgb, var(--text) 5%, transparent) 5px 6px);
 }
-.detector-photo {
+.lab-public.worldline-theme .detector-photo{
   z-index: 1;
   inset: 0;
   width: 100%;
@@ -567,7 +630,7 @@ h1.hero-title span { color: var(--accent); }
   filter: saturate(.78) contrast(1.05);
   mask-image: linear-gradient(90deg, transparent 0%, #000 19%, #000 100%);
 }
-.collision-figure > svg {
+.lab-public.worldline-theme .collision-figure > svg{
   position: absolute;
   inset: 0;
   width: 100%;
@@ -576,11 +639,11 @@ h1.hero-title span { color: var(--accent); }
   z-index: 3;
   opacity: .78;
 }
-.detector-rings { stroke-opacity: .34; stroke-width: .7; }
-.detector-segments { opacity: .58; }
-.collision-tracks { stroke-width: 1.05; }
-.collision-core { r: 8px; }
-.collision-figure figcaption {
+.lab-public.worldline-theme .detector-rings{ stroke-opacity: .34; stroke-width: .7; }
+.lab-public.worldline-theme .detector-segments{ opacity: .58; }
+.lab-public.worldline-theme .collision-tracks{ stroke-width: 1.05; }
+.lab-public.worldline-theme .collision-core{ r: 8px; }
+.lab-public.worldline-theme .collision-figure figcaption{
   position: absolute;
   z-index: 4;
   right: 30px;
@@ -593,8 +656,8 @@ h1.hero-title span { color: var(--accent); }
   letter-spacing: .035em;
   text-shadow: 0 1px 4px var(--atelier-paper);
 }
-.collision-figure figcaption a { color: var(--text); }
-.research-strip {
+.lab-public.worldline-theme .collision-figure figcaption a{ color: var(--text); }
+.lab-public.worldline-theme .research-strip{
   width: min(1280px, calc(100% - 64px));
   padding: 22px 0;
   border-top: 0;
@@ -603,14 +666,14 @@ h1.hero-title span { color: var(--accent); }
   font-size: 12px;
   letter-spacing: .09em;
 }
-.public-section {
+.lab-public.worldline-theme .public-section{
   position: relative;
   width: min(1280px, calc(100% - 64px));
   padding: clamp(68px, 8vw, 112px) 0;
   border-bottom: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
   scroll-margin-top: 30px;
 }
-.public-section::before {
+.lab-public.worldline-theme .public-section::before{
   content: "";
   position: absolute;
   left: calc((min(1280px, 100vw - 64px) - 100vw) / 2);
@@ -625,51 +688,51 @@ h1.hero-title span { color: var(--accent); }
   background-size: auto, 24px 24px;
   opacity: .45;
 }
-.section-top { margin-bottom: 42px; }
-.eyebrow { font-size: 10px; letter-spacing: .22em; color: var(--accent); }
-h2, .section-top h2, .about-section h2, .collaboration-section h2 {
+.lab-public.worldline-theme .section-top{ margin-bottom: 42px; }
+.lab-public.worldline-theme .eyebrow{ font-size: 10px; letter-spacing: .22em; color: var(--accent); }
+.lab-public.worldline-theme h2, .lab-public.worldline-theme .section-top h2, .lab-public.worldline-theme .about-section h2, .lab-public.worldline-theme .collaboration-section h2{
   font-family: var(--serif, Georgia, serif);
   font-size: clamp(30px, 3.5vw, 48px);
   line-height: 1.13;
   letter-spacing: -.04em;
   color: var(--text);
 }
-.section-top > p, .section-description { max-width: 440px; font-family: var(--serif, Georgia, serif); font-size: 14px; }
-.research-layout { gap: clamp(28px, 5vw, 76px); }
-.research-tabs button { padding: 25px 4px; border-bottom-color: color-mix(in srgb, var(--text) 20%, transparent); }
-.research-tabs strong { font-family: var(--serif, Georgia, serif); font-size: clamp(18px, 1.65vw, 24px); }
-.research-detail, .research-guide-card, .physics-resource-card, .topic-guide-entry, .academic-partner {
+.lab-public.worldline-theme .section-top > p, .lab-public.worldline-theme .section-description{ max-width: 440px; font-family: var(--serif, Georgia, serif); font-size: 14px; }
+.lab-public.worldline-theme .research-layout{ gap: clamp(28px, 5vw, 76px); }
+.lab-public.worldline-theme .research-tabs button{ padding: 25px 4px; border-bottom-color: color-mix(in srgb, var(--text) 20%, transparent); }
+.lab-public.worldline-theme .research-tabs strong{ font-family: var(--serif, Georgia, serif); font-size: clamp(18px, 1.65vw, 24px); }
+.lab-public.worldline-theme .research-detail, .lab-public.worldline-theme .research-guide-card, .lab-public.worldline-theme .physics-resource-card, .lab-public.worldline-theme .topic-guide-entry, .lab-public.worldline-theme .academic-partner{
   border-radius: 2px;
   box-shadow: none;
 }
-.research-detail, .research-guide-card, .physics-resource-card {
+.lab-public.worldline-theme .research-detail, .lab-public.worldline-theme .research-guide-card, .lab-public.worldline-theme .physics-resource-card{
   background: color-mix(in srgb, var(--atelier-paper) 76%, var(--surface));
   border-color: color-mix(in srgb, var(--text) 24%, transparent);
 }
-.research-detail { padding: clamp(26px, 3.2vw, 44px); }
-.research-symbol { font-family: var(--serif, Georgia, serif); font-size: 132px; opacity: .09; }
-.topic-guide-entry { background: transparent; border-color: color-mix(in srgb, var(--text) 35%, transparent); }
-.topic-guide-arrow { border-radius: 2px; }
-.research-guide-grid { gap: 0; border-top: 1px solid color-mix(in srgb, var(--text) 25%, transparent); border-left: 1px solid color-mix(in srgb, var(--text) 25%, transparent); }
-.research-guide-card { border: 0; border-right: 1px solid color-mix(in srgb, var(--text) 25%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--text) 25%, transparent); padding: clamp(22px, 2.5vw, 34px); }
-.research-guide-symbol { opacity: .2; }
-.research-guide-open { align-self: flex-start; border-radius: 2px; margin-top: 14px; }
-.publications-section { border-top: 0; }
-.publication-controls { border-top: 1px solid color-mix(in srgb, var(--text) 22%, transparent); padding-top: 20px; }
-.segmented button, .paper-search input, .publication-options select { border-radius: 2px; }
-.paper-search input { background: transparent; border-color: color-mix(in srgb, var(--text) 32%, transparent); }
-.public-paper { grid-template-columns: 82px minmax(0, 1fr) 56px; gap: 26px; border-bottom-color: color-mix(in srgb, var(--text) 20%, transparent); }
-.paper-year { font-family: var(--serif, Georgia, serif); }
-.paper-content h3 { font-family: var(--serif, Georgia, serif); font-size: clamp(19px, 1.8vw, 24px); line-height: 1.35; }
-.paper-summary { max-width: 780px; }
-.physics-resource-grid { gap: 0; border-top: 1px solid color-mix(in srgb, var(--text) 24%, transparent); border-left: 1px solid color-mix(in srgb, var(--text) 24%, transparent); }
-.physics-resource-card { border: 0; border-right: 1px solid color-mix(in srgb, var(--text) 24%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--text) 24%, transparent); padding: 26px; }
-.physics-resource-card h3 { font-family: var(--serif, Georgia, serif); }
-.about-section { gap: clamp(36px, 7vw, 100px); }
-.about-details > div { border-bottom-color: color-mix(in srgb, var(--text) 22%, transparent); }
-.collaboration-section { background: color-mix(in srgb, var(--accent) 5%, transparent); }
-.hub-module-list > span { border-bottom-color: color-mix(in srgb, var(--text) 22%, transparent); }
-.public-footer {
+.lab-public.worldline-theme .research-detail{ padding: clamp(26px, 3.2vw, 44px); }
+.lab-public.worldline-theme .research-symbol{ font-family: var(--serif, Georgia, serif); font-size: 132px; opacity: .09; }
+.lab-public.worldline-theme .topic-guide-entry{ background: transparent; border-color: color-mix(in srgb, var(--text) 35%, transparent); }
+.lab-public.worldline-theme .topic-guide-arrow{ border-radius: 2px; }
+.lab-public.worldline-theme .research-guide-grid{ gap: 0; border-top: 1px solid color-mix(in srgb, var(--text) 25%, transparent); border-left: 1px solid color-mix(in srgb, var(--text) 25%, transparent); }
+.lab-public.worldline-theme .research-guide-card{ border: 0; border-right: 1px solid color-mix(in srgb, var(--text) 25%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--text) 25%, transparent); padding: clamp(22px, 2.5vw, 34px); }
+.lab-public.worldline-theme .research-guide-symbol{ opacity: .2; }
+.lab-public.worldline-theme .research-guide-open{ align-self: flex-start; border-radius: 2px; margin-top: 14px; }
+.lab-public.worldline-theme .publications-section{ border-top: 0; }
+.lab-public.worldline-theme .publication-controls{ border-top: 1px solid color-mix(in srgb, var(--text) 22%, transparent); padding-top: 20px; }
+.lab-public.worldline-theme .segmented button, .lab-public.worldline-theme .paper-search input, .lab-public.worldline-theme .publication-options select{ border-radius: 2px; }
+.lab-public.worldline-theme .paper-search input{ background: transparent; border-color: color-mix(in srgb, var(--text) 32%, transparent); }
+.lab-public.worldline-theme .public-paper{ grid-template-columns: 82px minmax(0, 1fr) 56px; gap: 26px; border-bottom-color: color-mix(in srgb, var(--text) 20%, transparent); }
+.lab-public.worldline-theme .paper-year{ font-family: var(--serif, Georgia, serif); }
+.lab-public.worldline-theme .paper-content h3{ font-family: var(--serif, Georgia, serif); font-size: clamp(19px, 1.8vw, 24px); line-height: 1.35; }
+.lab-public.worldline-theme .paper-summary{ max-width: 780px; }
+.lab-public.worldline-theme .physics-resource-grid{ gap: 0; border-top: 1px solid color-mix(in srgb, var(--text) 24%, transparent); border-left: 1px solid color-mix(in srgb, var(--text) 24%, transparent); }
+.lab-public.worldline-theme .physics-resource-card{ border: 0; border-right: 1px solid color-mix(in srgb, var(--text) 24%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--text) 24%, transparent); padding: 26px; }
+.lab-public.worldline-theme .physics-resource-card h3{ font-family: var(--serif, Georgia, serif); }
+.lab-public.worldline-theme .about-section{ gap: clamp(36px, 7vw, 100px); }
+.lab-public.worldline-theme .about-details > div{ border-bottom-color: color-mix(in srgb, var(--text) 22%, transparent); }
+.lab-public.worldline-theme .collaboration-section{ background: color-mix(in srgb, var(--accent) 5%, transparent); }
+.lab-public.worldline-theme .hub-module-list > span{ border-bottom-color: color-mix(in srgb, var(--text) 22%, transparent); }
+.lab-public.worldline-theme .public-footer{
   width: min(1280px, calc(100% - 64px));
   border-top: 0;
   background-image: linear-gradient(color-mix(in srgb, var(--text) 24%, transparent), color-mix(in srgb, var(--text) 24%, transparent));
@@ -678,19 +741,19 @@ h2, .section-top h2, .about-section h2, .collaboration-section h2 {
   padding: 28px 0 38px;
 }
 @media (min-width: 1600px) {
-  .public-hero { min-height: min(900px, calc(100svh - 76px)); }
+  .lab-public.worldline-theme .public-hero{ min-height: min(900px, calc(100svh - 76px)); }
 }
 @media (max-width: 1100px) {
-  .public-hero { padding-inline: 32px; min-height: 700px; }
-  .hero-copy { max-width: 56%; }
-  h1.hero-title { font-size: clamp(50px, 6.3vw, 72px); }
-  .collision-figure { width: 62%; }
-  .coordinate-left { left: 20px; }
-  .public-header { width: calc(100% - 48px); }
+  .lab-public.worldline-theme .public-hero{ padding-inline: 32px; min-height: 700px; }
+  .lab-public.worldline-theme .hero-copy{ max-width: 56%; }
+  .lab-public.worldline-theme h1.hero-title{ font-size: clamp(50px, 6.3vw, 72px); }
+  .lab-public.worldline-theme .collision-figure{ width: 62%; }
+  .lab-public.worldline-theme .coordinate-left{ left: 20px; }
+  .lab-public.worldline-theme .public-header{ width: calc(100% - 48px); }
 }
 @media (max-width: 760px) {
-  .public-header { width: calc(100% - 36px); }
-  .public-hero {
+  .lab-public.worldline-theme .public-header{ width: calc(100% - 36px); }
+  .lab-public.worldline-theme .public-hero{
     width: 100%;
     min-height: 0;
     display: flex;
@@ -699,25 +762,25 @@ h2, .section-top h2, .about-section h2, .collaboration-section h2 {
     padding: 52px 18px 0;
     gap: 0;
   }
-  .hero-copy { max-width: 100%; padding: 0 6px; }
-  .hero-eyebrow { margin-bottom: 22px; }
-  h1.hero-title { font-size: clamp(46px, 10vw, 72px); }
-  .hero-intro { max-width: 540px; }
-  .hero-actions { margin: 22px 0 28px; gap: 8px; }
-  .hero-affiliation { margin-bottom: 24px; }
-  .collision-figure {
+  .lab-public.worldline-theme .hero-copy{ max-width: 100%; padding: 0 6px; }
+  .lab-public.worldline-theme .hero-eyebrow{ margin-bottom: 22px; }
+  .lab-public.worldline-theme h1.hero-title{ font-size: clamp(46px, 10vw, 72px); }
+  .lab-public.worldline-theme .hero-intro{ max-width: 540px; }
+  .lab-public.worldline-theme .hero-actions{ margin: 22px 0 28px; gap: 8px; }
+  .lab-public.worldline-theme .hero-affiliation{ margin-bottom: 24px; }
+  .lab-public.worldline-theme .collision-figure{
     position: relative;
     inset: auto;
     width: calc(100% + 36px);
     height: clamp(320px, 78vw, 480px);
     margin: 0 -18px;
   }
-  .collision-figure::before {
+  .lab-public.worldline-theme .collision-figure::before{
     background: linear-gradient(180deg, var(--atelier-paper), transparent 23%, transparent 82%, color-mix(in srgb, var(--atelier-paper) 70%, transparent));
   }
-  .detector-photo { mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 100%); object-position: 50% 50%; }
-  .collision-figure > svg { opacity: .58; }
-  .collision-figure figcaption {
+  .lab-public.worldline-theme .detector-photo{ mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 100%); object-position: 50% 50%; }
+  .lab-public.worldline-theme .collision-figure > svg{ opacity: .58; }
+  .lab-public.worldline-theme .collision-figure figcaption{
     left: 12px;
     right: 12px;
     bottom: 88px;
@@ -734,26 +797,233 @@ h2, .section-top h2, .about-section h2, .collaboration-section h2 {
     text-shadow: none;
     backdrop-filter: blur(6px);
   }
-  .collision-figure figcaption a { color: #263f5a; text-decoration: underline; text-underline-offset: 2px; }
-  .blueprint-gear-large { left: -180px; top: -50px; }
-  .blueprint-gear-small { left: auto; right: -70px; bottom: 22%; }
-  .equation-top { right: 16px; top: 16px; font-size: 13px; }
-  .equation-side, .coordinate-right { display: none; }
-  .equation-bottom { left: 12px; bottom: 32%; font-size: 18px; }
-  .coordinate-left { left: 12px; bottom: 31%; max-width: 88px; font-size: 7px; }
-  .research-strip, .public-section, .public-footer { width: calc(100% - 36px); }
-  .research-strip { padding: 18px 0; letter-spacing: .03em; }
-  .public-section { padding: 62px 0; }
-  .section-top { gap: 14px; margin-bottom: 28px; }
-  .section-top h2, h2, .about-section h2, .collaboration-section h2 { font-size: clamp(29px, 7vw, 38px); }
-  .research-guide-grid, .physics-resource-grid { grid-template-columns: 1fr; }
-  .research-guide-card { padding: 24px; }
-  .public-paper { grid-template-columns: 46px minmax(0, 1fr); gap: 14px; }
-  .paper-year { font-size: 20px; }
+  .lab-public.worldline-theme .collision-figure figcaption a{ color: #263f5a; text-decoration: underline; text-underline-offset: 2px; }
+  .lab-public.worldline-theme .blueprint-gear-large{ left: -180px; top: -50px; }
+  .lab-public.worldline-theme .blueprint-gear-small{ left: auto; right: -70px; bottom: 22%; }
+  .lab-public.worldline-theme .equation-top{ right: 16px; top: 16px; font-size: 13px; }
+  .lab-public.worldline-theme .equation-side, .lab-public.worldline-theme .coordinate-right{ display: none; }
+  .lab-public.worldline-theme .equation-bottom{ left: 12px; bottom: 32%; font-size: 18px; }
+  .lab-public.worldline-theme .coordinate-left{ left: 12px; bottom: 31%; max-width: 88px; font-size: 7px; }
+  .lab-public.worldline-theme .research-strip, .lab-public.worldline-theme .public-section, .lab-public.worldline-theme .public-footer{ width: calc(100% - 36px); }
+  .lab-public.worldline-theme .research-strip{ padding: 18px 0; letter-spacing: .03em; }
+  .lab-public.worldline-theme .public-section{ padding: 62px 0; }
+  .lab-public.worldline-theme .section-top{ gap: 14px; margin-bottom: 28px; }
+  .lab-public.worldline-theme .section-top h2, .lab-public.worldline-theme h2, .lab-public.worldline-theme .about-section h2, .lab-public.worldline-theme .collaboration-section h2{ font-size: clamp(29px, 7vw, 38px); }
+  .lab-public.worldline-theme .research-guide-grid, .lab-public.worldline-theme .physics-resource-grid{ grid-template-columns: 1fr; }
+  .lab-public.worldline-theme .research-guide-card{ padding: 24px; }
+  .lab-public.worldline-theme .public-paper{ grid-template-columns: 46px minmax(0, 1fr); gap: 14px; }
+  .lab-public.worldline-theme .paper-year{ font-size: 20px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .collision-core { animation: none; }
-  .public-header .nav-hub, .topic-guide-entry { transition: none; }
+  .lab-public.worldline-theme .collision-core{ animation: none; }
+  .lab-public.worldline-theme .public-header .nav-hub, .lab-public.worldline-theme .topic-guide-entry{ transition: none; }
 }
 
+
+/* Hero visual modes are independent of the selected page skin. */
+.hero-visual-controls {
+  position: absolute; z-index: 6; top: 18px; right: 18px;
+  display: flex; flex-wrap: wrap; gap: 4px; max-width: calc(100% - 36px);
+  padding: 5px; border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(10px);
+}
+.hero-visual-controls button {
+  min-height: 30px; padding: 5px 9px; border: 1px solid transparent;
+  background: transparent; color: var(--text); font: inherit; font-size: 10px; line-height: 1.2; cursor: pointer;
+}
+.hero-visual-controls button.active,
+.hero-visual-controls button[aria-pressed="true"] {
+  border-color: var(--accent); background: var(--accent); color: var(--accent-ink, var(--bg));
+}
+.hero-visual-controls button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* Reference-inspired full-width homepage composition. This layout belongs
+   only to the Worldline public skin; other skins keep their own geometry. */
+.lab-public.worldline-theme.hero-visual-blueprint .public-hero {
+  isolation: isolate;
+  min-height: min(860px, calc(100svh - 76px));
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: clamp(64px, 8vh, 96px);
+  padding-bottom: clamp(58px, 7vh, 88px);
+  background: var(--atelier-paper, #f5f2e9);
+  background-image:
+    linear-gradient(90deg, rgb(255 255 255 / 84%) 0%, rgb(255 255 255 / 68%) 33%, rgb(255 255 255 / 10%) 64%, transparent 100%),
+    repeating-linear-gradient(0deg, transparent 0 5px, rgb(39 57 75 / 5%) 5px 6px),
+    repeating-linear-gradient(90deg, transparent 0 5px, rgb(39 57 75 / 5%) 5px 6px);
+}
+.lab-public.worldline-theme.hero-visual-blueprint .public-hero::before {
+  z-index: -1;
+  opacity: .8;
+  background-image:
+    linear-gradient(rgb(39 57 75 / 7%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(39 57 75 / 7%) 1px, transparent 1px),
+    radial-gradient(ellipse at 73% 47%, rgb(66 111 145 / 16%), transparent 56%);
+  background-size: 12px 12px, 12px 12px, auto;
+  mask-image: none;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .public-hero::after {
+  z-index: 0;
+  left: 0;
+  width: 48%;
+  opacity: .55;
+  background:
+    radial-gradient(circle at 7% 18%, transparent 0 66px, rgb(39 57 75 / 36%) 67px 68px, transparent 69px),
+    radial-gradient(circle at 7% 18%, transparent 0 91px, rgb(39 57 75 / 26%) 92px 93px, transparent 94px),
+    radial-gradient(circle at 83% 85%, transparent 0 48px, rgb(39 57 75 / 35%) 49px 50px, transparent 51px),
+    radial-gradient(circle at 83% 85%, transparent 0 74px, rgb(39 57 75 / 22%) 75px 76px, transparent 77px);
+}
+.lab-public.worldline-theme.hero-visual-blueprint .hero-copy {
+  z-index: 4;
+  width: min(54%, 760px);
+  max-width: 760px;
+  padding-right: clamp(20px, 4vw, 58px);
+}
+.lab-public.worldline-theme.hero-visual-blueprint h1.hero-title {
+  max-width: 820px;
+  font-size: clamp(58px, 6.8vw, 108px);
+  line-height: .9;
+  letter-spacing: -.07em;
+}
+.lab-public.worldline-theme.hero-visual-blueprint h1.hero-title span {
+  color: #172b43;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .hero-intro {
+  max-width: 480px;
+  color: #26364a;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .collision-figure {
+  width: 66%;
+  z-index: 2;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .collision-figure::before {
+  background:
+    linear-gradient(90deg, #f5f2e9 0%, rgb(245 242 233 / 92%) 8%, rgb(245 242 233 / 60%) 23%, rgb(245 242 233 / 10%) 45%, transparent 60%),
+    linear-gradient(0deg, rgb(245 242 233 / 85%) 0%, transparent 19%, transparent 82%, rgb(245 242 233 / 28%) 100%),
+    repeating-linear-gradient(0deg, transparent 0 5px, rgb(39 57 75 / 5%) 5px 6px);
+}
+.lab-public.worldline-theme.hero-visual-blueprint .detector-photo {
+  opacity: .98;
+  mix-blend-mode: multiply;
+  filter: saturate(.84) contrast(1.04);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 100%);
+}
+.lab-public.worldline-theme.hero-visual-blueprint .collision-figure > svg {
+  opacity: .88;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .hero-blueprint-decor {
+  z-index: 3;
+  pointer-events: none;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .hero-visual-controls {
+  /* Keep the mode selector below the decorative equation in the hero. */
+  top: 64px;
+  right: 22px;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .collision-figure figcaption {
+  left: 26%;
+  right: 24px;
+  bottom: 18px;
+  padding: 8px 10px;
+  border-top: 1px solid rgb(23 43 67 / 42%);
+  background: rgb(245 242 233 / 70%);
+  color: #172b43;
+  text-shadow: none;
+  backdrop-filter: blur(4px);
+}
+.lab-public.worldline-theme.hero-visual-blueprint .collision-figure figcaption a {
+  color: #172b43;
+}
+@media (max-width: 900px) {
+  .lab-public.worldline-theme.hero-visual-blueprint .public-hero {
+    min-height: 690px;
+    padding-top: 58px;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .hero-copy {
+    width: 58%;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint h1.hero-title {
+    font-size: clamp(48px, 7.2vw, 74px);
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .collision-figure {
+    width: 68%;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .hero-visual-controls {
+    top: 56px;
+  }
+}
+@media (max-width: 650px) {
+  .lab-public.worldline-theme.hero-visual-blueprint .public-hero {
+    min-height: 0;
+    padding-top: 44px;
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0 5px, rgb(39 57 75 / 5%) 5px 6px),
+      repeating-linear-gradient(90deg, transparent 0 5px, rgb(39 57 75 / 5%) 5px 6px);
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .hero-copy {
+    width: 100%;
+    padding-right: 0;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint h1.hero-title {
+    font-size: clamp(45px, 11vw, 64px);
+    line-height: .98;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .collision-figure {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+    margin: 8px 0 0;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .detector-photo {
+    mask-image: none;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .collision-figure figcaption {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    font-size: 9px;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .hero-visual-controls {
+    top: 8px;
+    right: 8px;
+  }
+}
+
+.lab-public.hero-visual-photo .collision-figure::before { display: none; }
+.lab-public.hero-visual-photo .collision-figure > svg { opacity: 0; }
+.lab-public.hero-visual-photo .detector-photo {
+  inset: 0; width: 100%; height: 100%; border-radius: inherit; opacity: 1;
+  mix-blend-mode: normal; filter: none; mask-image: none;
+}
+.lab-public.hero-visual-terminal .collision-figure::before {
+  z-index: 2; border-radius: inherit;
+  background: linear-gradient(135deg, rgb(4 15 29 / 74%), rgb(7 33 54 / 24%) 55%, rgb(4 15 29 / 64%));
+}
+/* The terminal mode uses a real ATLAS event display. Do not draw decorative
+   synthetic tracks over scientific event data. */
+.lab-public.hero-visual-terminal .collision-figure > svg { z-index: 3; opacity: 0; }
+.lab-public.hero-visual-terminal .detector-photo { mix-blend-mode: normal; filter: contrast(1.04) saturate(1.08); mask-image: none; }
+.lab-public.hero-visual-terminal .detector-rings { stroke: #86d8e8; stroke-opacity: .58; }
+.lab-public.hero-visual-terminal .detector-segments { stroke: #6cbdd7; opacity: .85; }
+.lab-public.hero-visual-terminal .collision-tracks { stroke: #9cecff; filter: drop-shadow(0 0 3px rgb(86 218 255 / 55%)); }
+.lab-public.hero-visual-terminal .collision-tracks path:nth-child(3n) { stroke: #e8b66b; }
+.lab-public.hero-visual-terminal .collision-annotations { fill: #d5f4ff; }
+.lab-public.hero-visual-terminal .collision-figure figcaption {
+  left: 12px; right: 12px; bottom: 12px; padding: 10px 12px;
+  border: 1px solid rgb(134 216 232 / 40%); background: rgb(4 15 29 / 88%);
+  color: #e2f6ff; text-shadow: none;
+}
+.lab-public.hero-visual-terminal .collision-figure figcaption a { color: #a6e7f7; }
+.hero-image-enter-active, .hero-image-leave-active { transition: opacity .22s ease; }
+.hero-image-enter-from, .hero-image-leave-to { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-image-enter-active, .hero-image-leave-active { transition: none; }
+}
+@media (max-width: 760px) {
+  .hero-visual-controls { top: 10px; right: 10px; gap: 2px; padding: 4px; }
+  .hero-visual-controls button { min-height: 28px; padding: 5px 7px; font-size: 9px; }
+  .lab-public.hero-visual-terminal .collision-figure figcaption { bottom: 10px; }
+}
 </style>

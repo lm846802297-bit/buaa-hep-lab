@@ -95,6 +95,112 @@ try {
   check(await publicSkin.locator('option').count() === 5, 'public skin selector exposes all five appearance themes')
   await page.keyboard.press('Escape')
   check(await publicSkin.count() === 0, 'Escape closes the public theme popover')
+
+  // Regression guard: the Worldline blueprint is one public skin, not a global
+  // override. Each other saved palette must remain visibly distinct and remove
+  // the Worldline-only layout class.
+  const themeAccents = {}
+  for (const [scheme, expectedAccent] of [
+    ['quiet-research', '#b85e3f'],
+    ['classic-cyan', '#c5e6df'],
+    ['obsidian-gray', '#94a3b8'],
+    ['nebula-purple', '#b89bf8'],
+    ['worldline-console', '#263f5a']
+  ]) {
+    if (await publicSkin.count() === 0) await publicSkinTrigger.click()
+    await publicSkin.selectOption(scheme)
+    await page.waitForFunction(id => {
+      const root = document.querySelector('.lab-public')
+      return document.documentElement.getAttribute('data-color-scheme') === id
+        && root?.classList.contains('worldline-theme') === (id === 'worldline-console')
+    }, scheme)
+    const visual = await page.locator('.lab-public').evaluate(el => ({
+      accent: getComputedStyle(el).getPropertyValue('--accent').trim().toLowerCase(),
+      worldline: el.classList.contains('worldline-theme')
+    }))
+    themeAccents[scheme] = visual.accent
+    check(visual.worldline === (scheme === 'worldline-console'), scheme + ' activates only its own homepage layout')
+    check(visual.accent === expectedAccent, scheme + ' keeps its own accent palette: ' + visual.accent)
+  }
+  check(new Set(Object.values(themeAccents)).size === 5, 'all five public themes retain distinct computed accents')
+
+  const heroModeGroup = page.getByRole('group', { name: '首页右侧主视觉模式' })
+  check(await heroModeGroup.getByRole('button').count() === 3, 'homepage hero exposes three adjustable visual modes')
+  for (const [label, className, storedMode] of [
+    ['ATLAS 实景', 'hero-visual-photo', 'photo'],
+    ['碰撞事件', 'hero-visual-terminal', 'terminal'],
+    ['蓝图叠加', '', 'blueprint']
+  ]) {
+    await heroModeGroup.getByRole('button', { name: label, exact: true }).click()
+    await page.waitForFunction(name => {
+      const root = document.querySelector('.lab-public')
+      return name
+        ? root?.classList.contains(name)
+        : !root?.classList.contains('hero-visual-photo') && !root?.classList.contains('hero-visual-terminal')
+    }, className)
+    check(await heroModeGroup.getByRole('button', { name: label, exact: true }).getAttribute('aria-pressed') === 'true', label + ' mode reports the selected state')
+    check(
+      await page.locator('.collision-figure > svg').getAttribute('aria-hidden') === String(storedMode !== 'blueprint'),
+      label + ' mode keeps the decorative SVG accessibility semantics synchronized'
+    )
+    check(await page.evaluate(() => localStorage.getItem('labhub_public_hero_visual_mode')) === storedMode, label + ' mode persists independently')
+    const expectedImagePath = label === 'ATLAS 实景'
+      ? 'CERN_ATLAS_Detector.jpg'
+      : label === '碰撞事件'
+        ? 'Event_display_of_a_4-muon_candidate_in_the_ATLAS_detector.png'
+        : 'CMS_detector_%282%29.jpg'
+    await page.waitForFunction(path => {
+      const image = document.querySelector('.detector-photo')
+      return Boolean(image && image.src.includes(path) && image.complete && image.naturalWidth > 0)
+    }, expectedImagePath, { timeout: 20000 })
+    check(await page.locator('.detector-photo').getAttribute('alt') !== '', label + ' mode has descriptive alternative text')
+    const expectedLicense = label === 'ATLAS 实景' ? 'CC BY-SA 4.0' : label === '碰撞事件' ? 'CC BY-SA 3.0' : 'CC BY 2.0'
+    check(await page.getByRole('link', { name: expectedLicense, exact: true }).count() === 1, label + ' mode updates image attribution and license')
+  }
+  await heroModeGroup.getByRole('button', { name: '蓝图叠加', exact: true }).click()
+  await page.waitForFunction(() => !document.querySelector('.lab-public')?.classList.contains('hero-visual-photo') && !document.querySelector('.lab-public')?.classList.contains('hero-visual-terminal'))
+  const desktopBlueprint = await page.locator('.lab-public').evaluate(root => {
+    const hero = root.querySelector('.public-hero')
+    const copy = root.querySelector('.hero-copy')
+    const figure = root.querySelector('.collision-figure')
+    const heroStyle = getComputedStyle(hero)
+    const figureStyle = getComputedStyle(figure)
+    const copyBox = copy.getBoundingClientRect()
+    const figureBox = figure.getBoundingClientRect()
+    return {
+      blueprint: root.classList.contains('hero-visual-blueprint'),
+      worldline: root.classList.contains('worldline-theme'),
+      grid: heroStyle.backgroundImage.includes('repeating-linear-gradient'),
+      figurePosition: figureStyle.position,
+      copyWidth: copyBox.width,
+      figureLeft: figureBox.left,
+      heroWidth: hero.getBoundingClientRect().width
+    }
+  })
+  check(desktopBlueprint.blueprint && desktopBlueprint.worldline, 'Worldline blueprint mode is active by default')
+  check(desktopBlueprint.grid, 'Worldline blueprint hero uses a technical-paper grid background')
+  check(desktopBlueprint.figurePosition === 'absolute' && desktopBlueprint.figureLeft > desktopBlueprint.heroWidth * 0.3, 'desktop detector visual occupies the right side beside live HTML copy')
+  check(await page.getByRole('link', { name: 'CC BY 2.0' }).isVisible(), 'detector photo credit and license remain visible in blueprint mode')
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.waitForTimeout(120)
+  const mobileBlueprint = await page.locator('.collision-figure').evaluate(figure => {
+    const root = document.querySelector('.lab-public')
+    const copy = root.querySelector('.hero-copy').getBoundingClientRect()
+    const image = figure.getBoundingClientRect()
+    return {
+      figurePosition: getComputedStyle(figure).position,
+      copyBottom: copy.bottom,
+      figureTop: image.top,
+      figureRight: image.right,
+      viewportWidth: innerWidth,
+      imageWidth: image.width
+    }
+  })
+  check(mobileBlueprint.figurePosition === 'relative', 'mobile blueprint detector returns to document flow')
+  check(mobileBlueprint.figureTop >= mobileBlueprint.copyBottom - 2, 'mobile blueprint detector does not cover the headline or action buttons')
+  check(mobileBlueprint.figureRight <= mobileBlueprint.viewportWidth + 1 && mobileBlueprint.imageWidth > 0, 'mobile blueprint detector stays within the viewport')
+  await page.setViewportSize({ width: 1440, height: 900 })
   await publicSkinTrigger.click()
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
   await page.evaluate(() => {
@@ -144,6 +250,7 @@ try {
       window.__worldlineDecaySnapshot = null
       window.__worldlinePhaseLog = []
     })
+    await publicSkinTrigger.click()
   }
   await publicSkin.selectOption('worldline-console')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
@@ -713,7 +820,9 @@ try {
   check(loginPage.url().includes('/login?redirect=/learning/eft'), 'anonymous learning navigation redirects to login with its target preserved')
   await loggedOut.close()
 // Appearance compatibility audit: exercise every actionable theme card in Chromium.
-  const styleContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  // Theme-transition assertions require animation to be enabled regardless of the host runner preference.
+  // Reduced-motion behavior is covered separately with an explicitly reduced context above.
+  const styleContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'no-preference' })
   await styleContext.addInitScript(() => {
     if (localStorage.getItem('__appearance_audit_seeded') === '1') return
     localStorage.setItem('labhub_force_demo', '1')
@@ -809,10 +918,18 @@ try {
     check(await stylePage.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().length > 0), `color scheme ${schemeIds[i]} supplies an accent color`)
     if (schemeIds[i] === 'worldline-console' || schemeIds[i] === 'custom') {
       const themeTransition = stylePage.locator('.worldline-shift-overlay')
-      await expect(themeTransition).toBeVisible()
-      await expect(themeTransition.locator('.worldline-shift-overlay__hud')).toHaveCount(0)
-      check(!(await themeTransition.innerText()).includes('世界线变动'), `theme card ${schemeIds[i]} transition contains no Worldline Shift text`)
       try {
+        // Capture both the phase event and the rendered overlay so failures tell
+        // us whether the transition was never triggered or merely missed by the DOM assertion.
+        await stylePage.waitForFunction(() =>
+          Array.isArray(window.__themeShiftPhaseLog) &&
+          window.__themeShiftPhaseLog.some(entry => entry.phase === 'ignite'),
+          null,
+          { timeout: 3000 }
+        )
+        await expect(themeTransition).toBeVisible({ timeout: 3000 })
+        await expect(themeTransition.locator('.worldline-shift-overlay__hud')).toHaveCount(0)
+        check(!(await themeTransition.innerText()).includes('世界线变动'), `theme card ${schemeIds[i]} transition contains no Worldline Shift text`)
         // Wait for the component's semantic end state instead of assuming that
         // the 1.8 s animation timer runs on wall-clock time under CI load.
         await stylePage.waitForFunction(() =>
@@ -840,10 +957,12 @@ try {
             overlayPhase: overlay?.getAttribute('data-phase') || null,
             timelineActive: Boolean(overlay?.classList.contains('is-timeline-active')),
             hudPresent: Boolean(overlay?.querySelector('.worldline-shift-overlay__hud')),
-            overlayOpacity: overlay ? getComputedStyle(overlay).opacity : null
+            overlayOpacity: overlay ? getComputedStyle(overlay).opacity : null,
+            colorScheme: document.documentElement.getAttribute('data-color-scheme'),
+            prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches
           }
         })
-        throw new Error('theme transition did not clean up: ' + JSON.stringify(diagnostic) + '; cause=' + error.message)
+        throw new Error('theme transition for ' + schemeIds[i] + ' was not observed or did not clean up: ' + JSON.stringify(diagnostic) + '; cause=' + error.message)
       } finally {
         await stylePage.evaluate(() => {
           if (window.__themeShiftListener) window.removeEventListener('worldline:phase', window.__themeShiftListener)

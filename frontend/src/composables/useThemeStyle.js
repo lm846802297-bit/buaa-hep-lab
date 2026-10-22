@@ -1,6 +1,8 @@
 import { ref } from 'vue'
 
 export const DEFAULT_COLOR_SCHEME = 'quiet-research'
+// Public-site default is the reference-matched Worldline blueprint; workspace remains independent.
+export const DEFAULT_PUBLIC_COLOR_SCHEME = 'worldline-console'
 export const DEFAULT_BG_TYPE = 'paper'
 export const DEFAULT_GLASS_STYLE = 'solid'
 
@@ -48,8 +50,8 @@ export const COLOR_SCHEMES = [
   {
     id: 'worldline-console',
     name: '世界线蓝图',
-    subtitle: '暖白科学蓝图 · 深蓝线稿 · 复古终端读数',
-    description: '暖白工程纸与深蓝线稿为主，物理公式和少量琥珀信号作为点缀。',
+    subtitle: '命运石之门终端逻辑 · 暖白科学蓝图 · 深蓝线稿',
+    description: '命运石之门主题系统下的官网蓝图模式：保留暖白工程纸、深蓝线稿与物理公式，并提供可切换的复古终端主视觉。',
     colors: ['#F4F1E9', '#29415D', '#FFFEFA'],
     primaryColor: '#29415D',
     baseColor: '#F4F1E9',
@@ -147,7 +149,7 @@ function getInitialPublicColorScheme() {
   } catch (e) {
     console.warn('Failed to read public color scheme from localStorage:', e)
   }
-  return DEFAULT_COLOR_SCHEME
+  return DEFAULT_PUBLIC_COLOR_SCHEME
 }
 const LEGACY_STORAGE_KEY = 'laborbit_theme_style'
 export const DEFAULT_MIGRATION_KEY = 'laborbit_default_v20261021_quiet_research'
