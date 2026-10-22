@@ -271,7 +271,16 @@ try {
   })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'worldline skin carries across public route navigation')
   try {
-    await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 3000 })
+    // Route transitions use the same semantic cleanup contract as theme changes.
+    // The browser can delay animation timers under CI load, so wait for idle before
+    // asserting that Vue has removed the overlay.
+    await page.waitForFunction(() =>
+      Array.isArray(window.__peopleRoutePhases) &&
+      window.__peopleRoutePhases.some(entry => entry.phase === 'idle'),
+      null,
+      { timeout: 6000 }
+    )
+    await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 1000 })
   } catch (error) {
     const diagnostic = await page.evaluate(() => {
       const overlay = document.querySelector('.worldline-shift-overlay')
@@ -281,6 +290,7 @@ try {
         visibilityState: document.visibilityState,
         hasFocus: document.hasFocus(),
         phases: window.__peopleRoutePhases || [],
+        overlayPresent: Boolean(overlay),
         overlayPhase: overlay?.getAttribute('data-phase') || null,
         timelineActive: Boolean(overlay?.classList.contains('is-timeline-active')),
         hudPresent: Boolean(overlay?.querySelector('.worldline-shift-overlay__hud')),
