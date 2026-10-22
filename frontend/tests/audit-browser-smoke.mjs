@@ -188,9 +188,10 @@ try {
     window.__worldlinePhaseLog = []
   })
   await page.locator('.topic-guide-entry').first().click()
-  await expect(page.locator('.research-topic-page')).toBeVisible()
+  // Capture the short transition before waiting for the lazy-loaded destination view.
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await expect(page.locator('.worldline-shift-overlay__hud')).toBeVisible()
+  await expect(page.locator('.research-topic-page')).toBeVisible()
   await expect(page.locator('.worldline-shift-overlay')).toHaveClass(/is-timeline-active/, { timeout: 1500 })
   check(await page.locator('.worldline-shift-overlay').evaluate(el => el.classList.contains('is-timeline-active')), 'route-triggered worldline keyframes start after the overlay is rendered')
   await page.waitForFunction(() => window.__worldlineReadoutSnapshot, null, { timeout: 1500 })
