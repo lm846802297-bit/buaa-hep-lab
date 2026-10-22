@@ -218,7 +218,7 @@ jobs:
             sleep $((attempt * 5))
           done
           fc-cache -f
-          fc-list :lang:zh | grep -q .
+          fc-list :lang=zh | grep -q .
       - name: Browser smoke checks
         if: needs.changes.outputs.browser == '1'
         run: node frontend/tests/audit-browser-smoke.mjs
