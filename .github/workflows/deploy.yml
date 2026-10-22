@@ -230,10 +230,10 @@ jobs:
               core.setFailed(`Refusing release: PR #${pr.number} has no successful validation run for exact head ${pr.head.sha}.`);
               return;
             }
-            const prTree = (await github.rest.git.getTree({ owner, repo, tree_sha: pr.head.sha })).data;
+            const { data: prCommit } = await github.rest.git.getCommit({ owner, repo, commit_sha: pr.head.sha });
             const { data: mergedCommit } = await github.rest.git.getCommit({ owner, repo, commit_sha: sha });
-            if (prTree.sha !== mergedCommit.tree.sha) {
-              core.setFailed(`Refusing artifact reuse: merged tree ${mergedCommit.tree.sha} differs from validated PR head tree ${prTree.sha}.`);
+            if (prCommit.tree.sha !== mergedCommit.tree.sha) {
+              core.setFailed(`Refusing artifact reuse: merged tree ${mergedCommit.tree.sha} differs from validated PR head tree ${prCommit.tree.sha}.`);
               return;
             }
             core.setOutput('pr_run_id', String(runs[0].id));
