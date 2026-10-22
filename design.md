@@ -22,7 +22,7 @@
 
 公开官网的默认视觉为 **Worldline Console（`worldline-console`）**：以用户批准的 Scientific Atelier 蓝图构图为基准，采用暖纸白背景、工程网格、探测器实景、细密公式标注和独立的世界线轨迹装饰；导航、标题和页面内容由真实网页元素渲染。它不得覆盖协作空间的主题偏好。
 
-协作空间将 Quiet Research 作为一个可选主题，与 `classic-cyan`、`obsidian-gray`、`nebula-purple` 及用户自定义配色并列。新用户可默认使用 Quiet Research，但不能覆盖已有用户的主题、背景、玻璃风格或本地素材偏好。公开路由仅临时把 DOM 主题设为 Quiet Research 与纸白背景，不写入用户设置；离开公开路由时必须恢复用户所选的协作空间主题。
+协作空间将 Quiet Research 作为一个可选主题，与 `classic-cyan`、`obsidian-gray`、`nebula-purple` 及用户自定义配色并列。新用户可默认使用 Quiet Research，但不能覆盖已有用户的主题、背景、玻璃风格或本地素材偏好。公开路由仅临时把 DOM 主题设为 Worldline Console 与蓝图所需的暖纸白背景，不写入工作台设置；离开公开路由时必须恢复用户所选的协作空间主题。
 
 下方令牌表描述 Quiet Research 的令牌值。后续排版、侧栏、卡片与弹窗细节中明确标记为 Quiet Research 的规则只作用于该主题；其他主题应保留各自现有的布局与样式。所有主题均应继续满足可访问性、内容真实性和响应式布局的通用要求。
 
