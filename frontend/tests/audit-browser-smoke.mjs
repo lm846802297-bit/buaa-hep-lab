@@ -1011,6 +1011,9 @@ try {
     mimeType: 'image/svg+xml',
     buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#b85e3f"/></svg>')
   })
+  // FileChooser.setFiles resolves before the component's async IndexedDB save finishes.
+  // Wait for the real reactive mode change rather than treating that expected async gap as a UI failure.
+  await expect(stylePage.locator('html')).toHaveAttribute('data-bg-type', 'custom-local', { timeout: 10000 })
   check(await stylePage.locator('html').getAttribute('data-bg-type') === 'custom-local', 'local background upload selects the custom-local mode')
   await stylePage.locator('.forecast-atmosphere img.custom-bg-media').waitFor({ state: 'visible', timeout: 10000 })
   stylePage.once('dialog', dialog => dialog.accept())
