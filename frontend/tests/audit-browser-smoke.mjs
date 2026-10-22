@@ -139,6 +139,10 @@ try {
         : !root?.classList.contains('hero-visual-photo') && !root?.classList.contains('hero-visual-terminal')
     }, className)
     check(await heroModeGroup.getByRole('button', { name: label, exact: true }).getAttribute('aria-pressed') === 'true', label + ' mode reports the selected state')
+    check(
+      await page.locator('.collision-figure > svg').getAttribute('aria-hidden') === String(storedMode !== 'blueprint'),
+      label + ' mode keeps the decorative SVG accessibility semantics synchronized'
+    )
     check(await page.evaluate(() => localStorage.getItem('labhub_public_hero_visual_mode')) === storedMode, label + ' mode persists independently')
     const expectedImagePath = label === 'ATLAS 实景'
       ? 'CERN_ATLAS_Detector.jpg'
