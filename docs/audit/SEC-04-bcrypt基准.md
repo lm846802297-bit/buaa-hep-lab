@@ -199,3 +199,14 @@ Cloudflare invocation CPU 是整个 Worker 请求的 CPU 总量，包含 URL/令
 验收记录至少包含：cost、操作、输入字节数、n、失败/缺失数、CPU min/p50/p95/p99/max、wall/RTT 分布、套餐/限额、Worker 版本、地区、日志采样率与时间窗口。还需在隔离的非生产认证应用中测完整登录/注册/改密路径和限速开销，评估资源余量并记录维护者的参数选择理由。**Node/workerd 微基准成功不代表生产成本评估完成。**
 
 历史原始 JSON 保留当时的源码 SHA、基础 revision 和运行环境；它们是基线，不应冒充当前受令牌保护的 Worker 版本的复测。合并前须检查本 PR 精确 SHA 的 CI 和新生成的 `bcrypt-local-evidence` artifact。没有 Cloudflare 调用级 CPU 证据前，不提高生产 bcrypt cost。
+
+## 2026-10-23：npm 依赖安全审计与兼容范围内修复
+
+对 `final-audit` 的精确基线提交 `8d81367ab8879ff9795f516c3297978798ee530f` 执行了 GitHub Actions 复核，未执行正式部署。
+
+- 初始 `npm audit`：19 条 advisory 计数（2 critical、12 high、5 moderate）；`npm audit --omit=dev` 显示生产依赖中 3 条（2 high、1 moderate）。
+- 在独立审计分支上运行不带 `--force` 的 `npm audit fix`，仅生成并测试 semver 兼容范围内的 lockfile 更新；`package.json` 未改动。修复候选的前端测试通过，Wrangler isolated Worker dry-run 通过。
+- 候选 lockfile 将生产审计计数降为 0；完整审计降为 12 条（2 critical、6 high、4 moderate）。锁文件中关键修复版本包括 `follow-redirects@1.16.1`、`hono@4.13.13`、`source-map-js@1.2.2`，以及与 Wrangler/Miniflare 相关的兼容范围内更新。
+- 剩余风险集中在需要主版本迁移的开发工具链：`vitest`（当前 3.x，npm 建议 5.x）、`vite`（当前 5.x，npm 建议 8.x）和 `tailwindcss`（当前 3.x，npm 建议 4.x）。其中 Vitest/Tinypool 的 critical 级 advisory 不应被忽略，但也不应直接执行 `npm audit fix --force`；需要单独评估测试 API、Vite 插件、Tailwind 配置/样式迁移，并通过完整回归后再合并。
+- 原始与修复候选审计 JSON 均以 GitHub Actions artifact 保存（保留期 14 天）；审计 PR 保持 Draft。PR 对 `final-audit` 的完整后端回归另有失败，涉及认证夹具 `access_token`/用户字段缺失及多项请求返回 429；这些不是本次 lockfile 更新造成的证据，须与依赖修复分开调查。
+- Wrangler 输出的 `No bindings found` 对应 `frontend/benchmarks/bcrypt/wrangler.jsonc` 的独立 Worker dry-run。该配置刻意不声明生产 D1/R2 binding；这不是生产 Pages D1 绑定缺失的证据。dry-run 输出为 37.20 KiB（gzip 12.36 KiB），并以 `--dry-run: exiting now` 结束；没有执行正式部署。
