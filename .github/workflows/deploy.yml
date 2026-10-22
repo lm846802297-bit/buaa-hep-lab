@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      deploy_production:
+        description: 'Deploy the verified main build to production'
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -99,7 +105,7 @@ jobs:
     needs: validate
     # A squash merge whose title contains [skip-prod-deploy] still runs main validation,
     # but deliberately skips publication for that one release candidate.
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && !contains(github.event.head_commit.message, '[skip-prod-deploy]')
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && ((github.event_name == 'workflow_dispatch' && inputs.deploy_production) || (github.event_name != 'workflow_dispatch' && !contains(github.event.head_commit.message, '[skip-prod-deploy]')))
     runs-on: ubuntu-latest
     permissions:
       contents: read
