@@ -253,12 +253,29 @@ try {
   await firstResourceCard.hover()
   const hoverShadow = await firstResourceCard.evaluate(el => getComputedStyle(el).boxShadow)
   check(hoverShadow !== 'none', 'worldline mode provides visible hover feedback on resource cards')
+  await page.evaluate(() => {
+    window.__peopleRoutePhases = []
+    window.__peopleRouteStart = performance.now()
+    window.addEventListener('worldline:phase', event => {
+      window.__peopleRoutePhases.push({ phase: event.detail, at: Math.round(performance.now()) })
+    })
+  })
   await page.getByRole('navigation', { name: '官网导航' }).getByRole('link', { name: '团队' }).click()
   await page.getByRole('heading', { name: '团队与学术指导' }).waitFor({ timeout: 10000 }).catch(async error => {
     const bodyText = (await page.locator('body').innerText()).slice(0, 300)
     throw new Error('public people route did not render; url=' + page.url() + '; pageErrors=' + errors.slice(-5).join(' | ') + '; consoleErrors=' + consoleErrors.slice(-5).join(' | ') + '; failedRequests=' + failedRequests.slice(-5).join(' | ') + '; body=' + bodyText + '; cause=' + error.message)
   })
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'worldline skin carries across public route navigation')
+  console.log('Worldline people-route state before cleanup assertion: ' + JSON.stringify(await page.evaluate(() => {
+    const overlay = document.querySelector('.worldline-shift-overlay')
+    return {
+      elapsedMs: Math.round(performance.now() - (window.__peopleRouteStart || performance.now())),
+      phases: window.__peopleRoutePhases || [],
+      overlayPhase: overlay?.getAttribute('data-phase') || null,
+      timelineActive: Boolean(overlay?.classList.contains('is-timeline-active')),
+      hasHud: Boolean(overlay?.querySelector('.worldline-shift-overlay__hud'))
+    }
+  })))
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
   await page.screenshot({ path: resolve(output, 'worldline-1440-team.png'), fullPage: true })
   await page.setViewportSize({ width: 390, height: 900 })
