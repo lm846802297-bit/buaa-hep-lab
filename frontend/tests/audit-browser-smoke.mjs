@@ -926,7 +926,23 @@ try {
     Math.abs(Number(dimState.rootInline) - 0.2) < 0.02 &&
     Math.abs(Number(dimState.shadeOpacity) - 0.2) < 0.02,
     'background dim slider changes the visible overlay opacity')
-  await stylePage.locator('.bg-dim-reset-btn').click()
+  const dimResetButton = stylePage.locator('.bg-dim-reset-btn')
+  await stylePage.bringToFront()
+  await dimResetButton.scrollIntoViewIfNeeded()
+  const resetHitTest = await dimResetButton.evaluate(button => {
+    const rect = button.getBoundingClientRect()
+    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
+    return {
+      button: button.className,
+      hitTag: hit?.tagName ?? null,
+      hitClass: typeof hit?.className === 'string' ? hit.className : '',
+      hitIsButton: hit === button || button.contains(hit)
+    }
+  })
+  console.log('Background dim reset hit test: ' + JSON.stringify(resetHitTest))
+  check(resetHitTest.hitIsButton, 'background dim reset button is not obscured by another UI layer')
+  await stylePage.mouse.move(0, 0)
+  await dimResetButton.click()
   await stylePage.waitForFunction(() => {
     const shade = document.querySelector('.atmosphere-shade')
     return shade && Math.abs(Number(getComputedStyle(shade).opacity) - 0.35) < 0.02
