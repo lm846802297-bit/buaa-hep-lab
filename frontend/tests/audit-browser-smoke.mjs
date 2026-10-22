@@ -120,6 +120,8 @@ try {
     }))
     themeAccents[scheme] = visual.accent
     check(visual.worldline === (scheme === 'worldline-console'), scheme + ' activates only its own homepage layout')
+    const heroModules = await page.locator('.lab-public').evaluate(root => ({ worldline: Boolean(root.querySelector('.worldline-home')), standard: Boolean(root.querySelector('.public-home-default-hero')) }))
+    check(heroModules.worldline === (scheme === 'worldline-console') && heroModules.standard === (scheme !== 'worldline-console'), scheme + ' mounts only its own hero implementation')
     check(visual.accent === expectedAccent, scheme + ' keeps its own accent palette: ' + visual.accent)
   }
   check(new Set(Object.values(themeAccents)).size === 5, 'all five public themes retain distinct computed accents')
