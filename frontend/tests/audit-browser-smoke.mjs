@@ -60,9 +60,13 @@ try {
       check(await page.locator('.worldline-detector-photo').count() === 0, 'blueprint mode does not stack a second detector photograph over the complete reference image')
       const assetResponse = await page.evaluate(async () => {
         const response = await fetch('/images/particle-accelerator-blueprint.avif')
-        return { ok: response.ok, type: response.headers.get('content-type') || '' }
+        const image = new Image()
+        image.src = '/images/particle-accelerator-blueprint.avif'
+        await image.decode()
+        return { ok: response.ok, type: response.headers.get('content-type') || '', width: image.naturalWidth, height: image.naturalHeight }
       })
-      check(assetResponse.ok && assetResponse.type.includes('image/avif'), 'local blueprint artwork loads with the correct AVIF content type')
+      check(assetResponse.ok && assetResponse.type.includes('image/avif') && assetResponse.width >= 600 && assetResponse.height > 0, 'local blueprint artwork decodes at its expected image dimensions with the correct AVIF content type')
+      check((await figure.getAttribute('aria-label'))?.includes('暖白工程蓝图'), 'blueprint composition has an accessible text alternative')
       check(await page.locator('.public-header .nav-hub, .worldline-header .worldline-hub-link').count() === 1, 'homepage header has exactly one collaboration entry')
       check(await page.locator('.public-header .header-hub-cta, .worldline-header .header-hub-cta').count() === 0, 'homepage header does not duplicate the collaboration entry')
       check(await page.getByText('Scientific Atelier · 粒子加速器蓝图概念插画', { exact: true }).count() === 1, 'local blueprint artwork has an explicit source label')
