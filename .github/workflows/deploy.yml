@@ -83,7 +83,7 @@ jobs:
                 case "$file" in *.test.*|*.spec.*) ;; *) build=1 ;; esac ;;
             esac
             case "$file" in
-              frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*|frontend/functions/*|frontend/wrangler.json|scripts/schema_d1.sql)
+              frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*|frontend/functions/*|frontend/wrangler.json|scripts/schema_d1.sql|.github/workflows/deploy.yml)
                 case "$file" in *.test.*|*.spec.*) ;; *) pages_deploy=1 ;; esac ;;
             esac
             case "$file" in
@@ -149,6 +149,8 @@ jobs:
         with:
           name: verified-frontend-dist
           path: frontend/dist
+          # Preserve the hidden Vite manifest required by the release bundle check.
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
       - uses: actions/setup-python@v5
