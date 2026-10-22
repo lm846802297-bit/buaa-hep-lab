@@ -25,7 +25,6 @@ let animationFrameId = null
 let shiftTimerId = null
 let burstTimerId = null
 let phaseTimerIds = []
-let shiftStartFrameId = null
 let mediaQuery = null
 let resizeHandler = null
 let visibilityHandler = null
@@ -451,8 +450,6 @@ function setShiftPhase(phase) {
 
 function clearShiftTimers() {
   if (typeof window === 'undefined') return
-  if (shiftStartFrameId !== null) window.cancelAnimationFrame(shiftStartFrameId)
-  shiftStartFrameId = null
   if (shiftTimerId !== null) window.clearTimeout(shiftTimerId)
   if (burstTimerId !== null) window.clearTimeout(burstTimerId)
   phaseTimerIds.forEach(timerId => window.clearTimeout(timerId))
@@ -482,39 +479,35 @@ function triggerShift({ showHud = true } = {}) {
   shockwaves = []
   impactFlashes = []
 
-  // Wait for Vue to mount the overlay, then start one coordinated 1.8 s timeline.
-  // This prevents a slow SVG/layout pass from consuming the early phases before they can paint.
+  // Mount the overlay first, then start its timers independently of requestAnimationFrame.
+  // Animation frames can be paused or throttled in background tabs; they must not gate
+  // phase progression or the cleanup timer.
   nextTick(() => {
     if (!mounted || !isShifting.value || reducedMotion.value || shiftKey.value !== currentShiftKey) return
-    shiftStartFrameId = window.requestAnimationFrame(() => {
-      shiftStartFrameId = null
+
+    shiftTimelineActive.value = true
+    scheduleShiftPhase(130, 'propagate')
+    scheduleShiftPhase(350, 'disrupt')
+    scheduleShiftPhase(490, 'readout')
+    scheduleShiftPhase(1220, 'decay')
+
+    burstTimerId = window.setTimeout(() => {
+      burstTimerId = null
       if (!mounted || !isShifting.value || reducedMotion.value || shiftKey.value !== currentShiftKey) return
-
-      shiftTimelineActive.value = true
-      scheduleShiftPhase(130, 'propagate')
-      scheduleShiftPhase(350, 'disrupt')
-      scheduleShiftPhase(490, 'readout')
-      scheduleShiftPhase(1220, 'decay')
-
-      burstTimerId = window.setTimeout(() => {
-        burstTimerId = null
-        if (!mounted || !isShifting.value || reducedMotion.value || shiftKey.value !== currentShiftKey) return
-        createBurst()
-        startAnimation()
-      }, 150)
-
-      shiftTimerId = window.setTimeout(() => {
-        isShifting.value = false
-        shiftTimelineActive.value = false
-        setShiftPhase('idle')
-        shiftTimerId = null
-        phaseTimerIds.forEach(timerId => window.clearTimeout(timerId))
-        phaseTimerIds = []
-      }, 1800)
+      createBurst()
       startAnimation()
-    })
+    }, 150)
+
+    shiftTimerId = window.setTimeout(() => {
+      isShifting.value = false
+      shiftTimelineActive.value = false
+      setShiftPhase('idle')
+      shiftTimerId = null
+      phaseTimerIds.forEach(timerId => window.clearTimeout(timerId))
+      phaseTimerIds = []
+    }, 1800)
+    startAnimation()
   })
-  startAnimation()
 }
 
 function handleMotionPreferenceChange(event) {
