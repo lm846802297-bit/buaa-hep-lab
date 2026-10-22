@@ -540,12 +540,13 @@ function freezeDynamicBackground() {
 
 function resumeDynamicBackground() {
   frozenBackgroundFrame.value = null
-  if (currentBgType.value === 'galaxy') {
+  const type = currentBgType.value
+  if (type === 'galaxy') {
     if (!animateId && renderer && mesh) {
       lastTimestamp = performance.now()
       animateId = requestAnimationFrame(update)
     }
-  } else if (currentBgType.value === 'vanta-fog') {
+  } else if (type === 'vanta-fog') {
     if (typeof vantaEffect?.setOptions === 'function') {
       vantaEffect.setOptions({ speed: route.path === '/login' ? 2.0 : 0.4 })
     } else {
@@ -714,9 +715,7 @@ function startAtmosphere(bgType) {
     if (bgType === 'clouds-static') {
       destroyGalaxy()
       destroyVantaFog()
-      if (containerRef.value) {
-        containerRef.value.innerHTML = ''
-      }
+      containerRef.value.innerHTML = ''
     } else if (bgType === 'vanta-fog') {
       destroyGalaxy()
       initVantaFog()
@@ -730,9 +729,7 @@ function startAtmosphere(bgType) {
     } else if (bgType === 'custom-local') {
       destroyGalaxy()
       destroyVantaFog()
-      if (containerRef.value) {
-        containerRef.value.innerHTML = ''
-      }
+      containerRef.value.innerHTML = ''
       refreshLocalMedia()
     }
   }
