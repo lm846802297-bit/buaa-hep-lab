@@ -132,7 +132,12 @@ try {
     ['世界线终端', 'hero-visual-terminal', 'terminal']
   ]) {
     await heroModeGroup.getByRole('button', { name: label, exact: true }).click()
-    await page.waitForFunction(name => document.querySelector('.lab-public')?.classList.contains(name) === (name !== ''), className)
+    await page.waitForFunction(name => {
+      const root = document.querySelector('.lab-public')
+      return name
+        ? root?.classList.contains(name)
+        : !root?.classList.contains('hero-visual-photo') && !root?.classList.contains('hero-visual-terminal')
+    }, className)
     check(await heroModeGroup.getByRole('button', { name: label, exact: true }).getAttribute('aria-pressed') === 'true', label + ' mode reports the selected state')
     check(await page.evaluate(() => localStorage.getItem('labhub_public_hero_visual_mode')) === storedMode, label + ' mode persists independently')
   }
