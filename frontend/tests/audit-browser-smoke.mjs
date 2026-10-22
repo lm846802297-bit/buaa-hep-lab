@@ -102,6 +102,7 @@ try {
           const backdrop = document.querySelector('.worldline-technical-backdrop')
           window.__worldlineReadoutSnapshot = {
             phase: overlay?.getAttribute('data-phase') || '',
+            timelineActive: Boolean(overlay?.classList.contains('is-timeline-active')),
             backdropVisible: Boolean(backdrop && backdrop.getBoundingClientRect().width > 0),
             backdropShifting: Boolean(backdrop?.classList.contains('is-shifting')),
             ringCount: backdrop?.querySelectorAll('.worldline-backdrop-shift-wave__ring').length || 0,
@@ -192,10 +193,11 @@ try {
   await expect(page.locator('.worldline-shift-overlay')).toBeVisible()
   await expect(page.locator('.worldline-shift-overlay__hud')).toBeVisible()
   await expect(page.locator('.research-topic-page')).toBeVisible()
-  await expect(page.locator('.worldline-shift-overlay')).toHaveClass(/is-timeline-active/, { timeout: 1500 })
-  check(await page.locator('.worldline-shift-overlay').evaluate(el => el.classList.contains('is-timeline-active')), 'route-triggered worldline keyframes start after the overlay is rendered')
+  // The 1.8 s effect can finish while a lazy route chunk is resolving; assert the
+  // captured phase state rather than requiring the transient overlay to remain mounted.
   await page.waitForFunction(() => window.__worldlineReadoutSnapshot, null, { timeout: 1500 })
   const readoutSnapshot = await page.evaluate(() => window.__worldlineReadoutSnapshot || null)
+  check(Boolean(readoutSnapshot?.timelineActive), 'route-triggered worldline keyframes are active during the captured readout phase')
   check(readoutSnapshot?.phase === 'readout', 'route-triggered HUD snapshot belongs to the readout DOM phase: ' + readoutSnapshot?.phase)
   await page.screenshot({ path: resolve(output, 'worldline-1440-shift-readout.png') })
   check(Boolean(readoutSnapshot.backdropVisible), 'Worldline Console enables the clockwork and scientific-drawing background')
