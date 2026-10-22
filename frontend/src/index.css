@@ -1841,8 +1841,7 @@ html[data-bg-style="clouds-static"] body {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-:root[data-color-scheme="quiet-research"] .sidebar-edge-trigger,
-:root[data-color-scheme="quiet-research"] .pin-anchor-wrapper {
+:root[data-color-scheme="quiet-research"] .sidebar-edge-trigger {
   display: none !important;
 }
 :root[data-color-scheme="quiet-research"] .forecast-sidebar.is-collapsed,
