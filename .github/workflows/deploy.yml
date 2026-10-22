@@ -176,8 +176,8 @@ jobs:
       - name: Browser smoke checks
         if: needs.changes.outputs.browser == '1'
         run: node frontend/tests/audit-browser-smoke.mjs
-      - name: Upload browser evidence on failure
-        if: failure() && needs.changes.outputs.browser == '1'
+      - name: Upload browser evidence
+        if: always() && needs.changes.outputs.browser == '1'
         uses: actions/upload-artifact@v4
         with:
           name: browser-audit-evidence
