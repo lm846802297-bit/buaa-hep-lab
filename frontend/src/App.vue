@@ -136,9 +136,7 @@ function onUpdatePinned(val) {
     <Navbar v-if="showNavbar" :pinned="isPinned" @update:pinned="onUpdatePinned" />
     <main id="main-content" :class="!showNavbar ? 'public-workspace' : (isHome ? 'home-workspace' : (isAssistant ? 'assistant-workspace' : 'workspace'))">
       <router-view v-slot="{ Component }">
-        <Transition v-if="isPublic" :css="false" mode="out-in" @enter="enterPage" @leave="leavePage">
-          <component :is="Component" :key="route.path" />
-        </Transition>
+        <component v-if="isPublic" :is="Component" :key="route.path" />
         <Transition v-else :css="false" mode="out-in" @enter="enterPage" @leave="leavePage">
           <KeepAlive include="AssistantView">
             <component :is="Component" :key="route.path" />
