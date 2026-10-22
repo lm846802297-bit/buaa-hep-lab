@@ -39,6 +39,11 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(styleViewVue).toContain('handleColorSchemeSelect(scheme)')
   })
 
+  it('keeps appearance anchor accents theme-token driven', () => {
+    expect(styleViewVue).toContain('border-color: color-mix(in srgb, var(--accent) 40%, var(--line));')
+    expect(styleViewVue).not.toContain('border-color: rgba(184, 155, 248, 0.4);')
+  })
+
   it('exposes an independent public skin selector on every public route', () => {
     const appVue = readFileSync(resolve(__dirname, '../App.vue'), 'utf-8')
     const themeSwitcher = readFileSync(resolve(__dirname, '../components/PublicThemeSwitcher.vue'), 'utf-8')
