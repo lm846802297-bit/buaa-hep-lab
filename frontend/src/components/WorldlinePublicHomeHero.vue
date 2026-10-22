@@ -67,7 +67,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
           <a :href="activeHeroVisual.photoPage" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.photoCredit }}</a>
           <span><a :href="activeHeroVisual.licenseUrl" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.licenseLabel }}</a> · {{ activeHeroVisual.photoNote }}</span>
           <span>{{ activeHeroVisual.caption }}</span>
-          <span class="worldline-sr-only">Conceptual particle tracks are illustrative only and do not represent the actual collision event shown in this detector photograph. 蓝图中的粒子轨迹为概念示意，并非该照片对应的真实碰撞事件数据。</span>
+          <span class="worldline-sr-only">conceptual particle tracks are illustrative only and do not represent the actual collision event shown in this detector photograph. 蓝图中的粒子轨迹为概念示意，并非该照片对应的真实碰撞事件数据。</span>
         </figcaption>
       </figure>
     </section>
