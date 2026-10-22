@@ -180,17 +180,45 @@ jobs:
           set -euo pipefail
           npx --prefix frontend playwright install chromium
 
+      - name: Cache CJK font packages
+        if: needs.changes.outputs.browser == '1'
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/apt-archives
+          key: ${{ runner.os }}-cjk-fonts-wqy-zenhei-v1
       - name: Install CJK fonts for browser evidence
         if: needs.changes.outputs.browser == '1'
-        timeout-minutes: 4
-        # Use explicit timeouts and quiet apt output so a package mirror stall is
-        # bounded and distinguishable from the browser download.
+        timeout-minutes: 12
+        # Keep the Chinese-font verification mandatory. Cache downloaded .deb
+        # archives where possible and retry transient Ubuntu mirror stalls.
         run: |
           set -euo pipefail
-          timeout 150s sudo apt-get update -qq
-          timeout 90s sudo apt-get install -y --no-install-recommends fonts-wqy-zenhei
+          mkdir -p "$RUNNER_TEMP/apt-archives/partial"
+          sudo chown -R "$USER":"$USER" "$RUNNER_TEMP/apt-archives"
+          for attempt in 1 2 3; do
+            if timeout 180s sudo apt-get update -qq; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "apt-get update failed after 3 attempts" >&2
+              exit 1
+            fi
+            echo "apt-get update attempt $attempt failed; retrying..." >&2
+            sleep $((attempt * 5))
+          done
+          for attempt in 1 2 3; do
+            if timeout 180s sudo apt-get -o Dir::Cache::archives="$RUNNER_TEMP/apt-archives/" install -y --no-install-recommends fonts-wqy-zenhei; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "CJK font installation failed after 3 attempts" >&2
+              exit 1
+            fi
+            echo "CJK font installation attempt $attempt failed; retrying..." >&2
+            sleep $((attempt * 5))
+          done
           fc-cache -f
-          fc-list :lang=zh | grep -q .
+          fc-list :lang:zh | grep -q .
       - name: Browser smoke checks
         if: needs.changes.outputs.browser == '1'
         run: node frontend/tests/audit-browser-smoke.mjs
