@@ -20,7 +20,7 @@
 
 ## 1. 公开官网视觉与协作空间主题系统
 
-公开官网的默认视觉为 **Worldline Console（`worldline-console`）**：以用户批准的 Scientific Atelier 蓝图构图为基准，采用暖纸白背景、工程网格、探测器实景、细密公式标注和独立的世界线轨迹装饰；导航、标题和页面内容由真实网页元素渲染。它不得覆盖协作空间的主题偏好。
+公开官网的默认视觉为 **Worldline Console（`worldline-console`）**：以用户批准的 Scientific Atelier 蓝图构图为基准。蓝图模式使用仓库内的优化静态图 `frontend/public/images/particle-accelerator-blueprint.avif` 呈现完整主视觉构图；切换到 ATLAS 实景或四缪子事件显示图时，只显示对应的单独图片，不得将其叠加在完整蓝图图像之上。外部科学图像必须保留原始来源与许可证链接；本地参考插画不得误标为第三方 Creative Commons 许可。导航、标题和页面内容由真实网页元素渲染。它不得覆盖协作空间的主题偏好。
 
 协作空间将 Quiet Research 作为一个可选主题，与 `classic-cyan`、`obsidian-gray`、`nebula-purple` 及用户自定义配色并列。新用户可默认使用 Quiet Research，但不能覆盖已有用户的主题、背景、玻璃风格或本地素材偏好。公开路由仅临时把 DOM 主题设为 Worldline Console 与蓝图所需的暖纸白背景，不写入工作台设置；离开公开路由时必须恢复用户所选的协作空间主题。
 
@@ -57,7 +57,7 @@
 
 - `quiet-research`、`classic-cyan`、`obsidian-gray`、`nebula-purple` 和 `custom` 均为协作空间可用主题；前四项由主题注册表提供，自定义主题由用户创建。不得将旧主题标记为废弃或移除其选择入口。
 - `clouds-static`、`galaxy`、`vanta-fog`、`custom-local` 等背景选项与配色方案相互独立；保留现有选择能力。用户主动选择的玻璃风格、背景暗化程度、本地背景与字体偏好不得在升级时被覆盖。
-- 公开官网不继承协作空间的主题偏好：新访客默认显示 Worldline Console，访客主动选择后保存其独立的官网皮肤；无论工作台保存了哪种深色或自定义主题，都不得覆盖官网选择或写回工作台偏好。图片加载失败时使用 `var(--surface)` 或 `var(--panel-solid)` 回退。
+- 公开官网不继承协作空间的主题偏好：新访客默认显示 Worldline Console，访客主动选择后保存其独立的官网皮肤；无论工作台保存了哪种深色或自定义主题，都不得覆盖官网选择或写回工作台偏好。蓝图静态图加载失败时使用暖纸白背景回退；三种主视觉模式不得重复叠加图像。
 
 ### 官网主题组件隔离
 
