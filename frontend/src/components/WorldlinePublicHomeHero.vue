@@ -62,7 +62,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
         <Transition name="worldline-image" mode="out-in">
           <img :key="activeHeroVisual.id" class="worldline-detector-photo" :src="activeHeroVisual.src" :alt="activeHeroVisual.alt" loading="eager" fetchpriority="high" decoding="async">
         </Transition>
-        <svg v-if="heroVisualMode === 'blueprint'" class="worldline-track-overlay" viewBox="0 0 600 600" fill="none" aria-hidden="true"><g stroke="currentColor" stroke-width="1" opacity=".64"><circle cx="300" cy="300" r="48"/><circle cx="300" cy="300" r="88"/><circle cx="300" cy="300" r="135"/><circle cx="300" cy="300" r="180"/><circle cx="300" cy="300" r="225"/><circle cx="300" cy="300" r="264"/><ellipse cx="300" cy="300" rx="264" ry="98" transform="rotate(-27 300 300)"/><ellipse cx="300" cy="300" rx="250" ry="145" transform="rotate(28 300 300)"/><path d="M18 300h564M300 18v564M88 88l424 424M512 88L88 512" stroke-dasharray="3 8"/></g><g stroke="#dca65d" stroke-width="2" stroke-linecap="round"><path d="M300 300Q365 222 528 112"/><path d="M300 300C356 325 458 320 570 377"/><path d="M300 300Q250 339 127 495"/><path d="M300 300Q238 261 42 213"/><path d="M300 300C328 250 339 163 356 37"/><path d="M300 300C317 351 338 459 426 530"/></g><circle cx="300" cy="300" r="12" fill="#fff1ce" stroke="#dca65d" stroke-width="3"/></svg>
+        <svg v-if="heroVisualMode === 'blueprint'" class="worldline-track-overlay" viewBox="0 0 600 600" fill="none" aria-hidden="true"><g stroke="currentColor" stroke-width="1" opacity=".42"><circle cx="300" cy="300" r="48"/><circle cx="300" cy="300" r="88"/><circle cx="300" cy="300" r="135"/><circle cx="300" cy="300" r="180"/><circle cx="300" cy="300" r="225"/><circle cx="300" cy="300" r="264"/><ellipse cx="300" cy="300" rx="264" ry="98" transform="rotate(-27 300 300)"/><ellipse cx="300" cy="300" rx="250" ry="145" transform="rotate(28 300 300)"/><path d="M18 300h564M300 18v564M88 88l424 424M512 88L88 512" stroke-dasharray="3 8"/></g><g stroke="#dca65d" stroke-width="1.35" stroke-linecap="round" opacity=".58"><path d="M300 300C350 290 405 294 510 305"/><path d="M300 300Q392 230 510 150" stroke-dasharray="4 8"/><path d="M300 300Q240 360 150 460" stroke-dasharray="4 8"/></g><circle cx="300" cy="300" r="12" fill="#fff1ce" stroke="#dca65d" stroke-width="3"/></svg>
         <figcaption class="worldline-image-credit">
           <a :href="activeHeroVisual.photoPage" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.photoCredit }}</a>
           <span><a :href="activeHeroVisual.licenseUrl" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.licenseLabel }}</a> · {{ activeHeroVisual.photoNote }}</span>
@@ -189,7 +189,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   .worldline-visual-controls { top: 14px; right: 12px; left: 12px; justify-content: center; gap: 2px; padding: 3px; }
   .worldline-visual-controls button { min-height: 30px; padding: 6px 8px; font-size: 10px; }
   .worldline-image-credit { right: 8px; bottom: 8px; left: 8px; justify-content: flex-start; font-size: 8px; }
-  .worldline-equation.equation-top { top: 8%; right: 5%; font-size: 12px; }
+  .worldline-equation.equation-top { top: 4%; right: 5%; font-size: 10px; }
   .worldline-equation.equation-side, .worldline-coordinate.coordinate-right { display: none; }
   .worldline-gear-left { top: 6%; left: -18%; width: 58vw; }
   .worldline-detector-plan { top: 14%; left: 32%; width: 78vw; }
