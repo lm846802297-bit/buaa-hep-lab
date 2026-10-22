@@ -71,7 +71,7 @@ function downloadBibtex() {
 </script>
 
 <template>
-  <div class="lab-public" :class="{ 'worldline-theme': publicColorScheme === 'worldline-console', 'hero-visual-photo': heroVisualMode === 'photo', 'hero-visual-terminal': heroVisualMode === 'terminal' }">
+  <div class="lab-public" :class="{ 'worldline-theme': publicColorScheme === 'worldline-console', 'hero-visual-blueprint': heroVisualMode === 'blueprint', 'hero-visual-photo': heroVisualMode === 'photo', 'hero-visual-terminal': heroVisualMode === 'terminal' }">
     <PublicSectionNav />
     <header class="public-header">
       <a href="#top" class="public-brand" aria-label="课题组首页" @click="menuOpen = false">
@@ -799,6 +799,157 @@ h1.hero-title span { color:var(--accent); }
   border-color: var(--accent); background: var(--accent); color: var(--accent-ink, var(--bg));
 }
 .hero-visual-controls button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* Reference-inspired full-width homepage composition. This layout belongs
+   only to the Worldline public skin; other skins keep their own geometry. */
+.lab-public.worldline-theme.hero-visual-blueprint .public-hero {
+  isolation: isolate;
+  min-height: min(860px, calc(100svh - 76px));
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: clamp(64px, 8vh, 96px);
+  padding-bottom: clamp(58px, 7vh, 88px);
+  background: var(--atelier-paper, #f5f2e9);
+  background-image:
+    linear-gradient(90deg, rgb(255 255 255 / 84%) 0%, rgb(255 255 255 / 68%) 33%, rgb(255 255 255 / 10%) 64%, transparent 100%),
+    repeating-linear-gradient(0deg, transparent 0 5px, rgb(39 57 75 / 5%) 5px 6px),
+    repeating-linear-gradient(90deg, transparent 0 5px, rgb(39 57 75 / 5%) 5px 6px);
+}
+.lab-public.worldline-theme.hero-visual-blueprint .public-hero::before {
+  z-index: -1;
+  opacity: .8;
+  background-image:
+    linear-gradient(rgb(39 57 75 / 7%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(39 57 75 / 7%) 1px, transparent 1px),
+    radial-gradient(ellipse at 73% 47%, rgb(66 111 145 / 16%), transparent 56%);
+  background-size: 12px 12px, 12px 12px, auto;
+  mask-image: none;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .public-hero::after {
+  z-index: 0;
+  left: 0;
+  width: 48%;
+  opacity: .55;
+  background:
+    radial-gradient(circle at 7% 18%, transparent 0 66px, rgb(39 57 75 / 36%) 67px 68px, transparent 69px),
+    radial-gradient(circle at 7% 18%, transparent 0 91px, rgb(39 57 75 / 26%) 92px 93px, transparent 94px),
+    radial-gradient(circle at 83% 85%, transparent 0 48px, rgb(39 57 75 / 35%) 49px 50px, transparent 51px),
+    radial-gradient(circle at 83% 85%, transparent 0 74px, rgb(39 57 75 / 22%) 75px 76px, transparent 77px);
+}
+.lab-public.worldline-theme.hero-visual-blueprint .hero-copy {
+  z-index: 4;
+  width: min(54%, 760px);
+  max-width: 760px;
+  padding-right: clamp(20px, 4vw, 58px);
+}
+.lab-public.worldline-theme.hero-visual-blueprint h1.hero-title {
+  max-width: 820px;
+  font-size: clamp(58px, 6.8vw, 108px);
+  line-height: .9;
+  letter-spacing: -.07em;
+}
+.lab-public.worldline-theme.hero-visual-blueprint h1.hero-title span {
+  color: #172b43;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .hero-intro {
+  max-width: 480px;
+  color: #26364a;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .collision-figure {
+  width: 66%;
+  z-index: 2;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .collision-figure::before {
+  background:
+    linear-gradient(90deg, #f5f2e9 0%, rgb(245 242 233 / 92%) 8%, rgb(245 242 233 / 60%) 23%, rgb(245 242 233 / 10%) 45%, transparent 60%),
+    linear-gradient(0deg, rgb(245 242 233 / 85%) 0%, transparent 19%, transparent 82%, rgb(245 242 233 / 28%) 100%),
+    repeating-linear-gradient(0deg, transparent 0 5px, rgb(39 57 75 / 5%) 5px 6px);
+}
+.lab-public.worldline-theme.hero-visual-blueprint .detector-photo {
+  opacity: .98;
+  mix-blend-mode: multiply;
+  filter: saturate(.84) contrast(1.04);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 100%);
+}
+.lab-public.worldline-theme.hero-visual-blueprint .collision-figure > svg {
+  opacity: .88;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .hero-blueprint-decor {
+  z-index: 3;
+  pointer-events: none;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .hero-visual-controls {
+  top: 20px;
+  right: 22px;
+}
+.lab-public.worldline-theme.hero-visual-blueprint .collision-figure figcaption {
+  left: 26%;
+  right: 24px;
+  bottom: 18px;
+  padding: 8px 10px;
+  border-top: 1px solid rgb(23 43 67 / 42%);
+  background: rgb(245 242 233 / 70%);
+  color: #172b43;
+  text-shadow: none;
+  backdrop-filter: blur(4px);
+}
+.lab-public.worldline-theme.hero-visual-blueprint .collision-figure figcaption a {
+  color: #172b43;
+}
+@media (max-width: 900px) {
+  .lab-public.worldline-theme.hero-visual-blueprint .public-hero {
+    min-height: 690px;
+    padding-top: 58px;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .hero-copy {
+    width: 58%;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint h1.hero-title {
+    font-size: clamp(48px, 7.2vw, 74px);
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .collision-figure {
+    width: 68%;
+  }
+}
+@media (max-width: 650px) {
+  .lab-public.worldline-theme.hero-visual-blueprint .public-hero {
+    min-height: 0;
+    padding-top: 44px;
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0 5px, rgb(39 57 75 / 5%) 5px 6px),
+      repeating-linear-gradient(90deg, transparent 0 5px, rgb(39 57 75 / 5%) 5px 6px);
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .hero-copy {
+    width: 100%;
+    padding-right: 0;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint h1.hero-title {
+    font-size: clamp(45px, 11vw, 64px);
+    line-height: .98;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .collision-figure {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+    margin: 8px 0 0;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .detector-photo {
+    mask-image: none;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .collision-figure figcaption {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    font-size: 9px;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .hero-visual-controls {
+    top: 8px;
+    right: 8px;
+  }
+}
+
 .lab-public.hero-visual-photo .collision-figure::before { display: none; }
 .lab-public.hero-visual-photo .collision-figure > svg { opacity: 0; }
 .lab-public.hero-visual-photo .detector-photo {
