@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { currentThemeStyle, currentBgType, isBgVideoPaused } from '../composables/useThemeStyle'
+import { currentThemeStyle, currentBgType, currentBgDim, isBgVideoPaused } from '../composables/useThemeStyle'
 import { getLocalBackground } from '../utils/localBgStorage'
 import {
   getOrLoadRawOrbitVideoUrl,
@@ -892,7 +892,7 @@ onBeforeUnmount(() => {
       alt=""
       decoding="async"
     />
-    <div class="atmosphere-shade" :class="{ 'is-login': isLogin }"></div>
+    <div class="atmosphere-shade" :class="{ 'is-login': isLogin }" :style="{ opacity: isLogin ? 0 : currentBgDim / 100 }"></div>
   </div>
 </template>
 
