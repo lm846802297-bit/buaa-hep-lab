@@ -207,7 +207,7 @@ jobs:
               item.merge_commit_sha === sha
             );
             if (!pr) {
-              core.setFailed(\`Refusing release ${sha}: it is not the merge commit of a merged PR targeting main.\`);
+              core.setFailed(`Refusing release ${sha}: it is not the merge commit of a merged PR targeting main.`);
               return;
             }
             const { data } = await github.rest.actions.listWorkflowRuns({
@@ -218,10 +218,10 @@ jobs:
               .filter((run) => run.head_sha === pr.head.sha && run.event === 'pull_request')
               .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
             if (!runs.length || runs[0].conclusion !== 'success') {
-              core.setFailed(\`Refusing release: PR #${pr.number} has no successful validation run for exact head ${pr.head.sha}.\`);
+              core.setFailed(`Refusing release: PR #${pr.number} has no successful validation run for exact head ${pr.head.sha}.`);
               return;
             }
-            core.info(\`Release authorized by merged PR #${pr.number}; exact-head CI run #${runs[0].run_number} passed.\`);
+            core.info(`Release authorized by merged PR #${pr.number}; exact-head CI run #${runs[0].run_number} passed.`);
       - uses: actions/setup-node@v4
         with:
           node-version: 24
