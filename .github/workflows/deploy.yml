@@ -1,9 +1,8 @@
 name: Validate and deploy BUAA HEP Hub
 
+# TEMPORARY PAUSE: automatic PR CI and main push/release triggers are disabled.
+# Restore `push` and `pull_request` events after Actions minutes reset.
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
     inputs:
       deploy_production:
