@@ -2,6 +2,27 @@
 
 日期：2026-10-21，Asia/Shanghai。**当前受令牌保护的基准 Worker 已通过最新本地 CI，精确 run、artifact、源码 SHA 与结果见下文。Cloudflare production 的 bcrypt 调用级 CPU 仍未测；生产 cost 保持 6。历史 Windows 数据只作为旧基线，不与当前 CI 运行时直接比较。**
 
+## 隔离 Cloudflare Worker：部署前置条件
+
+本工作流**不会**由 push、pull request 或普通 CI 自动触发。可在 PR 分支 `final-audit` 上手动触发 `.github/workflows/sec04-bcrypt-isolated.yml`，输入精确确认字符串 `DEPLOY-ISOLATED-BCRYPT`；它只部署独立的 `buaa-hep-bcrypt-benchmark` Worker。工作流使用 GitHub Environment `sec04-benchmark`。建议先在仓库 Settings → Environments 中创建该环境并配置 required reviewer，再添加以下 secrets/variables。
+
+Environment secrets（不要提交到仓库或放入命令行参数）：
+- `CLOUDFLARE_API_TOKEN`：仅授予部署该 Worker 所需权限的 Cloudflare API token。
+- `CLOUDFLARE_ACCOUNT_ID`：目标 Cloudflare 账户 ID。
+- `BENCHMARK_TOKEN`：至少 32 字符的随机高熵 token；不得复用账户/API token。
+Environment variable：
+- `CLOUDFLARE_ACCOUNT_SUBDOMAIN`：该账户的 workers.dev 子域名标签。
+
+工作流只使用 `frontend/benchmarks/bcrypt/wrangler.jsonc`，不执行 Pages 部署、不绑定生产 D1/R2、不接入生产认证路由。它先部署 Worker，再设置 `BENCHMARK_TOKEN`，并验证匿名请求返回 404。若环境变量/secrets 未配置，工作流会失败关闭。部署前须在 Cloudflare dashboard 核实账户套餐和 CPU 限额。
+
+部署后先执行 pilot（48 请求），保留所有失败，不自动启动完整扫描。PowerShell 下使用前文 SecureString 方式设置本地 `BENCHMARK_TOKEN`，再运行：
+
+```powershell
+node frontend/benchmarks/bcrypt/run.mjs --runtime cloudflare --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 1 --warmup 1 --out cloudflare-pilot.json
+```
+
+将 `ACCOUNT` 替换为实际 workers.dev 子域名。只有 pilot 无失败、调用日志可按 sample ID 关联 CPU/outcome，且已确认套餐与 CPU 限额后，才考虑显式运行 `--samples 50 --warmup 5` 的完整扫描。不要循环重试 CPU 超限样本。完整登录/注册/改密的非生产路径测试仍是独立未决项。
+
 ## 可复现方法
 
 在仓库根目录执行，使用现有 lockfile，不升级依赖：
