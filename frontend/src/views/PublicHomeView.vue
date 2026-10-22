@@ -720,7 +720,7 @@ h2, .section-top h2, .about-section h2, .collaboration-section h2 {
   .collision-figure figcaption {
     left: 12px;
     right: 12px;
-    bottom: 64px;
+    bottom: 88px;
     box-sizing: border-box;
     display: grid;
     gap: 5px;
