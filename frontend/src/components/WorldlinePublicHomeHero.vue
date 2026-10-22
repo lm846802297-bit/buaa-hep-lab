@@ -107,7 +107,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 .worldline-navigation .worldline-hub-link { padding: 10px 14px; border: 1px solid var(--wl-line); background: rgba(255,255,255,.64); }
 .worldline-menu-toggle { display: none; }
 .worldline-home :deep(.public-theme-switcher) { flex: 0 0 auto; }
-.worldline-hero { position: relative; display: grid; grid-template-columns: minmax(0, .96fr) minmax(0, 1.04fr); align-items: center; min-height: clamp(660px, calc(100svh - 64px), 880px); padding: clamp(44px, 5.3vw, 92px) clamp(24px, 5vw, 86px) 64px clamp(24px, calc((100vw - 1216px) / 2 + 96px), 480px); }
+.worldline-hero { position: relative; display: grid; grid-template-columns: minmax(0, .96fr) minmax(0, 1.04fr); align-items: center; min-height: clamp(660px, calc(100svh - 64px), 880px); padding: clamp(44px, 5.3vw, 92px) clamp(24px, 5vw, 86px) 64px clamp(24px, calc(50vw - 512px), 480px); }
 .worldline-blueprint-layer { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; color: rgba(41,65,93,.32); }
 .worldline-gear { position: absolute; width: clamp(180px, 24vw, 380px); height: auto; }
 .worldline-gear-left { top: -5%; left: -7%; }
@@ -136,7 +136,9 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 .worldline-bottom-route i { display: block; width: clamp(28px, 7vw, 100px); height: 1px; background: var(--wl-line); }
 .worldline-detector-figure { position: absolute; z-index: 1; top: 0; right: 0; bottom: 0; width: 66%; margin: 0; overflow: hidden; background: #d9dfe0; }
 .worldline-detector-figure::before { position: absolute; z-index: 2; inset: 0; background: linear-gradient(90deg, var(--wl-paper) 0%, rgba(244,241,233,.84) 8%, rgba(244,241,233,.25) 29%, transparent 50%), linear-gradient(0deg, rgba(244,241,233,.14), transparent 35%); content: ''; pointer-events: none; }
-.worldline-detector-photo { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: saturate(.78) contrast(.96); transition: filter .25s ease; }
+.worldline-detector-photo { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: saturate(.78) contrast(.96); transition: filter .25s ease, opacity .22s ease; }
+.worldline-image-enter-active, .worldline-image-leave-active { transition: opacity .22s ease; }
+.worldline-image-enter-from, .worldline-image-leave-to { opacity: 0; }
 .visual-terminal .worldline-detector-photo { filter: saturate(.96) contrast(1.04); }
 .visual-photo .worldline-detector-photo { filter: saturate(.84) contrast(.98); }
 .worldline-track-overlay { position: absolute; z-index: 2; inset: 4% 0 5% 8%; width: 90%; height: 90%; color: rgba(226,235,239,.82); mix-blend-mode: screen; pointer-events: none; }
@@ -149,7 +151,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 .worldline-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .visual-photo .worldline-detector-figure::before, .visual-terminal .worldline-detector-figure::before { background: linear-gradient(90deg, var(--wl-paper) 0%, rgba(244,241,233,.62) 8%, rgba(244,241,233,.08) 28%, transparent 45%), linear-gradient(0deg, rgba(244,241,233,.1), transparent 32%); }
 @media (min-width: 1600px) {
-  .worldline-hero { padding-left: clamp(24px, calc((100vw - 1216px) / 2 + 96px), 480px); }
+  .worldline-hero { padding-left: clamp(24px, calc(50vw - 512px), 480px); }
   .worldline-copy { width: min(600px, 100%); }
   .worldline-copy h1 { font-size: clamp(76px, 4.2vw, 88px); }
 }
@@ -195,6 +197,6 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   .worldline-coordinate.coordinate-left { bottom: 8%; left: 8%; font-size: 7px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .worldline-navigation a::after, .worldline-actions a, .worldline-detector-photo { transition: none; }
+  .worldline-navigation a::after, .worldline-actions a, .worldline-detector-photo, .worldline-image-enter-active, .worldline-image-leave-active { transition: none; }
 }
 </style>
