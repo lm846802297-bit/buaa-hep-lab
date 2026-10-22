@@ -44,6 +44,13 @@ describe('useThemeStyle', () => {
     expect(currentGlassStyle.value).toBe('solid')
   })
 
+  it('defaults the public website to Worldline while keeping workspace preferences separate', async () => {
+    const { DEFAULT_PUBLIC_COLOR_SCHEME, publicColorScheme, currentColorScheme } = await import('./useThemeStyle')
+    expect(DEFAULT_PUBLIC_COLOR_SCHEME).toBe('worldline-console')
+    expect(publicColorScheme.value).toBe('worldline-console')
+    expect(currentColorScheme.value).toBe('quiet-research')
+  })
+
   it('allows changing theme style and persists to localStorage and DOM', async () => {
     const { useThemeStyle, currentThemeStyle } = await import('./useThemeStyle')
     const { setThemeStyle } = useThemeStyle()
