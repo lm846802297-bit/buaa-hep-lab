@@ -1002,7 +1002,28 @@ try {
     Number(dimResetState.sliderValue) === 35,
     'background dim reset restores the configured default')
 
-  await bgCards.nth(3).click()
+  // The active WebGL background and smooth page scrolling can keep Playwright's
+  // auto-scroll actionability wait from completing. Scroll instantly, inspect the
+  // actual center hit target, then send a real pointer click at that measured point.
+  const vantaCardHitTest = await bgCards.nth(3).evaluate(card => {
+    card.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' })
+    const rect = card.getBoundingClientRect()
+    const x = rect.left + rect.width / 2
+    const y = rect.top + rect.height / 2
+    const hit = document.elementFromPoint(x, y)
+    return {
+      x,
+      y,
+      inViewport: rect.top >= 0 && rect.bottom <= window.innerHeight && rect.left >= 0 && rect.right <= window.innerWidth,
+      hitTag: hit?.tagName ?? null,
+      hitClass: typeof hit?.className === 'string' ? hit.className : '',
+      hitIsCard: hit === card || card.contains(hit)
+    }
+  })
+  console.log('Water-fog background card hit test: ' + JSON.stringify(vantaCardHitTest))
+  check(vantaCardHitTest.inViewport && vantaCardHitTest.hitIsCard, 'water-fog background card is visible and not obscured')
+  await stylePage.mouse.click(vantaCardHitTest.x, vantaCardHitTest.y)
+  await expect(stylePage.locator('html')).toHaveAttribute('data-bg-type', 'vanta-fog', { timeout: 10000 })
   check(await stylePage.locator('html').getAttribute('data-bg-type') === 'vanta-fog', 'water-fog background card applies')
   await stylePage.locator('.vanta-atmosphere-canvas canvas.is-rendered').waitFor({ state: 'visible', timeout: 20000 })
 
