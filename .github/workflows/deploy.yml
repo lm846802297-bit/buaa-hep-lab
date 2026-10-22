@@ -250,7 +250,6 @@ jobs:
           run-id: ${{ steps.release_context.outputs.pr_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v4
-        if: github.event_name == 'workflow_dispatch' && inputs.deploy_production || github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.release_context.outputs.reuse_artifact != 'true'
         with:
           node-version: 24
           cache: npm
