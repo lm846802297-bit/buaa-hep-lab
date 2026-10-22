@@ -23,6 +23,8 @@ describe('Public academic website', () => {
     expect(html).toContain('id="worldline-hero-title"')
     expect(html).toContain('Particle Physics')
     expect(html).toContain('class="worldline-detector-photo"')
+    expect(html).toContain('class="worldline-home visual-blueprint"')
+    expect(html).not.toContain('class="public-header"')
     expect(html).toContain('https://upload.wikimedia.org/wikipedia/commons/f/f3/CMS_detector_%282%29.jpg')
     expect(html).toContain('首页右侧主视觉模式')
     expect(html).toContain('蓝图叠加')
