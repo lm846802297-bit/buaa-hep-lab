@@ -821,9 +821,14 @@ try {
   check(await stylePage.locator('html').getAttribute('data-bg-type') === 'galaxy', 'galaxy background card applies')
   await stylePage.locator('.galaxy-atmosphere-canvas canvas.is-rendered').waitFor({ state: 'visible', timeout: 20000 })
   const dimSlider = stylePage.getByRole('slider', { name: '背景遮罩暗化程度' })
-  await dimSlider.focus()
-  await dimSlider.press('Home')
-  for (let i = 0; i < 20; i++) await dimSlider.press('ArrowRight')
+  await dimSlider.scrollIntoViewIfNeeded()
+  // Seed the native range position without firing input; the real keyboard action
+  // below must update Vue state and the rendered shade opacity.
+  await dimSlider.evaluate(el => {
+    el.focus()
+    el.value = '19'
+  })
+  await stylePage.keyboard.press('ArrowRight')
   await stylePage.waitForFunction(() => {
     const shade = document.querySelector('.atmosphere-shade')
     return shade && Math.abs(Number(getComputedStyle(shade).opacity) - 0.2) < 0.02
