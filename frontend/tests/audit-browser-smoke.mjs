@@ -143,6 +143,48 @@ try {
   }
   await heroModeGroup.getByRole('button', { name: '蓝图叠加', exact: true }).click()
   await page.waitForFunction(() => !document.querySelector('.lab-public')?.classList.contains('hero-visual-photo') && !document.querySelector('.lab-public')?.classList.contains('hero-visual-terminal'))
+  const desktopBlueprint = await page.locator('.lab-public').evaluate(root => {
+    const hero = root.querySelector('.public-hero')
+    const copy = root.querySelector('.hero-copy')
+    const figure = root.querySelector('.collision-figure')
+    const heroStyle = getComputedStyle(hero)
+    const figureStyle = getComputedStyle(figure)
+    const copyBox = copy.getBoundingClientRect()
+    const figureBox = figure.getBoundingClientRect()
+    return {
+      blueprint: root.classList.contains('hero-visual-blueprint'),
+      worldline: root.classList.contains('worldline-theme'),
+      grid: heroStyle.backgroundImage.includes('repeating-linear-gradient'),
+      figurePosition: figureStyle.position,
+      copyWidth: copyBox.width,
+      figureLeft: figureBox.left,
+      heroWidth: hero.getBoundingClientRect().width
+    }
+  })
+  check(desktopBlueprint.blueprint && desktopBlueprint.worldline, 'Worldline blueprint mode is active by default')
+  check(desktopBlueprint.grid, 'Worldline blueprint hero uses a technical-paper grid background')
+  check(desktopBlueprint.figurePosition === 'absolute' && desktopBlueprint.figureLeft > desktopBlueprint.heroWidth * 0.3, 'desktop detector visual occupies the right side beside live HTML copy')
+  check(await page.getByRole('link', { name: 'CC BY 2.0' }).isVisible(), 'detector photo credit and license remain visible in blueprint mode')
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.waitForTimeout(120)
+  const mobileBlueprint = await page.locator('.collision-figure').evaluate(figure => {
+    const root = document.querySelector('.lab-public')
+    const copy = root.querySelector('.hero-copy').getBoundingClientRect()
+    const image = figure.getBoundingClientRect()
+    return {
+      figurePosition: getComputedStyle(figure).position,
+      copyBottom: copy.bottom,
+      figureTop: image.top,
+      figureRight: image.right,
+      viewportWidth: innerWidth,
+      imageWidth: image.width
+    }
+  })
+  check(mobileBlueprint.figurePosition === 'relative', 'mobile blueprint detector returns to document flow')
+  check(mobileBlueprint.figureTop >= mobileBlueprint.copyBottom - 2, 'mobile blueprint detector does not cover the headline or action buttons')
+  check(mobileBlueprint.figureRight <= mobileBlueprint.viewportWidth + 1 && mobileBlueprint.imageWidth > 0, 'mobile blueprint detector stays within the viewport')
+  await page.setViewportSize({ width: 1440, height: 900 })
   await publicSkinTrigger.click()
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
   await page.evaluate(() => {
