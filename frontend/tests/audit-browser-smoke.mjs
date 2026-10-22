@@ -816,7 +816,9 @@ try {
   check(loginPage.url().includes('/login?redirect=/learning/eft'), 'anonymous learning navigation redirects to login with its target preserved')
   await loggedOut.close()
 // Appearance compatibility audit: exercise every actionable theme card in Chromium.
-  const styleContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  // Theme-transition assertions require animation to be enabled regardless of the host runner preference.
+  // Reduced-motion behavior is covered separately with an explicitly reduced context above.
+  const styleContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'no-preference' })
   await styleContext.addInitScript(() => {
     if (localStorage.getItem('__appearance_audit_seeded') === '1') return
     localStorage.setItem('labhub_force_demo', '1')
@@ -912,10 +914,18 @@ try {
     check(await stylePage.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().length > 0), `color scheme ${schemeIds[i]} supplies an accent color`)
     if (schemeIds[i] === 'worldline-console' || schemeIds[i] === 'custom') {
       const themeTransition = stylePage.locator('.worldline-shift-overlay')
-      await expect(themeTransition).toBeVisible()
-      await expect(themeTransition.locator('.worldline-shift-overlay__hud')).toHaveCount(0)
-      check(!(await themeTransition.innerText()).includes('世界线变动'), `theme card ${schemeIds[i]} transition contains no Worldline Shift text`)
       try {
+        // Capture both the phase event and the rendered overlay so failures tell
+        // us whether the transition was never triggered or merely missed by the DOM assertion.
+        await stylePage.waitForFunction(() =>
+          Array.isArray(window.__themeShiftPhaseLog) &&
+          window.__themeShiftPhaseLog.some(entry => entry.phase === 'ignite'),
+          null,
+          { timeout: 3000 }
+        )
+        await expect(themeTransition).toBeVisible({ timeout: 3000 })
+        await expect(themeTransition.locator('.worldline-shift-overlay__hud')).toHaveCount(0)
+        check(!(await themeTransition.innerText()).includes('世界线变动'), `theme card ${schemeIds[i]} transition contains no Worldline Shift text`)
         // Wait for the component's semantic end state instead of assuming that
         // the 1.8 s animation timer runs on wall-clock time under CI load.
         await stylePage.waitForFunction(() =>
@@ -943,10 +953,12 @@ try {
             overlayPhase: overlay?.getAttribute('data-phase') || null,
             timelineActive: Boolean(overlay?.classList.contains('is-timeline-active')),
             hudPresent: Boolean(overlay?.querySelector('.worldline-shift-overlay__hud')),
-            overlayOpacity: overlay ? getComputedStyle(overlay).opacity : null
+            overlayOpacity: overlay ? getComputedStyle(overlay).opacity : null,
+            colorScheme: document.documentElement.getAttribute('data-color-scheme'),
+            prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches
           }
         })
-        throw new Error('theme transition did not clean up: ' + JSON.stringify(diagnostic) + '; cause=' + error.message)
+        throw new Error('theme transition for ' + schemeIds[i] + ' was not observed or did not clean up: ' + JSON.stringify(diagnostic) + '; cause=' + error.message)
       } finally {
         await stylePage.evaluate(() => {
           if (window.__themeShiftListener) window.removeEventListener('worldline:phase', window.__themeShiftListener)
