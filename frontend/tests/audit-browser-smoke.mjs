@@ -127,9 +127,9 @@ try {
   const heroModeGroup = page.getByRole('group', { name: '首页右侧主视觉模式' })
   check(await heroModeGroup.getByRole('button').count() === 3, 'homepage hero exposes three adjustable visual modes')
   for (const [label, className, storedMode] of [
-    ['蓝图叠加', '', 'blueprint'],
     ['实景照片', 'hero-visual-photo', 'photo'],
-    ['世界线终端', 'hero-visual-terminal', 'terminal']
+    ['世界线终端', 'hero-visual-terminal', 'terminal'],
+    ['蓝图叠加', '', 'blueprint']
   ]) {
     await heroModeGroup.getByRole('button', { name: label, exact: true }).click()
     await page.waitForFunction(name => {
