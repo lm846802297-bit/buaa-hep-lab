@@ -1,23 +1,20 @@
 # UI 设计约定
 
-- 新建页面或修改页面、组件样式前，必须先阅读项目根目录的 `design.md`，严格遵循其中的颜色、字体、间距、布局、组件和动效规则。
-- 优先复用 `frontend/src/index.css` 的设计变量和现有通用组件；新增或调整规范时同步更新 `design.md`，保证所有页面风格一致。
+- 新建页面或修改页面/组件样式前，阅读根目录 `design.md`；优先复用现有设计变量与通用组件。
+- 只有修改设计规范时才同步更新 `design.md`。
 
-# 并行开发与发布规则
+# 日常开发与发布
 
-- 本项目以 GPT / ChatGPT 为主要开发入口，DSH 和 WorkBuddy 为辅助工具；三者共用同一套仓库规范。开始编码前必须阅读 `docs/GPT_FIRST_DEVELOPMENT_WORKFLOW.md` 与 `docs/PARALLEL_DEVELOPMENT_WORKFLOW.md`；审计报告是历史快照，开放 PR 状态必须从 GitHub 实时查询。
-- 写入任何文件前，先列出拟修改路径并完成实时预检：若环境具备本地 checkout 和已认证的 `gh` CLI，运行 `node scripts/agent-preflight.mjs --paths <path1> <path2> ...`；若 GPT 通过 GitHub 连接器工作或没有 CLI，则用连接器执行等价的只读检查。若预检失败、报告路径交集、远端状态不明或分支落后，必须停止写入并协调；只有用户明确授权时才可使用覆盖选项。记录 main SHA、相关开放 PR HEAD 与 changed-files 证据。
-- `main` 是稳定发布分支。默认通过独立任务分支和 PR 开发；禁止直接推送 `main`。
-- 一个明确、可验收的功能目标对应一个 PR；确定任务范围后尽早创建 Draft PR，供其他开发会话协调。每个 PR 独立审查、独立验证，满足门槛后及时合并，不等待无关功能。
-- 有依赖关系的 PR 按顺序合并；每次合并后检查其他分支是否需要同步最新 main、解决冲突并重新运行受影响的测试。
-- GPT / ChatGPT 负责重点代码审查、跨 PR 依赖协调与最终集成验收；DSH、WorkBuddy 等会话可以负责各自功能的实现和初步测试。合并后必须检查 main CI 与部署/健康检查；PR 绿灯不能代替生产验收证据。
-- 未经用户明确授权，不执行生产 `pages:deploy`、远程 D1 写入/迁移或其他会改变生产数据与资源的操作。
-- 历史版 `docs/CODEX_COLLABORATOR_WORKFLOW.md` 与 `docs/CLOUDFLARE_DEPLOYMENT.md` 包含过期资源名和直接部署/推送指令。在完成统一修订前，不得执行其中与本规则冲突的步骤；以当前工作流文件、`frontend/wrangler.json` 和并行开发规范为准。
-- 只有当前 PR HEAD SHA 的 CI 通过，才能把该 PR 标记为通过验证；新提交后必须重新检查对应 SHA 的状态。
-
-# Vibe-Coding 与 Agent Skill 规范
-
-- 项目内置专属全栈开发与定制技能：`vibe-coding-lab-orbit`。
-- 规范文件位于 `.agents/skills/vibe-coding-lab-orbit/SKILL.md`，并在 `skills/vibe-coding-lab-orbit/SKILL.md` 镜像归档供开发者查阅。
-- GPT / ChatGPT（主要开发入口）、DSH 与 WorkBuddy 在承接功能咨询、业务调整、界面重构、课题组迁移适配、前后端接口对接、数据库迁移或动效调优时，必须先阅读并遵循该 Skill 的标准作业程序。暂不维护其他工具的独立配置。
-- 测试采用按变更路径与风险分级的快速流程：纯文档不跑代码测试；前端逻辑运行 `npm --prefix frontend test`；UI/路由/主题变更再运行构建、bundle 与 Chromium 烟测；后端变更运行 FastAPI 回归；学习/物理基准、Cloudflare 运行时安全检查只在相关文件或高风险边界变化时运行。认证/授权、数据库 schema/迁移、双后端契约和发布配置变更应升级为相关的完整回归。具体路径规则以 `.github/workflows/deploy.yml` 为准；不要为了速度跳过与本次改动直接相关的安全检查。
+- `main` 是稳定分支。代码改动走任务分支和 PR，不直接推送 `main`。
+- 开工时查看相关源码、最新 `main` SHA，并只检查会修改相同文件的开放 PR。普通独立任务不必逐一审查所有 PR，也不必机械执行完整预检；涉及多个会话、共享热点或不确定的文件交集时，再运行 `node scripts/agent-preflight.mjs --paths <path1> <path2>` 或做等价检查。
+- Draft PR 是可选项：长任务或需要多会话协调时提前创建；普通小功能完成后直接创建 PR。一个 PR 围绕一个明确目标，不等待无关 PR。
+- 普通任务先读本文件和相关源码即可。只有全栈双后端、认证/授权、数据库迁移、文件/邮件/外部网络、安全问题或并行开发任务，才需要进一步阅读对应的 Skill 与架构文档。
+- 按改动范围运行必要检查：
+  - 纯文档：检查差异和链接，不跑代码测试。
+  - 前端代码：`npm --prefix frontend test`；前端源文件或资源变更再构建并运行 `npm --prefix frontend run check:bundle`。
+  - 全局壳层、路由、主题、公开首页/专题导航或浏览器烟测脚本：额外运行 Chromium 烟测；普通页面/组件小改动不必每次启动浏览器套件。
+  - `backend/`：运行 `python -m pytest backend -q`。
+  - Cloudflare Functions、Wrangler 或 D1 schema：运行隔离 Cloudflare 检查；认证、授权、资源所有权或 schema 变更时升级到相关前后端回归。
+- PR CI 负责验证功能。合并后，主分支工作流只重新构建最终版本、检查公开页面完整性；仅 Pages 相关改动才部署，并执行线上健康与匿名授权检查。**合并后不重复运行 PR 阶段的单元、后端和浏览器测试**；发布前还会核对该 PR 最新 HEAD 的 CI 已通过。
+- 新提交必须使用新 SHA 的 CI 结果。失败时修复真实缺陷，不删除相关安全检查来追求绿色。
+- 未经用户明确授权，不手动执行生产部署、远程 D1 写入/迁移或其他会改变生产数据的操作。通过 PR 合并触发的既有自动发布规则仍按工作流执行。

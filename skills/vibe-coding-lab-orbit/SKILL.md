@@ -11,17 +11,16 @@ description: >-
 
 # LabOrbit Vibe-Coding 全栈开发与定制技能手册
 
-本 Skill 为 GPT / ChatGPT（本项目主要开发入口）、DSH 与 WorkBuddy 提供利用 **Vibe-Coding（人类主导需求与交互审美 + AI 执行全栈代码研发）** 高效定制、二次开发与课题组迁移的标准作业程序（SOP）。
+本 Skill 为 GPT / ChatGPT、DSH 与 WorkBuddy 提供 LabOrbit 全栈定制指南。它是复杂任务的参考手册，**普通小改动只需遵循根目录 `AGENTS.md` 和相关章节，不必每次执行全文 SOP**。
 
-## 仓库协作与安全前置要求（优先级高于本 Skill 的历史示例）
+## 仓库协作与安全前置要求
 
-- 本仓库的统一规则入口是根目录 `AGENTS.md`、`docs/GPT_FIRST_DEVELOPMENT_WORKFLOW.md` 与 `docs/PARALLEL_DEVELOPMENT_WORKFLOW.md`。GPT 是主要入口，DSH 和 WorkBuddy 复用同一流程；暂不为其他工具维护独立配置。
-- 在任何文件写入前，先明确计划修改的路径并完成实时 GitHub 预检。有本地 checkout 与已认证 `gh` CLI 时执行 `node scripts/agent-preflight.mjs --paths <path1> <path2> ...`；GPT 通过 GitHub 连接器工作或没有 CLI 时，使用连接器完成等价的只读检查并记录 main SHA、相关开放 PR HEAD 与 changed-files 证据。预检失败、路径交集或基线过期时必须停止写入并协调；覆盖选项只能在用户明确授权后使用。
-- 未经用户明确授权，不执行生产部署、远程 D1 写入/迁移或其他会改变生产数据与资源的操作。远程资源名称以当前 `frontend/wrangler.json` 为准，本文的历史示例不是可直接执行的生产操作指令。
-- 测试套件数量会变化；验收依据是当前 HEAD 的实际测试结果与 CI，而不是本文或历史记录中的固定数量。
-- 一个明确、可验收的功能目标对应一个 PR；任务范围确定后尽早创建 Draft PR。每个 PR 独立审查和验证，满足门槛后及时合并，不等待无关功能；存在依赖时按顺序合并。
-- 每次合并后检查其他开放分支是否需要同步最新 main、解决冲突并重跑受影响测试。GPT / ChatGPT 负责重点代码审查、跨 PR 依赖协调和最终集成验收；DSH、WorkBuddy 等会话可以负责各自功能实现和初步测试。
-- 合并后核对 main CI、部署工作流和健康检查；PR CI 通过不能代替生产验收。
+- `AGENTS.md` 是日常开发规则入口。按需阅读本 Skill 和架构文档；只有双后端、认证/授权、数据库迁移、文件/邮件/外部网络、安全问题或多会话任务才需要完整参考。
+- 普通独立任务：确认最新 `main`，查看计划修改文件及可能冲突的开放 PR 即可。只有多会话、共享热点、数据库/认证边界或文件交集不明确时，才运行 `node scripts/agent-preflight.mjs --paths <path1> <path2>` 并协调所有权。
+- 普通小功能完成后再创建 PR；长任务或需要并行协调时才提前创建 Draft PR。一个 PR 围绕一个明确目标，紧密耦合的代码和测试可以放在一起。
+- 测试按改动风险执行：普通前端改动运行前端测试，源文件变化再构建并检查公开页面；全局壳层、路由、主题或关键公开入口变化再运行浏览器烟测；后端改动运行后端测试；Cloudflare Functions / D1 / Wrangler 改动运行隔离运行时检查。认证、授权、schema 和双后端契约变更升级到相关前后端回归。
+- PR CI 验证功能一次。合并后只重新构建最终版本、检查公开页面并在 Pages 相关改动时部署和验证线上健康状态；不重复运行整套单元、后端和浏览器测试。
+- 不手动执行生产部署、远程 D1 写入/迁移或其他生产数据变更，除非用户明确授权。
 
 ---
 
@@ -351,32 +350,22 @@ const icons = {
 
 ## 八、质量门禁与测试验收清单
 
-Vibe-Coding 的核心是“大胆重构，严格测试”。任何代码交付前必须完整执行以下命令：
+测试的目标是发现与本次改动相关的缺陷，不是每次交付都运行所有工具。按下表选择最小充分验证：
 
-### 1. 自动化单元测试全通检查
-```bash
-npm --prefix frontend test
-```
-- **合格基准**：当前 HEAD 上实际发现的测试套件与测试必须全部通过（Zero Failures）；不要把历史套件/测试数量写成固定门槛。PR 的最终验证以该 HEAD 对应的 GitHub Actions 结果为准。
-- 若修改了界面文案或数据结构，必须同步更新对应的 `*.test.js` 文件。
+| 改动范围 | 必需检查 |
+|---|---|
+| 纯文档/静态资源说明 | 检查差异、链接与命令是否正确；不跑应用测试 |
+| 普通前端逻辑或组件 | `npm --prefix frontend test` |
+| 前端页面、组件、内容或资源 | 前端测试；`frontend/src/` 或公开资源变化时再运行 `npm --prefix frontend run build` 和 `npm --prefix frontend run check:bundle` |
+| 全局壳层、路由、主题、公开首页/专题导航、浏览器烟测脚本 | 在构建检查之外运行 Chromium 烟测 |
+| FastAPI 后端 | `python -m pytest backend -q` |
+| Cloudflare Functions、Wrangler、D1 schema | `node scripts/verify-cloudflare.mjs`；必要时加相关前后端测试 |
+| 认证/授权、文件所有权、数据库迁移或双后端契约 | 对受影响的前后端路径执行回归和隔离安全检查 |
 
-### 2. 静态构建与 Pages 生产打包检查
-```bash
-# 验证标准构建无 TS/SFC/CSS 语法错误
-npm --prefix frontend run build
+- CI 必须对应 PR 的最新 HEAD。新提交后，以新 SHA 的结果为准。
+- 不要求每个任务都启动完整本地栈或额外执行 Demo 构建；仅当改动涉及集成启动、Demo 模式或相应部署路径时才执行。
+- 如果相关检查失败，修复实际缺陷；不要删除与本次改动相关的安全或权限测试来追求通过。
 
-# 验证纯前端 Demo 模式构建无阻断
-GITHUB_PAGES=true VITE_DEMO_MODE=true npm --prefix frontend run build
-```
-
-### 3. 本地集成启动验证
-```bash
-chmod +x ./start.sh
-./start.sh
-```
-访问 `http://127.0.0.1:8000`，使用演示账号或初始化注册流程，确认无网络报错与控制台运行时异常。
-
----
 
 ## 结语
 

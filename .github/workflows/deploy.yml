@@ -14,30 +14,37 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
 
-# Cancel obsolete validation only for the same PR. Never cancel a main release.
+# Cancel obsolete PR runs, but never cancel an active main release.
 concurrency:
   group: buaa-hep-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  validate:
+  changes:
     runs-on: ubuntu-latest
     outputs:
-      deploy: ${{ steps.scope.outputs.deploy }}
+      frontend_tests: ${{ steps.scope.outputs.frontend_tests }}
+      backend_tests: ${{ steps.scope.outputs.backend_tests }}
+      learning: ${{ steps.scope.outputs.learning }}
+      cloudflare: ${{ steps.scope.outputs.cloudflare }}
+      build: ${{ steps.scope.outputs.build }}
+      browser: ${{ steps.scope.outputs.browser }}
+      pages_deploy: ${{ steps.scope.outputs.pages_deploy }}
+      release_config: ${{ steps.scope.outputs.release_config }}
+      need_node: ${{ steps.scope.outputs.need_node }}
+      need_python: ${{ steps.scope.outputs.need_python }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Determine change scope
+      - name: Classify changed paths
         id: scope
         shell: bash
         env:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
           PUSH_BEFORE_SHA: ${{ github.event.before || '' }}
           TARGET_SHA: ${{ github.sha }}
-          DEPLOY_PRODUCTION: ${{ inputs.deploy_production || false }}
         run: |
           set -euo pipefail
           if [[ -n "$PR_BASE_SHA" ]]; then
@@ -52,182 +59,200 @@ jobs:
           else
             files="$(git diff --name-only "$BASE_SHA" "$TARGET_SHA")"
           fi
-          printf 'Changed paths:\n%s\n' "$files"
-          frontend=0; ui=0; backend=0; learning=0; runtime=0; bundle=0; full=0; pages_deploy=0
+
+          printf 'Changed paths:\n%s\n' "$files" >> "$GITHUB_STEP_SUMMARY"
+          frontend=0; backend=0; learning=0; cloudflare=0; build=0; browser=0; pages_deploy=0; release_config=0; full=0
+
           while IFS= read -r file; do
             [[ -n "$file" ]] || continue
-            case "$file" in frontend/*) frontend=1 ;; esac
-            case "$file" in backend/*) backend=1 ;; esac
             case "$file" in
-              frontend/src/views/*|frontend/src/components/*|frontend/src/composables/*|frontend/src/App.vue|frontend/src/index.css|frontend/src/router/*|frontend/index.html|frontend/tests/audit-browser-smoke.mjs)
-                case "$file" in *.test.*|*.spec.*) ;; *) ui=1 ;; esac ;;
+              frontend/*) frontend=1 ;;
+            esac
+            case "$file" in
+              backend/*) backend=1 ;;
             esac
             case "$file" in
               frontend/public/learning/*|frontend/src/content/learning.js) learning=1 ;;
             esac
             case "$file" in
-              frontend/functions/*|frontend/wrangler.json|frontend/package.json|frontend/package-lock.json|scripts/schema_d1.sql|scripts/verify-cloudflare.mjs|.github/workflows/deploy.yml) runtime=1 ;;
+              frontend/functions/*|frontend/wrangler.json|frontend/package.json|frontend/package-lock.json|scripts/schema_d1.sql|scripts/verify-cloudflare.mjs|.github/workflows/deploy.yml)
+                cloudflare=1 ;;
             esac
             case "$file" in
-              frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*)
-                case "$file" in *.test.*|*.spec.*) ;; *) bundle=1; pages_deploy=1 ;; esac ;;
+              frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*|.github/workflows/deploy.yml)
+                case "$file" in *.test.*|*.spec.*) ;; *) build=1 ;; esac ;;
             esac
             case "$file" in
-              frontend/functions/*|frontend/wrangler.json|frontend/package.json|frontend/package-lock.json|scripts/schema_d1.sql|.github/workflows/deploy.yml) pages_deploy=1 ;;
+              frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*|frontend/functions/*|frontend/wrangler.json|scripts/schema_d1.sql)
+                case "$file" in *.test.*|*.spec.*) ;; *) pages_deploy=1 ;; esac ;;
             esac
             case "$file" in
-              backend/auth.py|backend/models.py|backend/database.py|frontend/functions/api/routes/auth.ts|frontend/functions/api/routes/files.ts|frontend/functions/api/routes/notices.ts|scripts/schema_d1.sql|frontend/wrangler.json) full=1 ;;
+              .github/workflows/deploy.yml) release_config=1 ;;
+            esac
+            case "$file" in
+              frontend/src/App.vue|frontend/src/index.css|frontend/src/router/*|frontend/index.html|frontend/src/composables/useThemeStyle.js|frontend/src/views/StyleView.vue|frontend/src/views/PublicHomeView.vue|frontend/src/views/ResearchTopicView.vue|frontend/src/components/PublicThemeSwitcher.vue|frontend/src/components/WorldlineEffects.vue|frontend/src/components/ForecastAtmosphere.vue|frontend/tests/audit-browser-smoke.mjs)
+                browser=1 ;;
+            esac
+            case "$file" in
+              backend/auth.py|backend/models.py|backend/database.py|frontend/functions/api/routes/auth.ts|frontend/functions/api/routes/files.ts|frontend/functions/api/routes/notices.ts|scripts/schema_d1.sql|frontend/wrangler.json)
+                full=1 ;;
             esac
           done <<< "$files"
-          frontend_tests=$frontend
-          backend_tests=$backend
+
+          frontend_tests="$frontend"
+          backend_tests="$backend"
           if [[ "$full" == 1 ]]; then
-            frontend_tests=1; backend_tests=1; runtime=1; bundle=1
+            frontend_tests=1
+            backend_tests=1
+            cloudflare=1
+            build=1
           fi
-          deploy=0
-          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
-            [[ "$DEPLOY_PRODUCTION" == "true" ]] && deploy=1
-          elif [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" && "$pages_deploy" == 1 ]]; then
-            deploy=1
-          fi
-          build=0
-          if [[ "$bundle" == 1 || "$ui" == 1 || "$full" == 1 || "$deploy" == 1 ]]; then build=1; fi
+          if [[ "$browser" == 1 ]]; then build=1; fi
+
           need_node=0
-          if [[ "$frontend_tests" == 1 || "$build" == 1 || "$runtime" == 1 || "$bundle" == 1 ]]; then need_node=1; fi
+          if [[ "$frontend_tests" == 1 || "$build" == 1 || "$cloudflare" == 1 ]]; then need_node=1; fi
           need_python=0
           if [[ "$backend_tests" == 1 || "$learning" == 1 ]]; then need_python=1; fi
-          for key in frontend_tests backend_tests learning runtime bundle ui build deploy need_node need_python; do
+
+          for key in frontend_tests backend_tests learning cloudflare build browser pages_deploy release_config need_node need_python; do
             printf '%s=%s\n' "$key" "${!key}" >> "$GITHUB_OUTPUT"
           done
-      - name: Require a merged PR for main release candidates
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && steps.scope.outputs.deploy == '1'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { owner, repo } = context.repo;
-            const sha = context.sha;
-            const { data: pullRequests } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-              owner,
-              repo,
-              commit_sha: sha,
-            });
-            const authorized = pullRequests.find((pr) =>
-              pr.base?.ref === 'main' &&
-              pr.merged_at &&
-              pr.merge_commit_sha === sha
-            );
-            if (!authorized) {
-              core.setFailed(`Refusing main release candidate ${sha}: it is not the merge commit of a merged PR targeting main.`);
-            } else {
-              core.info(`Release candidate authorized by merged PR #${authorized.number}.`);
-            }
+
+  validate:
+    needs: changes
+    if: github.event_name == 'pull_request' && (needs.changes.outputs.need_node == '1' || needs.changes.outputs.need_python == '1')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        if: steps.scope.outputs.need_node == '1'
+        if: needs.changes.outputs.need_node == '1'
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - run: npm --prefix frontend ci
-        if: steps.scope.outputs.need_node == '1'
-      - name: Frontend and API security regression tests
-        if: steps.scope.outputs.frontend_tests == '1'
+      - name: Install frontend dependencies
+        if: needs.changes.outputs.need_node == '1'
+        run: npm --prefix frontend ci
+      - name: Frontend and API tests
+        if: needs.changes.outputs.frontend_tests == '1'
         run: npm --prefix frontend test
-      - name: Build frontend for FastAPI SPA-serving tests
-        if: steps.scope.outputs.build == '1'
-        run: npm --prefix frontend run build
+      - name: Build and check public pages
+        if: needs.changes.outputs.build == '1'
+        run: |
+          npm --prefix frontend run build
+          npm --prefix frontend run check:bundle
       - uses: actions/setup-python@v5
-        if: steps.scope.outputs.need_python == '1'
+        if: needs.changes.outputs.need_python == '1'
         with:
           python-version: '3.12'
-      - name: Complete FastAPI backend regression suite
-        if: steps.scope.outputs.backend_tests == '1'
+          cache: pip
+          cache-dependency-path: backend/requirements-test.txt
+      - name: FastAPI regression tests
+        if: needs.changes.outputs.backend_tests == '1'
         env:
           LABHUB_SECRET_KEY: isolated-ci-test-secret-never-for-production-32-plus
           LABHUB_DB_PATH: /tmp/buaa-hep-ci.db
           SEED_DEMO_DATA: '1'
         run: |
           pip install -r backend/requirements-test.txt
-          python -m pytest backend -q --junitxml=backend-test-results.xml
-      - name: Upload backend test report
-        if: always() && steps.scope.outputs.backend_tests == '1'
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-test-report
-          path: backend-test-results.xml
-          if-no-files-found: warn
-          retention-days: 14
-      - name: Teaching benchmark consistency checks
-        if: steps.scope.outputs.learning == '1'
+          python -m pytest backend -q
+      - name: Teaching benchmark check
+        if: needs.changes.outputs.learning == '1'
         run: python frontend/public/learning/two_body_decay.py
-      - name: Initial JavaScript measurements and prerender verification
-        if: steps.scope.outputs.bundle == '1'
-        run: npm --prefix frontend run check:bundle
-      - name: Install browser for route and layout smoke checks
-        if: steps.scope.outputs.ui == '1'
+      - name: Install Chromium for high-impact UI changes
+        if: needs.changes.outputs.browser == '1'
         timeout-minutes: 5
         run: npx --prefix frontend playwright install --with-deps chromium
       - name: Browser smoke checks
-        if: steps.scope.outputs.ui == '1'
+        if: needs.changes.outputs.browser == '1'
         run: node frontend/tests/audit-browser-smoke.mjs
-      - name: Upload Chromium audit evidence
-        if: always() && steps.scope.outputs.ui == '1'
+      - name: Upload browser evidence on failure
+        if: failure() && needs.changes.outputs.browser == '1'
         uses: actions/upload-artifact@v4
         with:
           name: browser-audit-evidence
           path: frontend/test-results/audit/
           if-no-files-found: warn
-          retention-days: 14
-      - name: Isolated Pages runtime security smoke checks
-        if: steps.scope.outputs.runtime == '1'
+          retention-days: 7
+      - name: Isolated Cloudflare security checks
+        if: needs.changes.outputs.cloudflare == '1'
         run: node scripts/verify-cloudflare.mjs
-      - uses: actions/upload-artifact@v4
-        if: steps.scope.outputs.build == '1'
-        with:
-          name: production-build
-          path: frontend/dist
-          include-hidden-files: true
 
-  deploy:
-    needs: validate
-    # A squash merge whose title contains [skip-prod-deploy] still runs main validation,
-    # but deliberately skips publication for that one release candidate.
-    if: github.ref == 'refs/heads/main' && needs.validate.outputs.deploy == '1' && ((github.event_name == 'workflow_dispatch' && inputs.deploy_production) || (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip-prod-deploy]')))
+  release:
+    needs: changes
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && (needs.changes.outputs.pages_deploy == '1' || needs.changes.outputs.release_config == '1')) || (github.event_name == 'workflow_dispatch' && inputs.deploy_production)
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: read
+      pull-requests: read
       deployments: write
     steps:
       - uses: actions/checkout@v4
+      - name: Require a merged PR with successful PR CI
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy_production)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const sha = context.sha;
+            const { data: associated } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner, repo, commit_sha: sha,
+            });
+            const pr = associated.find((item) =>
+              item.base?.ref === 'main' &&
+              item.merged_at &&
+              item.merge_commit_sha === sha
+            );
+            if (!pr) {
+              core.setFailed(`Refusing release ${sha}: it is not the merge commit of a merged PR targeting main.`);
+              return;
+            }
+            const { data } = await github.rest.actions.listWorkflowRuns({
+              owner, repo, workflow_id: 'deploy.yml', head_sha: pr.head.sha,
+              event: 'pull_request', per_page: 100,
+            });
+            const runs = data.workflow_runs
+              .filter((run) => run.head_sha === pr.head.sha && run.event === 'pull_request')
+              .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+            if (!runs.length || runs[0].conclusion !== 'success') {
+              core.setFailed(`Refusing release: PR #${pr.number} has no successful validation run for exact head ${pr.head.sha}.`);
+              return;
+            }
+            core.info(`Release authorized by merged PR #${pr.number}; exact-head CI run #${runs[0].run_number} passed.`);
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - run: npm --prefix frontend ci
-      - uses: actions/download-artifact@v4
-        with:
-          name: production-build
-          path: frontend/dist
+      - name: Install release dependencies
+        run: npm --prefix frontend ci
+      - name: Build the release
+        run: npm --prefix frontend run build
+      - name: Check public pages and initial dependencies
+        run: npm --prefix frontend run check:bundle
+      - name: Isolated Cloudflare check for manual releases
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy_production
+        run: node scripts/verify-cloudflare.mjs
       - name: Check deployment credentials
-        id: credentials
+        if: (github.event_name == 'workflow_dispatch' && inputs.deploy_production) || (github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && !contains(github.event.head_commit.message, '[skip-prod-deploy]'))
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
-            echo 'ready=true' >> "$GITHUB_OUTPUT"
-          else
-            echo '::error::Publication blocked: one or more required Cloudflare credentials are missing.'
-            echo 'A main release was requested, but no deployment occurred because Cloudflare credentials are missing.' >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo '::error::Publication blocked: required Cloudflare credentials are missing.'
             exit 1
           fi
       - name: Deploy verified build
-        if: steps.credentials.outputs.ready == 'true'
+        if: (github.event_name == 'workflow_dispatch' && inputs.deploy_production) || (github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && !contains(github.event.head_commit.message, '[skip-prod-deploy]'))
         working-directory: frontend
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npm run pages:deploy
       - name: Published site health and authorization checks
-        if: steps.credentials.outputs.ready == 'true'
+        if: (github.event_name == 'workflow_dispatch' && inputs.deploy_production) || (github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && !contains(github.event.head_commit.message, '[skip-prod-deploy]'))
         run: node scripts/verify-live.mjs https://buaa-hep-hub.pages.dev
