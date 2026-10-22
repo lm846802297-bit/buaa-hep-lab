@@ -99,8 +99,8 @@ function downloadBibtex() {
       <figure class="collision-figure">
         <img
           class="detector-photo"
-          src="https://cms-results.web.cern.ch/cms-results/public-results/figures/cms_detector.jpg"
-          alt="CMS 粒子探测器内部的真实照片，展示同心排列的探测器模块与精密仪器结构。"
+          src="https://upload.wikimedia.org/wikipedia/commons/f/f3/CMS_detector_%282%29.jpg"
+          alt="CERN 地下实验区内的 CMS 紧凑型缪子线圈粒子探测器实景照片。"
           loading="eager"
           fetchpriority="high"
           decoding="async"
@@ -136,7 +136,8 @@ function downloadBibtex() {
           <g class="collision-annotations" fill="currentColor"><text x="438" y="94">μ⁺</text><text x="478" y="418">χ</text><text x="105" y="464">μ⁻</text><text x="340" y="284">p → ← p</text><text x="318" y="582">EVENT DISPLAY / CONCEPTUAL</text></g>
         </svg>
         <figcaption>
-          <a href="https://cms-results.web.cern.ch/cms-results/public-results/detector-performance/index.html" target="_blank" rel="noopener noreferrer">CMS detector interior · CMS Collaboration / CERN</a>
+          <a href="https://commons.wikimedia.org/wiki/File:CMS_detector_(2).jpg" target="_blank" rel="noopener noreferrer">CMS detector · photo by zipckr (Flickr)</a>
+          <span><a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</a> · cropped; scientific overlays added</span>
           <span>理论 · 模型 · 信号</span>
         </figcaption>
       </figure>
@@ -407,7 +408,7 @@ h1.hero-title span { color:var(--accent); }
 .collision-core { fill:#fff3d6; stroke:#dba45b; stroke-width:5; paint-order:stroke; filter:drop-shadow(0 0 9px #efb65e); animation:collision-core-pulse 3.2s ease-in-out infinite; transform-origin:300px 300px; }
 @keyframes collision-core-pulse { 0%,100% { opacity:.84; transform:scale(.82); } 50% { opacity:1; transform:scale(1.12); } }
 .collision-annotations { font-family:var(--font); font-size:18px; }.collision-annotations text:last-child { font-size:7px; letter-spacing:.8px; opacity:.6; }
-.collision-figure figcaption { font-size:9px; letter-spacing:.12em; display:flex; justify-content:space-between; color:var(--muted); padding:0 28px; }
+.collision-figure figcaption { font-size:8px; letter-spacing:.06em; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 14px; color:var(--muted); padding:0 28px; }
 .research-strip { border-top:1px solid var(--line); border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:20px; padding:24px 0; color:var(--muted); font-size:12px; }.research-strip span:first-child { color:var(--accent); }
 .public-section { padding:96px 0; scroll-margin-top:24px; }.section-top { display:flex; justify-content:space-between; align-items:flex-end; gap:28px; margin-bottom:36px; }.eyebrow { font-size:10px; letter-spacing:.17em; margin-bottom:16px; }h2 { font-size:clamp(28px,3.1vw,40px); font-weight:400; line-height:1.45; letter-spacing:-.03em; }.section-top>p,.section-description { font-size:14px; line-height:1.9; color:var(--muted); }
 .research-layout { display:grid; grid-template-columns:1fr 1.1fr; gap:64px; }.research-tabs { display:flex; flex-direction:column; }.research-tabs button { display:flex; align-items:center; gap:24px; padding:28px 4px; border:0; border-bottom:1px solid var(--line); background:transparent; text-align:left; color:var(--muted); font-size:14px; cursor:pointer; }.research-tabs strong { font-size:20px; font-weight:400; flex:1; }.research-tabs button.active { color:var(--accent); }.research-tabs button.active strong { color:var(--text); }.research-tabs button.active>span:last-child { transform:rotate(45deg); }.research-detail { background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:44px 36px; position:relative; overflow:hidden; }.research-detail .eyebrow { max-width:75%; color:var(--accent); position:relative; }.research-detail h3 { font-size:24px; font-weight:400; margin:28px 0 16px; position:relative; }.research-detail p { color:var(--soft); font-size:15px; line-height:1.9; position:relative; max-width:440px; }.research-symbol { position:absolute; right:26px; top:-10px; font-size:140px; font-weight:300; line-height:1; color:var(--accent); opacity:.12; }.topic-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:28px; }.topic-tags span { border:1px solid var(--line); border-radius:999px; padding:5px 12px; color:var(--muted); font-size:11px; }
