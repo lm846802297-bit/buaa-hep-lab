@@ -171,14 +171,24 @@ jobs:
       - name: Teaching benchmark check
         if: needs.changes.outputs.learning == '1'
         run: python frontend/public/learning/two_body_decay.py
-      - name: Install Chromium and CJK fonts for high-impact UI changes
+      - name: Install Chromium for high-impact UI changes
         if: needs.changes.outputs.browser == '1'
-        timeout-minutes: 7
-        # Install the browser without a broad apt dependency upgrade. Add a CJK font
-        # so retained desktop/mobile screenshots can be reviewed with legible Chinese.
+        timeout-minutes: 5
+        # Keep browser download separate from OS packages so a stalled network
+        # request is identifiable and cannot block the whole validation job.
         run: |
+          set -euo pipefail
           npx --prefix frontend playwright install chromium
-          sudo apt-get install -y fonts-wqy-zenhei
+
+      - name: Install CJK fonts for browser evidence
+        if: needs.changes.outputs.browser == '1'
+        timeout-minutes: 4
+        # Use explicit timeouts and quiet apt output so a package mirror stall is
+        # bounded and distinguishable from the browser download.
+        run: |
+          set -euo pipefail
+          timeout 150s sudo apt-get update -qq
+          timeout 90s sudo apt-get install -y --no-install-recommends fonts-wqy-zenhei
           fc-cache -f
           fc-list :lang=zh | grep -q .
       - name: Browser smoke checks
