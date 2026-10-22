@@ -50,7 +50,8 @@ try {
       check(await detectorPhoto.evaluate(image => image.naturalWidth > 0), 'homepage hero uses a loaded real CMS detector photograph')
       check(await page.locator('.public-header .nav-hub').count() === 1, 'homepage header has exactly one collaboration entry')
       check(await page.locator('.public-header .header-hub-cta').count() === 0, 'homepage header does not duplicate the collaboration entry')
-      check(await page.getByRole('link', { name: /CMS detector interior · CMS Collaboration \/ CERN/ }).count() === 1, 'hero detector photograph displays a source attribution')
+      check(await page.getByRole('link', { name: /CMS detector · photo by zipckr \(Flickr\)/ }).count() === 1, 'hero detector photograph displays photographer attribution')
+      check(await page.getByRole('link', { name: 'CC BY 2.0' }).count() === 1, 'hero detector photograph links to its Creative Commons license')
     }
     await page.locator('h1').click()
     check(await page.getByRole('button', { name: '切换官网风格' }).isVisible(), `public skin icon is visible at ${width}px`)
