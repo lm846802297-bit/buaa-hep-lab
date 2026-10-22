@@ -106,8 +106,8 @@ function downloadBibtex() {
           decoding="async"
         >
         <svg viewBox="0 0 600 600" role="img" aria-labelledby="collision-title collision-description">
-          <title id="collision-title">粒子碰撞探测器概念图</title>
-          <desc id="collision-description">精密探测器的多层圆形结构、碰撞中心和向外延伸的粒子径迹。此为装饰性概念示意，并非真实实验数据。</desc>
+          <title id="collision-title">叠加在 CMS 探测器照片上的粒子径迹示意</title>
+          <desc id="collision-description">圆形几何环与向外延伸的粒子径迹是叠加在真实 CMS 探测器照片上的装饰性视觉元素，并非该照片对应的真实碰撞事件数据。</desc>
           <defs>
             <radialGradient id="collision-glow"><stop stop-color="#fff3cf" stop-opacity=".95"/><stop offset=".08" stop-color="#f4b45b" stop-opacity=".7"/><stop offset=".25" stop-color="#347dc1" stop-opacity=".24"/><stop offset="1" stop-color="#347dc1" stop-opacity="0"/></radialGradient>
             <linearGradient id="detector-metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d4d8d7" stop-opacity=".9"/><stop offset=".5" stop-color="#657b8b" stop-opacity=".5"/><stop offset="1" stop-color="#c9a875" stop-opacity=".65"/></linearGradient>
