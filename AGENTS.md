@@ -20,4 +20,4 @@
 - 项目内置专属全栈开发与定制技能：`vibe-coding-lab-orbit`。
 - 规范文件位于 `.agents/skills/vibe-coding-lab-orbit/SKILL.md`，并在 `skills/vibe-coding-lab-orbit/SKILL.md` 镜像归档供开发者查阅。
 - GPT / ChatGPT（主要开发入口）、DSH 与 WorkBuddy 在承接功能咨询、业务调整、界面重构、课题组迁移适配、前后端接口对接、数据库迁移或动效调优时，必须先阅读并遵循该 Skill 的标准作业程序。暂不维护其他工具的独立配置。
-- 代码变更前后应按任务范围运行相关测试；前端逻辑变更至少执行 `npm --prefix frontend test`，并根据风险执行 build、bundle、浏览器与后端测试。不要在规则中固定一个容易过时的测试数量。
+- 测试采用按变更路径与风险分级的快速流程：纯文档不跑代码测试；前端逻辑运行 `npm --prefix frontend test`；UI/路由/主题变更再运行构建、bundle 与 Chromium 烟测；后端变更运行 FastAPI 回归；学习/物理基准、Cloudflare 运行时安全检查只在相关文件或高风险边界变化时运行。认证/授权、数据库 schema/迁移、双后端契约和发布配置变更应升级为相关的完整回归。具体路径规则以 `.github/workflows/deploy.yml` 为准；不要为了速度跳过与本次改动直接相关的安全检查。

@@ -13,7 +13,7 @@
 5. 有实际依赖关系的 PR 按顺序合并，例如先合并基础组件、API 契约或 schema，再处理依赖它的功能。每次合并后，检查所有其他开放 PR：是否落后于最新主分支、是否需要解决冲突、是否影响测试；更新分支后重新运行受影响的验证。
 6. PR 描述明确变更范围、接口/数据影响、风险、测试、未验证项和回滚方式。CI 必须针对 PR 当前 HEAD 通过；新提交产生后，旧 SHA 的绿灯不代表新 HEAD 已通过。
 7. GPT / ChatGPT 是本项目主要开发入口，负责重点代码审查、跨 PR 依赖协调、合并顺序和最终集成验收。DSH 与 WorkBuddy 等其他开发会话可以承担独立功能实现和初步测试，但应提供可复核的差异、测试命令、结果和对应 SHA。
-8. 仅通过 PR 合并到主分支。每次合并后检查主分支 CI、发布工作流、部署结果与健康检查。PR 绿灯不等于部署成功，更不等于生产行为已经验收。生产验收必须有独立证据。
+8. 仅通过 PR 合并到主分支。合并后检查主分支 CI；只有影响 Cloudflare Pages 的代码/配置改动才触发发布。实际发生部署时，再检查部署结果与线上健康检查。纯文档和仅自建 FastAPI 的改动不应无条件发布静态站点。PR 绿灯不等于部署成功，生产验收必须有独立证据。
 
 ### 多会话/多 Agent 开工前检查（强制）
 
@@ -104,38 +104,47 @@ PR 可以包含多个文件，但应围绕一个验收目标。若改动跨越 U
 
 ## 5. 测试与合并门槛
 
-### 前端和托管 API
+采用**按路径触发、按风险升级**的验证方式，不再让每次提交都重复执行整套测试。工作流的实际路径判定以 `.github/workflows/deploy.yml` 为准；本节定义预期行为。
 
-按变更范围执行并记录：
+### 快速通道
+
+| 改动类型 | 必需检查 | 默认跳过 |
+|---|---|---|
+| 纯文档/说明文件 | 文档差异与链接人工检查 | 前端构建、浏览器、后端与 Cloudflare 测试；不触发 Pages 发布 |
+| 前端逻辑/组件测试文件，但不改页面行为 | `npm --prefix frontend test` | 构建、bundle、浏览器和后端回归 |
+| UI、路由、主题、布局、动效 | 前端测试、构建、bundle 检查、Chromium 浏览器烟测 | 不相关的 FastAPI 与物理基准测试 |
+| FastAPI 自建后端 | `python -m pytest backend -q` | 不相关的前端构建和 Pages 发布 |
+| 学习内容/物理基准 | 对应教学基准脚本；若改动前端内容则同时运行前端测试/构建 | 无关后端回归与浏览器测试 |
+| Cloudflare Functions、D1 schema、Wrangler 或发布工作流 | 前端/API 相关测试、构建产物（发布需要时）及隔离 Pages 运行时检查 | 不相关的 UI 浏览器烟测 |
+
+### 高风险升级
+
+- 认证/授权、文件访问权限、数据库 schema/迁移、双后端契约或核心依赖升级，必须运行受影响的前后端回归与隔离运行时检查；如果同时改 UI，再运行浏览器烟测。
+- 一次 PR 跨越多个模块或无法明确划分影响范围时，使用完整相关回归，不要把“改动文件少”误当成低风险。
+- Chromium 烟测只在页面、路由、主题、组件、全局样式或烟测脚本发生变化时运行。烟测失败时先看具体失败断言与截图/日志；若是时间敏感的动画断言，应修正不稳定的等待条件或真实 UI 缺陷，不要通过跳过烟测来制造绿灯。
+
+### 合并与发布
+
+- PR 的验证必须对应当前候选代码；有新的提交就重新运行受影响的检查。
+- 主分支不再对每个提交机械地重跑所有测试，而是根据合并提交的实际文件范围执行相关验证。Pages 相关改动在验证/构建成功后部署同一工作流生成的产物，并执行线上健康、公开页面与匿名授权检查。
+- 纯文档和仅自建 FastAPI 的改动不触发 Cloudflare Pages 发布。`[skip-prod-deploy]` 仍可阻止一次发布；手动 `workflow_dispatch` 默认不部署，只有显式勾选 `deploy_production` 才发布。
+- 如果发布工作流本身发生变化，至少运行隔离 Cloudflare 检查与发布构建；若更改影响应用代码，还要按相应路径运行应用测试。
+- 不用旧 SHA 的绿灯证明新 SHA 已验证；不把构建成功表述为线上行为已经验收。
+
+### 常用命令（按需选择，不要无条件全部执行）
 
 ```bash
-npm --prefix frontend ci
 npm --prefix frontend test
 npm --prefix frontend run build
 npm --prefix frontend run check:bundle
 npx --prefix frontend playwright install --with-deps chromium
 node frontend/tests/audit-browser-smoke.mjs
 node scripts/verify-cloudflare.mjs
-```
-
-CI 当前会执行前端测试、构建、入口预算检查、Chromium 浏览器 smoke 和隔离 Pages 运行时安全检查。涉及主题、路由、导航、动效或响应式布局时，必须特别检查桌面/移动端、控制台错误、失败请求、减少动态效果偏好以及主题切换后的兼容性。
-
-### 自建 FastAPI 后端
-
-```bash
-pip install -r backend/requirements-test.txt
 python -m pytest backend -q
+python frontend/public/learning/two_body_decay.py
 ```
 
-截至 `main` HEAD `7b30644199310c82f769079eb65ada615c0a5c0b`，`.github/workflows/deploy.yml` 已在验证阶段执行 `python -m pytest backend -q --junitxml=backend-test-results.xml`，即完整 FastAPI 后端测试套件。该 main 提交对应的 Actions 运行 [#39605482351](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39605482351) 中，完整后端测试、前端测试、构建、浏览器 smoke、隔离 Pages 安全检查及部署后健康/授权检查均通过。此结论只对应该 SHA；其他 PR 的最新 HEAD 必须单独核对。当前不应重复添加独立后端工作流，除非未来有意将验证流水线拆分并明确依赖关系。
-
-### 特定高风险改动
-
-- 认证/授权：测试未登录、普通成员、管理员、资源所有者和越权访问。
-- 主题/全局布局：浏览器交互回归；不能只依赖 CSS 快照或源代码断言。
-- 文件上传/下载：验证大小限制、MIME/内容校验、权限、失败回退和资源绑定状态。
-- 数据迁移：对空库和已有数据分别测试；提供回滚或向前修复方案。
-- 生产发布：只接受当前提交 SHA 的 CI 与部署/健康检查证据。
+浏览器验收重点包括：主题切换、桌面/移动端布局、导航与关键交互、控制台错误、失败请求以及减少动态效果偏好。安全测试重点包括匿名访问、角色权限、资源所有权和双后端授权一致性。
 
 ## 6. PR 描述必须回答的问题
 
