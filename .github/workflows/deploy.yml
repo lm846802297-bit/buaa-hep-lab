@@ -24,10 +24,83 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.scope.outputs.deploy }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Determine change scope
+        id: scope
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PUSH_BEFORE_SHA: ${{ github.event.before || '' }}
+          TARGET_SHA: ${{ github.sha }}
+          DEPLOY_PRODUCTION: ${{ inputs.deploy_production || false }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$PR_BASE_SHA" ]]; then
+            BASE_SHA="$PR_BASE_SHA"
+          elif [[ -n "$PUSH_BEFORE_SHA" && ! "$PUSH_BEFORE_SHA" =~ ^0+$ ]]; then
+            BASE_SHA="$PUSH_BEFORE_SHA"
+          else
+            BASE_SHA="$(git rev-parse "${TARGET_SHA}^" 2>/dev/null || echo "$TARGET_SHA")"
+          fi
+          if [[ "$BASE_SHA" == "$TARGET_SHA" ]]; then
+            files=""
+          else
+            files="$(git diff --name-only "$BASE_SHA" "$TARGET_SHA")"
+          fi
+          printf 'Changed paths:\n%s\n' "$files"
+          frontend=0; ui=0; backend=0; learning=0; runtime=0; bundle=0; full=0; pages_deploy=0
+          while IFS= read -r file; do
+            [[ -n "$file" ]] || continue
+            case "$file" in frontend/*) frontend=1 ;; esac
+            case "$file" in backend/*) backend=1 ;; esac
+            case "$file" in
+              frontend/src/views/*|frontend/src/components/*|frontend/src/composables/*|frontend/src/App.vue|frontend/src/index.css|frontend/src/router/*|frontend/index.html|frontend/tests/audit-browser-smoke.mjs)
+                case "$file" in *.test.*|*.spec.*) ;; *) ui=1 ;; esac ;;
+            esac
+            case "$file" in
+              frontend/public/learning/*|frontend/src/content/learning.js) learning=1 ;;
+            esac
+            case "$file" in
+              frontend/functions/*|frontend/wrangler.json|frontend/package.json|frontend/package-lock.json|scripts/schema_d1.sql|scripts/verify-cloudflare.mjs|.github/workflows/deploy.yml) runtime=1 ;;
+            esac
+            case "$file" in
+              frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*)
+                case "$file" in *.test.*|*.spec.*) ;; *) bundle=1; pages_deploy=1 ;; esac ;;
+            esac
+            case "$file" in
+              frontend/functions/*|frontend/wrangler.json|frontend/package.json|frontend/package-lock.json|scripts/schema_d1.sql|.github/workflows/deploy.yml) pages_deploy=1 ;;
+            esac
+            case "$file" in
+              backend/auth.py|backend/models.py|backend/database.py|frontend/functions/api/routes/auth.ts|frontend/functions/api/routes/files.ts|frontend/functions/api/routes/notices.ts|scripts/schema_d1.sql|frontend/wrangler.json) full=1 ;;
+            esac
+          done <<< "$files"
+          frontend_tests=$frontend
+          backend_tests=$backend
+          if [[ "$full" == 1 ]]; then
+            frontend_tests=1; backend_tests=1; runtime=1; bundle=1
+          fi
+          deploy=0
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            [[ "$DEPLOY_PRODUCTION" == "true" ]] && deploy=1
+          elif [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/main" && "$pages_deploy" == 1 ]]; then
+            deploy=1
+          fi
+          build=0
+          if [[ "$bundle" == 1 || "$ui" == 1 || "$full" == 1 || "$deploy" == 1 ]]; then build=1; fi
+          need_node=0
+          if [[ "$frontend_tests" == 1 || "$build" == 1 || "$runtime" == 1 || "$bundle" == 1 ]]; then need_node=1; fi
+          need_python=0
+          if [[ "$backend_tests" == 1 || "$learning" == 1 ]]; then need_python=1; fi
+          for key in frontend_tests backend_tests learning runtime bundle ui build deploy need_node need_python; do
+            printf '%s=%s\n' "$key" "${!key}" >> "$GITHUB_OUTPUT"
+          done
       - name: Require a merged PR for main release candidates
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && steps.scope.outputs.deploy == '1'
         uses: actions/github-script@v7
         with:
           script: |
@@ -49,19 +122,25 @@ jobs:
               core.info(`Release candidate authorized by merged PR #${authorized.number}.`);
             }
       - uses: actions/setup-node@v4
+        if: steps.scope.outputs.need_node == '1'
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm --prefix frontend ci
+        if: steps.scope.outputs.need_node == '1'
       - name: Frontend and API security regression tests
+        if: steps.scope.outputs.frontend_tests == '1'
         run: npm --prefix frontend test
       - name: Build frontend for FastAPI SPA-serving tests
+        if: steps.scope.outputs.build == '1'
         run: npm --prefix frontend run build
       - uses: actions/setup-python@v5
+        if: steps.scope.outputs.need_python == '1'
         with:
           python-version: '3.12'
       - name: Complete FastAPI backend regression suite
+        if: steps.scope.outputs.backend_tests == '1'
         env:
           LABHUB_SECRET_KEY: isolated-ci-test-secret-never-for-production-32-plus
           LABHUB_DB_PATH: /tmp/buaa-hep-ci.db
@@ -70,7 +149,7 @@ jobs:
           pip install -r backend/requirements-test.txt
           python -m pytest backend -q --junitxml=backend-test-results.xml
       - name: Upload backend test report
-        if: always()
+        if: always() && steps.scope.outputs.backend_tests == '1'
         uses: actions/upload-artifact@v4
         with:
           name: backend-test-report
@@ -78,16 +157,20 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
       - name: Teaching benchmark consistency checks
+        if: steps.scope.outputs.learning == '1'
         run: python frontend/public/learning/two_body_decay.py
       - name: Initial JavaScript measurements and prerender verification
+        if: steps.scope.outputs.bundle == '1'
         run: npm --prefix frontend run check:bundle
       - name: Install browser for route and layout smoke checks
+        if: steps.scope.outputs.ui == '1'
         timeout-minutes: 5
         run: npx --prefix frontend playwright install --with-deps chromium
       - name: Browser smoke checks
+        if: steps.scope.outputs.ui == '1'
         run: node frontend/tests/audit-browser-smoke.mjs
       - name: Upload Chromium audit evidence
-        if: always()
+        if: always() && steps.scope.outputs.ui == '1'
         uses: actions/upload-artifact@v4
         with:
           name: browser-audit-evidence
@@ -95,8 +178,10 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
       - name: Isolated Pages runtime security smoke checks
+        if: steps.scope.outputs.runtime == '1'
         run: node scripts/verify-cloudflare.mjs
       - uses: actions/upload-artifact@v4
+        if: steps.scope.outputs.build == '1'
         with:
           name: production-build
           path: frontend/dist
@@ -106,7 +191,7 @@ jobs:
     needs: validate
     # A squash merge whose title contains [skip-prod-deploy] still runs main validation,
     # but deliberately skips publication for that one release candidate.
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && ((github.event_name == 'workflow_dispatch' && inputs.deploy_production) || (github.event_name != 'workflow_dispatch' && !contains(github.event.head_commit.message, '[skip-prod-deploy]')))
+    if: github.ref == 'refs/heads/main' && needs.validate.outputs.deploy == '1' && ((github.event_name == 'workflow_dispatch' && inputs.deploy_production) || (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip-prod-deploy]')))
     runs-on: ubuntu-latest
     permissions:
       contents: read
