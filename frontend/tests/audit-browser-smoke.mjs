@@ -37,10 +37,21 @@ try {
   page.on('pageerror', err => errors.push(err.message))
   page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()) })
   page.on('requestfailed', req => failedRequests.push(`${req.url()}: ${req.failure()?.errorText || 'request failed'}`))
-  for (const width of [320, 360, 390, 768, 1024, 1440]) {
-    await page.setViewportSize({ width, height: 900 })
+  for (const width of [320, 360, 390, 768, 1024, 1440, 2048]) {
+    await page.setViewportSize({ width, height: width === 2048 ? 768 : 900 })
     await page.goto(base, { waitUntil: 'networkidle' })
     await page.locator('.app-shell .lab-public').waitFor()
+    if (width === 2048) {
+      const composition = await page.locator('.worldline-home').evaluate(root => {
+        const header = root.querySelector('.worldline-header').getBoundingClientRect()
+        const copy = root.querySelector('.worldline-copy').getBoundingClientRect()
+        const figure = root.querySelector('.worldline-detector-figure').getBoundingClientRect()
+        return { headerLeft: header.left, headerWidth: header.width, copyLeft: copy.left, figureLeft: figure.left, viewportWidth: innerWidth }
+      })
+      check(Math.abs(composition.headerLeft - (2048 - 1216) / 2) < 3 && Math.abs(composition.headerWidth - 1216) < 3, '2048px reference layout centers the 1216px header')
+      check(Math.abs(composition.copyLeft - ((2048 - 1216) / 2 + 96)) < 3, '2048px reference layout aligns the hero title 96px inside the header grid')
+      check(Math.abs(composition.figureLeft - 2048 * .34) < 4, '2048px reference layout starts the detector image at the right-hand 34% boundary')
+    }
     if (width === 1440) {
       const detectorPhoto = page.locator('.worldline-detector-photo, .detector-photo')
       await page.waitForFunction(() => {
@@ -69,7 +80,7 @@ try {
     }
     check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `public page fits ${width}px viewport`)
     await page.screenshot({ path: resolve(output, `public-${width}.png`), fullPage: true })
-    if (width === 390 || width === 1440) await page.screenshot({ path: resolve(output, `public-${width}-first-screen.png`) })
+    if (width === 390 || width === 1440 || width === 2048) await page.screenshot({ path: resolve(output, `public-${width}-first-screen.png`) })
     await page.locator('#about').screenshot({ path: resolve(output, `about-${width}.png`) })
     await page.locator('#research').screenshot({ path: resolve(output, `research-${width}.png`) })
     await page.locator('#physics-resources').screenshot({ path: resolve(output, `physics-resources-${width}.png`) })
