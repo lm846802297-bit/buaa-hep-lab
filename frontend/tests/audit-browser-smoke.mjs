@@ -682,6 +682,9 @@ try {
   const styleErrors = []
   stylePage.on('pageerror', e => styleErrors.push(e.message))
   await stylePage.goto(base + '/style', { waitUntil: 'networkidle' })
+  // Keep timed Worldline transitions in a foreground tab so Chromium does not throttle cleanup timers.
+  await stylePage.bringToFront()
+  await stylePage.waitForFunction(() => document.visibilityState === 'visible')
   await stylePage.locator('#section-color .theme-card').first().waitFor()
 
   // Playwright starts the pointer at (0, 0), over the fixed rail. Move away and let its leave debounce settle before asserting the default collapsed state.
