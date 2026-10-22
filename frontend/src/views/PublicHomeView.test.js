@@ -11,7 +11,23 @@ describe('Public academic website', () => {
     const html = await renderToString(app)
     expect(html).toContain('高能粒子物理唯象学')
     expect(html).toContain('暂定名称')
+    // Keep exactly one collaboration entry in the header navigation,
+    // styled prominently rather than duplicated as a second CTA.
+    expect(html.match(/class="nav-hub"/g)).toHaveLength(1)
     expect(html).toContain('href="/hub"')
+    expect(html).not.toContain('header-hub-cta')
+    expect(html).toContain('组内协作')
+    // The reference composition is implemented as a responsive blueprint hero,
+    // while all existing public content sections remain on the page.
+    expect(html).toContain('class="hero-blueprint-decor"')
+    expect(html).toContain('class="hero-title"')
+    expect(html).toContain('Particle Physics')
+    expect(html).toContain('class="detector-photo"')
+    expect(html).toContain('https://upload.wikimedia.org/wikipedia/commons/f/f3/CMS_detector_%282%29.jpg')
+    expect(html).toContain('photo by zipckr (Flickr)')
+    expect(html).toContain('https://creativecommons.org/licenses/by/2.0/')
+    expect(html).toContain('cropped; scientific overlays added')
+    expect(html).toContain('并非该照片对应的真实碰撞事件数据')
     expect(html).toContain('aria-label="切换官网风格"')
     expect(html).toContain('BibTeX')
     expect(html).toContain('aria-label="导师：王小平"')

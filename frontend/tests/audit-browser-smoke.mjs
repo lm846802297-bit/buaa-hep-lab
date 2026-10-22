@@ -41,6 +41,18 @@ try {
     await page.setViewportSize({ width, height: 900 })
     await page.goto(base, { waitUntil: 'networkidle' })
     await page.locator('.app-shell .lab-public').waitFor()
+    if (width === 1440) {
+      const detectorPhoto = page.locator('.detector-photo')
+      await page.waitForFunction(() => {
+        const image = document.querySelector('.detector-photo')
+        return Boolean(image && image.complete && image.naturalWidth > 0)
+      }, null, { timeout: 10000 })
+      check(await detectorPhoto.evaluate(image => image.naturalWidth > 0), 'homepage hero uses a loaded real CMS detector photograph')
+      check(await page.locator('.public-header .nav-hub').count() === 1, 'homepage header has exactly one collaboration entry')
+      check(await page.locator('.public-header .header-hub-cta').count() === 0, 'homepage header does not duplicate the collaboration entry')
+      check(await page.getByRole('link', { name: /CMS detector · photo by zipckr \(Flickr\)/ }).count() === 1, 'hero detector photograph displays photographer attribution')
+      check(await page.getByRole('link', { name: 'CC BY 2.0' }).count() === 1, 'hero detector photograph links to its Creative Commons license')
+    }
     await page.locator('h1').click()
     check(await page.getByRole('button', { name: '切换官网风格' }).isVisible(), `public skin icon is visible at ${width}px`)
     const tocLinks = page.locator('#public-section-nav-links')
@@ -121,6 +133,18 @@ try {
     }
     window.addEventListener('worldline:phase', window.__worldlinePhaseListener)
   })
+  // Make the transition deterministic even when the browser profile already
+  // remembers Worldline Console from a previous run.
+  await page.locator('.worldline-particle-canvas').waitFor({ state: 'attached', timeout: 10000 })
+  if (await publicSkin.inputValue() === 'worldline-console') {
+    await publicSkin.selectOption('quiet-research')
+    await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
+    await page.evaluate(() => {
+      window.__worldlineReadoutSnapshot = null
+      window.__worldlineDecaySnapshot = null
+      window.__worldlinePhaseLog = []
+    })
+  }
   await publicSkin.selectOption('worldline-console')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
   check(await page.evaluate(() => localStorage.getItem('labhub_public_color_scheme') === 'worldline-console' && localStorage.getItem('laborbit_color_scheme') !== 'worldline-console'), 'public theme persists separately from workspace preferences')
