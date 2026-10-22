@@ -8,11 +8,45 @@ const { publicColorScheme } = useThemeStyle()
 const menuOpen = ref(false)
 const HERO_VISUAL_MODE_KEY = 'labhub_public_hero_visual_mode'
 const heroVisualModes = [
-  { id: 'blueprint', label: '蓝图叠加' },
-  { id: 'photo', label: '实景照片' },
-  { id: 'terminal', label: '世界线终端' }
+  {
+    id: 'blueprint',
+    label: '蓝图叠加',
+    src: 'https://upload.wikimedia.org/wikipedia/commons/f/f3/CMS_detector_%282%29.jpg',
+    alt: 'CERN 地下实验区内的 CMS 紧凑型缪子线圈粒子探测器实景照片。',
+    photoPage: 'https://commons.wikimedia.org/wiki/File:CMS_detector_(2).jpg',
+    photoCredit: 'CMS detector · photo by zipckr (Flickr)',
+    licenseLabel: 'CC BY 2.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+    photoNote: 'cropped; scientific overlays added',
+    caption: '理论 · 模型 · 信号'
+  },
+  {
+    id: 'photo',
+    label: 'ATLAS 实景',
+    src: 'https://commons.wikimedia.org/wiki/Special:FilePath/CERN_ATLAS_Detector.jpg?width=1600',
+    alt: 'CERN 大型强子对撞机 ATLAS 粒子探测器的全景实景照片。',
+    photoPage: 'https://commons.wikimedia.org/wiki/File:CERN_ATLAS_Detector.jpg',
+    photoCredit: 'ATLAS detector · photo by SimonWaldherr',
+    licenseLabel: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    photoNote: 'image cropped to fit the hero',
+    caption: 'ATLAS · CERN · LHC'
+  },
+  {
+    id: 'terminal',
+    label: '碰撞事件',
+    src: 'https://commons.wikimedia.org/wiki/Special:FilePath/Event_display_of_a_4-muon_candidate_in_the_ATLAS_detector.png?width=1440',
+    alt: 'ATLAS Collaboration 发布的四缪子候选事例真实重建事件显示图。',
+    photoPage: 'https://commons.wikimedia.org/wiki/File:Event_display_of_a_4-muon_candidate_in_the_ATLAS_detector.png',
+    photoCredit: 'ATLAS Collaboration · 4-muon event display',
+    licenseLabel: 'CC BY-SA 3.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
+    photoNote: 'real event display; no additional tracks added',
+    caption: 'EVENT DISPLAY · 4 MUONS'
+  }
 ]
 const heroVisualMode = ref('blueprint')
+const activeHeroVisual = computed(() => heroVisualModes.find(mode => mode.id === heroVisualMode.value) || heroVisualModes[0])
 watch(heroVisualMode, mode => {
   try { localStorage.setItem(HERO_VISUAL_MODE_KEY, mode) } catch {}
 })
@@ -123,14 +157,17 @@ function downloadBibtex() {
             @click="heroVisualMode = mode.id"
           >{{ mode.label }}</button>
         </div>
-        <img
-          class="detector-photo"
-          src="https://upload.wikimedia.org/wikipedia/commons/f/f3/CMS_detector_%282%29.jpg"
-          alt="CERN 地下实验区内的 CMS 紧凑型缪子线圈粒子探测器实景照片。"
-          loading="eager"
-          fetchpriority="high"
-          decoding="async"
-        >
+        <Transition name="hero-image" mode="out-in">
+          <img
+            :key="activeHeroVisual.id"
+            class="detector-photo"
+            :src="activeHeroVisual.src"
+            :alt="activeHeroVisual.alt"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          >
+        </Transition>
         <svg viewBox="0 0 600 600" role="img" aria-labelledby="collision-title collision-description">
           <title id="collision-title">叠加在 CMS 探测器照片上的粒子径迹示意</title>
           <desc id="collision-description">圆形几何环与向外延伸的粒子径迹是叠加在真实 CMS 探测器照片上的装饰性视觉元素，并非该照片对应的真实碰撞事件数据。</desc>
@@ -162,9 +199,9 @@ function downloadBibtex() {
           <g class="collision-annotations" fill="currentColor"><text x="438" y="94">μ⁺</text><text x="478" y="418">χ</text><text x="105" y="464">μ⁻</text><text x="340" y="284">p → ← p</text><text x="318" y="582">EVENT DISPLAY / CONCEPTUAL</text></g>
         </svg>
         <figcaption>
-          <a href="https://commons.wikimedia.org/wiki/File:CMS_detector_(2).jpg" target="_blank" rel="noopener noreferrer">CMS detector · photo by zipckr (Flickr)</a>
-          <span><a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</a> · cropped; scientific overlays added</span>
-          <span>理论 · 模型 · 信号</span>
+          <a :href="activeHeroVisual.photoPage" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.photoCredit }}</a>
+          <span><a :href="activeHeroVisual.licenseUrl" target="_blank" rel="noopener noreferrer">{{ activeHeroVisual.licenseLabel }}</a> · {{ activeHeroVisual.photoNote }}</span>
+          <span>{{ activeHeroVisual.caption }}</span>
         </figcaption>
       </figure>
     </section>
@@ -960,7 +997,10 @@ h1.hero-title span { color:var(--accent); }
   z-index: 2; border-radius: inherit;
   background: linear-gradient(135deg, rgb(4 15 29 / 74%), rgb(7 33 54 / 24%) 55%, rgb(4 15 29 / 64%));
 }
-.lab-public.hero-visual-terminal .collision-figure > svg { z-index: 3; opacity: .98; }
+/* The terminal mode uses a real ATLAS event display. Do not draw decorative
+   synthetic tracks over scientific event data. */
+.lab-public.hero-visual-terminal .collision-figure > svg { z-index: 3; opacity: 0; }
+.lab-public.hero-visual-terminal .detector-photo { mix-blend-mode: normal; filter: contrast(1.04) saturate(1.08); mask-image: none; }
 .lab-public.hero-visual-terminal .detector-rings { stroke: #86d8e8; stroke-opacity: .58; }
 .lab-public.hero-visual-terminal .detector-segments { stroke: #6cbdd7; opacity: .85; }
 .lab-public.hero-visual-terminal .collision-tracks { stroke: #9cecff; filter: drop-shadow(0 0 3px rgb(86 218 255 / 55%)); }
@@ -972,6 +1012,11 @@ h1.hero-title span { color:var(--accent); }
   color: #e2f6ff; text-shadow: none;
 }
 .lab-public.hero-visual-terminal .collision-figure figcaption a { color: #a6e7f7; }
+.hero-image-enter-active, .hero-image-leave-active { transition: opacity .22s ease; }
+.hero-image-enter-from, .hero-image-leave-to { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-image-enter-active, .hero-image-leave-active { transition: none; }
+}
 @media (max-width: 760px) {
   .hero-visual-controls { top: 10px; right: 10px; gap: 2px; padding: 4px; }
   .hero-visual-controls button { min-height: 28px; padding: 5px 7px; font-size: 9px; }
