@@ -915,7 +915,8 @@ h1.hero-title span { color:var(--accent); }
   pointer-events: none;
 }
 .lab-public.worldline-theme.hero-visual-blueprint .hero-visual-controls {
-  top: 20px;
+  /* Keep the mode selector below the decorative equation in the hero. */
+  top: 64px;
   right: 22px;
 }
 .lab-public.worldline-theme.hero-visual-blueprint .collision-figure figcaption {
@@ -945,6 +946,9 @@ h1.hero-title span { color:var(--accent); }
   }
   .lab-public.worldline-theme.hero-visual-blueprint .collision-figure {
     width: 68%;
+  }
+  .lab-public.worldline-theme.hero-visual-blueprint .hero-visual-controls {
+    top: 56px;
   }
 }
 @media (max-width: 650px) {
