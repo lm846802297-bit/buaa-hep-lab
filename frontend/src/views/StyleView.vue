@@ -1468,7 +1468,7 @@ onMounted(() => {
 }
 
 .anchor-pill.highlight-glass {
-  border-color: rgba(184, 155, 248, 0.4);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
   color: var(--accent);
   background: var(--glass);
 }
