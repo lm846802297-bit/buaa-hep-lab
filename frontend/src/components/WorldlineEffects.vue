@@ -687,8 +687,12 @@ onBeforeUnmount(() => {
     <div class="worldline-shift-overlay__glitch worldline-shift-overlay__glitch--a"></div>
     <div class="worldline-shift-overlay__glitch worldline-shift-overlay__glitch--b"></div>
     <div class="worldline-shift-overlay__glitch worldline-shift-overlay__glitch--c"></div>
-    <div v-if="showShiftHud" class="worldline-shift-overlay__hud" aria-hidden="true">
+    <!-- Text HUD is reserved for route transitions; theme switches pass showHud: false. -->
+    <div v-if="showShiftHud" class="worldline-shift-overlay__hud">
+      <span>WORLDLINE SHIFT / FIELD RECONFIGURATION</span>
+      <strong>世界线变动</strong>
       <div class="worldline-shift-overlay__meter"><span></span></div>
+      <small>OBSERVATION STATE RECONFIGURED · VISUAL EVENT</small>
     </div>
   </div>
 </template>
