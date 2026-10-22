@@ -39,7 +39,8 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
         <span class="worldline-equation equation-top">ℒ = −¼ FμνFμν + ψ̄ iγμDμψ + ⋯</span>
         <span class="worldline-equation equation-side">MATTER<br>ENERGY<br>SPACE<br>TIME<br>BEYOND</span>
         <span class="worldline-equation equation-bottom">E² = p²c² + m²c⁴</span>
-        <span class="worldline-coordinate coordinate-left">QUARKS · LEPTONS · GAUGE BOSONS · HIGGS</span>
+        <span class="worldline-coordinate coordinate-left">QUARKS · LEPTONS</span>
+        <span class="worldline-coordinate coordinate-affiliation">GAUGE BOSONS · HIGGS · BEIHANG UNIVERSITY · HIGH-ENERGY PHYSICS</span>
         <span class="worldline-coordinate coordinate-right">COLLISIONS / DETECTORS / DATA / DISCOVERY</span>
       </div>
 
@@ -52,7 +53,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
           <a href="#about" class="worldline-secondary-action">关于课题组 <span aria-hidden="true">→</span></a>
           <a href="#research-guides" class="worldline-text-action">专题导读 <span aria-hidden="true">↓</span></a>
         </div>
-        <div class="worldline-bottom-route"><span>PEOPLE</span><i aria-hidden="true"></i><span>IDEAS</span><i aria-hidden="true"></i><span>A MORE COMPLETE UNIVERSE.</span></div>
+        
       </div>
 
       <figure class="worldline-detector-figure">
@@ -70,6 +71,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
           <span class="worldline-sr-only">conceptual particle tracks are illustrative only and do not represent the actual collision event shown in this detector photograph. 蓝图中的粒子轨迹为概念示意，并非该照片对应的真实碰撞事件数据。</span>
         </figcaption>
       </figure>
+      <div class="worldline-affiliation">北航粒子物理研究组 / 暂定名称</div>
     </section>
   </div>
 </template>
@@ -116,24 +118,24 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 .worldline-equation { position: absolute; color: rgba(41,65,93,.62); font-family: var(--serif, Georgia, serif); font-style: italic; }
 .equation-top { top: 3%; right: 3%; font-size: clamp(15px, 1.35vw, 24px); }
 .equation-side { top: 16%; right: 1.5%; font: 500 10px/1.8 var(--font, Arial, sans-serif); letter-spacing: .2em; }
-.equation-bottom { bottom: 17%; left: 8%; font-size: clamp(20px, 1.9vw, 32px); }
+.equation-bottom { bottom: 21%; left: 8%; font-size: clamp(20px, 1.9vw, 32px); }
 .worldline-coordinate { position: absolute; color: rgba(41,65,93,.66); font: 500 9px/1.8 var(--font, Arial, sans-serif); letter-spacing: .17em; }
-.coordinate-left { bottom: 10%; left: 26%; }
+.coordinate-left { bottom: 17%; left: 21%; }
+.coordinate-affiliation { bottom: 14.5%; left: 21%; }
+.worldline-affiliation { position: absolute; z-index: 3; left: clamp(24px, calc(50vw - 512px), 640px); bottom: clamp(48px, 12vh, 92px); color: #52606d; font: 500 10px/1.5 var(--font, Arial, sans-serif); letter-spacing: .06em; }
 .coordinate-right { right: 2%; bottom: 10%; writing-mode: vertical-rl; }
 .worldline-copy { position: relative; z-index: 3; width: min(600px, 100%); padding-block: 12px 26px; }
-.worldline-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; color: var(--wl-muted); font-size: 10px; letter-spacing: .2em; }
+.worldline-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; color: var(--wl-muted); font-size: 10px; letter-spacing: .2em; }
 .worldline-eyebrow span { width: 24px; height: 1px; background: #527a82; }
 .worldline-copy h1 { max-width: 600px; margin: 0; color: #141a21; font: 400 clamp(52px, 4.2vw, 88px)/.98 var(--serif, Georgia, 'Times New Roman', serif); letter-spacing: -.055em; }
 .worldline-copy h1 span { color: #1d3046; }
-.worldline-intro { max-width: 530px; margin: 24px 0 0; color: #485463; font: 400 clamp(14px, 1vw, 17px)/1.75 var(--serif, Georgia, serif); }
+.worldline-intro { max-width: 430px; margin: 24px 0 0; color: #485463; font: 400 clamp(14px, 1vw, 17px)/1.75 var(--serif, Georgia, serif); }
 .worldline-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 26px; }
-.worldline-actions a { display: inline-flex; align-items: center; justify-content: space-between; gap: 22px; min-height: 46px; padding: 12px 16px; border: 1px solid var(--wl-line); color: var(--wl-ink); font-size: 13px; text-decoration: none; transition: transform .18s ease, background-color .18s ease; }
+.worldline-actions a { display: inline-flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 46px; padding: 12px 14px; border: 1px solid var(--wl-line); color: var(--wl-ink); font-size: 13px; text-decoration: none; transition: transform .18s ease, background-color .18s ease; }
 .worldline-actions a:hover { transform: translateY(-2px); }
 .worldline-actions .worldline-primary-action { background: #202d3d; color: #fffdf7; border-color: #202d3d; }
 .worldline-actions .worldline-secondary-action { background: rgba(255,255,255,.58); }
 .worldline-actions .worldline-text-action { border-color: transparent; border-bottom-color: var(--wl-line); background: transparent; }
-.worldline-bottom-route { display: flex; align-items: center; gap: 12px; max-width: 660px; margin-top: clamp(48px, 8vh, 90px); color: #4f5d6a; font-size: 9px; font-weight: 600; letter-spacing: .2em; }
-.worldline-bottom-route i { display: block; width: clamp(28px, 7vw, 100px); height: 1px; background: var(--wl-line); }
 .worldline-detector-figure { position: absolute; z-index: 1; top: 0; right: 0; bottom: 0; width: 66%; margin: 0; overflow: hidden; background: #d9dfe0; }
 .worldline-detector-figure::before { position: absolute; z-index: 2; inset: 0; background: linear-gradient(90deg, var(--wl-paper) 0%, rgba(244,241,233,.84) 8%, rgba(244,241,233,.25) 29%, transparent 50%), linear-gradient(0deg, rgba(244,241,233,.14), transparent 35%); content: ''; pointer-events: none; }
 .worldline-detector-photo { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: saturate(.78) contrast(.96); transition: filter .25s ease, opacity .22s ease; }
@@ -182,8 +184,6 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   .worldline-intro { max-width: 92%; margin-top: 20px; font-size: 14px; }
   .worldline-actions { max-width: 440px; margin-top: 22px; gap: 8px; }
   .worldline-actions a { min-height: 42px; padding: 10px 11px; gap: 12px; font-size: 12px; }
-  .worldline-bottom-route { position: absolute; z-index: 4; right: 22px; bottom: 18px; left: 22px; justify-content: space-between; margin: 0; font-size: 8px; letter-spacing: .12em; }
-  .worldline-bottom-route i { flex: 1; max-width: 34px; }
   .worldline-detector-figure { position: relative; top: auto; right: auto; bottom: auto; width: calc(100% + 44px); height: 360px; margin: 20px -22px 0; }
   .worldline-detector-figure::before { background: linear-gradient(180deg, var(--wl-paper) 0%, rgba(244,241,233,.9) 7%, rgba(244,241,233,.18) 28%, transparent 48%), linear-gradient(0deg, rgba(244,241,233,.12), transparent 24%); }
   .worldline-visual-controls { top: 14px; right: 12px; left: 12px; justify-content: center; gap: 2px; padding: 3px; }
@@ -195,6 +195,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   .worldline-detector-plan { top: 14%; left: 32%; width: 78vw; }
   .worldline-map { bottom: 2%; left: -10%; width: 90vw; }
   .worldline-coordinate.coordinate-left { bottom: 8%; left: 8%; font-size: 7px; }
+  .worldline-coordinate.coordinate-affiliation, .worldline-affiliation { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .worldline-navigation a::after, .worldline-actions a, .worldline-detector-photo, .worldline-image-enter-active, .worldline-image-leave-active { transition: none; }
