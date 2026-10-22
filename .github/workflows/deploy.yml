@@ -84,8 +84,8 @@ jobs:
                 case "$file" in *.test.*|*.spec.*) ;; *) build=1 ;; esac ;;
             esac
             case "$file" in
-              frontend/functions/*|frontend/wrangler.json|scripts/schema_d1.sql|.github/workflows/deploy.yml)
-                pages_deploy=1 ;;
+              frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*|frontend/functions/*|frontend/wrangler.json|scripts/schema_d1.sql|.github/workflows/deploy.yml)
+                case "$file" in *.test.*|*.spec.*) ;; *) pages_deploy=1 ;; esac ;;
             esac
             case "$file" in
               frontend/src/App.vue|frontend/src/index.css|frontend/src/router/*|frontend/index.html|frontend/src/composables/useThemeStyle.js|frontend/src/views/StyleView.vue|frontend/src/views/PublicHomeView.vue|frontend/src/views/ResearchTopicView.vue|frontend/src/components/PublicThemeSwitcher.vue|frontend/src/components/WorldlineEffects.vue|frontend/src/components/ForecastAtmosphere.vue|frontend/tests/audit-browser-smoke.mjs)
@@ -195,7 +195,6 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const sha = context.sha;
-            const { data: pullRequests } = await github.rest.pulls.list();
             const { data: associated } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
               owner, repo, commit_sha: sha,
             });
