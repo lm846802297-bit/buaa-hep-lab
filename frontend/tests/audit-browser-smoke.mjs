@@ -95,6 +95,49 @@ try {
   check(await publicSkin.locator('option').count() === 5, 'public skin selector exposes all five appearance themes')
   await page.keyboard.press('Escape')
   check(await publicSkin.count() === 0, 'Escape closes the public theme popover')
+
+  // Regression guard: the Worldline blueprint is one public skin, not a global
+  // override. Each other saved palette must remain visibly distinct and remove
+  // the Worldline-only layout class.
+  const themeAccents = {}
+  for (const [scheme, expectedAccent] of [
+    ['quiet-research', '#b85e3f'],
+    ['classic-cyan', '#c5e6df'],
+    ['obsidian-gray', '#94a3b8'],
+    ['nebula-purple', '#b89bf8'],
+    ['worldline-console', '#263f5a']
+  ]) {
+    if (await publicSkin.count() === 0) await publicSkinTrigger.click()
+    await publicSkin.selectOption(scheme)
+    await page.waitForFunction(id => {
+      const root = document.querySelector('.lab-public')
+      return document.documentElement.getAttribute('data-color-scheme') === id
+        && root?.classList.contains('worldline-theme') === (id === 'worldline-console')
+    }, scheme)
+    const visual = await page.locator('.lab-public').evaluate(el => ({
+      accent: getComputedStyle(el).getPropertyValue('--accent').trim().toLowerCase(),
+      worldline: el.classList.contains('worldline-theme')
+    }))
+    themeAccents[scheme] = visual.accent
+    check(visual.worldline === (scheme === 'worldline-console'), scheme + ' activates only its own homepage layout')
+    check(visual.accent === expectedAccent, scheme + ' keeps its own accent palette: ' + visual.accent)
+  }
+  check(new Set(Object.values(themeAccents)).size === 5, 'all five public themes retain distinct computed accents')
+
+  const heroModeGroup = page.getByRole('group', { name: '首页右侧主视觉模式' })
+  check(await heroModeGroup.getByRole('button').count() === 3, 'homepage hero exposes three adjustable visual modes')
+  for (const [label, className, storedMode] of [
+    ['蓝图叠加', '', 'blueprint'],
+    ['实景照片', 'hero-visual-photo', 'photo'],
+    ['世界线终端', 'hero-visual-terminal', 'terminal']
+  ]) {
+    await heroModeGroup.getByRole('button', { name: label, exact: true }).click()
+    await page.waitForFunction(name => document.querySelector('.lab-public')?.classList.contains(name) === (name !== ''), className)
+    check(await heroModeGroup.getByRole('button', { name: label, exact: true }).getAttribute('aria-pressed') === 'true', label + ' mode reports the selected state')
+    check(await page.evaluate(() => localStorage.getItem('labhub_public_hero_visual_mode')) === storedMode, label + ' mode persists independently')
+  }
+  await heroModeGroup.getByRole('button', { name: '蓝图叠加', exact: true }).click()
+  await page.waitForFunction(() => !document.querySelector('.lab-public')?.classList.contains('hero-visual-photo') && !document.querySelector('.lab-public')?.classList.contains('hero-visual-terminal'))
   await publicSkinTrigger.click()
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
   await page.evaluate(() => {
@@ -144,6 +187,7 @@ try {
       window.__worldlineDecaySnapshot = null
       window.__worldlinePhaseLog = []
     })
+    await publicSkinTrigger.click()
   }
   await publicSkin.selectOption('worldline-console')
   check(await page.locator('html').getAttribute('data-color-scheme') === 'worldline-console', 'public selector activates the worldline console palette')
