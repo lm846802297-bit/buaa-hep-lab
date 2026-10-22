@@ -425,6 +425,19 @@ h1.hero-title span { color:var(--accent); }
    navigation and content, but bring the entire public page into the reference's
    warm paper / engineering-blueprint visual language. */
 .lab-public {
+  /* Match the reference image's cool ink-and-navy palette rather than the
+     default rust accent; preserve the theme switcher's behavior elsewhere. */
+  --accent: #263f5a;
+  --accent-ink: #f8f6ef;
+  --text: #202a36;
+  --muted: #657483;
+  --soft: #526170;
+  --line: #c8cdd1;
+  --bg: #f6f4ee;
+  --surface: #fbfaf6;
+  --raised: #e7e9e9;
+  --panel: #f7f5ef;
+  --panel-solid: #f7f5ef;
   --atelier-paper: color-mix(in srgb, var(--bg) 91%, #f3efe4);
   background-color: var(--atelier-paper);
   background-image:
@@ -695,7 +708,7 @@ h2, .section-top h2, .about-section h2, .collaboration-section h2 {
   }
   .detector-photo { mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 100%); object-position: 50% 50%; }
   .collision-figure > svg { opacity: .58; }
-  .collision-figure figcaption { left: 18px; right: 18px; bottom: 14px; display: grid; gap: 5px; font-size: 8px; }
+  .collision-figure figcaption { left: 18px; right: 18px; bottom: 68px; display: grid; gap: 5px; font-size: 8px; }
   .blueprint-gear-large { left: -180px; top: -50px; }
   .blueprint-gear-small { left: auto; right: -70px; bottom: 22%; }
   .equation-top { right: 16px; top: 16px; font-size: 13px; }
