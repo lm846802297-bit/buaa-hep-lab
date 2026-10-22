@@ -420,4 +420,301 @@ h1.hero-title span { color:var(--accent); }
 @media(min-width:1600px) { .public-hero { min-height:760px; } }
 @media(max-width:1000px) { .research-guide-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .public-header,.public-hero,.public-section,.public-footer,.research-strip { width:calc(100% - 56px); }.public-hero { min-height:620px; }nav { gap:20px; }.research-layout { gap:28px; }.about-section,.collaboration-section { gap:40px; }.public-hero h1 { font-size:44px; } }
 @media(max-width:700px) { .research-guide-grid { grid-template-columns:1fr; } .research-guide-card { padding:22px; } .topic-guide-entry { padding:16px; } .public-header,.public-hero,.public-section,.public-footer,.research-strip { width:calc(100% - 36px); }.public-header { min-height:84px; flex-wrap:wrap; gap:10px; }.public-brand strong { font-size:16px; }.public-brand small { font-size:10px; }.brand-mark { width:34px; height:34px; }.menu-toggle { display:flex; font-size:12px; min-height:40px; padding:8px 12px; }nav { display:none; width:100%; padding-bottom:20px; flex-wrap:wrap; gap:12px 22px; }nav.open { display:flex; }.public-header .nav-hub { border-left:1px solid var(--line); padding-left:15px; }.public-hero { grid-template-columns:1fr; padding-top:48px; gap:16px; min-height:0; }.public-hero h1 { font-size:clamp(33px,8vw,48px); }.hero-eyebrow { font-size:9px; letter-spacing:.08em; }.hero-actions { gap:4px; margin:28px 0 32px; }.hero-actions a { gap:12px; padding-inline:14px; font-size:12px; }.hero-intro { font-size:14px; }.collision-figure { width:min(100%,430px); margin-inline:auto; }.research-strip { flex-wrap:wrap; justify-content:flex-start; gap:14px 20px; font-size:10px; padding:20px 0; }.public-section { padding:56px 0; }.section-top { align-items:flex-start; flex-direction:column; gap:16px; }.section-top h2 { font-size:27px; }.section-top>p br { display:none; }.research-layout,.about-section,.collaboration-section { grid-template-columns:1fr; gap:28px; }.research-tabs strong { font-size:18px; }.research-tabs button { padding:22px 0; }.research-detail { padding:28px 24px; }.research-detail h3 { font-size:22px; }.research-detail p { font-size:14px; }.publication-controls { flex-direction:column; align-items:stretch; }.paper-search input { width:100%; box-sizing:border-box; }.segmented { align-self:flex-start; }.segmented button { padding:8px 12px; }.public-paper { grid-template-columns:50px 1fr; gap:16px; }.paper-year { font-size:22px; }.paper-content h3 { font-size:17px; }.paper-link { grid-column:2; padding:4px 0; }.public-footer { flex-wrap:wrap; gap:20px; }.public-footer>span:nth-child(2) { order:3; flex-basis:100%; }.collaboration-section h2 { font-size:26px; } }
+
+/* High-fidelity Scientific Atelier pass: keep the existing application routes,
+   navigation and content, but bring the entire public page into the reference's
+   warm paper / engineering-blueprint visual language. */
+.lab-public {
+  --atelier-paper: color-mix(in srgb, var(--bg) 91%, #f3efe4);
+  background-color: var(--atelier-paper);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--muted) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--muted) 6%, transparent) 1px, transparent 1px),
+    radial-gradient(ellipse at 12% 9%, color-mix(in srgb, #d2c7b1 17%, transparent), transparent 32%),
+    radial-gradient(ellipse at 87% 18%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 38%);
+  background-size: 12px 12px, 12px 12px, auto, auto;
+}
+.public-header {
+  width: min(100% - 64px, 1512px);
+  min-height: 76px;
+  border-bottom-color: color-mix(in srgb, var(--text) 25%, transparent);
+  background: color-mix(in srgb, var(--atelier-paper) 88%, transparent);
+  backdrop-filter: blur(8px);
+}
+.public-brand strong { font-family: var(--serif, Georgia, serif); letter-spacing: -.025em; font-size: 18px; }
+.public-brand small { letter-spacing: .035em; }
+.public-header nav { gap: clamp(12px, 1.8vw, 28px); }
+.public-header nav > a:not(.nav-hub) { font-family: var(--serif, Georgia, serif); font-size: 14px; color: var(--text); }
+.public-header nav > a:not(.nav-hub):hover { text-decoration: underline; text-underline-offset: 7px; }
+.public-header .nav-hub {
+  border-radius: 3px;
+  min-height: 42px;
+  padding-inline: 18px;
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--text) 14%, transparent);
+  font-family: var(--serif, Georgia, serif);
+}
+.public-hero {
+  width: 100%;
+  max-width: none;
+  min-height: min(820px, calc(100svh - 76px));
+  box-sizing: border-box;
+  grid-template-columns: minmax(0, 1.04fr) minmax(0, .96fr);
+  gap: 0;
+  padding: clamp(54px, 7vh, 92px) max(32px, calc((100vw - 1280px) / 2)) clamp(52px, 6vh, 78px);
+  align-items: center;
+  overflow: hidden;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+}
+.public-hero::before {
+  z-index: -3;
+  opacity: .76;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--muted) 10%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--muted) 10%, transparent) 1px, transparent 1px),
+    radial-gradient(ellipse at 72% 46%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 55%);
+  background-size: 6px 6px, 6px 6px, auto;
+  mask-image: linear-gradient(to bottom, #000 0%, #000 86%, transparent 100%);
+}
+.public-hero::after {
+  z-index: -2;
+  left: -3vw;
+  width: 49vw;
+  opacity: .42;
+  background:
+    radial-gradient(circle at 32% 20%, transparent 0 75px, color-mix(in srgb, var(--muted) 70%, transparent) 76px 77px, transparent 78px),
+    radial-gradient(circle at 32% 20%, transparent 0 105px, color-mix(in srgb, var(--muted) 55%, transparent) 106px 107px, transparent 108px),
+    radial-gradient(circle at 75% 83%, transparent 0 54px, color-mix(in srgb, var(--muted) 65%, transparent) 55px 56px, transparent 57px),
+    radial-gradient(circle at 75% 83%, transparent 0 75px, color-mix(in srgb, var(--muted) 45%, transparent) 76px 77px, transparent 78px);
+}
+.hero-blueprint-decor { z-index: 1; overflow: visible; }
+.blueprint-gear-large { width: clamp(250px, 28vw, 430px); left: -150px; top: -55px; opacity: .32; }
+.blueprint-gear-small { width: clamp(180px, 19vw, 290px); left: 40%; bottom: -110px; opacity: .3; }
+.blueprint-equation { text-shadow: 0 1px 0 var(--atelier-paper); }
+.equation-top { top: 30px; right: 3%; font-size: clamp(15px, 1.65vw, 25px); }
+.equation-bottom { bottom: 14%; left: 8%; font-size: clamp(19px, 2.1vw, 31px); }
+.coordinate-left { left: max(22px, calc((100vw - 1280px) / 2 - 105px)); bottom: 15%; max-width: 125px; }
+.coordinate-right { right: 2%; bottom: 11%; max-width: 110px; }
+.hero-copy { position: relative; z-index: 3; max-width: 690px; padding-right: clamp(16px, 3vw, 44px); }
+.hero-eyebrow { color: var(--text); font-size: 10px; letter-spacing: .24em; margin-bottom: 28px; }
+.status-dot { border-radius: 0; width: 32px; height: 1px; box-shadow: none; }
+.eyebrow-rule { display: none; }
+h1.hero-title {
+  font-size: clamp(54px, 6.1vw, 98px);
+  line-height: .94;
+  letter-spacing: -.065em;
+  margin-bottom: 26px;
+  color: color-mix(in srgb, var(--text) 94%, #101010);
+  text-wrap: balance;
+}
+h1.hero-title span { color: var(--accent); }
+.hero-intro { max-width: 500px; font-family: var(--serif, Georgia, serif); font-size: clamp(15px, 1.12vw, 18px); line-height: 1.65; color: var(--text); }
+.hero-actions { gap: 12px; margin: 26px 0 42px; }
+.hero-actions a { border-radius: 2px; min-height: 50px; padding-inline: 20px; font-family: var(--serif, Georgia, serif); font-size: 14px; }
+.hero-actions .button.primary { box-shadow: 0 4px 0 color-mix(in srgb, var(--text) 12%, transparent); }
+.hero-affiliation { border-top: 1px solid color-mix(in srgb, var(--text) 22%, transparent); padding-top: 16px; max-width: 490px; }
+.hero-affiliation > span:first-child { letter-spacing: .2em; font-size: 9px; }
+.collision-figure {
+  position: absolute;
+  z-index: 2;
+  inset: 0 0 0 auto;
+  width: min(63%, 1080px);
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  filter: none;
+}
+.collision-figure::before {
+  z-index: 2;
+  inset: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, var(--atelier-paper) 0%, color-mix(in srgb, var(--atelier-paper) 82%, transparent) 7%, color-mix(in srgb, var(--atelier-paper) 32%, transparent) 23%, transparent 49%),
+    linear-gradient(0deg, color-mix(in srgb, var(--atelier-paper) 82%, transparent) 0%, transparent 20%, transparent 86%, color-mix(in srgb, var(--atelier-paper) 35%, transparent) 100%),
+    repeating-linear-gradient(0deg, transparent 0 5px, color-mix(in srgb, var(--text) 5%, transparent) 5px 6px);
+}
+.detector-photo {
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 53% 48%;
+  border-radius: 0;
+  opacity: .94;
+  mix-blend-mode: multiply;
+  filter: saturate(.78) contrast(1.05);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 19%, #000 100%);
+}
+.collision-figure > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 3;
+  opacity: .78;
+}
+.detector-rings { stroke-opacity: .34; stroke-width: .7; }
+.detector-segments { opacity: .58; }
+.collision-tracks { stroke-width: 1.05; }
+.collision-core { r: 8px; }
+.collision-figure figcaption {
+  position: absolute;
+  z-index: 4;
+  right: 30px;
+  bottom: 24px;
+  left: 22%;
+  padding: 10px 0 0;
+  border-top: 1px solid color-mix(in srgb, var(--text) 30%, transparent);
+  font-size: 9px;
+  color: var(--text);
+  letter-spacing: .035em;
+  text-shadow: 0 1px 4px var(--atelier-paper);
+}
+.collision-figure figcaption a { color: var(--text); }
+.research-strip {
+  width: min(1280px, calc(100% - 64px));
+  padding: 22px 0;
+  border-top: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+  font-family: var(--serif, Georgia, serif);
+  font-size: 12px;
+  letter-spacing: .09em;
+}
+.public-section {
+  position: relative;
+  width: min(1280px, calc(100% - 64px));
+  padding: clamp(68px, 8vw, 112px) 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+  scroll-margin-top: 30px;
+}
+.public-section::before {
+  content: "";
+  position: absolute;
+  left: calc((min(1280px, 100vw - 64px) - 100vw) / 2);
+  right: calc((min(1280px, 100vw - 64px) - 100vw) / 2);
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(90deg, transparent 0 calc(50% - .5px), color-mix(in srgb, var(--muted) 6%, transparent) 50%, transparent calc(50% + .5px)),
+    linear-gradient(color-mix(in srgb, var(--muted) 4%, transparent) 1px, transparent 1px);
+  background-size: auto, 24px 24px;
+  opacity: .45;
+}
+.section-top { margin-bottom: 42px; }
+.eyebrow { font-size: 10px; letter-spacing: .22em; color: var(--accent); }
+h2, .section-top h2, .about-section h2, .collaboration-section h2 {
+  font-family: var(--serif, Georgia, serif);
+  font-size: clamp(30px, 3.5vw, 48px);
+  line-height: 1.13;
+  letter-spacing: -.04em;
+  color: var(--text);
+}
+.section-top > p, .section-description { max-width: 440px; font-family: var(--serif, Georgia, serif); font-size: 14px; }
+.research-layout { gap: clamp(28px, 5vw, 76px); }
+.research-tabs button { padding: 25px 4px; border-bottom-color: color-mix(in srgb, var(--text) 20%, transparent); }
+.research-tabs strong { font-family: var(--serif, Georgia, serif); font-size: clamp(18px, 1.65vw, 24px); }
+.research-detail, .research-guide-card, .physics-resource-card, .topic-guide-entry, .academic-partner {
+  border-radius: 2px;
+  box-shadow: none;
+}
+.research-detail, .research-guide-card, .physics-resource-card {
+  background: color-mix(in srgb, var(--atelier-paper) 76%, var(--surface));
+  border-color: color-mix(in srgb, var(--text) 24%, transparent);
+}
+.research-detail { padding: clamp(26px, 3.2vw, 44px); }
+.research-symbol { font-family: var(--serif, Georgia, serif); font-size: 132px; opacity: .09; }
+.topic-guide-entry { background: transparent; border-color: color-mix(in srgb, var(--text) 35%, transparent); }
+.topic-guide-arrow { border-radius: 2px; }
+.research-guide-grid { gap: 0; border-top: 1px solid color-mix(in srgb, var(--text) 25%, transparent); border-left: 1px solid color-mix(in srgb, var(--text) 25%, transparent); }
+.research-guide-card { border: 0; border-right: 1px solid color-mix(in srgb, var(--text) 25%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--text) 25%, transparent); padding: clamp(22px, 2.5vw, 34px); }
+.research-guide-symbol { opacity: .2; }
+.research-guide-open { align-self: flex-start; border-radius: 2px; margin-top: 14px; }
+.publications-section { border-top: 0; }
+.publication-controls { border-top: 1px solid color-mix(in srgb, var(--text) 22%, transparent); padding-top: 20px; }
+.segmented button, .paper-search input, .publication-options select { border-radius: 2px; }
+.paper-search input { background: transparent; border-color: color-mix(in srgb, var(--text) 32%, transparent); }
+.public-paper { grid-template-columns: 82px minmax(0, 1fr) 56px; gap: 26px; border-bottom-color: color-mix(in srgb, var(--text) 20%, transparent); }
+.paper-year { font-family: var(--serif, Georgia, serif); }
+.paper-content h3 { font-family: var(--serif, Georgia, serif); font-size: clamp(19px, 1.8vw, 24px); line-height: 1.35; }
+.paper-summary { max-width: 780px; }
+.physics-resource-grid { gap: 0; border-top: 1px solid color-mix(in srgb, var(--text) 24%, transparent); border-left: 1px solid color-mix(in srgb, var(--text) 24%, transparent); }
+.physics-resource-card { border: 0; border-right: 1px solid color-mix(in srgb, var(--text) 24%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--text) 24%, transparent); padding: 26px; }
+.physics-resource-card h3 { font-family: var(--serif, Georgia, serif); }
+.about-section { gap: clamp(36px, 7vw, 100px); }
+.about-details > div { border-bottom-color: color-mix(in srgb, var(--text) 22%, transparent); }
+.collaboration-section { background: color-mix(in srgb, var(--accent) 5%, transparent); }
+.hub-module-list > span { border-bottom-color: color-mix(in srgb, var(--text) 22%, transparent); }
+.public-footer {
+  width: min(1280px, calc(100% - 64px));
+  border-top: 0;
+  background-image: linear-gradient(color-mix(in srgb, var(--text) 24%, transparent), color-mix(in srgb, var(--text) 24%, transparent));
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  padding: 28px 0 38px;
+}
+@media (min-width: 1600px) {
+  .public-hero { min-height: min(900px, calc(100svh - 76px)); }
+}
+@media (max-width: 1100px) {
+  .public-hero { padding-inline: 32px; min-height: 700px; }
+  .hero-copy { max-width: 56%; }
+  h1.hero-title { font-size: clamp(50px, 6.3vw, 72px); }
+  .collision-figure { width: 62%; }
+  .coordinate-left { left: 20px; }
+  .public-header { width: calc(100% - 48px); }
+}
+@media (max-width: 760px) {
+  .public-header { width: calc(100% - 36px); }
+  .public-hero {
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 52px 18px 0;
+    gap: 0;
+  }
+  .hero-copy { max-width: 100%; padding: 0 6px; }
+  .hero-eyebrow { margin-bottom: 22px; }
+  h1.hero-title { font-size: clamp(46px, 10vw, 72px); }
+  .hero-intro { max-width: 540px; }
+  .hero-actions { margin: 22px 0 28px; gap: 8px; }
+  .hero-affiliation { margin-bottom: 24px; }
+  .collision-figure {
+    position: relative;
+    inset: auto;
+    width: calc(100% + 36px);
+    height: clamp(320px, 78vw, 480px);
+    margin: 0 -18px;
+  }
+  .collision-figure::before {
+    background: linear-gradient(180deg, var(--atelier-paper), transparent 23%, transparent 82%, color-mix(in srgb, var(--atelier-paper) 70%, transparent));
+  }
+  .detector-photo { mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 100%); object-position: 50% 50%; }
+  .collision-figure > svg { opacity: .58; }
+  .collision-figure figcaption { left: 18px; right: 18px; bottom: 14px; display: grid; gap: 5px; font-size: 8px; }
+  .blueprint-gear-large { left: -180px; top: -50px; }
+  .blueprint-gear-small { left: auto; right: -70px; bottom: 22%; }
+  .equation-top { right: 16px; top: 16px; font-size: 13px; }
+  .equation-side, .coordinate-right { display: none; }
+  .equation-bottom { left: 12px; bottom: 32%; font-size: 18px; }
+  .coordinate-left { left: 12px; bottom: 31%; max-width: 88px; font-size: 7px; }
+  .research-strip, .public-section, .public-footer { width: calc(100% - 36px); }
+  .research-strip { padding: 18px 0; letter-spacing: .03em; }
+  .public-section { padding: 62px 0; }
+  .section-top { gap: 14px; margin-bottom: 28px; }
+  .section-top h2, h2, .about-section h2, .collaboration-section h2 { font-size: clamp(29px, 7vw, 38px); }
+  .research-guide-grid, .physics-resource-grid { grid-template-columns: 1fr; }
+  .research-guide-card { padding: 24px; }
+  .public-paper { grid-template-columns: 46px minmax(0, 1fr); gap: 14px; }
+  .paper-year { font-size: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .collision-core { animation: none; }
+  .public-header .nav-hub, .topic-guide-entry { transition: none; }
+}
+
 </style>
