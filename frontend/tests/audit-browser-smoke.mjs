@@ -859,11 +859,23 @@ try {
   await stylePage.bringToFront()
   await stylePage.waitForFunction(() => document.visibilityState === 'visible')
   const dimSlider = stylePage.getByRole('slider', { name: '背景遮罩暗化程度' })
-  await dimSlider.scrollIntoViewIfNeeded()
+  await expect(dimSlider).toBeVisible()
+  // A continuously animated background can keep Playwright's stability heuristic
+  // waiting forever. Scroll instantly, focus the real range input, then use a real
+  // keyboard event below to verify Vue state and rendered shade opacity.
+  const sliderViewportState = await dimSlider.evaluate(el => {
+    el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' })
+    el.focus({ preventScroll: true })
+    const rect = el.getBoundingClientRect()
+    return {
+      focused: document.activeElement === el,
+      inViewport: rect.top >= 0 && rect.bottom <= window.innerHeight
+    }
+  })
+  check(sliderViewportState.focused && sliderViewportState.inViewport, 'background dim slider can be focused and brought into the viewport')
   // Seed the native range position without firing input; the real keyboard action
   // below must update Vue state and the rendered shade opacity.
   await dimSlider.evaluate(el => {
-    el.focus()
     el.value = '19'
   })
   await stylePage.keyboard.press('ArrowRight')
