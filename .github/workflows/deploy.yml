@@ -262,8 +262,11 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
+      # The validated artifact contains only frontend/dist, not node_modules.
+      # Always install the locked frontend toolchain so the local Wrangler binary
+      # is available even when the exact PR build artifact can be reused.
       - name: Install release dependencies
-        if: github.event_name == 'workflow_dispatch' && inputs.deploy_production || github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.release_context.outputs.reuse_artifact != 'true'
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy_production || github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1'
         run: npm --prefix frontend ci
       - name: Revalidate frontend on merged tree when artifact reuse is unsafe
         if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.release_context.outputs.reuse_artifact != 'true' && needs.changes.outputs.frontend_tests == '1'
