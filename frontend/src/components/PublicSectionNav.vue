@@ -115,7 +115,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 9px;
+  gap: 7px;
   transform: translateY(-50%);
   color: var(--text);
 }
@@ -131,20 +131,20 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
+  gap: 5px;
 }
 
 .public-section-nav__links a {
   position: relative;
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 28px;
+  height: 28px;
   place-items: center;
-  border: 1px solid transparent;
+  border: 1px solid color-mix(in srgb, var(--text) 20%, transparent);
   border-radius: 999px;
-  background: var(--panel);
-  color: var(--muted);
-  font-size: 10px;
+  background: color-mix(in srgb, #f6f4ee 86%, transparent);
+  color: #263f5a;
+  font-size: 9px;
   font-variant-numeric: tabular-nums;
   text-decoration: none;
   backdrop-filter: blur(14px);
