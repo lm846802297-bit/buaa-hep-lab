@@ -1023,8 +1023,12 @@ try {
   await stylePage.locator('.forecast-atmosphere img.custom-bg-media').waitFor({ state: 'visible', timeout: 10000 })
   stylePage.once('dialog', dialog => dialog.accept())
   await stylePage.locator('.local-bg-actions').getByRole('button', { name: '清除', exact: true }).click()
+  // The click handler awaits IndexedDB deletion before updating the active mode and card.
+  await expect(stylePage.locator('html')).toHaveAttribute('data-bg-type', 'clouds-static', { timeout: 10000 })
   check(await stylePage.locator('html').getAttribute('data-bg-type') === 'clouds-static', 'clearing the local background restores the static background')
-  check(await stylePage.locator('#section-bg .theme-card').nth(4).textContent().then(t => t.includes('未选择本地文件')), 'clearing local background updates the card state')
+  const localBackgroundCard = stylePage.locator('#section-bg .theme-card').nth(4)
+  await expect(localBackgroundCard).toContainText('未选择本地文件', { timeout: 10000 })
+  check(await localBackgroundCard.textContent().then(t => t.includes('未选择本地文件')), 'clearing local background updates the card state')
   await bgCards.nth(0).click()
 
   // Test the font mode tabs and every local font slot with a real system font fixture.
