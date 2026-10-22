@@ -338,7 +338,7 @@ function downloadBibtex() {
   .equation-top { top:4px; right:2%; font-size:12px; }
   .equation-side,.coordinate-right { display:none; }
   .equation-bottom { bottom:10%; left:4%; font-size:16px; }
-  .coordinate-left { bottom:13%; font-size:7px; max-width:84px; }
+  .coordinate-left { display:none; }
   .blueprint-gear-large { width:190px; left:-100px; top:-10px; }
   .blueprint-gear-small { width:150px; left:auto; right:4%; bottom:-35px; }
 }
@@ -386,7 +386,7 @@ nav { display:flex; align-items:center; gap:28px; font-size:13px; } nav>a { padd
 .equation-side { top:24%; right:0; font-family:var(--font); font-size:9px; line-height:1.9; letter-spacing:.22em; writing-mode:vertical-rl; }
 .equation-bottom { bottom:15%; left:13%; font-size:clamp(16px,2vw,28px); font-style:italic; }
 .blueprint-coordinate { position:absolute; font-size:8px; line-height:2; letter-spacing:.15em; opacity:.72; }
-.coordinate-left { left:0; bottom:18%; max-width:100px; }
+.coordinate-left { left:0; bottom:7%; max-width:100px; }
 .coordinate-right { right:0; bottom:7%; max-width:110px; text-align:left; }
 .hero-eyebrow { color:var(--accent); font-size:10px; letter-spacing:.17em; text-transform:uppercase; display:flex; align-items:center; gap:10px; margin-bottom:24px; }.status-dot { width:6px; height:6px; flex-shrink:0; background:var(--accent); border-radius:50%; box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 12%,transparent); }.eyebrow-rule { width:34px; height:1px; background:currentColor; margin-left:10px; }
 h1.hero-title { font-family:var(--serif,Georgia,serif); font-size:clamp(42px,5.2vw,82px); font-weight:400; line-height:.99; letter-spacing:-.055em; margin:0 0 24px; color:var(--text); }
