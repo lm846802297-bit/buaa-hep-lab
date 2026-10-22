@@ -163,7 +163,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   .worldline-detector-figure { width: 63%; }
   .worldline-detector-figure::before { background: linear-gradient(90deg, var(--wl-paper) 0%, rgba(244,241,233,.92) 9%, rgba(244,241,233,.48) 36%, transparent 70%); }
 }
-@media (max-width: 760px) {
+@media (max-width: 820px) {
   .worldline-header { min-height: 66px; padding: 10px 16px; }
   .worldline-brand-mark { width: 30px; height: 30px; }
   .worldline-brand strong { font-size: 14px; }
