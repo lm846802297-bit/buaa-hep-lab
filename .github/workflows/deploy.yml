@@ -107,7 +107,7 @@ jobs:
             cloudflare=1
             build=1
           fi
-          if [[ "$browser" == 1 ]]; then build=1; fi
+          if [[ "$browser" == 1 || "$pages_deploy" == 1 ]]; then build=1; fi
 
           need_node=0
           if [[ "$frontend_tests" == 1 || "$build" == 1 || "$cloudflare" == 1 ]]; then need_node=1; fi
@@ -143,6 +143,14 @@ jobs:
         run: |
           npm --prefix frontend run build
           npm --prefix frontend run check:bundle
+      - name: Upload verified release artifact
+        if: needs.changes.outputs.build == '1'
+        uses: actions/upload-artifact@v4
+        with:
+          name: verified-frontend-dist
+          path: frontend/dist
+          if-no-files-found: error
+          retention-days: 7
       - uses: actions/setup-python@v5
         if: needs.changes.outputs.need_python == '1'
         with:
@@ -194,6 +202,7 @@ jobs:
       - name: Require a merged PR with successful PR CI
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy_production)
         uses: actions/github-script@v7
+        id: release_context
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -221,15 +230,34 @@ jobs:
               core.setFailed(`Refusing release: PR #${pr.number} has no successful validation run for exact head ${pr.head.sha}.`);
               return;
             }
-            core.info(`Release authorized by merged PR #${pr.number}; exact-head CI run #${runs[0].run_number} passed.`);
+            const prTree = (await github.rest.git.getTree({ owner, repo, tree_sha: pr.head.sha })).data;
+            const { data: mergedCommit } = await github.rest.git.getCommit({ owner, repo, commit_sha: sha });
+            if (prTree.sha !== mergedCommit.tree.sha) {
+              core.setFailed(`Refusing artifact reuse: merged tree ${mergedCommit.tree.sha} differs from validated PR head tree ${prTree.sha}.`);
+              return;
+            }
+            core.setOutput('pr_run_id', String(runs[0].id));
+            core.setOutput('pr_head_sha', pr.head.sha);
+            core.info(`Release authorized by merged PR #${pr.number}; exact-head CI run #${runs[0].run_number} passed and tree matches.`);
+      - name: Download exact PR-validated build artifact
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1'
+        uses: actions/download-artifact@v4
+        with:
+          name: verified-frontend-dist
+          path: frontend/dist
+          run-id: ${{ steps.release_context.outputs.pr_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v4
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy_production || needs.changes.outputs.release_config == '1' || github.event_name == 'push' && needs.changes.outputs.pages_deploy != '1'
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Install release dependencies
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy_production || needs.changes.outputs.release_config == '1' || github.event_name == 'push' && needs.changes.outputs.pages_deploy != '1'
         run: npm --prefix frontend ci
-      - name: Build the release
+      - name: Build the release when no PR artifact is eligible
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy_production || needs.changes.outputs.release_config == '1' || github.event_name == 'push' && needs.changes.outputs.pages_deploy != '1'
         run: npm --prefix frontend run build
       - name: Check public pages and initial dependencies
         run: npm --prefix frontend run check:bundle
