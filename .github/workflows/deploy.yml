@@ -232,15 +232,17 @@ jobs:
             }
             const { data: prCommit } = await github.rest.git.getCommit({ owner, repo, commit_sha: pr.head.sha });
             const { data: mergedCommit } = await github.rest.git.getCommit({ owner, repo, commit_sha: sha });
-            if (prCommit.tree.sha !== mergedCommit.tree.sha) {
-              core.setFailed(`Refusing artifact reuse: merged tree ${mergedCommit.tree.sha} differs from validated PR head tree ${prCommit.tree.sha}.`);
-              return;
-            }
+            const treeMatches = prCommit.tree.sha === mergedCommit.tree.sha;
             core.setOutput('pr_run_id', String(runs[0].id));
             core.setOutput('pr_head_sha', pr.head.sha);
-            core.info(`Release authorized by merged PR #${pr.number}; exact-head CI run #${runs[0].run_number} passed and tree matches.`);
+            core.setOutput('reuse_artifact', treeMatches ? 'true' : 'false');
+            if (treeMatches) {
+              core.info(`Release authorized by merged PR #${pr.number}; exact-head CI run #${runs[0].run_number} passed and the Git trees match. Reusing the validated artifact.`);
+            } else {
+              core.warning(`Merged tree differs from validated PR tree (${mergedCommit.tree.sha} vs ${prCommit.tree.sha}); artifact reuse is disabled and the merged tree must be revalidated before release.`);
+            }
       - name: Download exact PR-validated build artifact
-        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1'
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.release_context.outputs.reuse_artifact == 'true'
         uses: actions/download-artifact@v4
         with:
           name: verified-frontend-dist
@@ -248,19 +250,48 @@ jobs:
           run-id: ${{ steps.release_context.outputs.pr_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v4
-        if: github.event_name == 'workflow_dispatch' && inputs.deploy_production || needs.changes.outputs.release_config == '1' || github.event_name == 'push' && needs.changes.outputs.pages_deploy != '1'
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy_production || needs.changes.outputs.release_config == '1' || github.event_name == 'push' && (needs.changes.outputs.pages_deploy != '1' || steps.release_context.outputs.reuse_artifact != 'true')
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Install release dependencies
-        if: github.event_name == 'workflow_dispatch' && inputs.deploy_production || needs.changes.outputs.release_config == '1' || github.event_name == 'push' && needs.changes.outputs.pages_deploy != '1'
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy_production || needs.changes.outputs.release_config == '1' || github.event_name == 'push' && (needs.changes.outputs.pages_deploy != '1' || steps.release_context.outputs.reuse_artifact != 'true')
         run: npm --prefix frontend ci
-      - name: Build the release when no PR artifact is eligible
-        if: github.event_name == 'workflow_dispatch' && inputs.deploy_production || needs.changes.outputs.release_config == '1' || github.event_name == 'push' && needs.changes.outputs.pages_deploy != '1'
+      - name: Revalidate frontend on merged tree when artifact reuse is unsafe
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.release_context.outputs.reuse_artifact != 'true' && needs.changes.outputs.frontend_tests == '1'
+        run: npm --prefix frontend test
+      - name: Build release when no exact PR artifact can be reused
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy_production || needs.changes.outputs.release_config == '1' || github.event_name == 'push' && (needs.changes.outputs.pages_deploy != '1' || steps.release_context.outputs.reuse_artifact != 'true')
         run: npm --prefix frontend run build
       - name: Check public pages and initial dependencies
         run: npm --prefix frontend run check:bundle
+      - uses: actions/setup-python@v5
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.release_context.outputs.reuse_artifact != 'true' && (needs.changes.outputs.backend_tests == '1' || needs.changes.outputs.learning == '1')
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements-test.txt
+      - name: Revalidate FastAPI on changed merged tree
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.release_context.outputs.reuse_artifact != 'true' && needs.changes.outputs.backend_tests == '1'
+        env:
+          LABHUB_SECRET_KEY: isolated-ci-test-secret-never-for-production-32-plus
+          LABHUB_DB_PATH: /tmp/buaa-hep-release-ci.db
+          SEED_DEMO_DATA: '1'
+        run: |
+          pip install -r backend/requirements-test.txt
+          python -m pytest backend -q
+      - name: Revalidate teaching benchmark on changed merged tree
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.release_context.outputs.reuse_artifact != 'true' && needs.changes.outputs.learning == '1'
+        run: python frontend/public/learning/two_body_decay.py
+      - name: Revalidate Chromium smoke on changed merged tree
+        if: github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.release_context.outputs.reuse_artifact != 'true' && needs.changes.outputs.browser == '1'
+        run: |
+          npx --prefix frontend playwright install --with-deps chromium
+          node frontend/tests/audit-browser-smoke.mjs
+      - name: Isolated Cloudflare check when release tree needs revalidation
+        if: (github.event_name == 'workflow_dispatch' && inputs.deploy_production) || (github.event_name == 'push' && needs.changes.outputs.pages_deploy == '1' && steps.release_context.outputs.reuse_artifact != 'true' && needs.changes.outputs.cloudflare == '1')
+        run: node scripts/verify-cloudflare.mjs
       - name: Isolated Cloudflare check for manual releases
         if: github.event_name == 'workflow_dispatch' && inputs.deploy_production
         run: node scripts/verify-cloudflare.mjs
