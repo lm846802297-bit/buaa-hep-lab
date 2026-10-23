@@ -11,7 +11,7 @@ onMounted(() => { document.title = `团队与学术指导 | ${publicBrandIdentit
 <template>
   <main class="people-page">
     <nav class="breadcrumb" aria-label="面包屑">
-      <router-link to="/">BUAA HEP Hub</router-link><span aria-hidden="true">/</span><span aria-current="page">团队与学术指导</span>
+      <router-link to="/">{{ publicBrandIdentity.name }}</router-link><span aria-hidden="true">/</span><span aria-current="page">团队与学术指导</span>
     </nav>
     <header class="page-hero">
       <p class="eyebrow">PEOPLE & ACADEMIC GUIDANCE</p>
