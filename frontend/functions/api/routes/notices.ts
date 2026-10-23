@@ -520,7 +520,16 @@ app.put('/:id', async (c) => {
     return c.json({ detail: '无效的通知ID' }, 400);
   }
 
-  const existing = await c.env.DB.prepare('SELECT * FROM notices WHERE id = ?').bind(id).first();
+  const existing = await c.env.DB.prepare('SELECT * FROM notices WHERE id = ?').bind(id).first<{
+    created_by_id: number | null;
+    title: string;
+    content: string;
+    category: string | null;
+    importance: string | null;
+    start_date: string | null;
+    end_date: string | null;
+    attachments: string | null;
+  }>();
   if (!existing) {
     return c.json({ detail: '通知不存在或已被删除' }, 404);
   }
@@ -538,8 +547,8 @@ app.put('/:id', async (c) => {
   const category = body.category !== undefined ? String(body.category).trim() : existing.category;
   const importance = body.importance !== undefined ? String(body.importance).trim() : existing.importance;
   
-  const rawStart = body.start_date !== undefined ? String(body.start_date).trim() : existing.start_date;
-  const rawEnd = body.end_date !== undefined ? String(body.end_date).trim() : existing.end_date;
+  const rawStart = body.start_date !== undefined ? String(body.start_date).trim() : (existing.start_date ?? '');
+  const rawEnd = body.end_date !== undefined ? String(body.end_date).trim() : (existing.end_date ?? '');
   const { startDate, endDate } = sanitizeNoticeDates(rawStart, rawEnd);
 
   let attachments = existing.attachments || '[]';
