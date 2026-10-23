@@ -40,6 +40,9 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install locked frontend dependencies
         run: npm --prefix frontend ci
+      - name: Validate isolated Worker bundle without deployment
+        working-directory: frontend
+        run: npx wrangler deploy --dry-run --outdir /tmp/sec04-bcrypt-dry-run --config benchmarks/bcrypt/wrangler.jsonc
       - name: Reproducible bcrypt benchmark on Node (local evidence only)
         run: node frontend/benchmarks/bcrypt/run.mjs --runtime node --samples 50 --warmup 5 --out benchmark-results/node.json
       - name: Reproducible bcrypt benchmark on workerd (local evidence only)
