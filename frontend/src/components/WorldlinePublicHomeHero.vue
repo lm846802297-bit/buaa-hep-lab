@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import PublicThemeSwitcher from './PublicThemeSwitcher.vue'
 import PublicSectionNav from './PublicSectionNav.vue'
+import PublicBrand from './PublicBrand.vue'
 import { usePublicHeroVisual } from '../composables/usePublicHeroVisual'
 import { lab } from '../content/lab'
 
@@ -13,10 +14,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   <div class="worldline-home" :class="'visual-' + heroVisualMode">
     <PublicSectionNav />
     <header class="worldline-header">
-      <a href="#top" class="worldline-brand" aria-label="课题组首页" @click="menuOpen = false">
-        <svg class="worldline-brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="24" cy="24" r="17"/><ellipse cx="24" cy="24" rx="9" ry="22" transform="rotate(45 24 24)"/><path d="M3 24h42"/><circle cx="24" cy="24" r="3" fill="currentColor"/></svg>
-        <span><strong>{{ lab.shortName }}</strong><small>北京航空航天大学 · 物理学院</small></span>
-      </a>
+      <PublicBrand class="worldline-brand" to="/#top" @click="menuOpen = false" />
       <button class="worldline-menu-toggle" type="button" :aria-expanded="menuOpen" aria-controls="worldline-navigation" @click="menuOpen = !menuOpen">{{ menuOpen ? '关闭菜单' : '菜单' }}</button>
       <nav id="worldline-navigation" class="worldline-navigation" :class="{ open: menuOpen }" aria-label="官网导航">
         <a href="#research" @click="menuOpen = false">研究方向</a>
