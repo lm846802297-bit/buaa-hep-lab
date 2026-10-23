@@ -43,7 +43,11 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::Missing CLOUDFLARE_ACCOUNT_ID in sec04-benchmark environment"; exit 1; }
           test "${#BENCHMARK_TOKEN}" -ge 32 || { echo "::error::BENCHMARK_TOKEN must be at least 32 characters"; exit 1; }
           test -n "$CLOUDFLARE_ACCOUNT_SUBDOMAIN" || { echo "::error::Missing CLOUDFLARE_ACCOUNT_SUBDOMAIN in sec04-benchmark environment"; exit 1; }
-          node --input-type=module -e "import fs from 'node:fs'; const s=fs.readFileSync('benchmarks/bcrypt/wrangler.jsonc','utf8'); if(!s.includes('"name": "buaa-hep-bcrypt-benchmark"')||!s.includes('"main": "worker.mjs"'))process.exit(1)"
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const s = fs.readFileSync('benchmarks/bcrypt/wrangler.jsonc', 'utf8');
+          if (!s.includes('"name": "buaa-hep-bcrypt-benchmark"') || !s.includes('"main": "worker.mjs"')) process.exit(1);
+          NODE
       - name: Deploy only the isolated benchmark Worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
