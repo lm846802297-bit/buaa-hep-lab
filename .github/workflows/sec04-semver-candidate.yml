@@ -1,0 +1,116 @@
+name: SEC-04 semver-compatible dependency candidate
+
+on:
+  push:
+    branches:
+      - integration/sec04-dependency-lock-main-2026-10-23
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sec04-lock-candidate
+  cancel-in-progress: false
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install current lockfile
+        run: npm ci
+      - name: Apply semver-compatible fixes only
+        run: npm audit fix --no-fund
+      - name: Confirm the manifest and browser-support policy are unchanged
+        run: |
+          git diff --exit-code -- frontend/package.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          for (const key of ['vite', 'vitest', 'tailwindcss', '@vitejs/plugin-vue']) {
+            console.log(`${key}: ${pkg.devDependencies[key]}`);
+          }
+          if (pkg.devDependencies.vite.startsWith('^8')
+            || pkg.devDependencies.vitest.startsWith('^5')
+            || pkg.devDependencies.tailwindcss.startsWith('^4')
+            || pkg.devDependencies['@vitejs/plugin-vue'].startsWith('^6')) {
+            throw new Error('Major toolchain migration is not allowed in this semver-compatible candidate.');
+          }
+          if (!pkg.browserslist.some(item => item.includes('Safari >= 13'))
+            || !pkg.browserslist.some(item => item.includes('iOS >= 13'))) {
+            throw new Error('Safari 13 / iOS 13 support policy changed unexpectedly.');
+          }
+          NODE
+      - name: Clean install candidate lockfile
+        run: npm ci
+      - name: Frontend regression suite
+        run: npm test
+      - name: Production build
+        run: npm run build
+      - name: Demo build
+        run: npm run build:demo
+      - name: Public bundle and prerender budget
+        run: npm run check:bundle
+      - name: Validate isolated Worker bundle without deployment
+        run: npx wrangler deploy --dry-run --outdir /tmp/sec04-bcrypt-candidate --config benchmarks/bcrypt/wrangler.jsonc
+      - name: Record full and production-only audit reports
+        shell: bash
+        run: |
+          set +e
+          npm audit --json > npm-audit-candidate-full.json 2> npm-audit-candidate-full.stderr
+          full_status=$?
+          set -e
+          npm audit --omit=dev --json > npm-audit-candidate-production.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const full = JSON.parse(fs.readFileSync('npm-audit-candidate-full.json', 'utf8'));
+          const prod = JSON.parse(fs.readFileSync('npm-audit-candidate-production.json', 'utf8'));
+          const fv = full.metadata?.vulnerabilities;
+          const pv = prod.metadata?.vulnerabilities;
+          if (!fv || !pv) throw new Error('npm audit did not return vulnerability metadata');
+          const lines = [
+            '## SEC-04 semver-compatible candidate',
+            '',
+            '| Scope | Critical | High | Moderate | Low | Total |',
+            '|---|---:|---:|---:|---:|---:|',
+            `| All dependencies | ${fv.critical ?? 0} | ${fv.high ?? 0} | ${fv.moderate ?? 0} | ${fv.low ?? 0} | ${fv.total ?? 0} |`,
+            `| Production only | ${pv.critical ?? 0} | ${pv.high ?? 0} | ${pv.moderate ?? 0} | ${pv.low ?? 0} | ${pv.total ?? 0} |`,
+          ];
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
+          console.log(lines.join('\n'));
+          if ((pv.total ?? 0) !== 0) process.exitCode = 1;
+          NODE
+      - name: Upload candidate audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec04-semver-candidate-audit
+          path: |
+            frontend/npm-audit-candidate-full.json
+            frontend/npm-audit-candidate-full.stderr
+            frontend/npm-audit-candidate-production.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Commit only the validated lockfile
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet -- frontend/package-lock.json; then
+            echo 'Expected semver-compatible lockfile updates, but no lockfile changes were produced.'
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add frontend/package-lock.json
+          git commit -m 'security: apply semver-compatible npm audit fixes'
+          git push origin HEAD:integration/sec04-dependency-lock-main-2026-10-23
