@@ -41,12 +41,12 @@ def test_register_with_invite_code():
     assert bad_reg.status_code == 400
     assert "邀请码错误" in bad_reg.json()["detail"]
 
-    # 正确邀请码注册成功 (支持 LAB-2026)
+    # Registration uses the explicit test fixture code, not a predictable production fallback.
     good_reg = client.post("/api/auth/register", json={
         "name": "新同学 (研一)",
         "email": random_email,
         "password": "mypassword123",
-        "invite_code": "LAB-2026"
+        "invite_code": os.environ["LABHUB_INVITE_CODE"]
     })
     assert good_reg.status_code == 200
     reg_data = good_reg.json()
