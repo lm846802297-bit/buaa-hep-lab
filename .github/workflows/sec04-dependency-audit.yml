@@ -131,7 +131,7 @@ jobs:
           npm audit fix --no-fund > npm-audit-fix.log 2>&1
           status=$?
           set -e
-          printf '%s\\n' "$status" > npm-audit-fix.exit
+          printf '%s\n' "$status" > npm-audit-fix.exit
           echo "npm audit fix exited with $status. This step intentionally does not use --force; remaining major-version fixes will be left unresolved for manual review."
           cat npm-audit-fix.log
 
@@ -153,8 +153,8 @@ jobs:
           npm audit --omit=dev --json > npm-audit-candidate-production.json 2> npm-audit-candidate-production.stderr
           production_status=$?
           set -e
-          printf '%s\\n' "$full_status" > npm-audit-candidate-full.exit
-          printf '%s\\n' "$production_status" > npm-audit-candidate-production.exit
+          printf '%s\n' "$full_status" > npm-audit-candidate-full.exit
+          printf '%s\n' "$production_status" > npm-audit-candidate-production.exit
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const reports = [
@@ -169,7 +169,7 @@ jobs:
             lines.push(`| ${scope} | ${v.critical ?? 0} | ${v.high ?? 0} | ${v.moderate ?? 0} | ${v.low ?? 0} | ${v.total ?? 0} |`);
             console.log(`${scope}: ${JSON.stringify(v)}`);
           }
-          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\\n') + '\\n');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
           NODE
 
       - name: Upload candidate package files and audit reports
