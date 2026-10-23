@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import PublicThemeSwitcher from './PublicThemeSwitcher.vue'
 import PublicSectionNav from './PublicSectionNav.vue'
 import PublicBrand from './PublicBrand.vue'
+import { publicBrandIdentity } from '../content/brandIdentity'
 import { usePublicHeroVisual } from '../composables/usePublicHeroVisual'
 import { lab } from '../content/lab'
 
@@ -43,7 +44,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
       </div>
 
       <div class="worldline-copy">
-        <div class="worldline-eyebrow"><span aria-hidden="true"></span> PARTICLE PHYSICS PHENOMENOLOGY</div>
+        <div class="worldline-eyebrow"><span aria-hidden="true"></span> {{ publicBrandIdentity.englishDescriptor.toUpperCase() }}</div>
         <h1 id="worldline-hero-title">Particle Physics<br><span>Research<br>Group</span></h1>
         <p class="worldline-intro">{{ lab.intro }}</p>
         <div class="worldline-actions">
