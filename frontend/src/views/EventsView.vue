@@ -37,7 +37,7 @@ onMounted(() => { document.title = `公开学术活动 | ${publicBrandIdentity.n
 <template>
   <main class="events-page">
     <nav class="breadcrumb" aria-label="面包屑">
-      <router-link to="/">BUAA HEP Hub</router-link><span aria-hidden="true">/</span><span aria-current="page">学术活动</span>
+      <router-link to="/">{{ publicBrandIdentity.name }}</router-link><span aria-hidden="true">/</span><span aria-current="page">学术活动</span>
     </nav>
     <header class="page-hero">
       <p class="eyebrow">SEMINARS & ACADEMIC EVENTS</p>
