@@ -4,15 +4,17 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "build": "node scripts/check-topic-illustrations.mjs && vite build && node scripts/prerender-public.mjs",
     "build:demo": "node scripts/build-demo.mjs",
-    "test": "node scripts/check-topic-illustrations.mjs && vitest run",
+    "check:bundle": "node scripts/check-bundle.mjs",
+    "check:module-boundaries": "node ../scripts/check-module-boundaries.mjs",
+    "check:types:cloudflare": "node ../scripts/check-cloudflare-types.mjs",
+    "dev": "vite",
+    "pages:deploy": "wrangler pages deploy ./dist --project-name=buaa-hep-hub --branch=main",
+    "pages:dev": "wrangler pages dev ./dist",
     "preview": "vite preview",
     "preview:demo": "vite preview --outDir dist-demo --base /lab-orbit/ --port 4173",
-    "pages:dev": "wrangler pages dev ./dist",
-    "pages:deploy": "wrangler pages deploy ./dist --project-name=buaa-hep-hub --branch=main",
-    "check:bundle": "node scripts/check-bundle.mjs"
+    "test": "node scripts/check-topic-illustrations.mjs && vitest run"
   },
   "dependencies": {
     "@phosphor-icons/vue": "^2.2.1",
@@ -33,6 +35,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260911.1",
     "@playwright/test": "^1.63.0",
+    "@types/node": "22.19.11",
     "@vitejs/plugin-vue": "^5.0.4",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
