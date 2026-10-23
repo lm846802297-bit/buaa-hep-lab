@@ -69,7 +69,7 @@ jobs:
           while IFS= read -r file; do
             [[ -n "$file" ]] || continue
             case "$file" in
-              frontend/*) frontend=1 ;;
+              frontend/*|package.json|package-lock.json) frontend=1 ;;
             esac
             case "$file" in
               backend/*) backend=1 ;;
@@ -78,15 +78,15 @@ jobs:
               frontend/public/learning/*|frontend/src/content/learning.js) learning=1 ;;
             esac
             case "$file" in
-              frontend/functions/*|frontend/wrangler.json|frontend/package.json|frontend/package-lock.json|scripts/schema_d1.sql|scripts/verify-cloudflare.mjs|.github/workflows/deploy.yml)
+              package.json|package-lock.json|frontend/functions/*|frontend/wrangler.json|frontend/package.json|frontend/package-lock.json|scripts/schema_d1.sql|scripts/verify-cloudflare.mjs|.github/workflows/deploy.yml)
                 cloudflare=1 ;;
             esac
             case "$file" in
-              frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*|.github/workflows/deploy.yml)
+              package.json|package-lock.json|scripts/verify-cloudflare.mjs|frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*|.github/workflows/deploy.yml)
                 case "$file" in *.test.*|*.spec.*) ;; *) build=1 ;; esac ;;
             esac
             case "$file" in
-              frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*|frontend/functions/*|frontend/wrangler.json|scripts/schema_d1.sql|.github/workflows/deploy.yml)
+              package.json|package-lock.json|scripts/verify-cloudflare.mjs|frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*|frontend/functions/*|frontend/wrangler.json|scripts/schema_d1.sql|.github/workflows/deploy.yml)
                 case "$file" in *.test.*|*.spec.*) ;; *) pages_deploy=1 ;; esac ;;
             esac
             case "$file" in
@@ -134,18 +134,20 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - name: Install frontend dependencies
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+      - name: Install root adapter and frontend dependencies
         if: needs.changes.outputs.need_node == '1'
-        run: npm --prefix frontend ci
+        run: npm ci
       - name: Frontend and API tests
         if: needs.changes.outputs.frontend_tests == '1'
-        run: npm --prefix frontend test
+        run: npm run test:unit
       - name: Build and check public pages
         if: needs.changes.outputs.build == '1'
         run: |
-          npm --prefix frontend run build
-          npm --prefix frontend run check:bundle
+          npm run build
+          npm run check:bundle
       - name: Upload verified release artifact
         if: needs.changes.outputs.build == '1'
         uses: actions/upload-artifact@v4
@@ -241,7 +243,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
       - name: Isolated Cloudflare security checks
-        if: needs.changes.outputs.cloudflare == '1'
+        if: needs.changes.outputs.cloudflare == '1' && needs.changes.outputs.build != '1'
         run: node scripts/verify-cloudflare.mjs
 
   release:
