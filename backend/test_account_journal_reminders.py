@@ -29,7 +29,13 @@ def test_account_profile_avatar_credentials():
     user, headers = login('account-fixture@example.org', 'initial123')
     result = client.put('/api/account/profile', headers=headers, json={'real_name': '测试真名', 'nickname': '测试昵称'})
     assert result.status_code == 200 and result.json()['name'] == '测试昵称'
-    assert client.put('/api/account/profile', headers=headers, json={'real_name': '   ', 'nickname': ''}).status_code == 422
+    # Empty names are allowed by the optional-name registration/profile contract.
+    cleared = client.put('/api/account/profile', headers=headers, json={'real_name': '   ', 'nickname': ''})
+    assert cleared.status_code == 200, cleared.text
+    restored = client.put('/api/account/profile', headers=headers, json={'real_name': '测试真名', 'nickname': '测试昵称'})
+    assert restored.status_code == 200 and restored.json()['real_name'] == '测试真名'
+    # Invalid lengths and forbidden extra fields remain rejected.
+    assert client.put('/api/account/profile', headers=headers, json={'real_name': 'x' * 101, 'nickname': ''}).status_code == 422
     assert client.put('/api/account/profile', headers=headers, json={'real_name': 'Name', 'role': 'admin'}).status_code == 422
     image = Image.new('RGB', (60, 40), 'blue'); stream = io.BytesIO(); image.save(stream, format='PNG')
     uploaded = client.post('/api/account/avatar', headers=headers, files={'file': ('avatar.png', stream.getvalue(), 'image/png')})
