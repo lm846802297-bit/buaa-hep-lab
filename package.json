@@ -6,8 +6,9 @@
   "scripts": {
     "postinstall": "npm --prefix frontend ci",
     "test:unit": "npm --prefix frontend test",
-    "build": "npm --prefix frontend run build && rm -rf dist functions && cp -a frontend/dist dist && cp -a frontend/functions functions",
-    "check:bundle": "npm --prefix frontend run check:bundle"
+    "build": "npm --prefix frontend run build && npm run verify:cloudflare && rm -rf dist functions && cp -a frontend/dist dist && cp -a frontend/functions functions",
+    "check:bundle": "npm --prefix frontend run check:bundle",
+    "verify:cloudflare": "node scripts/verify-cloudflare.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
