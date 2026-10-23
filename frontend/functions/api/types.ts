@@ -3,6 +3,7 @@ export interface Env extends CloudflareBindings {
   JWT_SECRET?: string;
   SETUP_TOKEN?: string;
   INVITE_CODE?: string;
+  SCRAPER_ALLOWED_HOSTS?: string;
   ASSETS?: Fetcher;
 }
 
