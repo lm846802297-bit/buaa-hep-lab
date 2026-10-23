@@ -31,7 +31,7 @@ function downloadCalendar() {
   link.click()
   URL.revokeObjectURL(url)
 }
-onMounted(() => { document.title = '公开学术活动 | BUAA HEP Hub' })
+onMounted(() => { document.title = `公开学术活动 | ${publicBrandIdentity.name}` })
 </script>
 
 <template>
