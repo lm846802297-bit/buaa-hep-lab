@@ -33,7 +33,7 @@ jobs:
         run: npm audit fix --no-fund
       - name: Confirm the manifest and browser-support policy are unchanged
         run: |
-          git diff --exit-code -- frontend/package.json
+          git diff --exit-code -- package.json
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
@@ -105,12 +105,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if git diff --quiet -- frontend/package-lock.json; then
+          if git diff --quiet -- package-lock.json; then
             echo 'Expected semver-compatible lockfile updates, but no lockfile changes were produced.'
             exit 1
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add frontend/package-lock.json
+          git add package-lock.json
           git commit -m 'security: apply semver-compatible npm audit fixes'
           git push origin HEAD:integration/sec04-dependency-lock-main-2026-10-23
