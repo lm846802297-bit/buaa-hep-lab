@@ -7,7 +7,7 @@
 
 - 当前基准主线是 `main` SHA `71be5f904baf6e2cc25c70d74cb23ce28c9aeea3`。
 - 当前 `.github/workflows/deploy.yml` 已包含 PR 合并授权、精确 PR-head CI 证据检查、构建 artifact 树匹配及必要时的合并树重新验证；本 PR 不替换该工作流。
-- 检查发现，主分支的工作流已调用 `frontend/benchmarks/bcrypt/run.mjs` 与 `frontend/benchmarks/bcrypt/wrangler.jsonc`，但相关基准源码、Worker 和回归测试尚未存在于当前主分支。本次 PR 补回这些被工作流引用的文件及其历史证据。
+- 历史 `final-audit` 分支的旧工作流曾调用这些基准文件；当前 `main` 的生产工作流不在 PR 验证阶段运行 SEC-04 基准。本次 PR 新增独立基准 harness、专用依赖审计工作流和手动隔离 Worker 工作流，不替换主部署工作流。
 - PR #51/#52 和当前 SEC-04 候选的 GitHub Actions 作业均在任何步骤记录之前失败，且日志端点无可读取日志。此状态不能解释为代码测试通过或失败；需要恢复 runner/workflow 执行后，在最终 SHA 上重新验证。
 - 不部署隔离 Worker，不改变生产 bcrypt cost。生产调用级 CPU、完整认证路径成本和套餐余量仍是未决项。
 
