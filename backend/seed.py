@@ -11,6 +11,20 @@ from .auth import get_password_hash
 import os
 import sys
 
+def _configured_invite_code(required: bool = False) -> str:
+    """Return an explicitly configured invite code; never invent a public default."""
+    code = os.getenv("LABHUB_INVITE_CODE", "").strip()
+    if not code:
+        if required:
+            raise RuntimeError("LABHUB_INVITE_CODE must be set before initializing a clean database")
+        return ""
+    if code.casefold() == "lab-2026":
+        raise RuntimeError("LABHUB_INVITE_CODE must not use the predictable legacy value LAB-2026")
+    if len(code) < 12:
+        raise RuntimeError("LABHUB_INVITE_CODE must contain at least 12 characters")
+    return code
+
+
 def init_clean_db(reset: bool = False):
     """
     初始化生产环境干净数据库：
@@ -18,6 +32,13 @@ def init_clean_db(reset: bool = False):
     - 保留学术教材专著资源
     - 清理/不添加任何模拟学生、导师、测试排期及文献
     """
+    # Validate credentials before any database mutation, especially when reset=True.
+    admin_password = os.getenv("ADMIN_PASSWORD", "")
+    admin_password_bytes = len(admin_password.encode("utf-8"))
+    if not admin_password.strip() or admin_password_bytes < 12 or admin_password_bytes > 72:
+        raise RuntimeError("ADMIN_PASSWORD must be explicitly set to a password of 12–72 UTF-8 bytes")
+    primary_code = _configured_invite_code(required=True)
+
     from .migrations import migrate
     from .database import Base, SessionLocal, engine
 
@@ -38,7 +59,7 @@ def init_clean_db(reset: bool = False):
             admin = User(
                 name="系统管理员",
                 email=admin_email,
-                hashed_password=get_password_hash(os.getenv("ADMIN_PASSWORD", "123456")),
+                hashed_password=get_password_hash(admin_password),
                 role="admin",
                 can_manage_seminars=True,
                 tutorial_completed=False,
@@ -49,7 +70,7 @@ def init_clean_db(reset: bool = False):
             print(f"管理员账号已创建: {admin_email}")
 
         # 初始化默认邀请码（若 invite_codes 表为空）
-        primary_code = os.getenv("LABHUB_INVITE_CODE", "LAB-2026")
+
         if db.query(InviteCode).count() == 0:
             admin_user = db.query(User).filter(User.email == admin_email).first()
             for code_str, note in [
@@ -112,8 +133,7 @@ def init_clean_db(reset: bool = False):
 
         print("==================================================")
         print("🎉 干净生产数据库已准备就绪！")
-        print(f"🔑 初始管理员: {admin_email} / 初始密码: {os.getenv('ADMIN_PASSWORD', 'lab123456')}")
-        print("🎟️ 组内注册邀请码: LAB-2026")
+        print("演示数据已初始化；不输出密码或邀请码。")
         print("💡 建议首次登录后在个人中心修改密码。")
         print("==================================================")
     finally:
@@ -125,7 +145,7 @@ def _seed_default_invite_codes(db: Session) -> None:
     """确保数据库中至少有一条默认邀请码（幂等操作）。"""
     if db.query(InviteCode).count() > 0:
         return
-    primary_code = os.getenv("LABHUB_INVITE_CODE", "LAB-2026")
+    primary_code = _configured_invite_code()
     admin_user = db.query(User).filter(User.role == "admin").first()
     if not db.query(InviteCode).filter(InviteCode.code == primary_code).first():
         db.add(InviteCode(
@@ -135,7 +155,7 @@ def _seed_default_invite_codes(db: Session) -> None:
             is_active=True,
         ))
         db.commit()
-        print(f"🎟️ 默认邀请码已写入数据库: {primary_code}")
+        print("已写入显式配置的邀请码（不输出明文）。")
 
 
 def _seed_demo_data(db: Session) -> None:
