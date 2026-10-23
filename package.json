@@ -8,5 +8,9 @@
     "test:unit": "npm --prefix frontend test",
     "build": "npm --prefix frontend run build && rm -rf dist functions && cp -a frontend/dist dist && cp -a frontend/functions functions",
     "check:bundle": "npm --prefix frontend run check:bundle"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "hono": "^4.13.7"
   }
 }
