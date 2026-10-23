@@ -131,7 +131,7 @@ async function canUserViewPaper(db: any, paperId: number, paperOwnerId: number, 
   return Boolean(recipient);
 }
 
-async function syncLibraryRecommendationAccess(db: any, libraryId: number) {
+async function syncLibraryRecommendationAccess(db: D1Database, libraryId: number) {
   const sources = await db.prepare('SELECT is_public, user_ids FROM library_recommendation_sources WHERE library_id = ?').bind(libraryId).all<{ is_public: number; user_ids: string }>();
   const rows = sources.results || [];
   const hasPublic = rows.some((r: any) => r.is_public === 1);
@@ -159,7 +159,7 @@ async function syncLibraryRecommendationAccess(db: any, libraryId: number) {
   }
 }
 
-async function formatPaperOut(db: any, p: any, currentUserId: number) {
+async function formatPaperOut(db: D1Database, p: any, currentUserId: number) {
   let authorsList: string[] = [];
   try {
     authorsList = typeof p.authors === 'string' ? JSON.parse(p.authors) : (p.authors || []);
