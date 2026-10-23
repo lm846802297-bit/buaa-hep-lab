@@ -14,6 +14,8 @@ import { notify, confirmAction } from '../composables/feedback'
 import { isTalkEmail, isConferenceEmail, isNoticeEmail, detectScheduleType, parseTalkMetadataLocally, parseConferenceMetadataLocally, pickChinesePartIfDual, applyInstitutionLocationPrefix } from '../utils/talkEmail'
 import { isAiAssistantReady, extractScheduleFromEmailWithAi, extractConferenceFromEmailWithAi, loadAiConfig, isModelVisionCapable } from '../services/aiService'
 
+import { buildEmailHtmlDocument } from '../utils/emailHtml'
+
 const route = useRoute()
 const currentUser = ref(null)
 
@@ -2098,10 +2100,14 @@ onBeforeUnmount(() => {
         
         <div v-else class="mail-reader-content glass-card">
           <!-- 富文本展示 -->
-          <div
+          <iframe
             v-if="showBodyHtml && emailDetail?.body_html"
             class="email-html-sandbox"
-            v-html="emailDetail.body_html"
+            title="邮件正文（隔离显示）"
+            sandbox=""
+            referrerpolicy="no-referrer"
+            loading="lazy"
+            :srcdoc="buildEmailHtmlDocument(emailDetail.body_html)"
           />
           <!-- 纯文本展示 -->
           <pre v-else class="email-plain-text">{{ emailDetail?.body_text || selectedEmail.snippet }}</pre>
@@ -3786,15 +3792,14 @@ onBeforeUnmount(() => {
 }
 
 .email-html-sandbox {
-  color: var(--text);
-  line-height: 1.75;
-  font-size: 14px;
-  word-break: break-word;
-}
-
-.email-html-sandbox a {
-  color: var(--accent);
-  text-decoration: underline;
+  display: block;
+  width: 100%;
+  height: 55vh;
+  min-height: 320px;
+  max-height: 65vh;
+  border: 0;
+  border-radius: 8px;
+  background: #fff;
 }
 
 .email-plain-text {
