@@ -82,11 +82,11 @@ jobs:
                 cloudflare=1 ;;
             esac
             case "$file" in
-              package.json|package-lock.json|frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*|.github/workflows/deploy.yml)
+              package.json|package-lock.json|scripts/verify-cloudflare.mjs|frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*|.github/workflows/deploy.yml)
                 case "$file" in *.test.*|*.spec.*) ;; *) build=1 ;; esac ;;
             esac
             case "$file" in
-              package.json|package-lock.json|frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*|frontend/functions/*|frontend/wrangler.json|scripts/schema_d1.sql|.github/workflows/deploy.yml)
+              package.json|package-lock.json|scripts/verify-cloudflare.mjs|frontend/src/*|frontend/public/*|frontend/index.html|frontend/package.json|frontend/package-lock.json|frontend/vite.config.*|frontend/scripts/*|frontend/functions/*|frontend/wrangler.json|scripts/schema_d1.sql|.github/workflows/deploy.yml)
                 case "$file" in *.test.*|*.spec.*) ;; *) pages_deploy=1 ;; esac ;;
             esac
             case "$file" in
@@ -243,7 +243,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
       - name: Isolated Cloudflare security checks
-        if: needs.changes.outputs.cloudflare == '1'
+        if: needs.changes.outputs.cloudflare == '1' && needs.changes.outputs.build != '1'
         run: node scripts/verify-cloudflare.mjs
 
   release:
