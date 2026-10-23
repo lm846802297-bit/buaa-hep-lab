@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import PublicThemeSwitcher from './PublicThemeSwitcher.vue'
 import PublicSectionNav from './PublicSectionNav.vue'
+import PublicBrand from './PublicBrand.vue'
 import { usePublicHeroVisual } from '../composables/usePublicHeroVisual'
 import { lab } from '../content/lab'
 
@@ -13,10 +14,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   <div class="public-home-theme--obsidian-gray" data-public-home-theme="obsidian-gray" :class="{ 'hero-visual-blueprint': heroVisualMode === 'blueprint', 'hero-visual-photo': heroVisualMode === 'photo', 'hero-visual-terminal': heroVisualMode === 'terminal' }">
     <PublicSectionNav />
     <header class="public-header">
-      <a href="#top" class="public-brand" aria-label="课题组首页" @click="menuOpen = false">
-        <svg class="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="24" cy="24" r="17"/><ellipse cx="24" cy="24" rx="9" ry="22" transform="rotate(45 24 24)"/><path d="M3 24h42"/><circle cx="24" cy="24" r="3" fill="currentColor"/></svg>
-        <span><strong>{{ lab.shortName }}</strong><small>北京航空航天大学 · 物理学院</small></span>
-      </a>
+      <PublicBrand to="/#top" @click="menuOpen = false" />
       <button class="menu-toggle button secondary" :aria-expanded="menuOpen" aria-controls="public-navigation" @click="menuOpen = !menuOpen">{{ menuOpen ? '关闭菜单' : '菜单' }}</button>
       <nav id="public-navigation" :class="{ open: menuOpen }" aria-label="官网导航">
         <a href="#research" @click="menuOpen = false">研究方向</a><a href="#research-guides" @click="menuOpen = false">专题导读</a><a href="#publications" @click="menuOpen = false">代表成果</a><a href="#physics-resources" @click="menuOpen = false">物理资源</a><a href="#about" @click="menuOpen = false">关于我们</a>
