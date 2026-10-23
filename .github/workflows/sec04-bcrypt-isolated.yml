@@ -1,0 +1,67 @@
+name: SEC-04 isolated bcrypt Worker
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_isolated_deploy:
+        description: "Type DEPLOY-ISOLATED-BCRYPT to authorize deployment of the isolated benchmark Worker only"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sec04-isolated-bcrypt
+  cancel-in-progress: false
+
+jobs:
+  deploy-isolated-worker:
+    if: github.ref == 'refs/heads/main' && inputs.confirm_isolated_deploy == 'DEPLOY-ISOLATED-BCRYPT'
+    runs-on: ubuntu-latest
+    environment: sec04-benchmark
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Validate isolated deployment inputs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BENCHMARK_TOKEN: ${{ secrets.BENCHMARK_TOKEN }}
+          CLOUDFLARE_ACCOUNT_SUBDOMAIN: ${{ vars.CLOUDFLARE_ACCOUNT_SUBDOMAIN }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Missing CLOUDFLARE_API_TOKEN in sec04-benchmark environment"; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::Missing CLOUDFLARE_ACCOUNT_ID in sec04-benchmark environment"; exit 1; }
+          test "${#BENCHMARK_TOKEN}" -ge 32 || { echo "::error::BENCHMARK_TOKEN must be at least 32 characters"; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_SUBDOMAIN" || { echo "::error::Missing CLOUDFLARE_ACCOUNT_SUBDOMAIN in sec04-benchmark environment"; exit 1; }
+          node --input-type=module -e "import fs from 'node:fs'; const s=fs.readFileSync('benchmarks/bcrypt/wrangler.jsonc','utf8'); if(!s.includes('"name": "buaa-hep-bcrypt-benchmark"')||!s.includes('"main": "worker.mjs"'))process.exit(1)"
+      - name: Deploy only the isolated benchmark Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy --config benchmarks/bcrypt/wrangler.jsonc
+      - name: Set isolated benchmark token
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BENCHMARK_TOKEN: ${{ secrets.BENCHMARK_TOKEN }}
+        run: printf '%s' "$BENCHMARK_TOKEN" | npx wrangler secret put BENCHMARK_TOKEN --config benchmarks/bcrypt/wrangler.jsonc
+      - name: Verify unauthenticated endpoint fails closed
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_SUBDOMAIN: ${{ vars.CLOUDFLARE_ACCOUNT_SUBDOMAIN }}
+        run: |
+          set -euo pipefail
+          endpoint="https://buaa-hep-bcrypt-benchmark.${CLOUDFLARE_ACCOUNT_SUBDOMAIN}.workers.dev/benchmark?sample=unauth-check"
+          status="$(curl -sS -X POST -H 'Content-Type: application/json' --data '{"cost":6,"bytes":12,"operation":"hash"}' -o /dev/null -w '%{http_code}' "$endpoint")"
+          test "$status" = "404" || { echo "::error::Unauthenticated endpoint returned $status, expected 404"; exit 1; }
