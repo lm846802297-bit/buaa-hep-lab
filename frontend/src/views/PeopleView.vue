@@ -5,7 +5,7 @@ import { publicationReviewStatus } from '../utils/publicationReview'
 
 const people = computed(() => publicPeople.filter(person => person.visibility === 'public'))
 const reviewStatus = person => publicationReviewStatus(person.last_verified_at)
-onMounted(() => { document.title = '团队与学术指导 | BUAA HEP Hub' })
+onMounted(() => { document.title = `团队与学术指导 | ${publicBrandIdentity.name}` })
 </script>
 
 <template>
