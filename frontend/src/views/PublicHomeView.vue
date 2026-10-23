@@ -38,7 +38,7 @@ const resourceCategory = ref('all')
 const resourceCategories = [...new Set(publicResources.map(resource => resource.category))]
 const visibleResources = computed(() => publicResources.filter(resource => resourceCategory.value === 'all' || resource.category === resourceCategory.value))
 onMounted(() => {
-  document.title = `${lab.name}${lab.provisional ? '（暂定）' : ''} | ${lab.field}`
+  document.title = `${publicBrandIdentity.name} | ${lab.field}`
 
   // A cross-page hash link can arrive before Vue has rendered the target section.
   // Re-apply the fragment after mount so links such as /#research-guides land correctly.
