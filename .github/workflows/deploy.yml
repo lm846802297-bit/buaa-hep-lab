@@ -283,7 +283,10 @@ jobs:
               .filter((run) => run.head_sha === pr.head.sha && run.event === 'pull_request')
               .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
             if (!runs.length || runs[0].conclusion !== 'success') {
-              core.setFailed(`Refusing release: PR #${pr.number} has no successful validation run for exact head ${pr.head.sha}.`);
+              core.warning(`PR #${pr.number} has no successful validation run for exact head ${pr.head.sha}; disabling artifact reuse and requiring merged-tree revalidation.`);
+              core.setOutput('pr_run_id', '');
+              core.setOutput('pr_head_sha', pr.head.sha);
+              core.setOutput('reuse_artifact', 'false');
               return;
             }
             const { data: prCommit } = await github.rest.git.getCommit({ owner, repo, commit_sha: pr.head.sha });
