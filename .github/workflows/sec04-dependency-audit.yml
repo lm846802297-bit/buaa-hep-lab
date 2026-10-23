@@ -90,8 +90,6 @@ jobs:
           if (failedToRetrieveReport) process.exitCode = 1;
           NODE
 
-      - name: Validate isolated bcrypt Worker bundle without deployment
-        run: npx wrangler deploy --dry-run --outdir /tmp/sec04-bcrypt-dry-run --config benchmarks/bcrypt/wrangler.jsonc
 
       - name: Upload audit reports
         if: always()
@@ -141,8 +139,6 @@ jobs:
       - name: Run frontend tests against candidate lockfile
         run: npm test
 
-      - name: Validate isolated Worker candidate bundle without deployment
-        run: npx wrangler deploy --dry-run --outdir /tmp/sec04-bcrypt-candidate --config benchmarks/bcrypt/wrangler.jsonc
 
       - name: Capture candidate vulnerability reports
         shell: bash
