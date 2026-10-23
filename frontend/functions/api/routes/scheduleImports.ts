@@ -379,7 +379,18 @@ app.post('/scrape-url', async (c) => {
     return c.json({ detail: '请提供待抓取的网址链接' }, 400);
   }
 
-  const result = await scrapeUrlDeep(targetUrl);
+  const allowedHosts = (c.env.SCRAPER_ALLOWED_HOSTS || '')
+    .split(',')
+    .map((host) => host.trim().toLowerCase().replace(/\.$/, ''))
+    .filter(Boolean);
+
+  if (allowedHosts.length === 0) {
+    return c.json({
+      detail: '网页抓取功能尚未配置可信域名白名单，请联系管理员配置 SCRAPER_ALLOWED_HOSTS。',
+    }, 503);
+  }
+
+  const result = await scrapeUrlDeep(targetUrl, allowedHosts);
   if (!result.success) {
     return c.json({ detail: result.error || '抓取网页失败' }, 400);
   }
