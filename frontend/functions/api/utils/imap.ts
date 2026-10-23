@@ -506,7 +506,7 @@ export class CloudflareImapClient {
   private tagIndex = 0;
 
   async connect(hostname: string, port: number = 993, timeoutMs: number = 10000): Promise<string> {
-    this.socket = connect({ hostname, port }, { secureTransport: 'on' });
+    this.socket = connect({ hostname, port }, { secureTransport: 'on' as const, allowHalfOpen: false });
     this.reader = this.socket.readable.getReader();
     this.writer = this.socket.writable.getWriter();
 
