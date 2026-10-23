@@ -4,7 +4,7 @@
   "private": true,
   "description": "Root build adapter for Cloudflare Pages Git deployments of the frontend workspace.",
   "scripts": {
-    "postinstall": "if [ ! -x frontend/node_modules/.bin/vite ]; then npm --prefix frontend ci; fi; mkdir -p node_modules/.bin; ln -sf ../../frontend/node_modules/.bin/playwright node_modules/.bin/playwright",
+    "postinstall": "npm --prefix frontend ci",
     "test:unit": "npm --prefix frontend test",
     "build": "npm --prefix frontend run build && rm -rf dist functions && cp -a frontend/dist dist && cp -a frontend/functions functions",
     "check:bundle": "npm --prefix frontend run check:bundle"
