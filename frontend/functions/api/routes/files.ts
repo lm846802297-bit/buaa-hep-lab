@@ -18,8 +18,15 @@ const ALLOWED_TYPES = new Set([
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 ]);
 
+function toDigestArrayBuffer(input: ArrayBuffer | Uint8Array): ArrayBuffer {
+  if (input instanceof ArrayBuffer) return input;
+  const copy = new ArrayBuffer(input.byteLength);
+  new Uint8Array(copy).set(input);
+  return copy;
+}
+
 async function computeSha256(buffer: ArrayBuffer | Uint8Array): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', toDigestArrayBuffer(buffer));
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
