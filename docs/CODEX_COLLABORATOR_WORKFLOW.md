@@ -1,5 +1,7 @@
 # LabHub 协同开发与 Vibe Coding 执行手册（面向 Codex / AI 编程助手）
 
+> **本仓库的执行边界：** 本文保留上游工作流作参考。不得按旧示例直接推送 `main` 或执行生产直传。先在功能分支修改并运行测试，创建 PR，检查该 PR 精确 SHA 的 CI；合并后由 `.github/workflows/deploy.yml` 执行唯一的仓库控制生产发布，并要求发布后健康/匿名授权检查通过。项目名、资源绑定与发布状态以 [发布权威记录](RELEASE_AUTHORITY.md) 为准。
+
 > 本文档专为在合作者电脑上运行的 **Codex / AI Agent** 编写。旨在指导 Codex 理解本项目架构、掌握已授权的 Cloudflare Wrangler CLI 操作权限，并遵循标准化闭环流程完成需求研发、D1 数据库管理、自动化测试、秒级预览部署与 GitHub 同步。
 
 ---
@@ -119,35 +121,34 @@ npx vitest run
 - **通过标准**：所有测试套件（9+ files，58+ tests）必须 100% 全部通过。
 - 如新功能改变了预期文案或逻辑，同步补充或更新对应的 `*.test.js` 测试用例。
 
-### Step 6: 生产环境打包 & Cloudflare Pages 直传预览
-为了让合作者和导师能够秒级在公网看到最新修改效果，无需等待 GitHub Actions 排队：
+### Step 6: 本地构建与 Pages 本地预览（不发布生产）
+
+先确认本地测试通过，再构建并启动本地 Pages 模拟环境。此步骤不会上传文件或改变生产：
+
 ```bash
 cd frontend
-
-# 1. 静态打包构建（验证无语法/类型错误）
+npm ci
 npm run build
-
-# 2. 直传至 Cloudflare Pages 生产预览
-npm run pages:deploy
+npm run pages:dev
 ```
-- 部署成功后，终端会输出公网预览地址（如 `https://labhub.pages.dev`）。
 
-### Step 7: Git 提交并推送到 GitHub
-直传验证通过后，将完整代码提交入库并推送：
+- 在本机打开 Wrangler 输出的本地地址，检查路由、静态资源和本地 D1 行为。
+- 不要将 `npm run pages:deploy` 当作预览命令；该命令会向 Cloudflare 上传构建产物。
+
+### Step 7: 提交功能分支并创建 PR
+
 ```bash
-# 检查工作区变动
 git status
-
-# 暂存修改文件
+git switch -c feat/my-change
 git add <modified-files>
-
-# 规范化语义提交
-git commit -m "feat/fix: <简明扼要的修改描述>"
-
-# 推送到远程 main 分支
-git push origin main
+git commit -m "fix: describe the change"
+git push -u origin feat/my-change
 ```
-- 推送到 GitHub 后，会自动触发 `.github/workflows/deploy.yml` 的 Actions 自动化部署流水线，确保仓库历史与云端部署保持双重同步。
+
+- 将功能分支提交为 PR，目标分支为 `main`。
+- 检查 PR 对应精确 SHA 的完整 CI；失败先修复，不叠加新功能。
+- 不直接推送 `main`。合并后由 `.github/workflows/deploy.yml` 执行生产部署；只有 deploy job 和发布后检查都成功，才能记为已发布。
+
 
 ---
 
