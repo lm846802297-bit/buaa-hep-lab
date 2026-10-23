@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import PublicThemeSwitcher from './PublicThemeSwitcher.vue'
 import PublicSectionNav from './PublicSectionNav.vue'
 import PublicBrand from './PublicBrand.vue'
+import { publicBrandIdentity } from '../content/brandIdentity'
 import { usePublicHeroVisual } from '../composables/usePublicHeroVisual'
 import { lab } from '../content/lab'
 
@@ -39,7 +40,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
         <span class="blueprint-coordinate coordinate-right">COLLISIONS / DETECTORS / DATA / DISCOVERY</span>
       </div>
       <div class="hero-copy">
-        <div class="hero-eyebrow"><span class="status-dot"></span> {{ lab.english }} <span class="eyebrow-rule" aria-hidden="true"></span></div>
+        <div class="hero-eyebrow"><span class="status-dot"></span> {{ publicBrandIdentity.englishDescriptor }} <span class="eyebrow-rule" aria-hidden="true"></span></div>
         <h1 class="hero-title">Particle Physics<br><span>Research Group</span></h1>
         <p class="hero-intro">{{ lab.intro }}</p>
         <div class="hero-actions">
