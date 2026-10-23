@@ -123,7 +123,7 @@ jobs:
 
   validate:
     needs: changes
-    if: github.event_name == 'pull_request' && (needs.changes.outputs.need_node == '1' || needs.changes.outputs.need_python == '1')
+    if: github.event_name == 'pull_request' && needs.changes.outputs.need_node == '1'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -158,29 +158,20 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
-      - uses: actions/setup-python@v5
-        if: needs.changes.outputs.need_python == '1'
+
+      - name: Cache Playwright browser binaries
+        if: needs.changes.outputs.browser == '1'
+        uses: actions/cache@v4
         with:
-          python-version: '3.12'
-          cache: pip
-          cache-dependency-path: backend/requirements-test.txt
-      - name: FastAPI regression tests
-        if: needs.changes.outputs.backend_tests == '1'
-        env:
-          LABHUB_SECRET_KEY: isolated-ci-test-secret-never-for-production-32-plus
-          LABHUB_DB_PATH: /tmp/buaa-hep-ci.db
-          SEED_DEMO_DATA: '1'
-        run: |
-          pip install -r backend/requirements-test.txt
-          python -m pytest backend -q
-      - name: Teaching benchmark check
-        if: needs.changes.outputs.learning == '1'
-        run: python frontend/public/learning/two_body_decay.py
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
       - name: Install Chromium for high-impact UI changes
         if: needs.changes.outputs.browser == '1'
         timeout-minutes: 5
-        # Keep browser download separate from OS packages so a stalled network
-        # request is identifiable and cannot block the whole validation job.
+        # Reuse cached browser binaries; Playwright installs only the exact revision
+        # required by the lockfile when the cache is cold or outdated.
         run: |
           set -euo pipefail
           npx --prefix frontend playwright install chromium
@@ -245,6 +236,42 @@ jobs:
       - name: Isolated Cloudflare security checks
         if: needs.changes.outputs.cloudflare == '1' && needs.changes.outputs.build != '1'
         run: node scripts/verify-cloudflare.mjs
+
+  backend:
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.backend_tests == '1'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements-test.txt
+      - name: FastAPI regression tests
+        env:
+          LABHUB_SECRET_KEY: isolated-ci-test-secret-never-for-production-32-plus
+          LABHUB_DB_PATH: /tmp/buaa-hep-ci.db
+          SEED_DEMO_DATA: '1'
+        run: |
+          pip install -r backend/requirements-test.txt
+          python -m pytest backend -q
+
+  learning:
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.learning == '1'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Teaching benchmark check
+        run: python frontend/public/learning/two_body_decay.py
 
   release:
     needs: changes
