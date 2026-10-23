@@ -1,8 +1,12 @@
 name: Validate and deploy BUAA HEP Hub
 
-# TEMPORARY PAUSE: automatic PR CI and main push/release triggers are disabled.
-# Restore `push` and `pull_request` events after Actions minutes reset.
+# Pull requests targeting main are validated; eligible main-branch updates are deployed by the release job.
 on:
+  # Validate pull requests targeting main and deploy validated production changes after merge.
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       deploy_production:
