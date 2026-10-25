@@ -17,11 +17,21 @@ Environment variable：
 
 部署后在 Workers Free 的 10 ms CPU 限额下，必须按 cost 分组执行 pilot：每个 cost 单独 16 个请求（8 个输入/操作组合 × 1 次预热 + 1 次测量）。先测 cost 6，再分别测 cost 7 和 cost 8。保留所有失败，不自动启动完整扫描；cost 7/8 的 CPU 超限是待测结果，不应因预期超限而循环重试。PowerShell 下使用前文 SecureString 方式设置本地 `BENCHMARK_TOKEN`，再运行：
 
+先运行 cost 6（16 个请求：8 个预热 + 8 个测量）：
+
 ```powershell
-# Each invocation tests one cost only: 16 requests per cost (8 warmup + 8 measured).
 node frontend/benchmarks/bcrypt/run.mjs --runtime cloudflare --cost 6 --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 1 --warmup 1 --out cloudflare-cost-6.json
-# Run cost 7 and 8 only after inspecting the prior report and CPU logs.
+```
+
+检查报告和调用级 CPU 日志后，才单独运行 cost 7：
+
+```powershell
 node frontend/benchmarks/bcrypt/run.mjs --runtime cloudflare --cost 7 --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 1 --warmup 1 --out cloudflare-cost-7.json
+```
+
+再检查 cost 7 的报告，决定是否单独运行 cost 8：
+
+```powershell
 node frontend/benchmarks/bcrypt/run.mjs --runtime cloudflare --cost 8 --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 1 --warmup 1 --out cloudflare-cost-8.json
 ```
 
