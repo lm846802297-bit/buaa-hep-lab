@@ -107,11 +107,20 @@ for (const topic of terms.topics) {
 
 // Use a real XML parser rather than relying on browser error recovery for malformed SVG.
 const parserCode = 'import sys, xml.etree.ElementTree as ET; [ET.parse(path) for path in sys.argv[1:]]'
-const pythonCommands = [
-  { command: 'python3', prefix: [] },
-  { command: 'python', prefix: [] },
-  { command: 'py', prefix: ['-3'] },
-]
+// On Windows, the optional python3.exe App Execution Alias may launch the
+// Microsoft Store placeholder instead of a real interpreter. Prefer the Python
+// launcher and the standard python command there; keep python3 first on POSIX.
+const pythonCommands = process.platform === 'win32'
+  ? [
+      { command: 'py', prefix: ['-3'] },
+      { command: 'python', prefix: [] },
+      { command: 'python3', prefix: [] },
+    ]
+  : [
+      { command: 'python3', prefix: [] },
+      { command: 'python', prefix: [] },
+      { command: 'py', prefix: ['-3'] },
+    ]
 let parsed = false
 for (const candidate of pythonCommands) {
   const result = spawnSync(candidate.command, [...candidate.prefix, '-c', parserCode, ...svgPaths], {
