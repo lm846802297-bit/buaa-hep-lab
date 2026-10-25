@@ -137,20 +137,20 @@
 
 ### 3.7 执行事件与版本递增
 
-§ExecutionEvent§ 是追加式状态变更记录，至少包含 §id§、§event_type§、§from_status§、§to_status§、§occurred_at§、§actor_user_id§、§summary§、§exit_code§（可空）和 §artifact_ids§。§execution_status§ 应由有效事件序列推导，而不是允许客户端任意写入。
+`ExecutionEvent` 是追加式状态变更记录，至少包含 `id`、`event_type`、`from_status`、`to_status`、`occurred_at`、`actor_user_id`、`summary`、`exit_code`（可空）和 `artifact_ids`。`execution_status` 应由有效事件序列推导，而不是允许客户端任意写入。
 
 允许的状态转移：
 
 | 当前状态 | 事件 | 新状态 |
 |---|---|---|
-| §not_run§ | §execution_started§ | §running§ |
-| §running§ | §execution_succeeded§ | §succeeded§ |
-| §running§ | §execution_failed§ | §failed§ |
-| §running§ | §execution_cancelled§ | §cancelled§ |
+| `not_run` | `execution_started` | `running` |
+| `running` | `execution_succeeded` | `succeeded` |
+| `running` | `execution_failed` | `failed` |
+| `running` | `execution_cancelled` | `cancelled` |
 
-终态 §succeeded§、§failed§、§cancelled§ 不允许原位转换。重跑或纠正输入/代码时新建记录，通过 §parent_run_id§ 或 §supersedes_id§ 关联。
+终态 `succeeded`、`failed`、`cancelled` 不允许原位转换。重跑或纠正输入/代码时新建记录，通过 `parent_run_id` 或 `supersedes_id` 关联。
 
-任何修改主记录或追加子记录（执行事件、核查记录、约束评估、附件引用）的成功写操作，都必须在同一事务中递增主记录 §record_version§。这样并发 §PATCH§ 才能检测到在其读取之后发生的子记录变更。若当前后端无法保证原子性，实现前必须先设计事务/补偿策略。
+任何修改主记录或追加子记录（执行事件、核查记录、约束评估、附件引用）的成功写操作，都必须在同一事务中递增主记录 `record_version`。这样并发 `PATCH` 才能检测到在其读取之后发生的子记录变更。若当前后端无法保证原子性，实现前必须先设计事务/补偿策略。
 
 ## 4. 示例对象（示意，不是当前 API 响应）
 
