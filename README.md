@@ -9,7 +9,7 @@
 - 当前生产部署目标为 Cloudflare Pages + D1，暂不启用 R2；`frontend/wrangler.json` 因此不声明 `FILES_BUCKET` 绑定，避免部署依赖尚未创建的桶。代码保留可选 R2 适配，但未绑定时附件走 D1，单文件上限为 1 MiB；超过上限请使用外部网盘链接。未来只有在 Cloudflare 创建 `buaa-hep-hub-files` 桶、配置 `FILES_BUCKET` 并通过上传/下载验收后，才可将 R2 视为启用，届时上限可提高至 15 MiB。
 - 本仓库不包含生产数据库、用户账号数据、初始化码或登录凭据。部署密钥需要在自己的环境单独配置。
 - 从 GitHub 下载源码后，本地运行前需安装前端依赖并构建：`npm --prefix frontend ci`、`npm --prefix frontend run build`，然后运行 `start-windows.cmd`。
-- 此次仅保存源码，未配置 GitHub 到 Cloudflare 的自动发布凭据。
+- 发布凭据不写入源码。自动发布是否可用须检查仓库 Actions Secrets（`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`）与最新 release run；仅凭工作流文件存在不能认定凭据已配置或生产发布成功。
 
 本轮已按审计修复资料/组会权限与 Token 撤销，加入登录限速；公开页采用课题组确认的 16 篇论文、6 类与 5 个研究方向。
 
@@ -17,9 +17,9 @@
 
 登录后的资料库与工作台现提供“学习与计算”入口（`/learning`）：五个基础学习专题、权威资源索引、公式源码、笔记导出和复现记录模板。内容为非保密学习初稿，学术维护者待指定；两体衰变 Python 基准可本地执行，FeynCalc 示例尚未在 Mathematica 中实测。静态学习资料不适合存放保密内容。
 
-验证方法、性能基线和运行时边界见 [实施与验收报告](docs/audit/实施与验收报告.md)。CI 对前端与 API 执行自动化测试、生产构建、入口预算检查、浏览器和本地 Pages 运行时检查。GitHub Pages 演示发布改为手动且需启用变量；Cloudflare 自动发布仍需设置专用仓库 Secrets。
+验证方法、性能基线和运行时边界见 [实施与验收报告](docs/audit/实施与验收报告.md)。发布工作流在符合条件的 `main` 更新后核验候选 PR 的最新 HEAD，再执行生产构建、必要检查、部署与线上健康/匿名授权检查；手动触发时必须显式勾选 `deploy_production`。工作流引用的 Secrets 是否已配置、某次部署是否成功，必须以仓库设置与对应 Actions run 为准。
 
-以下保留原项目说明与来源信息。
+以下保留上游 LabOrbit 的部分原始说明，用于记录来源与通用架构背景。**这些内容不是本仓库当前生产环境的权威操作手册**：其中的演示身份/数据、默认邀请口令、旧仓库克隆命令、存储绑定、测试数量和手动部署命令可能不适用于本项目。当前生产配置以本文顶部状态、`frontend/wrangler.json`、`.github/workflows/deploy.yml` 和 [当前 Cloudflare 部署说明](docs/CLOUDFLARE_DEPLOYMENT.md) 为准；不要照抄旧命令操作生产数据库或绕过发布门禁。
 
 ---
 
@@ -39,7 +39,7 @@
   <a href="#-中文文档"><img src="https://img.shields.io/badge/文档-简体中文-blue.svg" alt="Chinese Doc"></a>
   <a href="#-english-documentation"><img src="https://img.shields.io/badge/Document-English-green.svg" alt="English Doc"></a>
   <img src="https://img.shields.io/badge/License-MIT-emerald.svg" alt="License">
-  <img src="https://img.shields.io/badge/Tests-738%20passed-brightgreen.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-verified%20per%20commit-informational.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Python-3.11+-3776AB.svg?logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Vue.js-3.x-4FC08D.svg?logo=vuedotjs&logoColor=white" alt="Vue 3">
   <img src="https://img.shields.io/badge/FastAPI-0.110+-009688.svg?logo=fastapi&logoColor=white" alt="FastAPI">
@@ -104,7 +104,7 @@
 
 系统采用前后端分离架构，提供两种部署形态：
 - **自建服务模式**：基于 Python FastAPI 与 SQLite，适合在局域网工作站或云服务器上直接运行；
-- **Serverless 托管模式**：基于 Cloudflare Pages Functions、D1 关系数据库与 R2 存储桶，无需自备常开服务器。
+- **Serverless 托管模式**：基于 Cloudflare Pages Functions 与 D1；R2 是可选扩展，当前仓库配置未声明 `FILES_BUCKET`，不能把 R2 描述为已启用。
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -116,11 +116,11 @@
          ▼                                                     ▼
 ┌──────────────────────────────────┐  ┌──────────────────────────────────┐
 │        自建模式 (Self-Hosted)    │  │    Serverless 托管 (Cloudflare)  │
-│      FastAPI + SQLite + Docker   │  │     Pages Functions + D1 + R2    │
+│      FastAPI + SQLite + Docker   │  │  Pages Functions + D1 (R2 可选)  │
 ├──────────────────────────────────┤  ├──────────────────────────────────┤
 │ • Python 异步后端 API            │  │ • Cloudflare Pages 静态与边缘函数│
 │ • SQLite3 本地单文件数据库       │  │ • Cloudflare D1 边缘关系数据库   │
-│ • 本地目录持久化存储             │  │ • Cloudflare R2 对象存储 (免流量)│
+│ • 本地目录持久化存储             │  │ • 当前 D1 附件回退；R2 未绑定    │
 └──────────────────────────────────┘  └──────────────────────────────────┘
 ```
 
@@ -205,29 +205,15 @@ docker compose -f deploy/docker-compose.yml up -d
 - **数据目录**：数据库保存于宿主机 `./data/labhub.db`，容器更新重启不影响已有数据；
 - **环境变量**：可在 `deploy/docker-compose.yml` 中修改注册邀请码 `LABHUB_INVITE_CODE` 与密钥 `LABHUB_SECRET_KEY`。
 
-#### 方式三：Cloudflare 托管部署（无需自备服务器）
+#### 方式三：Cloudflare Pages（本仓库的当前发布路径）
 
-若没有独立的常开服务器，可部署在 Cloudflare 免费套餐（Pages + D1 数据库 + R2 存储桶）上：
+当前仓库的 `frontend/wrangler.json` 声明 D1 绑定 `DB`，没有声明 `FILES_BUCKET`/R2 绑定。未绑定 R2 时，站内附件上限为 1 MiB；更大的讲义或资料应使用经过确认的外部链接。不要为照搬上游说明而新建另一套数据库、导入示例数据或手动运行 `wrangler pages deploy`。
 
-1. **登录 Wrangler**：
-   ```bash
-   npm install -g wrangler
-   npx wrangler login
-   ```
-2. **创建 D1 数据库与 R2 存储桶**：
-   ```bash
-   cd frontend
-   npx wrangler d1 create labhub-db
-   npx wrangler r2 bucket create labhub-files
-   npx wrangler d1 execute labhub-db --file=functions/schema.sql
-   ```
-3. **构建并发布**：
-   ```bash
-   npm run build
-   npx wrangler pages deploy dist --project-name lab-orbit
-   ```
+1. **先检查发布配置**：确认 `frontend/wrangler.json`、`scripts/schema_d1.sql` 与 `.github/workflows/deploy.yml`；发布凭据只通过仓库 Actions Secrets 提供，不提交到源码。
+2. **通过 PR 发布**：先在当前 PR HEAD 上完成相关测试与构建检查。合并后，工作流只会在满足发布条件且没有 `[skip-prod-deploy]` 标记时部署；工作流手动触发时必须显式勾选 `deploy_production`。
+3. **核对实际结果**：以对应 Actions run 的最终 SHA、部署步骤和线上健康/匿名授权检查为证据。源码配置本身不能证明生产环境已经部署或运行正常。
 
-具体配置说明与数据迁移步骤可参考 [Cloudflare 部署指南](docs/CLOUDFLARE_DEPLOYMENT.md)。
+R2 仅是未来可选扩展。只有在资源、费用/账户条件、`FILES_BUCKET` 绑定以及隔离环境上传/下载验收均明确通过后，才能另行修改配置。详细边界见 [当前 Cloudflare 部署说明](docs/CLOUDFLARE_DEPLOYMENT.md)。
 
 ---
 
@@ -299,7 +285,7 @@ docker compose -f deploy/docker-compose.yml up -d
 5. **页面布局与视觉重整规范**：详述 Liquid Glass 流动毛玻璃设计变量、`BaseDialog` 双重坐标判定防误关黄金规则，以及多端自适应响应式设计；
 6. **3D 动画、微动效与 KaTeX 渲染**：指导调节 Three.js 封面轮播景深与手势阻尼、Hover 卡片微动效，以及 LaTeX 数学公式实时排版引擎；
 7. **设计图标体系扩展与品牌替换**：基于 `AppIcon.vue` 的 50+ 语义化 SVG 矢量图标字典扩展机制；
-8. **质量门禁与测试验收清单**：包含 102 个测试文件、738 项测试 100% 通过核查、多环境静态构建与本地服务拉起验证。
+8. **质量门禁与测试验收清单**：按当前代码和任务影响范围执行前端、后端、构建、浏览器与隔离运行时检查；实际通过情况以最新提交对应的 CI 记录为准。
 
 ### 3. 如何借助 AI 进行 Vibe-Coding 定制
 在支持 Agent Skill 的编辑器（如 Antigravity、Cursor、Windsurf 等）中，无需手动翻阅全站代码，只需像与架构师对话一样提出需求，AI 将自动加载该 Skill 并执行精确修改：
@@ -309,7 +295,7 @@ docker compose -f deploy/docker-compose.yml up -d
 > - *"请在文献库卡片上新增一个‘一键复制 BibTeX’的按钮，并遵循三轨一致性原则补充接口和演示沙盒。"*
 > - *"帮我把组会 3D 海报轮播的旋转惯性调大一点，卡片加一个发光悬停特效。"*
 
-修改完成后，AI 将自动运行 `npm --prefix frontend test` 确保全部 738 项测试 100% 通过，杜绝功能回退。
+修改完成后，AI 应根据改动范围运行相应测试，并报告实际执行命令、通过/失败数量和对应提交 SHA；不得用历史测试数量或旧提交结果替代当前验收。
 
 ---
 
@@ -383,7 +369,9 @@ In academic research groups, researchers and students often encounter small but 
 3. **Fragmented Reference Materials**: Reference textbooks, lecture notes, and tutorial code repositories are scattered across personal computers and drives, making onboarding difficult for new students;
 4. **Scattered Colloquium Notices**: Department seminar announcements sent as email attachments or image posters are easily overlooked without proper calendar integration.
 
-**LabOrbit** was built to address these practical lab needs by organizing paper sharing, seminar schedules, reference materials, and academic reminders in one simple interface. It can be run on a local workstation or deployed serverless on Cloudflare's free tier.
+> **Upstream reference notice:** The following sections preserve parts of the original LabOrbit documentation for provenance and architecture context. They are not authoritative instructions for this BUAA deployment. Demo identities/data, invite-code examples, repository commands, storage bindings, test counts, and manual deployment commands may be stale or inapplicable. Use the current repository status above, `frontend/wrangler.json`, `.github/workflows/deploy.yml`, and the [current Cloudflare deployment guide](docs/CLOUDFLARE_DEPLOYMENT.md) for operational decisions.
+
+**LabOrbit** was built to address these practical lab needs by organizing paper sharing, seminar schedules, reference materials, and academic reminders in one simple interface. It can be run on a local workstation or deployed serverless on Cloudflare.
 
 ---
 
@@ -391,7 +379,7 @@ In academic research groups, researchers and students often encounter small but 
 
 LabOrbit is structured as a decoupled frontend-backend application with two deployment options:
 - **Self-Hosted Mode**: Built with Python FastAPI and SQLite, suitable for local workstations or private Linux servers;
-- **Serverless Mode**: Built with Cloudflare Pages Functions, D1 database, and R2 storage, requiring no dedicated server hardware.
+- **Serverless Mode**: Built with Cloudflare Pages Functions and D1; R2 is an optional extension and is not enabled by the current repository configuration.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -403,11 +391,11 @@ LabOrbit is structured as a decoupled frontend-backend application with two depl
          ▼                                                     ▼
 ┌──────────────────────────────────┐  ┌──────────────────────────────────┐
 │   Option A: Self-Hosted / Docker │  │ Option B: Cloudflare Serverless  │
-│      FastAPI + SQLite + Docker   │  │    Pages Functions + D1 + R2     │
+│      FastAPI + SQLite + Docker   │  │ Pages Functions + D1 (R2 optional)│
 ├──────────────────────────────────┤  ├──────────────────────────────────┤
 │ • Python Async backend API       │  │ • Cloudflare Pages & Edge API    │
 │ • SQLite3 single-file database   │  │ • Cloudflare D1 SQL database     │
-│ • Local disk file storage        │  │ • Cloudflare R2 object storage   │
+│ • Local disk file storage        │  │ • D1 fallback; R2 is not bound   │
 └──────────────────────────────────┘  └──────────────────────────────────┘
 ```
 
@@ -492,29 +480,15 @@ docker compose -f deploy/docker-compose.yml up -d
 - **Persistence**: SQLite database is saved to `./data/labhub.db`;
 - **Environment**: Adjust `LABHUB_INVITE_CODE` and `LABHUB_SECRET_KEY` in `deploy/docker-compose.yml` as needed.
 
-#### Option C: Cloudflare Serverless (Zero Hardware Cost)
+#### Option C: Cloudflare Pages (Current Release Path for This Repository)
 
-Deploy directly to Cloudflare's free tier (Pages + D1 database + R2 storage):
+The current `frontend/wrangler.json` declares the D1 binding `DB` and does not declare `FILES_BUCKET`/R2. Without R2, the current site attachment limit is 1 MiB; larger materials should use an approved external link. Do not create a second database, import sample data, or run `wrangler pages deploy` manually just to follow inherited upstream instructions.
 
-1. **Log in with Wrangler**:
-   ```bash
-   npm install -g wrangler
-   npx wrangler login
-   ```
-2. **Create D1 Database & R2 Bucket**:
-   ```bash
-   cd frontend
-   npx wrangler d1 create labhub-db
-   npx wrangler r2 bucket create labhub-files
-   npx wrangler d1 execute labhub-db --file=functions/schema.sql
-   ```
-3. **Build & Deploy**:
-   ```bash
-   npm run build
-   npx wrangler pages deploy dist --project-name lab-orbit
-   ```
+1. **Check the release configuration**: Review `frontend/wrangler.json`, `scripts/schema_d1.sql`, and `.github/workflows/deploy.yml`. Deployment credentials belong in repository Actions Secrets, never in source files.
+2. **Release through a PR**: Run the relevant tests and build checks on the current PR HEAD. After merge, the workflow deploys only when release conditions are met and the commit does not include `[skip-prod-deploy]`; manual dispatch requires explicitly enabling `deploy_production`.
+3. **Verify the actual result**: Use the corresponding Actions run, final SHA, deployment step, and live health/anonymous-authorization checks as evidence. Repository configuration alone does not prove production was deployed or is healthy.
 
-For detailed configuration steps, see the [Cloudflare Deployment Guide](docs/CLOUDFLARE_DEPLOYMENT.md).
+R2 remains a future optional extension. Change the configuration only after storage availability, account/cost conditions, the `FILES_BUCKET` binding, and isolated upload/download acceptance are all confirmed. See the [current Cloudflare deployment guide](docs/CLOUDFLARE_DEPLOYMENT.md).
 
 ---
 
@@ -586,7 +560,7 @@ The skill establishes 8 full-stack Standard Operating Procedures (SOPs):
 5. **UI & Layout Customization**: Liquid Glass design tokens, `BaseDialog` double-mousedown backdrop guard, and responsive design standards;
 6. **3D Animations & Scientific Typesetting**: Three.js 3D cover carousel tuning, CSS micro-interactions, and KaTeX LaTeX rendering;
 7. **Semantic Icon System**: Extending the central `AppIcon.vue` SVG icon library;
-8. **Pre-Flight Gates & Test Verification**: Complete test verification suite ensuring 100% pass rate across all 738 tests before shipping.
+8. **Pre-Flight Gates & Test Verification**: Run the checks relevant to the changed code and report the actual results for the current commit; historical test counts are not acceptance criteria.
 
 ### 3. How to Customize via Vibe-Coding
 In any AI-assisted coding environment (such as Antigravity, Cursor, or Windsurf), developers or lab members can simply issue high-level prompts:
@@ -596,7 +570,7 @@ In any AI-assisted coding environment (such as Antigravity, Cursor, or Windsurf)
 > - *"Add a 'Copy BibTeX' button to the literature card, following the Triple Consistency rule to keep FastAPI, Cloudflare Functions, and demo mock in sync."*
 > - *"Adjust the 3D seminar carousel dampening and add a glowing hover border to the cards."*
 
-The AI assistant will automatically consult the SOP, make precise modifications across the stack, and run `npm --prefix frontend test` to ensure all 738 tests pass with zero regressions.
+The AI assistant should consult the SOP, make scoped changes across the required adapters, run the relevant tests, and report the actual command, pass/fail counts, and commit SHA. Historical test totals must not substitute for current validation.
 
 ---
 
