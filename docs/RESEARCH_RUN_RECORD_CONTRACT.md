@@ -9,15 +9,15 @@
 
 课题组已有独立的 [high-energy-theory-research](https://github.com/lm846802297-bit/high-energy-theory-research) 工作流，用于维护研究变更、运行证据、产物指纹和物理 claim。该仓库的现有结构包括：
 
-- [研究变更 RC-001](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/research/RC-001-vll-higgs-singlet-uv-eft.md) 与 [RC-001 claim–evidence matrix](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/research/RC-001-claim-evidence-matrix.md)；
-- 候选 schema 中的 [run](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/schema/v1.4.3.7/schemas/run.schema.json)、[run_manifest](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/schema/v1.4.3.7/schemas/run_manifest.schema.json) 与 [artifact](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/schema/v1.4.3.7/schemas/artifact.schema.json)；
-- [Scientific Diff 工作流](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/docs/scientific-diff-workflow.md) 与 [research-change 模板](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/templates/research-change.md)。
+- [研究变更 RC-001](https://github.com/lm846802297-bit/high-energy-theory-research/blob/d6143c2aa15191ac8521e062d90860ba86713f00/research/RC-001-vll-higgs-singlet-uv-eft.md) 与 [RC-001 claim–evidence matrix](https://github.com/lm846802297-bit/high-energy-theory-research/blob/d6143c2aa15191ac8521e062d90860ba86713f00/research/RC-001-claim-evidence-matrix.md)；
+- 候选 schema 中的 [run](https://github.com/lm846802297-bit/high-energy-theory-research/blob/d6143c2aa15191ac8521e062d90860ba86713f00/schema/v1.4.3.7/schemas/run.schema.json)、[run_manifest](https://github.com/lm846802297-bit/high-energy-theory-research/blob/d6143c2aa15191ac8521e062d90860ba86713f00/schema/v1.4.3.7/schemas/run_manifest.schema.json) 与 [artifact](https://github.com/lm846802297-bit/high-energy-theory-research/blob/d6143c2aa15191ac8521e062d90860ba86713f00/schema/v1.4.3.7/schemas/artifact.schema.json)；
+- [Scientific Diff 工作流](https://github.com/lm846802297-bit/high-energy-theory-research/blob/d6143c2aa15191ac8521e062d90860ba86713f00/docs/scientific-diff-workflow.md) 与 [research-change 模板](https://github.com/lm846802297-bit/high-energy-theory-research/blob/d6143c2aa15191ac8521e062d90860ba86713f00/templates/research-change.md)。
 
 这些结构已经覆盖代码/配置/环境快照、运行状态、输入引用、输出、内容指纹、产物来源和 claim 证据。如果课题组网站再保存一份独立的参数、环境、输出、验证和实验约束真值，将造成两套状态可能分叉。
 
 ### 1.1 现有研究 schema 的批准状态
 
-`high-energy-theory-research` 的 `schema/v1.4.3.7/` 明确标记为 **candidate / not released**；`DD-ART-007` 至 `DD-ART-010` 仍待批准。候选包中部分 schema 的标题和 `$id` 仍标注 v1.4.2 或 v1.4.3.6，而目录版本为 v1.4.3.7。网站不得将该候选包当作已发布的规范，也不得自行修补版本差异后声称兼容。
+[high-energy-theory-research 的候选 schema 说明](https://github.com/lm846802297-bit/high-energy-theory-research/blob/d6143c2aa15191ac8521e062d90860ba86713f00/schema/v1.4.3.7/README.md) 明确标记为 **candidate / not released**；`DD-ART-007` 至 `DD-ART-010` 仍待批准。候选包中部分 schema 的标题和 `$id` 仍标注 v1.4.2 或 v1.4.3.6，而目录版本为 v1.4.3.7。网站不得将该候选包当作已发布的规范，也不得自行修补版本差异后声称兼容。
 
 因此，v1 仅保存规范化来源指针与必要的展示快照。来源 schema 版本作为不透明元数据保存；在研究仓库正式批准并发布 schema 契约之前，不执行规范性 schema 校验或自动迁移。
 
@@ -102,7 +102,63 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 
 这些内容应继续留在来源 research-change、run_manifest、artifact 和 claim–evidence 记录中。若 UI 需要展示，后续应通过有版本约束的只读解析/投影来实现，并展示来源 commit、manifest revision/fingerprint 和读取时间。不得在本 PR 中实现远程代码执行或向研究仓库写入。
 
-## 4. 附件与来源访问
+## 4. 示例索引对象（RC-001 映射草案，不是已创建记录）
+
+下面示例将 RC-001 表示为研究变更索引，而不是单次计算运行。commit SHA 是本次仓库检查时的来源快照；示例本身没有声称站内已执行来源哈希校验，也没有虚构 run/manifest ID。
+
+```json
+{
+  "id": "b7b12064-1cc2-49df-aab4-8e4c0f86c0e2",
+  "schema_version": "1.0.0",
+  "record_version": 1,
+  "title": "RC-001 — VLL–Higgs–Singlet UV–EFT matching",
+  "summary": "Verification in progress; overall model-level claim unresolved.",
+  "topic_slug": "higgs-portal-uv-eft",
+  "record_kind": "research_change",
+  "lifecycle_state": "active",
+  "visibility": "private",
+  "owner_user_id": "site-local-user-id",
+  "source_ref": {
+    "source_kind": "research_change",
+    "repository_url": "https://github.com/lm846802297-bit/high-energy-theory-research",
+    "commit_sha": "d6143c2aa15191ac8521e062d90860ba86713f00",
+    "project_id": "axial-vector-model-building",
+    "workstream_id": "vll-higgs-singlet-uv-eft",
+    "record_id": "RC-001",
+    "record_path": "research/RC-001-vll-higgs-singlet-uv-eft.md",
+    "claim_evidence_path": "research/RC-001-claim-evidence-matrix.md",
+    "task_id": null,
+    "run_id": null,
+    "run_plan_id": null,
+    "manifest_id": null,
+    "manifest_revision": null,
+    "artifact_ids": [],
+    "source_schema_version": null,
+    "source_content_sha256": null,
+    "hash_unavailable_reason": "This draft index does not include a computed source-content SHA-256.",
+    "source_access_mode": "link_only"
+  },
+  "display_snapshot": {
+    "source_integrity_status": "not_checked",
+    "source_checked_at": null,
+    "schema_compatibility_status": "not_applicable",
+    "execution_status_snapshot": "not_applicable",
+    "execution_snapshot_at": null,
+    "claim_status_summary": null,
+    "claim_status_source_path": null,
+    "claim_status_source_commit": null,
+    "summary_snapshot_at": null
+  },
+  "site_attachment_ids": [],
+  "created_at": "2026-01-01T00:00:00Z",
+  "updated_at": "2026-01-01T00:00:00Z",
+  "supersedes_id": null
+}
+```
+
+示例中的 UUID 和时间是说明字段形状的占位值，不代表已创建真实网站记录。`source_integrity_status` 保持 `not_checked`，因为固定来源 commit 不等于站内已完成内容哈希核验；`run_id` 和 `manifest_id` 保持 null，因为 RC-001 是研究变更记录，不是单次 run。私有仓库的链接也不会自动授予其他网站成员 GitHub 访问权。
+
+## 5. 附件与来源访问
 
 网站附件与研究仓库 artifact 是两个不同的命名空间：
 
@@ -114,7 +170,7 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 
 来源仓库是私有的时，保存链接不会自动授予网站成员 GitHub 访问权。v1 必须明确选择 `link_only`（用户需有来源权限）或 `attached_snapshot`（仅上传经批准、可共享的快照，并保留原始 commit/hash 证据）；不得默默复制整个私有仓库或未公开研究文件。
 
-## 5. API 契约
+## 6. API 契约
 
 以下是网站**索引 API** 的提案，不是科学运行执行 API；当前尚未实现。FastAPI、Cloudflare Pages Functions 和 Demo Adapter 必须保持相同的请求/响应语义。
 
@@ -149,7 +205,7 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 | `422` | 请求字段或来源身份未通过 schema/语义校验 |
 | `503` | 数据库或附件存储暂不可用；不得伪报保存成功 |
 
-## 6. 权限与隐私
+## 7. 权限与隐私
 
 - 所有写入端点都需要认证；v1 不开放匿名查询。
 - `private` 记录只对所有者和具有明确管理权限的管理员开放；`group` 记录对已认证的组内成员可读。编辑权限由所有者/管理员策略控制。
@@ -158,7 +214,7 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 - Demo Adapter 使用合成数据并隔离于真实后端；不得写入生产 API、生产 D1 或私有研究仓库。
 - 未公开论文、审稿回复、私人计算、访问令牌、邮箱凭据和生产数据库内容不应放入公开静态文件或演示种子数据。
 
-## 7. 现有研究仓库的映射规则
+## 8. 现有研究仓库的映射规则
 
 对接 [high-energy-theory-research](https://github.com/lm846802297-bit/high-energy-theory-research) 时，网站索引应遵守其现有层级：
 
@@ -171,7 +227,7 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 - 存在脚本、输出日志或校验结果不自动意味着存在完整 run manifest，更不代表对应 claim 已通过；
 - 不将候选 schema 的 ID、版本或状态擅自升级为已批准的规范。
 
-## 8. 首个真实任务试点：RC-001
+## 9. 首个真实任务试点：RC-001
 
 建议先用现有 RC-001 做**研究变更索引试点**，而不是伪造一个“已完成”的计算运行：
 
@@ -185,7 +241,7 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 
 试点验收应检查：来源 commit 固定、索引可检索、私有/组内权限生效、claim 摘要指向正确来源、来源变更能被标记为过期、导出不会把索引伪装成完整运行清单。若组员没有私有研究仓库的访问权，应先决定是否提供经过批准的摘要/快照，不应通过公开链接绕过权限。
 
-## 9. 后续实现的验收清单
+## 10. 后续实现的验收清单
 
 - [ ] 网站索引不复制或重写来源 run_manifest、artifact 或 claim-evidence 真值。
 - [ ] 来源身份包含精确 commit 与稳定记录路径/ID；单独的分支名或文件名不够。
@@ -198,7 +254,7 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 - [ ] 候选 schema 在正式批准前仅作为不透明来源元数据，不被网站当作已发布的规范。
 - [ ] 当前 PR 的文档静态检查通过；实际 API/数据库实现测试只在后续实现 PR 中声称通过。
 
-## 10. 当前决定与下一步
+## 11. 当前决定与下一步
 
 本提案定义网站索引层，不创建数据库表，也不实现 API。优先审阅：
 
