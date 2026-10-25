@@ -3,7 +3,7 @@
 - **状态：设计提案 v1.0.0，待审阅。**
 - **本次范围：** 定义课题组网站如何索引、展示和授权访问既有研究变更、计算运行、运行清单、产物与 claim–evidence 记录。
 - **不在本次范围内：** 生产 API、数据库表、迁移、自动执行器、向研究仓库写入、生产存储绑定或任何生产数据修改。
-- **关键设计决定：** 网站数据库是**协作索引与展示层**，不是新的科学记录事实源。不要复制一套与研究仓库并行的 run manifest、artifact 和 claim schema。
+- **关键设计决定：** 网站数据库是**协作索引与展示层**，不是新的科学记录事实源。不要复制一套与研究仓库并行的 run manifest、artifact 和 claim schema。来源访问默认采用 `link_only`；只有经明确审批的有限摘要/片段才允许作为 `attached_snapshot` 展示。
 
 ## 1. 为什么采用索引层，而不是另建一套科学记录
 
@@ -57,9 +57,10 @@
 | `lifecycle_state` | 枚举 | 是 | `draft` / `active` / `archived` |
 | `visibility` | 枚举 | 是 | v1 仅支持 `private` / `group`；公开发布需独立审核 |
 | `owner_user_id` | 本地用户 ID | 是 | 只在当前后端解释，不跨环境假定 ID 相同 |
-| `source_ref` | 对象 | 是 | 精确标识来源仓库、commit、记录类型/ID/路径和可用的 manifest/artifact 指针 |
+| `source_ref` | 对象 | 是 | 精确标识来源仓库、commit、记录类型/ID/路径、来源访问模式和可用的 manifest/artifact 指针 |
 | `display_snapshot` | 对象 | 是 | 网站用于展示的来源检查、运行状态与 claim 摘要快照；不能覆盖来源真值 |
 | `site_attachment_ids` | 字符串数组 | 是 | 网站自己的附件 ID；不与研究仓库的 artifact ID 混用 |
+| `snapshot_approvals` | 对象数组 | 是 | 经批准的来源摘要/片段的审批与指纹记录；默认空数组；不得仅因附件已上传而自动批准 |
 | `created_at` / `updated_at` | RFC 3339 时间 | 是 | UTC 时间，API 输出统一使用 `Z` 结尾 |
 | `supersedes_id` | UUID 字符串或 null | 否 | 网站索引记录的替代关系；不覆盖或改写来源仓库历史 |
 
@@ -68,6 +69,7 @@
 `source_ref` 至少包含：
 
 - `source_kind`：`research_change` / `run_manifest` / `artifact_bundle` / `claim_evidence_matrix` / `external_record`；
+- `source_access_mode`：`link_only`（默认）或 `attached_snapshot`；后者仍保留来源链接，只允许展示通过独立审批的有限快照；
 - `repository_url`：来源仓库 URL；
 - `commit_sha`：若来源在 Git 仓库中，使用精确 commit SHA；仅记录分支名不够；
 - `project_id`、`workstream_id`：若来源登记了这些层级，则保存其稳定 ID；
@@ -150,13 +152,14 @@ v1 不将以下内容作为网站数据库的独立科学真值：
     "summary_snapshot_at": null
   },
   "site_attachment_ids": [],
+  "snapshot_approvals": [],
   "created_at": "2026-01-01T00:00:00Z",
   "updated_at": "2026-01-01T00:00:00Z",
   "supersedes_id": null
 }
 ```
 
-示例中的 UUID 和时间是说明字段形状的占位值，不代表已创建真实网站记录。`source_integrity_status` 保持 `not_checked`，因为固定来源 commit 不等于站内已完成内容哈希核验；`run_id` 和 `manifest_id` 保持 null，因为 RC-001 是研究变更记录，不是单次 run。私有仓库的链接也不会自动授予其他网站成员 GitHub 访问权。
+示例中的 UUID 和时间是说明字段形状的占位值，不代表已创建真实网站记录。`source_integrity_status` 保持 `not_checked`，因为固定来源 commit 不等于站内已完成内容哈希核验；`run_id` 和 `manifest_id` 保持 null，因为 RC-001 是研究变更记录，不是单次 run。私有仓库的链接也不会自动授予其他网站成员 GitHub 访问权。示例采用默认的 `link_only`，因此 `snapshot_approvals` 为空。
 
 ## 5. 附件与来源访问
 
@@ -168,7 +171,18 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 - 外链使用 HTTPS；链接可访问不等于其内容已哈希或物理结论已核查；
 - 当前 Pages 配置未绑定 `FILES_BUCKET`，站内附件上限仍为 1 MiB。更大的研究产物应留在批准的研究仓库/外部存储，并通过受控链接访问。
 
-来源仓库是私有的时，保存链接不会自动授予网站成员 GitHub 访问权。v1 必须明确选择 `link_only`（用户需有来源权限）或 `attached_snapshot`（仅上传经批准、可共享的快照，并保留原始 commit/hash 证据）；不得默默复制整个私有仓库或未公开研究文件。
+来源仓库是私有的时，保存链接不会自动授予网站成员 GitHub 访问权。v1 默认使用 `link_only`：成员需要自行拥有来源仓库权限。若组员确实需要在网站内查看有限内容，可以选择 `attached_snapshot`，但必须逐项经过来源内容所有者或被明确授权的维护者审批。快照仅限必要的摘要、节选、图表或脱敏报告；不得默默复制整个私有仓库、完整计算目录或未公开研究文件。
+
+每项获准快照都必须有 `snapshot_approvals` 记录，至少包含：
+
+- `site_attachment_id`、`snapshot_kind`、`scope_description`；
+- `source_commit_sha`、`source_path`，以及可获得时的 `source_content_sha256`；
+- 对已上传附件实际计算的 `snapshot_sha256`；
+- `approved_by_user_id`、`approver_role`、`approved_at`、`target_visibility`；
+- `redaction_status` 与必要的 `redaction_notes`；
+- `approval_state`：`approved` / `revoked` / `expired`。
+
+审批必须发生在快照对目标受众可见之前；上传者不能仅凭上传行为批准自己的快照，除非其同时具备来源所有者/授权维护者权限。`target_visibility` 不得比索引记录的可见范围更宽。快照是固定副本，不是实时镜像；来源 commit 或内容发生变化时，网站必须将其标记为过期，重新核验并审批后才能更新。源文件哈希与快照文件哈希是不同指纹，不得混用。
 
 ## 6. API 契约
 
@@ -181,19 +195,20 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 | `GET /api/research-records/{id}` | 获取详情 | 无权访问的私有记录不得泄露内容 |
 | `PATCH /api/research-records/{id}` | 更新网站元数据 | 必须提交 `expected_record_version`；版本冲突返回 `409` |
 | `POST /api/research-records/{id}/source-checks` | 追加来源检查记录 | 只记录链接/哈希/schema 兼容性检查，不代表物理核查 |
-| `POST /api/research-records/{id}/attachments` | 关联网站附件 | 只关联现有站内文件；服务端检查文件所有权/可见性 |
+| `POST /api/research-records/{id}/attachments` | 关联网站附件 | 只关联现有站内文件；服务端检查文件所有权/可见性；未经批准的来源快照不得向组员展示 |
+| `POST /api/research-records/{id}/snapshot-approvals` | 追加快照审批记录 | 仅来源所有者或明确授权的维护者可批准；保存来源/快照指纹、范围、目标受众与审批时间；撤销/过期不得静默删除历史 |
 | `GET /api/research-records/{id}/export` | 导出索引 manifest | 导出网站索引与来源指针，不冒充完整 run manifest 或 claim-evidence 数据 |
 
-### 5.1 请求规则
+### 6.1 请求规则
 
 - 新建和更新使用严格 schema 校验；拒绝未知字段、无效枚举、过长文本、格式错误的 UUID 和不完整的来源身份。
 - 更新必须携带 `expected_record_version`；若当前版本不同，返回 `409 Conflict`，不得覆盖并发修改。
 - 一旦来源身份已核对，不能通过 `PATCH` 静默把来源改成另一个 commit、manifest 或 artifact。若更换来源，应创建新索引记录并使用 `supersedes_id` 关联旧记录。
-- 来源检查记录是追加式的；失败或不匹配的历史记录不得被静默删除或改写为通过。
+- 来源检查记录和快照审批记录是追加式的；失败或不匹配的历史记录不得被静默删除或改写为通过。撤销或过期应新增状态事件/审批记录，且立即阻止对相应快照的展示。
 - 网站索引创建成功只表示元数据已保存，不代表来源内容、schema 或物理结论已验证。
 - v1 不提供 `POST /api/research-runs/{id}/execute`、任意代码执行、自动扫描、对研究仓库的 commit/push 或自动 claim 状态更新。
 
-### 5.2 错误状态码
+### 6.2 错误状态码
 
 | HTTP | 场景 |
 |---|---|
@@ -212,6 +227,7 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 - 不得依赖前端隐藏按钮作为授权措施；每个后端端点必须重新检查记录可见性与操作权限。
 - 用户 ID 是后端本地标识，不能跨 FastAPI/D1 环境假定相同。
 - Demo Adapter 使用合成数据并隔离于真实后端；不得写入生产 API、生产 D1 或私有研究仓库。
+- 快照默认不可见；只有审批状态为 `approved`、指纹匹配且目标受众有权限时才可读取。`revoked`、`expired`、来源已变化或指纹不匹配的快照必须隐藏并标记为需复核。
 - 未公开论文、审稿回复、私人计算、访问令牌、邮箱凭据和生产数据库内容不应放入公开静态文件或演示种子数据。
 
 ## 8. 现有研究仓库的映射规则
@@ -249,6 +265,8 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 - [ ] 来源完整性、schema 兼容性、执行状态和 claim 状态在 UI 中分别显示。
 - [ ] `linked` 或 `hash_match` 不被展示成“物理结论已验证”。
 - [ ] 私有记录不能被其他普通成员通过列表、详情、导出或附件引用端点读取。
+- [ ] 未审批、已撤销、已过期或指纹不匹配的摘要快照不会向组员显示；审批身份、目标可见性、来源 commit/path 与源/快照哈希可追溯。
+- [ ] 快照可见性不会超过索引记录可见性，来源更新会使相关快照进入待复核状态。
 - [ ] `record_version` 冲突不会覆盖并发修改；来源变更保留旧索引记录和替代关系。
 - [ ] Demo 数据明确标记为合成数据，且不访问生产后端或私有研究仓库。
 - [ ] 候选 schema 在正式批准前仅作为不透明来源元数据，不被网站当作已发布的规范。
@@ -259,7 +277,7 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 本提案定义网站索引层，不创建数据库表，也不实现 API。优先审阅：
 
 1. `ResearchRecordIndex` 是否足以支持网站的搜索、权限和研究导航；
-2. 来源链接模式是否满足私有仓库访问需求，是否需要经过批准的附件快照；
+2. 是否接受“默认 `link_only`，必要时逐项审批 `attached_snapshot`”的访问策略；
 3. 哪些摘要适合缓存到网站，哪些必须实时读取或只提供跳转；
 4. 研究仓库 schema 获得正式批准后，采用何种版本化适配器映射 run、manifest、artifact 和 claim。
 
