@@ -513,6 +513,29 @@ try {
   check(await page.locator('#research-guides .research-guide-card').count() === 5, 'all five detailed topic guides have dedicated discovery cards')
   check(await page.getByRole('navigation', { name: '官网导航' }).getByRole('link', { name: '专题导读', exact: true }).count() === 1, 'header navigation exposes the topic guide directory')
   check(!requested.some(url => /pdf-|pdf\.worker|three\.module|vanta|ogl-|forecast-clouds/.test(url)), 'public page does not fetch PDF, WebGL or hidden cloud background')
+
+  // The CRT card sweep is visual-only, scoped to Worldline Console, and respects reduced motion.
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  const sweepSkinTrigger = page.getByRole('button', { name: '切换官网风格' })
+  await sweepSkinTrigger.click()
+  await page.getByRole('combobox', { name: '选择官网皮肤风格' }).selectOption('worldline-console')
+  const sweepCard = page.locator('.physics-resource-card').first()
+  await sweepCard.hover()
+  const reducedSweep = await sweepCard.evaluate(el => {
+    const style = getComputedStyle(el, '::after')
+    const rawDuration = style.animationDuration.split(',')[0].trim()
+    const durationMs = rawDuration.endsWith('ms') ? Number.parseFloat(rawDuration) : Number.parseFloat(rawDuration) * 1000
+    return { animationName: style.animationName, durationMs }
+  })
+  check(reducedSweep.animationName === 'worldline-card-signal' && reducedSweep.durationMs <= 0.1,
+    'CRT card sweep remains scoped to Worldline Console and is reduced to <=0.1ms for reduced-motion users: ' + JSON.stringify(reducedSweep))
+  await sweepSkinTrigger.click()
+  await page.getByRole('combobox', { name: '选择官网皮肤风格' }).selectOption('quiet-research')
+  await sweepCard.hover()
+  const quietSweepAnimation = await sweepCard.evaluate(el => getComputedStyle(el, '::after').animationName)
+  check(quietSweepAnimation === 'none', 'CRT card sweep is disabled under Quiet Research')
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+
   const tabs = page.getByRole('tab')
   for (let i = 0; i < 5; i++) {
     await tabs.nth(i).click()
