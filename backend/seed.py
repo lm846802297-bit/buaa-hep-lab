@@ -146,6 +146,9 @@ def _seed_default_invite_codes(db: Session) -> None:
     if db.query(InviteCode).count() > 0:
         return
     primary_code = _configured_invite_code()
+    if not primary_code:
+        # Missing configuration must never create an empty/usable invite code.
+        return
     admin_user = db.query(User).filter(User.role == "admin").first()
     if not db.query(InviteCode).filter(InviteCode.code == primary_code).first():
         db.add(InviteCode(
