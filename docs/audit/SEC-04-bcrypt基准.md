@@ -27,7 +27,7 @@ node frontend/benchmarks/bcrypt/run.mjs --runtime cloudflare --cost 8 --url http
 
 The runner writes every attempted row even on failure, stores a bounded HTTP response excerpt (for example, Error 1102), and classifies failures as `cpu-limit`, `timeout`, `network-error`, `http-server-error`, `http-client-error`, or `benchmark-error`. A non-zero exit code means inspect and preserve the report; it does not mean discard it.
 
-将 `ACCOUNT` 替换为实际 workers.dev 子域名。只有 pilot 无失败、调用日志可按 sample ID 关联 CPU/outcome，且已确认套餐与 CPU 限额后，才考虑显式运行 `--samples 50 --warmup 5` 的完整扫描。不要循环重试 CPU 超限样本。完整登录/注册/改密的非生产路径测试仍是独立未决项。
+将 `ACCOUNT` 替换为实际 workers.dev 子域名。每条命令单独运行并检查对应 JSON 与 Workers Logs；不要把三条命令一次性粘贴执行。cost 6 无失败且能关联调用级 CPU 后，再决定是否测试 cost 7；cost 7 报告核查后，再决定是否测试 cost 8。CPU 超限本身应保留为结果，不能循环重试。完整登录/注册/改密的非生产路径测试仍是独立未决项。
 
 ## 可复现方法
 
@@ -171,26 +171,24 @@ try {
   [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
 }
 try {
-  node benchmarks/bcrypt/run.mjs --runtime cloudflare --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 1 --warmup 1 --out cloudflare-pilot.json
-  if ($LASTEXITCODE -ne 0) { throw "Pilot recorded failures; inspect cloudflare-pilot.json and stop before a full run." }
+  node benchmarks/bcrypt/run.mjs --runtime cloudflare --cost 6 --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 1 --warmup 1 --out cloudflare-cost-6.json
+  if ($LASTEXITCODE -ne 0) { throw "Cost-6 pilot recorded failures; preserve cloudflare-cost-6.json and stop for review." }
 } finally {
   Remove-Item Env:BENCHMARK_TOKEN -ErrorAction SilentlyContinue
-  if ($secure) { $secure.Dispose() }
+  $secure.Dispose()
 }
 ```
+
+Only after reviewing cost 6's report and invocation CPU logs, repeat the same SecureString setup for cost 7 with output `cloudflare-cost-7.json`; review that evidence before separately deciding whether to run cost 8 with output `cloudflare-cost-8.json`. For cost 7/8, a non-zero exit caused by confirmed CPU-limit outcomes is retained evidence, not a reason to retry. Other failure classes remain blockers.
 
 将 `ACCOUNT` 替换为 Cloudflare 返回的实际账户子域。
 
 Workers Free 下不以 cost 7/8 零失败作为继续条件：cost 6 必须无失败；cost 7/8 的 CPU 超限可作为预期的边界证据，但必须确认失败类别确实为 CPU 超限而非鉴权、网络或代码错误。只有在每组报告均已审阅、Cloudflare invocation log 能按 sample ID 关联 CPU、且已确认套餐/限额后，才由维护者单独批准是否进行更大样本扫描。重新安全输入 token（使用上面的 SecureString 模式），再运行：
 
 ```powershell
-try {
-  node benchmarks/bcrypt/run.mjs --runtime cloudflare --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 50 --warmup 5 --out cloudflare-benchmark.json
-  if ($LASTEXITCODE -ne 0) { throw "Full run recorded failures; preserve the JSON and investigate rather than retrying blindly." }
-} finally {
-  Remove-Item Env:BENCHMARK_TOKEN -ErrorAction SilentlyContinue
-  if ($secure) { $secure.Dispose() }
-}
+# Only after explicit review/approval; run one cost per invocation.
+node benchmarks/bcrypt/run.mjs --runtime cloudflare --cost 6 --samples 50 --warmup 5 --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --out cloudflare-cost-6-full.json
+# Separate runs for cost 7 and cost 8 must each have a separate report and review.
 ```
 
 Cloudflare 模式必须显式指定单个 `--cost 6|7|8`，以防不同 cost 混在一个结果中。每个 pilot 为 16 次请求；若某次请求触发 CPU 超限，脚本仍继续收集剩余样本、保存失败行与分组摘要，并以非零退出码结束。完整扫描每个 cost 400 次测量 + 40 次预热，三个 cost 合计 1,320 次请求；Free 套餐下不应默认执行完整扫描。

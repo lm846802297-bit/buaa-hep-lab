@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import os from 'node:os'
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { cases, costs, operations } from './core.mjs'
+import { cases, operations } from './core.mjs'
 import { selectCosts, classifyFailure } from './run-options.mjs'
 import worker from './worker.mjs'
 
