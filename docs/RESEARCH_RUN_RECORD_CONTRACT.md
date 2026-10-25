@@ -116,7 +116,7 @@
 
 - `kind`：`source`、`input`、`log`、`table`、`plot`、`dataset`、`notebook` 或 `report`；
 - `description`、`media_type`、`size_bytes`；
-- `file_id`（现有站内附件 ID）或 `external_url`，二者必须且只能提供一个；
+- `file_id`（现有站内附件 ID）或 `external_url`，二者必须且只能提供一个；服务端必须验证调用者有权引用该站内文件，不能只检查 ID 是否存在；
 - `sha256`：已知内容指纹；若无法获取，显式为 `null`，不能声称内容已校验。
 
 站内附件继续使用既有文件 API。当前 Pages 配置未绑定 `FILES_BUCKET`，因此单文件限制仍为 1 MiB；大文件只能引用经过确认的外部存储链接。外链必须为 HTTPS，并仍受访问权限和可用性限制。
@@ -134,6 +134,23 @@
 - `scope_note`：明确哪些效应已包含、哪些效应未评估。
 
 不同实验流、不同耦合结构或不同衰变/产生假设的约束不得只凭名称相近就自动复用。
+
+### 3.7 执行事件与版本递增
+
+§ExecutionEvent§ 是追加式状态变更记录，至少包含 §id§、§event_type§、§from_status§、§to_status§、§occurred_at§、§actor_user_id§、§summary§、§exit_code§（可空）和 §artifact_ids§。§execution_status§ 应由有效事件序列推导，而不是允许客户端任意写入。
+
+允许的状态转移：
+
+| 当前状态 | 事件 | 新状态 |
+|---|---|---|
+| §not_run§ | §execution_started§ | §running§ |
+| §running§ | §execution_succeeded§ | §succeeded§ |
+| §running§ | §execution_failed§ | §failed§ |
+| §running§ | §execution_cancelled§ | §cancelled§ |
+
+终态 §succeeded§、§failed§、§cancelled§ 不允许原位转换。重跑或纠正输入/代码时新建记录，通过 §parent_run_id§ 或 §supersedes_id§ 关联。
+
+任何修改主记录或追加子记录（执行事件、核查记录、约束评估、附件引用）的成功写操作，都必须在同一事务中递增主记录 §record_version§。这样并发 §PATCH§ 才能检测到在其读取之后发生的子记录变更。若当前后端无法保证原子性，实现前必须先设计事务/补偿策略。
 
 ## 4. 示例对象（示意，不是当前 API 响应）
 
@@ -173,7 +190,7 @@
   "references": [
     {
       "kind": "arxiv",
-      "identifier": "arXiv:2601.00000",
+      "identifier": "arXiv:YYMM.NNNNN",
       "role": "method",
       "note": "Replace with a verified identifier before saving a real record."
     }
@@ -194,8 +211,8 @@
   "artifacts": [],
   "validation_records": [],
   "constraint_evaluations": [],
-  "created_at": "2026-10-26T00:00:00Z",
-  "updated_at": "2026-10-26T00:00:00Z",
+  "created_at": "2026-10-25T17:00:00Z",
+  "updated_at": "2026-10-25T17:00:00Z",
   "parent_run_id": null,
   "supersedes_id": null
 }
@@ -223,7 +240,7 @@
 
 - 成功响应使用统一的字段名、枚举、时间格式与错误语义；不得让三个适配器对同一请求返回不同的权限结果。
 - 新建和更新使用严格 schema 校验；拒绝未知字段、无效枚举、过长文本、非正数 `record_version`、格式错误的 UUID 和无效引用标识。
-- 更新必须携带 `expected_record_version`。若数据库当前版本不同，返回 `409 Conflict`，不覆盖他人的修改。
+- 更新必须携带 `expected_record_version`。若数据库当前版本不同，返回 `409 Conflict`，不覆盖他人的修改。主记录与追加式子记录的成功写操作都递增该版本。
 - 执行事件、核查记录和约束评估均为追加式证据。不得通过 `PATCH` 删除失败记录或将历史 `failed` 改写为 `succeeded`。
 - 执行到达 `succeeded`、`failed` 或 `cancelled` 后，执行快照不再原位修改。需要更正代码、输入或结果时，应创建新记录并用 `supersedes_id` 指向旧记录；新扫描/新运行可用 `parent_run_id` 表达派生关系。
 - 导出应保留数值字符串精度、软件版本、commit SHA、输入/产物指纹、核查状态和未评估项；不得把内部用户信息或未授权的私有记录导出给无权用户。
@@ -237,7 +254,6 @@
 | `403` | 已识别用户但没有执行该操作的权限 |
 | `404` | 记录不存在，或按项目隐私策略不应向当前用户暴露其存在 |
 | `409` | `expected_record_version` 与当前版本不一致 |
-| `413` | 附件超出当前配置上限（若附件服务采用此状态） |
 | `422` | 请求字段未通过 schema/语义校验 |
 | `503` | 依赖的存储/数据库暂不可用；不得伪报保存成功 |
 
