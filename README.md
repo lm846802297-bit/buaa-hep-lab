@@ -170,7 +170,7 @@
   └─ 接口兼容：支持对接主流大模型 API 服务
 
 • 8. 系统与权限设置 (Settings & Governance)
-  ├─ 注册邀请码：内置邀请码验证（默认 LAB-2026），避免无关人员注册
+  ├─ 注册邀请码：不提供可预测的生产默认值；由管理员按部署模式创建或配置
   ├─ 角色管理：管理员 (Admin)、教师/负责人 (Teacher)、组员 (Student) 三级权限
   └─ 界面配置：支持深色/浅色及多套界面主题切换
 ```
@@ -199,16 +199,17 @@ chmod +x start.sh
 仓库内提供配置好的 Dockerfile 与 Docker Compose 编排文件，可在服务器后台运行并自动持久化数据：
 
 ```bash
-docker compose -f deploy/docker-compose.yml up -d
+docker compose --env-file .env -f deploy/docker-compose.yml config --quiet
+docker compose --env-file .env -f deploy/docker-compose.yml up --build -d
 ```
 
 - **服务端口**：默认映射宿主机 `8000` 端口；
 - **数据目录**：数据库保存于宿主机 `./data/labhub.db`，容器更新重启不影响已有数据；
-- **环境变量**：可在 `deploy/docker-compose.yml` 中修改注册邀请码 `LABHUB_INVITE_CODE` 与密钥 `LABHUB_SECRET_KEY`。
+- **凭据配置**：在仓库根目录的本地 `.env` 文件中显式设置 `LABHUB_SECRET_KEY`（至少 32 个字符）与 `LABHUB_INVITE_CODE`（至少 12 个字符，禁止 `LAB-2026`）；仅在显式执行干净数据库初始化时才设置 `ADMIN_PASSWORD`（12–72 UTF-8 字节）。不要提交 `.env` 或将密钥写入 Compose 文件。
 
 #### 方式三：Cloudflare 托管部署（无需自备服务器）
 
-若没有独立的常开服务器，可部署在 Cloudflare 免费套餐（Pages + D1 数据库 + R2 存储桶）上：
+当前 BUAA HEP Hub 生产环境使用 Cloudflare Pages + D1，R2 尚未启用。现有生产项目的发布必须通过 GitHub Actions 和 [发布权限说明](docs/RELEASE_AUTHORITY.md)；不要照下方通用示例为现有项目新建数据库/存储桶或直接部署。以下步骤只供创建一个独立的新实例时参考：
 
 1. **登录 Wrangler**：
    ```bash
@@ -254,7 +255,7 @@ docker compose -f deploy/docker-compose.yml up -d
 2. **步骤二：课题组品牌与协作配置**：
    - **课题组名称与缩写**：例如「天体物理与交叉科学课题组」（缩写 `LabOrbit`），系统标题与导航徽标将自动同步更新；
    - **所属机构与地点**：填入学院/系所名称及默认研讨室（如“物理楼 302 / 腾讯会议”）；
-   - **初始注册邀请码**：设定用于吸纳本组组员的注册口令（系统默认预填 `LAB-2026`，可自由设定）。
+   - **注册邀请码**：不要使用可预测的默认值 `LAB-2026`。Cloudflare Pages + D1 由管理员在系统中管理邀请码；自建 Docker 部署还必须显式设置 `LABHUB_INVITE_CODE`。
 
 #### 安全自锁与成员邀请：
 
@@ -457,7 +458,7 @@ LabOrbit is structured as a decoupled frontend-backend application with two depl
   └─ Provider Support: Compatible with standard LLM endpoints
 
 • 8. System & Permissions
-  ├─ Registration Code: Default invite code (LAB-2026) to manage registration
+  ├─ Registration Code: No predictable production default; administrators create/manage invites for the selected deployment mode
   ├─ Role Hierarchy: Admin, PI/Teacher, and Student roles
   └─ Theme Settings: Light/Dark mode and background theme options
 ```
@@ -486,16 +487,17 @@ Once running, visit `http://127.0.0.1:8000` in your web browser.
 Use Docker Compose to run LabOrbit as a persistent service with volume storage:
 
 ```bash
-docker compose -f deploy/docker-compose.yml up -d
+docker compose --env-file .env -f deploy/docker-compose.yml config --quiet
+docker compose --env-file .env -f deploy/docker-compose.yml up --build -d
 ```
 
 - **Port**: Maps to host port `8000` by default;
 - **Persistence**: SQLite database is saved to `./data/labhub.db`;
-- **Environment**: Adjust `LABHUB_INVITE_CODE` and `LABHUB_SECRET_KEY` in `deploy/docker-compose.yml` as needed.
+- **Credentials**: Set `LABHUB_SECRET_KEY` (at least 32 characters) and `LABHUB_INVITE_CODE` (at least 12 characters; never `LAB-2026`) explicitly in an uncommitted root `.env` file. Set `ADMIN_PASSWORD` (12–72 UTF-8 bytes) only when explicitly running the clean-database bootstrap. Never commit `.env` or put secrets in the Compose file.
 
 #### Option C: Cloudflare Serverless (Zero Hardware Cost)
 
-Deploy directly to Cloudflare's free tier (Pages + D1 database + R2 storage):
+The current BUAA HEP Hub production deployment uses Cloudflare Pages + D1; R2 is not enabled. Production releases must go through GitHub Actions and the [release authority policy](docs/RELEASE_AUTHORITY.md). Do not create new databases/buckets or deploy directly using the generic commands below for the existing production project. The following steps are only a reference for creating a separate new instance:
 
 1. **Log in with Wrangler**:
    ```bash
@@ -541,7 +543,7 @@ LabOrbit features a streamlined two-step setup wizard where the first registered
 2. **Step 2: Lab Branding & Settings**:
    - **Lab Name & Acronym**: e.g., "Astrophysics and Interdisciplinary Science Research Group" (Short name: `LabOrbit`), which dynamically updates site headers and browser titles;
    - **Institution & Venue**: Set your university/institute affiliation and default seminar location (e.g., "Physics Hall 302 / Zoom");
-   - **Default Invite Code**: Set the registration passcode for your members (defaults to `LAB-2026`).
+   - **Invite Codes**: Do not use the predictable legacy value `LAB-2026`. For Cloudflare Pages + D1, administrators manage invite codes in the application; self-hosted Docker deployments must also explicitly set `LABHUB_INVITE_CODE`.
 
 #### Security Auto-Lock & Member Onboarding:
 
