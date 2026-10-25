@@ -92,7 +92,7 @@
 - `execution_status_snapshot` 与 `execution_snapshot_at`，只在来源确实提供运行状态时填写；
 - `claim_status_summary`、`claim_status_source_path`、`claim_status_source_commit` 与 `summary_snapshot_at`。
 
-claim 摘要应保留来源的限定语，例如“Verification in progress; overall model-level claim unresolved”。网站不得将其转换为笼统的“验证通过”，也不得在来源 commit 改变后静默沿用旧摘要而不标记快照过期。
+claim 摘要应保留来源的限定语，例如“Verification in progress; overall model-level claim unresolved”。网站不得将其转换为笼统的“验证通过”；当显式来源检查发现来源 commit 或文件内容变化时，必须标记相关摘要/快照为 stale，不能静默沿用旧摘要。v1 不承诺持续轮询私有仓库。
 
 ### 3.3 不在网站索引中复制的字段
 
