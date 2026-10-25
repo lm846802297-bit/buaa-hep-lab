@@ -1,302 +1,210 @@
-# 计算记录（Research Run）：数据模型与 API 契约
+# 科研记录索引与计算记录 API 契约（Research Record Index）
 
 - **状态：设计提案 v1.0.0，待审阅。**
-- **本次范围：** 定义跨 FastAPI、Cloudflare Pages Functions 与 Demo Adapter 的逻辑数据模型和接口语义。
-- **不在本次范围内：** 数据库表、迁移、生产 API、自动计算执行器、生产存储绑定或任何生产数据修改。
-- **实现门槛：** 先批准本契约，再单独实现并审查 schema/migration、两套后端、Demo Adapter、契约测试和权限测试。
+- **本次范围：** 定义课题组网站如何索引、展示和授权访问既有研究变更、计算运行、运行清单、产物与 claim–evidence 记录。
+- **不在本次范围内：** 生产 API、数据库表、迁移、自动执行器、向研究仓库写入、生产存储绑定或任何生产数据修改。
+- **关键设计决定：** 网站数据库是**协作索引与展示层**，不是新的科学记录事实源。不要复制一套与研究仓库并行的 run manifest、artifact 和 claim schema。
 
-## 1. 设计目标
+## 1. 为什么采用索引层，而不是另建一套科学记录
 
-计算记录用于保存一项符号推导、数值计算、参数扫描、UV–EFT 匹配、唯象学重铸或基准测试的可追溯上下文。它应回答：
+课题组已有独立的 [high-energy-theory-research](https://github.com/lm846802297-bit/high-energy-theory-research) 工作流，用于维护研究变更、运行证据、产物指纹和物理 claim。该仓库的现有结构包括：
 
-1. **计算了什么？** 研究问题、模型、约定、输入参数、假设和适用范围。
-2. **基于什么？** 相关论文、规范化文献标识、代码仓库与精确 commit。
-3. **怎样得到结果？** 软件与包版本、入口脚本、执行命令、输入文件指纹和输出产物。
-4. **结果经过什么核查？** 来源核查、解析推导检查、软件执行、独立复现和实验约束评估分别记录。
-5. **谁可以访问？** 默认私有；只有显式共享后，组内成员才可读取。
+- [研究变更 RC-001](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/research/RC-001-vll-higgs-singlet-uv-eft.md) 与 [RC-001 claim–evidence matrix](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/research/RC-001-claim-evidence-matrix.md)；
+- 候选 schema 中的 [run](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/schema/v1.4.3.7/schemas/run.schema.json)、[run_manifest](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/schema/v1.4.3.7/schemas/run_manifest.schema.json) 与 [artifact](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/schema/v1.4.3.7/schemas/artifact.schema.json)；
+- [Scientific Diff 工作流](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/docs/scientific-diff-workflow.md) 与 [research-change 模板](https://github.com/lm846802297-bit/high-energy-theory-research/blob/main/templates/research-change.md)。
 
-### 非目标
+这些结构已经覆盖代码/配置/环境快照、运行状态、输入引用、输出、内容指纹、产物来源和 claim 证据。如果课题组网站再保存一份独立的参数、环境、输出、验证和实验约束真值，将造成两套状态可能分叉。
 
-- 不把计算记录等同于论文、研究专题正文或普通文件夹。
-- 不将一次代码成功退出解释为物理推导正确。
-- 不自动将某个结果标记为实验允许、全局可行或已独立复现。
-- v1 不执行任意 Mathematica、Python、FeynCalc 或外部代码；不提供远程代码执行服务。
-- v1 不把未公开计算记录直接同步到公开首页或公开 API。
-- 不因本契约创建新存储桶、切换 D1/R2/KV 或改变现有附件大小限制。
+### 1.1 现有研究 schema 的批准状态
 
-## 2. 科学状态语义：不同维度必须分开
+`high-energy-theory-research` 的 `schema/v1.4.3.7/` 明确标记为 **candidate / not released**；`DD-ART-007` 至 `DD-ART-010` 仍待批准。候选包中部分 schema 的标题和 `$id` 仍标注 v1.4.2 或 v1.4.3.6，而目录版本为 v1.4.3.7。网站不得将该候选包当作已发布的规范，也不得自行修补版本差异后声称兼容。
 
-不能用单一的 `validated=true` 或 `status=passed` 表示整项研究已验证。以下维度相互独立：
+因此，v1 仅保存规范化来源指针与必要的展示快照。来源 schema 版本作为不透明元数据保存；在研究仓库正式批准并发布 schema 契约之前，不执行规范性 schema 校验或自动迁移。
 
-| 维度 | 允许值 | 解释 |
+## 2. 权威边界与状态语义
+
+| 信息 | 权威来源 | 网站 v1 的处理方式 |
 |---|---|---|
-| 记录生命周期 `lifecycle_state` | `draft` / `active` / `archived` | 记录是否仍在编辑、使用或已归档 |
-| 执行状态 `execution_status` | `not_run` / `running` / `succeeded` / `failed` / `cancelled` | 仅表示所记录的执行过程，不表示物理正确性 |
-| 来源核查 | `not_assessed` / `in_progress` / `verified` / `needs_correction` | 论文、数据、代码来源是否已核对 |
-| 解析/推导审查 | `not_assessed` / `in_progress` / `reviewed` / `needs_revision` | 推导与约定是否经过明确的检查 |
-| 独立复现 | `not_attempted` / `in_progress` / `reproduced` / `not_reproduced` / `not_applicable` | 是否由独立实现、独立计算或可核查基准复现 |
-| 实验约束评估 | `not_evaluated` / `partially_evaluated` / `evaluated` | 相关约束是否在明确假设下评估 |
+| 研究问题、基准、假设、推导与研究变更历史 | 对应 research-change 记录 | 保存仓库 URL、精确 commit、记录 ID 与路径；不另建重复正文 |
+| 一次运行的执行状态、输入、代码、环境、输出和指纹 | 已批准版本的 run / run_manifest 记录 | 保存引用；若显示状态，明确标为来源快照 |
+| 文件/目录身份、SHA-256、生成来源与完整性 | 已批准版本的 artifact 记录及仓库内实际文件 | 保存 artifact ID、路径和来源 commit；不把站内附件 ID 当成同一个 artifact ID |
+| 物理 claim 与其证据、适用范围和未解决事项 | claim 记录或 claim–evidence matrix | 链接到来源；展示的摘要必须注明来源路径、commit 与快照时间 |
+| 网站内部的标题、专题入口、组内可见性和收藏导航 | 本网站 | 网站自己的数据库可维护这些协作元数据 |
 
-每个来源/推导/复现审查都应是一条带时间、责任人和证据的记录，不应只覆盖一个可编辑的布尔字段。
+不得用单一的 `validated=true` 或 `status=passed` 表示整项研究已经验证。以下是互相独立的维度：
 
-对单项实验约束，结果使用 `not_evaluated`、`excluded`、`not_excluded` 或 `not_applicable`。`not_excluded` 只表示**在该项约束及记录的假设下没有被排除**，不代表该参数点满足所有理论、实验和宇宙学要求。未评估的约束不得默认视为允许。
+- **网站记录生命周期：** `draft` / `active` / `archived`；
+- **来源完整性：** `not_checked` / `linked` / `hash_match` / `hash_mismatch` / `unavailable`；
+- **来源 schema 兼容性：** `not_checked` / `candidate_unapproved` / `compatible_with_approved_schema` / `incompatible` / `not_applicable`；
+- **运行状态快照：** `not_imported` / `unknown` / `not_applicable`，或来自已识别 run manifest 的状态；
+- **claim 状态摘要：** 只从指定的 claim–evidence 来源读取或人工引用，不能由网站的链接成功、文件上传成功或 CI 绿灯推导。
 
-## 3. 逻辑数据模型
+`linked` 只表示已找到来源路径；`hash_match` 只表示内容指纹与指定来源一致。两者都不代表物理推导正确或 claim 已被独立复现。
 
-本节定义 API 层的规范对象。具体数据库范式、JSON 列或子表布局留给后续实现 PR 决定；不得在未审阅生产 schema 的情况下直接执行迁移。
+## 3. 逻辑数据模型：`ResearchRecordIndex`
 
-### 3.1 `ResearchRun`
+网站记录只保存索引与协作元数据。具体数据库表和 SQL 结构留给后续实现 PR 决定。
 
 | 字段 | 类型 | 必需 | 约束与说明 |
 |---|---|---:|---|
-| `id` | UUID 字符串 | 是 | 跨后端稳定的记录 ID；不得依赖 SQLite/D1 的自增 ID |
-| `schema_version` | 字符串 | 是 | 当前提案为 `1.0.0`；升级需说明兼容策略 |
-| `record_version` | 正整数 | 是 | 每次成功修改递增，用于并发更新检测 |
+| `id` | UUID 字符串 | 是 | 网站内部索引 ID，不代替来源仓库的 record/run/artifact ID |
+| `schema_version` | 字符串 | 是 | 网站索引契约版本，当前提案为 `1.0.0`；与来源 schema 版本分开 |
+| `record_version` | 正整数 | 是 | 网站索引记录的并发更新版本 |
 | `title` | 字符串 | 是 | 去除首尾空白，1–200 字符 |
-| `summary` | 字符串 | 否 | 结果/任务摘要；不得把未核实结果写成已证实结论 |
-| `topic_slug` | 字符串 | 否 | 对应静态研究专题的稳定 slug，不使用某一后端的数据库行 ID |
-| `research_kind` | 枚举 | 是 | `analytic_derivation` / `symbolic_computation` / `numerical_scan` / `uv_eft_matching` / `phenomenology_recast` / `benchmark` / `literature_review` / `other` |
+| `summary` | 字符串 | 否 | 简短导航摘要；不得把未核实结果写成已证实物理结论 |
+| `topic_slug` | 字符串 | 否 | 关联静态研究专题的稳定 slug，不使用后端自增 ID |
+| `record_kind` | 枚举 | 是 | `research_change` / `run_manifest` / `artifact_bundle` / `claim_evidence_matrix` / `external_record` / `manual_note` |
 | `lifecycle_state` | 枚举 | 是 | `draft` / `active` / `archived` |
-| `execution_status` | 枚举 | 是 | 取第 2 节定义的执行状态 |
-| `visibility` | 枚举 | 是 | v1 仅支持 `private` / `group`；公开发布必须走单独的内容审核流程 |
-| `owner_user_id` | 本地用户 ID | 是 | 仅在当前后端内解释；不得跨环境复制后假设 ID 相同 |
-| `model_context` | 对象 | 否 | 模型名称/版本、拉格朗日量或定义文件、场与荷约定、度规、归一化、EFT 基底、匹配尺度、重整化方案等 |
-| `assumptions` | 字符串数组 | 是 | 明确近似、先验、适用范围与已知局限；无内容时为空数组 |
-| `parameters` | 对象数组 | 是 | 参数名称、精确值、单位、定义及来源；无内容时为空数组 |
-| `references` | 对象数组 | 是 | 论文、数据、代码或约束来源；无内容时为空数组 |
-| `code_context` | 对象 | 否 | 仓库 URL、commit SHA、工作区状态、入口、执行命令和输入指纹 |
-| `environment` | 对象 | 否 | 软件/包版本、操作系统、架构及必要的运行环境信息 |
-| `outputs` | 对象数组 | 是 | 结果名称、精确表示、单位、精度说明与相关产物 ID |
-| `artifacts` | 对象数组 | 是 | 输入、日志、表格、图、数据、笔记本或报告的附件引用 |
-| `created_at` / `updated_at` | RFC 3339 时间 | 是 | 使用 UTC 时间；API 输出统一使用 `Z` 结尾 |
-| `parent_run_id` | UUID 字符串 | 否 | 派生计算或参数扫描的父记录 |
-| `supersedes_id` | UUID 字符串 | 否 | 修正或替代的先前记录；不得静默覆盖旧结果 |
+| `visibility` | 枚举 | 是 | v1 仅支持 `private` / `group`；公开发布需独立审核 |
+| `owner_user_id` | 本地用户 ID | 是 | 只在当前后端解释，不跨环境假定 ID 相同 |
+| `source_ref` | 对象 | 是 | 精确标识来源仓库、commit、记录类型/ID/路径和可用的 manifest/artifact 指针 |
+| `display_snapshot` | 对象 | 是 | 网站用于展示的来源检查、运行状态与 claim 摘要快照；不能覆盖来源真值 |
+| `site_attachment_ids` | 字符串数组 | 是 | 网站自己的附件 ID；不与研究仓库的 artifact ID 混用 |
+| `created_at` / `updated_at` | RFC 3339 时间 | 是 | UTC 时间，API 输出统一使用 `Z` 结尾 |
+| `supersedes_id` | UUID 字符串或 null | 否 | 网站索引记录的替代关系；不覆盖或改写来源仓库历史 |
 
-### 3.2 精确数值与参数约定
+### 3.1 `source_ref`
 
-物理参数和高精度结果的 `value` 应使用字符串保存，例如 `"1.234567890123456789e-6"`，避免经过 JavaScript 二进制浮点数后丢失有效位。单位单独保存，不把单位隐式编码进数值。
+`source_ref` 至少包含：
 
-每个参数至少包含：
+- `source_kind`：`research_change` / `run_manifest` / `artifact_bundle` / `claim_evidence_matrix` / `external_record`；
+- `repository_url`：来源仓库 URL；
+- `commit_sha`：若来源在 Git 仓库中，使用精确 commit SHA；仅记录分支名不够；
+- `project_id`、`workstream_id`：若来源登记了这些层级，则保存其稳定 ID；
+- `record_id` 与 `record_path`：例如 `RC-001` 和 `research/RC-001-vll-higgs-singlet-uv-eft.md`；
+- `task_id`、`run_id`、`run_plan_id`、`manifest_id`、`manifest_revision`：仅当来源确实存在这些记录时填写；不存在时必须为 null，不得从脚本文件名或日志名猜测；
+- `artifact_ids`：来源仓库中的 artifact ID 列表，作为不透明引用；
+- `claim_evidence_path`：可选的 claim–evidence matrix 路径；
+- `source_schema_version`：来源 schema 版本，作为不透明字符串保存；
+- `source_content_sha256` 与 `hash_unavailable_reason`：有实际计算的内容 SHA-256 时记录；否则显式为 null 并说明原因。
 
-- `name`：稳定的机器可读名称；
-- `value`：原始精度的字符串；
-- `unit`：明确单位，或明确标记无量纲；
-- `definition`：物理含义与采用的约定；
-- `source_ref`：来自论文、模型文件、先验或扫描配置的引用；
-- `role`：如 `input`、`derived`、`fixed_benchmark` 或 `prior`。
+来源身份应由仓库 URL、精确 commit、project/workstream、record 类型/ID/路径及适用的 manifest revision/fingerprint 共同确定。仅有 `run_id` 或文件名不足以跨项目、跨仓库唯一识别来源。
 
-派生参数应保留其定义或可追踪的推导引用；不能只记录最终数值而丢失它的计算关系。
+### 3.2 `display_snapshot`
 
-### 3.3 引用对象 `Reference`
+该对象只保存 UI 展示需要的快照：
 
-每个引用至少包含：
+- `source_integrity_status` 与 `source_checked_at`；
+- `schema_compatibility_status`；
+- `execution_status_snapshot` 与 `execution_snapshot_at`，只在来源确实提供运行状态时填写；
+- `claim_status_summary`、`claim_status_source_path`、`claim_status_source_commit` 与 `summary_snapshot_at`。
 
-- `kind`：`arxiv`、`doi`、`url`、`dataset` 或 `code_repository`；
-- `identifier`：规范化标识，如 arXiv ID、DOI、数据集版本或仓库 URL；
-- `role`：`background`、`method`、`input_data`、`comparison` 或 `constraint`；
-- `note`：该来源支持记录中的哪项定义、方法或结论。
+claim 摘要应保留来源的限定语，例如“Verification in progress; overall model-level claim unresolved”。网站不得将其转换为笼统的“验证通过”，也不得在来源 commit 改变后静默沿用旧摘要而不标记快照过期。
 
-优先保存稳定的 arXiv ID、DOI、数据版本或 Git commit，而不是只保存标题。可以附加本地文献库 ID 作为导航缓存，但它不能成为跨后端的唯一身份。文献元数据与记录之间的链接不意味着已独立复核论文中的物理结论。
+### 3.3 不在网站索引中复制的字段
 
-### 3.4 代码上下文与环境
+v1 不将以下内容作为网站数据库的独立科学真值：
 
-代码上下文应尽可能包含：
+- 运行参数、配置快照、软件环境、执行命令与退出码；
+- 完整数值输出、输入/输出文件哈希和目录 manifest；
+- 独立复现记录、验证活动和实验约束评估；
+- 物理 claim 的正式状态与证据链。
 
-- `repository_url`、`commit_sha`、`working_tree_state`（`clean` / `dirty` / `unknown`）；
-- `entrypoint`、`command`、参数文件引用和输入文件 SHA-256；
-- 若工作区为 `dirty`，应附补丁/源码快照或明确标记不可精确复现；
-- 软件环境列表，每项包含软件名、版本和必要的包版本；
-- 随机扫描还应记录随机种子、采样方法、先验、扫描范围、样本数和失败点处理规则。
+这些内容应继续留在来源 research-change、run_manifest、artifact 和 claim–evidence 记录中。若 UI 需要展示，后续应通过有版本约束的只读解析/投影来实现，并展示来源 commit、manifest revision/fingerprint 和读取时间。不得在本 PR 中实现远程代码执行或向研究仓库写入。
 
-只记录分支名（如 `main`）不够，因为分支内容会移动。应记录精确 commit SHA；若计算使用未提交修改，必须同时保存修改快照或标记复现受限。
+## 4. 附件与来源访问
 
-### 3.5 附件对象 `Artifact`
+网站附件与研究仓库 artifact 是两个不同的命名空间：
 
-附件是现有文件服务的引用，不在 `ResearchRun` 中重复存储二进制内容。每项至少包含：
+- 来源仓库中的产物使用 `artifact_id`、来源路径、commit 和内容指纹引用；
+- 网站上传的讲义、内部展示附件或经过批准的快照使用 `site_attachment_ids`；
+- 服务端必须检查当前用户是否有权引用站内附件，不能只检查 ID 是否存在；
+- 外链使用 HTTPS；链接可访问不等于其内容已哈希或物理结论已核查；
+- 当前 Pages 配置未绑定 `FILES_BUCKET`，站内附件上限仍为 1 MiB。更大的研究产物应留在批准的研究仓库/外部存储，并通过受控链接访问。
 
-- `kind`：`source`、`input`、`log`、`table`、`plot`、`dataset`、`notebook` 或 `report`；
-- `description`、`media_type`、`size_bytes`；
-- `file_id`（现有站内附件 ID）或 `external_url`，二者必须且只能提供一个；服务端必须验证调用者有权引用该站内文件，不能只检查 ID 是否存在；
-- `sha256`：已知内容指纹；若无法获取，显式为 `null`，不能声称内容已校验。
-
-站内附件继续使用既有文件 API。当前 Pages 配置未绑定 `FILES_BUCKET`，因此单文件限制仍为 1 MiB；大文件只能引用经过确认的外部存储链接。外链必须为 HTTPS，并仍受访问权限和可用性限制。
-
-### 3.6 核查记录与约束评估
-
-`ValidationRecord` 是追加式证据记录，至少包括 `id`、`kind`、`status`、`method`、`conclusion`、`evidence_artifact_ids`、`reviewer_user_id`、`checked_at` 和 `notes`。`kind` 可为来源核查、解析推导审查、软件执行核验、独立复现或统计方法核查。没有证据的状态不得标记为 `passed`、`verified` 或 `reproduced`。
-
-`ConstraintEvaluation` 是某项具体实验/观测约束的评估，至少包括：
-
-- `constraint_id` 或来源标识；
-- `outcome`：`not_evaluated` / `excluded` / `not_excluded` / `not_applicable`；
-- 使用的模型参数、质量范围、耦合定义、数据版本和关键假设；
-- 证据产物、来源链接、评估者与时间；
-- `scope_note`：明确哪些效应已包含、哪些效应未评估。
-
-不同实验流、不同耦合结构或不同衰变/产生假设的约束不得只凭名称相近就自动复用。
-
-### 3.7 执行事件与版本递增
-
-`ExecutionEvent` 是追加式状态变更记录，至少包含 `id`、`event_type`、`from_status`、`to_status`、`occurred_at`、`actor_user_id`、`summary`、`exit_code`（可空）和 `artifact_ids`。`execution_status` 应由有效事件序列推导，而不是允许客户端任意写入。
-
-允许的状态转移：
-
-| 当前状态 | 事件 | 新状态 |
-|---|---|---|
-| `not_run` | `execution_started` | `running` |
-| `running` | `execution_succeeded` | `succeeded` |
-| `running` | `execution_failed` | `failed` |
-| `running` | `execution_cancelled` | `cancelled` |
-
-终态 `succeeded`、`failed`、`cancelled` 不允许原位转换。重跑或纠正输入/代码时新建记录，通过 `parent_run_id` 或 `supersedes_id` 关联。
-
-任何修改主记录或追加子记录（执行事件、核查记录、约束评估、附件引用）的成功写操作，都必须在同一事务中递增主记录 `record_version`。这样并发 `PATCH` 才能检测到在其读取之后发生的子记录变更。若当前后端无法保证原子性，实现前必须先设计事务/补偿策略。
-
-## 4. 示例对象（示意，不是当前 API 响应）
-
-```json
-{
-  "id": "2a6cdd77-451a-4dd9-9b2c-4c4f9d847a12",
-  "schema_version": "1.0.0",
-  "record_version": 1,
-  "title": "UV–EFT matching: benchmark A",
-  "summary": "Comparison of the UV amplitude and the matched EFT coefficient.",
-  "topic_slug": "higgs-portal-uv-eft",
-  "research_kind": "uv_eft_matching",
-  "lifecycle_state": "draft",
-  "execution_status": "not_run",
-  "visibility": "private",
-  "owner_user_id": "backend-local-user-id",
-  "model_context": {
-    "model_name": "specified UV model",
-    "conventions": ["metric and coupling conventions recorded in the linked note"],
-    "matching_scale": "1000 GeV",
-    "renormalization_scheme": "not_assessed"
-  },
-  "assumptions": [
-    "The matching convention is explicitly stated in the attached derivation.",
-    "No phenomenological exclusion is inferred from this record alone."
-  ],
-  "parameters": [
-    {
-      "name": "gX",
-      "value": "1.0e-3",
-      "unit": "1",
-      "definition": "Gauge coupling under the conventions recorded in the model note.",
-      "source_ref": "model-input:benchmark-A",
-      "role": "fixed_benchmark"
-    }
-  ],
-  "references": [
-    {
-      "kind": "arxiv",
-      "identifier": "arXiv:YYMM.NNNNN",
-      "role": "method",
-      "note": "Replace with a verified identifier before saving a real record."
-    }
-  ],
-  "code_context": {
-    "repository_url": "https://github.com/owner/repository",
-    "commit_sha": null,
-    "working_tree_state": "unknown",
-    "entrypoint": null,
-    "command": null,
-    "input_sha256": null
-  },
-  "environment": {
-    "software": [],
-    "notes": "Populate only with observed environment details."
-  },
-  "outputs": [],
-  "artifacts": [],
-  "validation_records": [],
-  "constraint_evaluations": [],
-  "created_at": "2026-10-25T17:00:00Z",
-  "updated_at": "2026-10-25T17:00:00Z",
-  "parent_run_id": null,
-  "supersedes_id": null
-}
-```
-
-此对象只展示字段形状。示例中的 arXiv 标识是明确标注的占位值，不得将其作为真实引用保存；正式实现应验证规范标识，并拒绝无效或未通过校验的引用。
+来源仓库是私有的时，保存链接不会自动授予网站成员 GitHub 访问权。v1 必须明确选择 `link_only`（用户需有来源权限）或 `attached_snapshot`（仅上传经批准、可共享的快照，并保留原始 commit/hash 证据）；不得默默复制整个私有仓库或未公开研究文件。
 
 ## 5. API 契约
 
-以下路径为提案中的规范路径，要求 FastAPI、Cloudflare Pages Functions 和 Demo Adapter 提供相同的请求/响应语义。它们在本 PR 中**尚未实现**。
+以下是网站**索引 API** 的提案，不是科学运行执行 API；当前尚未实现。FastAPI、Cloudflare Pages Functions 和 Demo Adapter 必须保持相同的请求/响应语义。
 
 | 方法与路径 | 用途 | 权限/语义 |
 |---|---|---|
-| `GET /api/research-runs` | 列表与筛选 | 只返回当前用户有权查看的记录；支持 `query`、`topic_slug`、`research_kind`、`lifecycle_state`、`execution_status`、`cursor`、`limit` |
-| `POST /api/research-runs` | 新建记录 | 需要登录；创建为 `draft`、`not_run`，默认 `private`；返回 `201` |
-| `GET /api/research-runs/{id}` | 获取详情 | 无权访问的私有记录不得泄露内容 |
-| `PATCH /api/research-runs/{id}` | 更新可编辑元数据 | 必须提交 `expected_record_version`；版本冲突返回 `409` |
-| `POST /api/research-runs/{id}/events` | 记录执行事件 | 追加式记录执行开始、成功、失败或取消；服务端校验合法状态转移 |
-| `POST /api/research-runs/{id}/validation-records` | 追加核查证据 | 追加式；不得静默覆盖旧审查结论 |
-| `POST /api/research-runs/{id}/constraint-evaluations` | 追加单项约束评估 | 追加式；必须保存约束来源、范围、假设和证据 |
-| `POST /api/research-runs/{id}/artifacts` | 关联附件 | 只关联现有 `file_id` 或 HTTPS 外链，不直接上传二进制 |
-| `GET /api/research-runs/{id}/export` | 导出可复现 manifest | 返回 JSON 元数据、引用、环境、指纹和证据；不保证外部文件永远可用 |
+| `GET /api/research-records` | 列表与筛选 | 只返回当前用户有权查看的记录；支持 `query`、`topic_slug`、`record_kind`、`lifecycle_state`、`cursor`、`limit` |
+| `POST /api/research-records` | 新建索引记录 | 需要登录；创建为 `draft`、默认 `private`；不创建真实 run 或 manifest；返回 `201` |
+| `GET /api/research-records/{id}` | 获取详情 | 无权访问的私有记录不得泄露内容 |
+| `PATCH /api/research-records/{id}` | 更新网站元数据 | 必须提交 `expected_record_version`；版本冲突返回 `409` |
+| `POST /api/research-records/{id}/source-checks` | 追加来源检查记录 | 只记录链接/哈希/schema 兼容性检查，不代表物理核查 |
+| `POST /api/research-records/{id}/attachments` | 关联网站附件 | 只关联现有站内文件；服务端检查文件所有权/可见性 |
+| `GET /api/research-records/{id}/export` | 导出索引 manifest | 导出网站索引与来源指针，不冒充完整 run manifest 或 claim-evidence 数据 |
 
-### 5.1 请求与响应规则
+### 5.1 请求规则
 
-- 成功响应使用统一的字段名、枚举、时间格式与错误语义；不得让三个适配器对同一请求返回不同的权限结果。
-- 新建和更新使用严格 schema 校验；拒绝未知字段、无效枚举、过长文本、非正数 `record_version`、格式错误的 UUID 和无效引用标识。
-- 更新必须携带 `expected_record_version`。若数据库当前版本不同，返回 `409 Conflict`，不覆盖他人的修改。主记录与追加式子记录的成功写操作都递增该版本。
-- 执行事件、核查记录和约束评估均为追加式证据。不得通过 `PATCH` 删除失败记录或将历史 `failed` 改写为 `succeeded`。
-- 执行到达 `succeeded`、`failed` 或 `cancelled` 后，执行快照不再原位修改。需要更正代码、输入或结果时，应创建新记录并用 `supersedes_id` 指向旧记录；新扫描/新运行可用 `parent_run_id` 表达派生关系。
-- 导出应保留数值字符串精度、软件版本、commit SHA、输入/产物指纹、核查状态和未评估项；不得把内部用户信息或未授权的私有记录导出给无权用户。
+- 新建和更新使用严格 schema 校验；拒绝未知字段、无效枚举、过长文本、格式错误的 UUID 和不完整的来源身份。
+- 更新必须携带 `expected_record_version`；若当前版本不同，返回 `409 Conflict`，不得覆盖并发修改。
+- 一旦来源身份已核对，不能通过 `PATCH` 静默把来源改成另一个 commit、manifest 或 artifact。若更换来源，应创建新索引记录并使用 `supersedes_id` 关联旧记录。
+- 来源检查记录是追加式的；失败或不匹配的历史记录不得被静默删除或改写为通过。
+- 网站索引创建成功只表示元数据已保存，不代表来源内容、schema 或物理结论已验证。
+- v1 不提供 `POST /api/research-runs/{id}/execute`、任意代码执行、自动扫描、对研究仓库的 commit/push 或自动 claim 状态更新。
 
 ### 5.2 错误状态码
 
 | HTTP | 场景 |
 |---|---|
-| `400` | 请求格式或状态转移不合法 |
+| `400` | 请求格式或操作不合法 |
 | `401` | 需要登录 |
 | `403` | 已识别用户但没有执行该操作的权限 |
-| `404` | 记录不存在，或按项目隐私策略不应向当前用户暴露其存在 |
+| `404` | 记录不存在，或按隐私策略不应暴露其存在 |
 | `409` | `expected_record_version` 与当前版本不一致 |
-| `422` | 请求字段未通过 schema/语义校验 |
-| `503` | 依赖的存储/数据库暂不可用；不得伪报保存成功 |
-
-如既有 API 有不同的错误封装，实现时应在公共契约测试中统一外部可观察行为，而不是只统一函数名。
+| `422` | 请求字段或来源身份未通过 schema/语义校验 |
+| `503` | 数据库或附件存储暂不可用；不得伪报保存成功 |
 
 ## 6. 权限与隐私
 
 - 所有写入端点都需要认证；v1 不开放匿名查询。
 - `private` 记录只对所有者和具有明确管理权限的管理员开放；`group` 记录对已认证的组内成员可读。编辑权限由所有者/管理员策略控制。
 - 不得依赖前端隐藏按钮作为授权措施；每个后端端点必须重新检查记录可见性与操作权限。
-- 用户 ID 是后端本地标识，不能跨 FastAPI/D1 环境假定相同。跨环境导入时须重新映射所有者或进入待人工确认状态。
-- Demo Adapter 使用合成数据并隔离于真实后端；它可以模拟同样的接口语义，但不得写入生产 API、生产 D1 或生产文件存储。
+- 用户 ID 是后端本地标识，不能跨 FastAPI/D1 环境假定相同。
+- Demo Adapter 使用合成数据并隔离于真实后端；不得写入生产 API、生产 D1 或私有研究仓库。
 - 未公开论文、审稿回复、私人计算、访问令牌、邮箱凭据和生产数据库内容不应放入公开静态文件或演示种子数据。
 
-## 7. 版本化与迁移原则
+## 7. 现有研究仓库的映射规则
 
-1. 先冻结并审阅本逻辑契约，再设计 SQLite/D1 物理 schema；不要在本提案中假定已存在可直接引用的表。
-2. SQLite 与 D1 使用独立、可审计的版本化迁移；迁移前核对真实 schema 和已有数据，说明备份与恢复方法。
-3. 不在请求处理器中通过吞掉 `ALTER TABLE` 错误来隐式建表或升级 schema。
-4. API schema 版本与数据库迁移版本分开管理。新增可选字段应有默认值和向后兼容测试；破坏性变更必须显式升主版本或提供迁移路径。
-5. 先用无敏感信息的 fixture 验证旧记录、空字段、精确数值字符串、权限和并发冲突，再考虑导入历史计算记录。
-6. 不在这一阶段接入生产 R2/KV，不修改当前 1 MiB 附件限制，不触发生产发布。
+对接 [high-energy-theory-research](https://github.com/lm846802297-bit/high-energy-theory-research) 时，网站索引应遵守其现有层级：
 
-## 8. 后续实现的验收清单
+`project → workstream → research change → run → manifest/artifact → claim`
 
-- [ ] 三个适配器对相同有效/无效请求给出一致的 schema、状态码、权限和响应字段。
-- [ ] 数值字符串往返保存/导出后不改变有效数字与科学计数法表示。
-- [ ] 每个真实引用都通过对应格式校验；占位符和无效 arXiv/DOI 被拒绝。
-- [ ] `commit_sha`、工作区脏状态、输入/输出 SHA-256 和软件版本能被保存与导出。
+- `project_id`（例如 `axial-vector-model-building`）不是 `RC-001`；
+- `workstream_id`（例如 `vll-higgs-singlet-uv-eft`）不是单次运行；
+- `RC-001` 是研究变更记录；`CL-001` 等是 claim ID；
+- 只有在来源仓库中存在实际 run/manifest 记录时，才填写 `run_id` 和 `manifest_id`；
+- 存在脚本、输出日志或校验结果不自动意味着存在完整 run manifest，更不代表对应 claim 已通过；
+- 不将候选 schema 的 ID、版本或状态擅自升级为已批准的规范。
+
+## 8. 首个真实任务试点：RC-001
+
+建议先用现有 RC-001 做**研究变更索引试点**，而不是伪造一个“已完成”的计算运行：
+
+- `project_id`：`axial-vector-model-building`；
+- `workstream_id`：`vll-higgs-singlet-uv-eft`；
+- `research_change_id`：`RC-001`；
+- 来源记录：`research/RC-001-vll-higgs-singlet-uv-eft.md`；
+- claim–evidence matrix：`research/RC-001-claim-evidence-matrix.md`；
+- 来源记录当前状态为 verification in progress，整体 model-level claim unresolved；
+- 当前未找到该活跃记录对应的已提交规范 run/manifest 实例，因此试点索引必须把 `run_id`、`manifest_id` 和 `manifest_revision` 留空。只有真实记录被创建、验证并提交后才能补上。
+
+试点验收应检查：来源 commit 固定、索引可检索、私有/组内权限生效、claim 摘要指向正确来源、来源变更能被标记为过期、导出不会把索引伪装成完整运行清单。若组员没有私有研究仓库的访问权，应先决定是否提供经过批准的摘要/快照，不应通过公开链接绕过权限。
+
+## 9. 后续实现的验收清单
+
+- [ ] 网站索引不复制或重写来源 run_manifest、artifact 或 claim-evidence 真值。
+- [ ] 来源身份包含精确 commit 与稳定记录路径/ID；单独的分支名或文件名不够。
+- [ ] 不存在的 run/manifest ID 不会从脚本、日志或文件名推断出来。
+- [ ] 来源完整性、schema 兼容性、执行状态和 claim 状态在 UI 中分别显示。
+- [ ] `linked` 或 `hash_match` 不被展示成“物理结论已验证”。
 - [ ] 私有记录不能被其他普通成员通过列表、详情、导出或附件引用端点读取。
-- [ ] `record_version` 冲突不会覆盖并发修改；执行和核查事件不能被静默覆盖。
-- [ ] `not_excluded` 不被展示成“模型整体可行”；`not_evaluated` 不会被折叠为允许。
-- [ ] Demo 数据明确标记为合成数据，且不访问生产后端。
-- [ ] 迁移在隔离 SQLite/D1 fixture 中验证，并有可核查的回滚/恢复说明。
-- [ ] 当前 PR 的文档与 schema 静态检查通过；实际 API/数据库实现的测试只在后续实现 PR 中声称通过。
+- [ ] `record_version` 冲突不会覆盖并发修改；来源变更保留旧索引记录和替代关系。
+- [ ] Demo 数据明确标记为合成数据，且不访问生产后端或私有研究仓库。
+- [ ] 候选 schema 在正式批准前仅作为不透明来源元数据，不被网站当作已发布的规范。
+- [ ] 当前 PR 的文档静态检查通过；实际 API/数据库实现测试只在后续实现 PR 中声称通过。
 
-## 9. 当前决定与下一步
+## 10. 当前决定与下一步
 
-本提案先解决研究记录的语义与接口边界，不创建数据库表，也不实现 API。审阅时应优先确认：
+本提案定义网站索引层，不创建数据库表，也不实现 API。优先审阅：
 
-1. `research_kind` 枚举是否覆盖课题组实际工作；
-2. `model_context`、参数、环境和产物字段是否足以复现一项真实 UV–EFT 或 FeynCalc 计算；
-3. 核查状态是否清楚区分来源核对、推导审查、软件执行、独立复现和实验约束；
-4. `private` / `group` 权限与“执行完成后快照不可变”的规则是否合适。
+1. `ResearchRecordIndex` 是否足以支持网站的搜索、权限和研究导航；
+2. 来源链接模式是否满足私有仓库访问需求，是否需要经过批准的附件快照；
+3. 哪些摘要适合缓存到网站，哪些必须实时读取或只提供跳转；
+4. 研究仓库 schema 获得正式批准后，采用何种版本化适配器映射 run、manifest、artifact 和 claim。
 
-确认后再单独提出数据库/API 实现 PR；在那之前，不应将本提案描述为已经上线的功能。
+确认后再单独实现索引 API；研究仓库候选 schema 的正式发布、迁移和物理结果的科学验收仍由各自的治理与研究流程决定。
