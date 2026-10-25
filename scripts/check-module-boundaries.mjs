@@ -90,6 +90,13 @@ function getBoundaryViolations(importer, target) {
     });
   }
 
+  if (isWithin(importer, 'frontend/src') && isWithin(target, 'frontend/functions/api')) {
+    violations.push({
+      code: 'BROWSER-API-001',
+      message: 'Browser application source must not import server-side Cloudflare API modules; use HTTP API calls instead.',
+    });
+  }
+
   if (isWithin(importer, 'frontend/functions/api') && isWithin(target, 'frontend/src')) {
     violations.push({
       code: 'RUNTIME-001',
@@ -116,6 +123,7 @@ function runSelfTest() {
     ['frontend/src/components/PaperCard.vue', 'frontend/src/views/LibraryView.vue', 'COMPONENT-001'],
     ['frontend/src/content/lab.js', 'frontend/src/api/client.js', 'CONTENT-001'],
     ['frontend/functions/api/routes/auth.ts', 'frontend/src/api/client.js', 'RUNTIME-001'],
+    ['frontend/src/api/client.js', 'frontend/functions/api/routes/auth.ts', 'BROWSER-API-001'],
     ['frontend/src/shared/format.js', 'frontend/src/features/papers/api.js', 'SHARED-001'],
   ];
 
@@ -123,6 +131,17 @@ function runSelfTest() {
     const actual = getBoundaryViolations(importer, target).map((item) => item.code);
     assert.ok(actual.includes(expectedCode), `Expected ${expectedCode} for ${importer} -> ${target}; got ${actual}`);
   }
+
+  const escapedAliasTarget = resolveProjectImport(
+    'frontend/src/api/client.js',
+    '@/../functions/api/routes/auth.ts',
+  );
+  assert.equal(escapedAliasTarget, 'frontend/functions/api/routes/auth.ts');
+  assert.ok(
+    getBoundaryViolations('frontend/src/api/client.js', escapedAliasTarget)
+      .some((item) => item.code === 'BROWSER-API-001'),
+    'the @/ alias must not bypass the browser/server runtime boundary',
+  );
 
   assert.deepEqual(
     getBoundaryViolations('frontend/src/views/HomeView.vue', 'frontend/src/components/AppIcon.vue'),
