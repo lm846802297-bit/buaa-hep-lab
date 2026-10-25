@@ -319,7 +319,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 
       <footer class="topic-footer">
         <p>本专题是带有来源入口、适用条件与失效边界的研究导读；它不替代原始论文、独立计算或实验分析复现。正式引用时请以所链接的原始来源及其版本为准。</p>
-        <router-link to="/" class="button secondary">返回课题组首页</router-link>
+        <router-link to="/" class="button secondary">返回{{ publicBrandIdentity.name }}首页</router-link>
       </footer>
         </div>
       </div>
