@@ -8,8 +8,10 @@ describe('public brand identity', () => {
   it('renders the Chinese brand, academic focus and 1/6 motif', async () => {
     const html = await renderToString(createSSRApp(PublicBrand))
     expect(html).toContain(`aria-label="${publicBrandIdentity.name}首页"`)
-    expect(html).toContain(`<strong>${publicBrandIdentity.name}</strong>`)
-    expect(html).toContain(`<small>${publicBrandIdentity.academicFocus}</small>`)
+    const renderedName = html.match(/<strong\b[^>]*>(.*?)<\/strong>/)?.[1]
+    const renderedFocus = html.match(/<small\b[^>]*>(.*?)<\/small>/)?.[1]
+    expect(renderedName).toBe(publicBrandIdentity.name)
+    expect(renderedFocus).toBe(publicBrandIdentity.academicFocus)
     expect(html).toContain(publicBrandIdentity.fractionMark)
   })
 
