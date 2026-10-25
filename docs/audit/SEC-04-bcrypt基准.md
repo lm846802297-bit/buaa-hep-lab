@@ -15,11 +15,17 @@ Environment variable：
 
 工作流只使用 `frontend/benchmarks/bcrypt/wrangler.jsonc`，不执行 Pages 部署、不绑定生产 D1/R2、不接入生产认证路由。它先部署 Worker，再设置 `BENCHMARK_TOKEN`，并验证匿名请求返回 404。若环境变量/secrets 未配置，工作流会失败关闭。部署前须在 Cloudflare dashboard 核实账户套餐和 CPU 限额。
 
-部署后先执行 pilot（48 请求），保留所有失败，不自动启动完整扫描。PowerShell 下使用前文 SecureString 方式设置本地 `BENCHMARK_TOKEN`，再运行：
+部署后在 Workers Free 的 10 ms CPU 限额下，必须按 cost 分组执行 pilot：每个 cost 单独 16 个请求（8 个输入/操作组合 × 1 次预热 + 1 次测量）。先测 cost 6，再分别测 cost 7 和 cost 8。保留所有失败，不自动启动完整扫描；cost 7/8 的 CPU 超限是待测结果，不应因预期超限而循环重试。PowerShell 下使用前文 SecureString 方式设置本地 `BENCHMARK_TOKEN`，再运行：
 
 ```powershell
-node frontend/benchmarks/bcrypt/run.mjs --runtime cloudflare --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 1 --warmup 1 --out cloudflare-pilot.json
+# Each invocation tests one cost only: 16 requests per cost (8 warmup + 8 measured).
+node frontend/benchmarks/bcrypt/run.mjs --runtime cloudflare --cost 6 --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 1 --warmup 1 --out cloudflare-cost-6.json
+# Run cost 7 and 8 only after inspecting the prior report and CPU logs.
+node frontend/benchmarks/bcrypt/run.mjs --runtime cloudflare --cost 7 --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 1 --warmup 1 --out cloudflare-cost-7.json
+node frontend/benchmarks/bcrypt/run.mjs --runtime cloudflare --cost 8 --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 1 --warmup 1 --out cloudflare-cost-8.json
 ```
+
+The runner writes every attempted row even on failure, stores a bounded HTTP response excerpt (for example, Error 1102), and classifies failures as `cpu-limit`, `timeout`, `network-error`, `http-server-error`, `http-client-error`, or `benchmark-error`. A non-zero exit code means inspect and preserve the report; it does not mean discard it.
 
 将 `ACCOUNT` 替换为实际 workers.dev 子域名。只有 pilot 无失败、调用日志可按 sample ID 关联 CPU/outcome，且已确认套餐与 CPU 限额后，才考虑显式运行 `--samples 50 --warmup 5` 的完整扫描。不要循环重试 CPU 超限样本。完整登录/注册/改密的非生产路径测试仍是独立未决项。
 
@@ -175,7 +181,7 @@ try {
 
 将 `ACCOUNT` 替换为 Cloudflare 返回的实际账户子域。
 
-只有在 pilot 的 48 个请求均无失败、Cloudflare invocation log 能按 sample ID 关联 CPU、且已确认套餐/限额后，才执行完整扫描。重新安全输入 token（使用上面的 SecureString 模式），再运行：
+Workers Free 下不以 cost 7/8 零失败作为继续条件：cost 6 必须无失败；cost 7/8 的 CPU 超限可作为预期的边界证据，但必须确认失败类别确实为 CPU 超限而非鉴权、网络或代码错误。只有在每组报告均已审阅、Cloudflare invocation log 能按 sample ID 关联 CPU、且已确认套餐/限额后，才由维护者单独批准是否进行更大样本扫描。重新安全输入 token（使用上面的 SecureString 模式），再运行：
 
 ```powershell
 try {
@@ -187,7 +193,7 @@ try {
 }
 ```
 
-Cloudflare 默认参数现为 pilot（1 次测量 + 1 次预热）；完整模式必须显式指定 `--samples 50 --warmup 5`。完整模式总计 1,320 次请求，若 Free CPU 限额导致 cost 7/8 超限，应保留失败证据并停止，不要循环重试。
+Cloudflare 模式必须显式指定单个 `--cost 6|7|8`，以防不同 cost 混在一个结果中。每个 pilot 为 16 次请求；若某次请求触发 CPU 超限，脚本仍继续收集剩余样本、保存失败行与分组摘要，并以非零退出码结束。完整扫描每个 cost 400 次测量 + 40 次预热，三个 cost 合计 1,320 次请求；Free 套餐下不应默认执行完整扫描。
 只使用自己创建并确认所有权的 Worker URL；URL 限制只是防止误用，不是对域名所有权的认证。runner 通过 HTTPS POST 的受限 JSON 请求体传递 token，不把它放入 URL、请求头或输出报告；URL 中只保留非秘密 sample ID，以关联 invocation CPU 与结构化日志。Worker 日志仅写出白名单元数据。命令返回的 wall/RTT 包含网络开销，**不能直接当作 Worker CPU**。
 
 Cloudflare invocation CPU 是整个 Worker 请求的 CPU 总量，包含 URL/令牌校验、bcrypt、日志与 JSON 响应开销，不是纯 bcrypt 指令时间。若要估计哈希的增量成本，应同时测量相同 Worker 的受保护 no-op/control 基线；否则把结果明确标记为“每次基准 invocation CPU”，不要称作纯 bcrypt CPU。

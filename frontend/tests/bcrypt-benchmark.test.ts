@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import worker from '../benchmarks/bcrypt/worker.mjs'
+import { selectCosts, classifyFailure } from '../benchmarks/bcrypt/run-options.mjs'
 
 const TEST_TOKEN = 'test-benchmark-token-for-unit-tests-only-1234567890'
 const defaultPayload = { sample: 'test', cost: 6, bytes: 12, operation: 'hash' }
@@ -21,6 +22,24 @@ const call = (path, { token = TEST_TOKEN, envToken = TEST_TOKEN, method = 'POST'
 }
 
 describe('isolated public bcrypt benchmark', () => {
+  it('requires an explicit single cost for Cloudflare and permits local all-cost baselines', () => {
+    expect(selectCosts(undefined, 'node')).toEqual([6, 7, 8])
+    expect(selectCosts('6', 'cloudflare')).toEqual([6])
+    expect(selectCosts('7', 'cloudflare')).toEqual([7])
+    expect(selectCosts('8', 'cloudflare')).toEqual([8])
+    expect(() => selectCosts(undefined, 'cloudflare')).toThrow(/explicit --cost/)
+    expect(() => selectCosts('6,7,8', 'cloudflare')).toThrow(/exactly one/)
+    expect(() => selectCosts('9', 'node')).toThrow(/6, 7, or 8/)
+  })
+  it('classifies CPU-limit and other failures without dropping the original error', () => {
+    expect(classifyFailure('HTTP 500: Error 1102: Worker exceeded resource limits')).toBe('cpu-limit')
+    expect(classifyFailure('HTTP 500: exceededCpu')).toBe('cpu-limit')
+    expect(classifyFailure('HTTP 403: Forbidden')).toBe('http-client-error')
+    expect(classifyFailure('fetch failed: ECONNRESET')).toBe('network-error')
+    expect(classifyFailure('The operation timed out')).toBe('timeout')
+    expect(classifyFailure('Invalid benchmark response')).toBe('benchmark-error')
+  })
+
   it('exercises control, hashing, and matching/mismatching compares at the byte boundary', async () => {
     for (const operation of ['control', 'hash', 'compare-match', 'compare-mismatch']) {
       const response = await call('/benchmark', { payload: { sample: 'test', cost: 6, bytes: 72, operation } })

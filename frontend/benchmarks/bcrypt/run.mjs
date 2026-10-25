@@ -6,18 +6,21 @@ import os from 'node:os'
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { cases, costs, operations } from './core.mjs'
+import { selectCosts, classifyFailure } from './run-options.mjs'
 import worker from './worker.mjs'
 
 const { values } = parseArgs({ options: {
   runtime: { type: 'string', default: 'node' }, samples: { type: 'string' },
   warmup: { type: 'string' }, out: { type: 'string' }, url: { type: 'string' },
+  cost: { type: 'string' },
 } })
 // Cloudflare defaults to a small pilot to avoid accidentally issuing 1,320 remote requests.
 const samples = Number(values.samples ?? (values.runtime === 'cloudflare' ? '1' : '50'))
 const warmup = Number(values.warmup ?? (values.runtime === 'cloudflare' ? '1' : '5'))
 if (!['node', 'workerd', 'cloudflare'].includes(values.runtime) || !Number.isInteger(samples) || samples < 1 || samples > 1000 || !Number.isInteger(warmup) || warmup < 0 || warmup > 100 || !values.out) {
-  throw new Error('Use --runtime node|workerd|cloudflare --samples 1..1000 --warmup 0..100 --out file.json (defaults: node/workerd 50+5; cloudflare pilot 1+1)')
+  throw new Error('Use --runtime node|workerd|cloudflare --samples 1..1000 --warmup 0..100 --out file.json (defaults: node/workerd 50+5; cloudflare 1+1 per explicitly selected cost)')
 }
+const selectedCosts = selectCosts(values.cost, values.runtime)
 const here = dirname(fileURLToPath(import.meta.url))
 const frontend = resolve(here, '../..')
 let mf, invoke
@@ -32,7 +35,11 @@ if (values.runtime === 'cloudflare') {
   }
   invoke = async params => {
     const response = await fetch(new URL(`/benchmark?${new URLSearchParams({ sample: params.sample })}`, endpoint), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cost: params.cost, bytes: params.bytes, operation: params.operation, token: benchmarkToken }), signal: AbortSignal.timeout(30000), cache: 'no-store', redirect: 'error' })
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    if (!response.ok) {
+      // Cloudflare CPU-limit responses can include Error 1102 in the body; preserve a bounded excerpt.
+      const detail = (await response.text()).slice(0, 512).replace(/\s+/g, ' ')
+      throw new Error(`HTTP ${response.status}: ${detail}`)
+    }
     const result = await response.json()
     if (result.benchmark !== 'bcrypt-v1' || result.sampleId !== params.sample || result.cost !== Number(params.cost) || result.bytes !== Number(params.bytes) || result.operation !== params.operation || result.ok !== true) throw new Error('Invalid benchmark response')
   }
@@ -68,14 +75,14 @@ if (values.runtime === 'cloudflare') {
 const percentile = (values, p) => values.length ? [...values].sort((a, b) => a - b)[Math.ceil(p * values.length) - 1] : null
 const distribution = values => ({ min: values.length ? Math.min(...values) : null, p50: percentile(values, .5), p95: percentile(values, .95), p99: percentile(values, .99), max: values.length ? Math.max(...values) : null })
 const lock = JSON.parse(readFileSync(resolve(frontend, 'package-lock.json')))
-const report = { schema: 1, startedAt: new Date().toISOString(), runtime: values.runtime, samplesPerCase: samples, warmupPerCase: warmup,
+const report = { schema: 1, startedAt: new Date().toISOString(), runtime: values.runtime, selectedCosts, samplesPerCase: samples, warmupPerCase: warmup,
   environment: { os: `${os.platform()} ${os.release()} ${os.arch()}`, cpu: os.cpus()[0]?.model, logicalCpus: os.cpus().length,
     node: process.version, bcryptjs: lock.packages['node_modules/bcryptjs'].version, wrangler: lock.packages['node_modules/wrangler'].version,
     workerd: lock.packages['node_modules/workerd']?.version, compatibilityDate: '2026-09-17', compatibilityFlags: ['nodejs_compat'],
     revision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: frontend, encoding: 'utf8' }).trim() },
   sourceHashFormat: 'SHA-256 of UTF-8 source text normalized to LF',
   sourceSha256: Object.fromEntries(['core.mjs', 'fixtures.json', 'worker.mjs', 'run.mjs', 'wrangler.jsonc', '../../package-lock.json'].map(file => [file, createHash('sha256').update(readFileSync(resolve(here, file), 'utf8').replace(/\r\n/g, '\n')).digest('hex')])),
-  timer: 'client process.hrtime.bigint; milliseconds; one operation per request; sequential; round-robin costs',
+  timer: 'client process.hrtime.bigint; milliseconds; one operation per request; sequential; selected costs only; no retries',
   cpuMetric: values.runtime === 'node' ? 'process.cpuUsage user+system; Node process only, not Worker CPU' : 'unavailable; wall/RTT must not be interpreted as Worker CPU',
   limitations: ['Synthetic public ASCII inputs: 12 and 72 UTF-8 bytes', 'Warmup excluded; warmup errors retained; no concurrency or cold-start claim', 'No production DB, route, account, credential or parameter changes', 'Cloudflare CPU telemetry, plan/limits, colo and full login overhead required before production approval'],
   rows: [], summaries: [] }
@@ -84,24 +91,33 @@ try {
   for (const phase of ['warmup', 'measure']) {
     const rounds = phase === 'warmup' ? warmup : samples
     for (let round = 0; round < rounds; round++) {
-      for (const bytes of cases) for (const operation of operations) for (let offset = 0; offset < costs.length; offset++) {
-        const cost = costs[(round + offset) % costs.length]
+      for (const bytes of cases) for (const operation of operations) for (let offset = 0; offset < selectedCosts.length; offset++) {
+        const cost = selectedCosts[(round + offset) % selectedCosts.length]
         const sampleId = `${runId}_${phase}_${bytes}_${operation}_${cost}_${round}`
         const cpuStart = process.cpuUsage(), started = process.hrtime.bigint()
-        let error = null
-        try { await invoke({ cost: String(cost), bytes: String(bytes), operation, sample: sampleId }) } catch (e) { error = e.message }
+        let error = null, errorClass = null
+        try { await invoke({ cost: String(cost), bytes: String(bytes), operation, sample: sampleId }) } catch (e) {
+          error = e instanceof Error ? e.message : String(e)
+          errorClass = classifyFailure(error)
+        }
         const elapsedMs = Number(process.hrtime.bigint() - started) / 1e6
         const cpu = process.cpuUsage(cpuStart)
-        report.rows.push({ phase, round, sampleId, bytes, operation, cost, elapsedMs, nodeCpuMs: values.runtime === 'node' ? (cpu.user + cpu.system) / 1000 : null, error })
+        report.rows.push({ phase, round, sampleId, bytes, operation, cost, elapsedMs, nodeCpuMs: values.runtime === 'node' ? (cpu.user + cpu.system) / 1000 : null, error, errorClass })
       }
     }
   }
-  for (const bytes of cases) for (const operation of operations) for (const cost of costs) {
+  for (const bytes of cases) for (const operation of operations) for (const cost of selectedCosts) {
     const rows = report.rows.filter(r => r.phase === 'measure' && r.bytes === bytes && r.operation === operation && r.cost === cost)
     const successes = rows.filter(r => !r.error)
-    report.summaries.push({ bytes, operation, cost, attempts: rows.length, failures: rows.length - successes.length,
+    const failuresByClass = Object.fromEntries([...new Set(rows.filter(r => r.errorClass).map(r => r.errorClass))].map(kind => [kind, rows.filter(r => r.errorClass === kind).length]))
+    report.summaries.push({ bytes, operation, cost, attempts: rows.length, failures: rows.length - successes.length, failuresByClass,
       wallMs: distribution(successes.map(r => r.elapsedMs)), nodeCpuMs: values.runtime === 'node' ? distribution(successes.map(r => r.nodeCpuMs)) : null })
   }
+  report.phaseSummary = Object.fromEntries(['warmup', 'measure'].map(phase => {
+    const rows = report.rows.filter(r => r.phase === phase)
+    return [phase, { attempts: rows.length, failures: rows.filter(r => r.error).length,
+      failuresByClass: Object.fromEntries([...new Set(rows.filter(r => r.errorClass).map(r => r.errorClass))].map(kind => [kind, rows.filter(r => r.errorClass === kind).length])) }]
+  }))
 } finally {
   await mf?.dispose()
   report.finishedAt = new Date().toISOString()
