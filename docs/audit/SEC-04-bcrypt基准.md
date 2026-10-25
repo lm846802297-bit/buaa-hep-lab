@@ -123,12 +123,24 @@ node frontend/benchmarks/bcrypt/run.mjs --runtime workerd --samples 50 --warmup 
 | workerd | 72 | compare-mismatch | 7 | 7.047 | 7.452 | 7.900 |
 | workerd | 72 | compare-mismatch | 8 | 13.014 | 13.718 | 14.639 |
 
-## 当前 PR head 的 CI 与可复核基准证据
+## CI 与 Artifact 证据：历史成功记录与当前 HEAD 状态
 
-- 当前 PR head：`c679a24a4d8d176fe355fe7538cd52d9526ef6eb`。
+### 当前 HEAD 验证状态（2026-10-26）
+
+- 本次验证目标为 `final-audit` 分支 HEAD `a2fc44ef642d56edb8218ec28e5cb3a2eebcb685`。PR #3 已于 2026-10-23 关闭且未合并；其关闭时记录的 head `8d81367ab8879ff9795f516c3297978798ee530f` 不等于当前分支 tip，不得混为一谈。
+- [Workflow Run #635 / ID 40212460876](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/40212460876) 通过 `workflow_dispatch` 针对该 HEAD 运行。首次尝试与重跑均为 `validate=failure`、`deploy=skipped`；两次 validate 作业均没有任何步骤记录（`steps=[]`）、未分配 runner（`runner_id=0`），且没有可下载的作业日志或 Artifact。故状态为**阻塞/未验证**，不是测试失败的证据，更不是通过。
+- 同一时期的 [main Run #633 / ID 40210591628](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/40210591628) 在 `main` SHA `5e025dffb539c901637aa863aea17d3101552c8f` 上也在任何步骤开始前失败，`runner_id=0`，后续作业均跳过。这支持“runner/Actions 作业启动阶段受阻”的判断，但现有日志不足以确认具体根因；不得把它未经证实地归因于账单、代码或权限。
+- 当前 HEAD 未产生基准 Artifact。历史 Artifact 不能替代该 HEAD 的 CI。当前 HEAD 的 `run.mjs` 源码 SHA-256 为 `e642a15de9cde9d85b0eb3fa2cd755bfb22928291616a883c2b2e8ee81caa2cd`，与历史 Artifact 中的 `937853546425a9287d3f4eb301fceaef9c4f34a85b7a1c9df32442219dcbba8b` 不同；当前 runner 增加了 cost 选择及失败分类。因此，历史样本只能作为对应历史版本的证据，不能声称它验证了当前 HEAD 的完整 runner 行为。
+
+### 历史成功运行（仅作为历史证据）
+
+- 历史 PR head：`c679a24a4d8d176fe355fe7538cd52d9526ef6eb`。
 - [GitHub Actions run 39601665582](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39601665582) 对该 head 的 `validate=success`、`deploy=skipped`；隔离基准未部署，生产站点也未由该 PR run 发布。
 - 同一 head 的独立 FastAPI backend regression run [39601665692](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39601665692) 为 `success`。该套件是独立后端测试，不等同于 Pages 生产 bcrypt CPU 验收。
-- `bcrypt-local-evidence` artifact ID `12346154108`，包含 `node.json` 与 `workerd.json`。两份记录的 `environment.revision=fcf18a738ffc943d472f3c8f97b0d809271d5b98`，与该 PR run 的合并测试提交一致；每份 1,320 行：1,200 个测量样本、120 次预热、24 个分组、0 次失败。PR head、PR base SHA 与合并测试 revision 是不同概念，必须分别记录。
+- 历史 PR base SHA：`7ba3feba5f392b49056e2748506df4c1ce326449`（合并测试提交的第一父提交）；历史 PR head SHA：`c679a24a4d8d176fe355fe7538cd52d9526ef6eb`；Artifact 内部 `environment.revision`：`fcf18a738ffc943d472f3c8f97b0d809271d5b98`。后者是合并测试提交，其父提交依次为 base `7ba3feba…` 与 PR head `c679a24…`，三者不可互换。
+- Artifact ID `12346154108`（Run `39601665582`），ZIP SHA-256：`16ae81f289c34626c99bbb520c9e1d4070b32d2e7c95b878bd4e6ca23905cbc0`；`node.json` SHA-256：`133617d0e4979afce669b5811ba6b0a11f7d21bf93f6e23b054a01ad8ed0a6d7`；`workerd.json` SHA-256：`6bcf649e0ab5dc638bb0d380072dc9d28171f462185a957dcdcb0a48bacf1c80`。
+- 已独立核对原始行与汇总：Node 和 workerd 各 1,320 行，分别为 120 条预热记录与 1,200 条测量记录；24 个测量分组各 50 个样本，24 个预热分组各 5 个样本；样本 ID 唯一且字段与记录列一致；原始错误数及汇总失败数均为 0，汇总 attempts/failures/min/max 与原始测量行一致。
+- Artifact 中记录的六个源码 SHA-256（`core.mjs`、`fixtures.json`、`worker.mjs`、`run.mjs`、`wrangler.jsonc`、`package-lock.json`）已与内部 revision `fcf18a738ffc943d472f3c8f97b0d809271d5b98` 的文件内容逐一比对，全部匹配。该结论只适用于这一历史 revision。
 - 运行环境：Linux x64 GitHub-hosted runner；AMD EPYC 9V74，报告显示 2 个逻辑 CPU；Node v24.21.0、bcryptjs 3.0.3、Wrangler 4.131.0、workerd 1.20260910.1；兼容日期 `2026-09-17`、`nodejs_compat`。
 - 该 artifact 的 cost 6、12-byte 样本（n=50，单位 ms）：
   
