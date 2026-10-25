@@ -426,6 +426,8 @@ try {
   await firstResourceCard.hover()
   const hoverShadow = await firstResourceCard.evaluate(el => getComputedStyle(el).boxShadow)
   check(hoverShadow !== 'none', 'worldline mode provides visible hover feedback on resource cards')
+  const hoverSignal = await firstResourceCard.evaluate(el => getComputedStyle(el, '::after').animationName)
+  check(hoverSignal === 'worldline-card-signal', 'worldline resource-card hover triggers a brief CRT signal sweep')
   await page.bringToFront()
   await page.waitForFunction(() => document.visibilityState === 'visible')
   await page.evaluate(() => {
