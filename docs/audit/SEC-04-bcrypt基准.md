@@ -4,7 +4,7 @@
 
 ## 隔离 Cloudflare Worker：部署前置条件
 
-本工作流**不会**由 push、pull request 或普通 CI 自动触发。可在 PR 分支 `final-audit` 上手动触发 `.github/workflows/sec04-bcrypt-isolated.yml`，输入精确确认字符串 `DEPLOY-ISOLATED-BCRYPT`；它只部署独立的 `buaa-hep-bcrypt-benchmark` Worker。工作流使用 GitHub Environment `sec04-benchmark`。建议先在仓库 Settings → Environments 中创建该环境并配置 required reviewer，再添加以下 secrets/variables。
+本工作流**不会**由 push、pull request 或普通 CI 自动触发。当前 `.github/workflows/sec04-bcrypt-isolated.yml` 仅存在于 `final-audit`，尚未进入默认分支 `main`；GitHub 要求 `workflow_dispatch` 工作流文件先存在于默认分支，因此现在不能直接从 Actions UI 手动触发。不要为此合并整个已分叉的 `final-audit` 分支。当前部署应由维护者在本地 PowerShell/Wrangler 中执行；若后续希望使用 GitHub Actions，应另行审查一个窄范围变更，将该工作流及其所需基准文件纳入默认分支。该工作流设计使用 GitHub Environment `sec04-benchmark`；只有在工作流进入默认分支后，才配置此环境的 required reviewer 与下列 secrets/variables。
 
 Environment secrets（不要提交到仓库或放入命令行参数）：
 - `CLOUDFLARE_API_TOKEN`：仅授予部署该 Worker 所需权限的 Cloudflare API token。
@@ -172,7 +172,7 @@ node node_modules/wrangler/bin/wrangler.js deploy --config benchmarks/bcrypt/wra
 node node_modules/wrangler/bin/wrangler.js secret put BENCHMARK_TOKEN --config benchmarks/bcrypt/wrangler.jsonc
 ```
 
-为 `BENCHMARK_TOKEN` 生成至少 32 字符的随机值，在 Wrangler 的交互提示中设置为 Worker secret；不要将其提交到 Git。然后在 PowerShell 中安全输入同一个 token（输入不会回显）并运行：
+为 `BENCHMARK_TOKEN` 生成至少 32 字符的随机值，在 Wrangler 的交互提示中设置为 Worker secret；不要将其提交到 Git。然后在 PowerShell 中安全输入同一个 token（输入不会回显）。**在 cost 6 pilot 前必须先完成真正的 POST 鉴权正对照**：匿名 POST 应返回 404；携带正确 token 的 `control` POST 应返回 200，且响应内容正确。不能用 GET 请求代替，也不能仅凭一个 404 判断 secret 已生效。
 
 ```powershell
 $secure = Read-Host "Enter BENCHMARK_TOKEN" -AsSecureString
@@ -182,14 +182,62 @@ try {
 } finally {
   [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
 }
+$env:BENCHMARK_URL = "https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev/benchmark"
 try {
+  @'
+const endpoint = process.env.BENCHMARK_URL;
+const token = process.env.BENCHMARK_TOKEN;
+if (!endpoint || typeof token !== "string" || token.length < 32) {
+  console.error("Preflight configuration missing or invalid.");
+  process.exit(1);
+}
+const headers = { "content-type": "application/json" };
+const anonymous = await fetch(endpoint + "?sample=unauth-check", {
+  method: "POST", headers,
+  body: JSON.stringify({ cost: 6, bytes: 12, operation: "control" }),
+});
+if (anonymous.status !== 404) {
+  console.error(`Anonymous POST returned HTTP ${anonymous.status}; expected 404.`);
+  process.exit(1);
+}
+const authenticated = await fetch(endpoint + "?sample=auth-check", {
+  method: "POST", headers,
+  body: JSON.stringify({ cost: 6, bytes: 12, operation: "control", token }),
+});
+if (authenticated.status !== 200) {
+  console.error(`Valid-token POST returned HTTP ${authenticated.status}; expected 200.`);
+  process.exit(1);
+}
+let result;
+try { result = await authenticated.json(); } catch {
+  console.error("Valid-token response was not JSON.");
+  process.exit(1);
+}
+const expected = { benchmark: "bcrypt-v1", sampleId: "auth-check", cost: 6, bytes: 12, operation: "control", ok: true };
+for (const [key, value] of Object.entries(expected)) {
+  if (result[key] !== value) {
+    console.error(`Valid-token response mismatch: ${key}.`);
+    process.exit(1);
+  }
+}
+if (authenticated.headers.get("cache-control") !== "no-store") {
+  console.error("Valid-token response missing Cache-Control: no-store.");
+  process.exit(1);
+}
+console.log("Preflight passed: anonymous POST=404; valid-token control POST=200.");
+'@ | node --input-type=module
+  if ($LASTEXITCODE -ne 0) { throw "Auth preflight failed; do not run the pilot." }
+
   node benchmarks/bcrypt/run.mjs --runtime cloudflare --cost 6 --url https://buaa-hep-bcrypt-benchmark.ACCOUNT.workers.dev --samples 1 --warmup 1 --out cloudflare-cost-6.json
   if ($LASTEXITCODE -ne 0) { throw "Cost-6 pilot recorded failures; preserve cloudflare-cost-6.json and stop for review." }
 } finally {
   Remove-Item Env:BENCHMARK_TOKEN -ErrorAction SilentlyContinue
+  Remove-Item Env:BENCHMARK_URL -ErrorAction SilentlyContinue
   $secure.Dispose()
 }
 ```
+
+Replace `ACCOUNT` in both the endpoint and runner URL with the real workers.dev subdomain label. Do not paste the token into chat, a command-line argument, a URL, or a report.
 
 Only after reviewing cost 6's report and invocation CPU logs, repeat the same SecureString setup for cost 7 with output `cloudflare-cost-7.json`; review that evidence before separately deciding whether to run cost 8 with output `cloudflare-cost-8.json`. For cost 7/8, a non-zero exit caused by confirmed CPU-limit outcomes is retained evidence, not a reason to retry. Other failure classes remain blockers.
 
