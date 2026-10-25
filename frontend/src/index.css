@@ -2502,6 +2502,51 @@ html[data-bg-style="clouds-static"] body {
     animation: worldline-track-flow 2.8s linear infinite;
   }
 }
+/* Short CRT-style signal sweep for public research cards; the content remains static and readable. */
+:root[data-color-scheme="worldline-console"] .lab-public .public-paper,
+:root[data-color-scheme="worldline-console"] .lab-public .research-detail,
+:root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card,
+:root[data-color-scheme="worldline-console"] .lab-public .research-guide-card {
+  position: relative;
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-paper::after,
+:root[data-color-scheme="worldline-console"] .lab-public .research-detail::after,
+:root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card::after,
+:root[data-color-scheme="worldline-console"] .lab-public .research-guide-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(90deg, transparent, var(--worldline-cyan-hot), var(--worldline-blue) 56%, var(--worldline-anomaly) 78%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--worldline-cyan) 32%, transparent);
+}
+:root[data-color-scheme="worldline-console"] .lab-public .public-paper:focus-within::after,
+:root[data-color-scheme="worldline-console"] .lab-public .research-detail:focus-within::after,
+:root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card:focus-within::after,
+:root[data-color-scheme="worldline-console"] .lab-public .research-guide-card:focus-within::after {
+  animation: worldline-card-signal 760ms cubic-bezier(.16, .72, .18, 1) both;
+}
+@media (hover: hover) and (pointer: fine) {
+  :root[data-color-scheme="worldline-console"] .lab-public .public-paper:hover::after,
+  :root[data-color-scheme="worldline-console"] .lab-public .research-detail:hover::after,
+  :root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card:hover::after,
+  :root[data-color-scheme="worldline-console"] .lab-public .research-guide-card:hover::after {
+    animation: worldline-card-signal 760ms cubic-bezier(.16, .72, .18, 1) both;
+  }
+}
+@keyframes worldline-card-signal {
+  0% { opacity: 0; transform: scaleX(0); }
+  18% { opacity: .92; }
+  62% { opacity: .78; transform: scaleX(.74); }
+  100% { opacity: 0; transform: scaleX(1); }
+}
+
 :root[data-color-scheme="worldline-console"] a:active,
 :root[data-color-scheme="worldline-console"] button:active:not(:disabled) {
   filter: brightness(1.08);
