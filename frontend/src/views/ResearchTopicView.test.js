@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createSSRApp, h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { directions, publications } from '../content/lab'
+import { publicBrandIdentity } from '../content/brandIdentity'
 import { researchTopicDetails, researchTopicResources } from '../content/researchTopicDetails'
 import { researchTopicDeepGuides } from '../content/researchTopicDeepGuides'
 
@@ -39,7 +40,7 @@ describe('public research topic pages', () => {
       expect(html).toContain(paper.title)
       expect(html).toContain(paper.source_url)
     }
-    expect(html).toContain('返回课题组首页')
+    expect(html).toContain(`返回${publicBrandIdentity.name}首页`)
   })
 
   it('renders the detail and resource sections for all five topics', async () => {

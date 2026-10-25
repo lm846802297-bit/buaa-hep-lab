@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, nextTick } from 'vue'
 import { useThemeStyle } from '../composables/useThemeStyle'
+import { publicBrandIdentity } from '../content/brandIdentity'
 import PublicHomeHero from '../components/PublicHomeHero.vue'
 import { lab, advisorProfile, collaborators, directions, publications, publicationCategories, publicResources, publicResourceCheckedAt } from '../content/lab'
 const { publicColorScheme } = useThemeStyle()

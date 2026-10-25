@@ -2,10 +2,10 @@
 import { ref } from 'vue'
 import PublicThemeSwitcher from './PublicThemeSwitcher.vue'
 import PublicSectionNav from './PublicSectionNav.vue'
-import PublicBrand from './PublicBrand.vue'
-import { publicBrandIdentity } from '../content/brandIdentity'
 import { usePublicHeroVisual } from '../composables/usePublicHeroVisual'
 import { lab } from '../content/lab'
+import PublicBrand from './PublicBrand.vue'
+import { publicBrandIdentity } from '../content/brandIdentity'
 
 const menuOpen = ref(false)
 const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisual()
@@ -15,7 +15,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   <div class="public-home-theme--nebula-purple" data-public-home-theme="nebula-purple" :class="{ 'hero-visual-blueprint': heroVisualMode === 'blueprint', 'hero-visual-photo': heroVisualMode === 'photo', 'hero-visual-terminal': heroVisualMode === 'terminal' }">
     <PublicSectionNav />
     <header class="public-header">
-      <PublicBrand to="/#top" @click="menuOpen = false" />
+      <PublicBrand @click="menuOpen = false" />
       <button class="menu-toggle button secondary" :aria-expanded="menuOpen" aria-controls="public-navigation" @click="menuOpen = !menuOpen">{{ menuOpen ? '关闭菜单' : '菜单' }}</button>
       <nav id="public-navigation" :class="{ open: menuOpen }" aria-label="官网导航">
         <a href="#research" @click="menuOpen = false">研究方向</a><a href="#research-guides" @click="menuOpen = false">专题导读</a><a href="#publications" @click="menuOpen = false">代表成果</a><a href="#physics-resources" @click="menuOpen = false">物理资源</a><a href="#about" @click="menuOpen = false">关于我们</a>

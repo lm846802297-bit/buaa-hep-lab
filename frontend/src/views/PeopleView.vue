@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { publicContentIndexCheckedAt, publicPeople } from '../content/lab'
+import { publicBrandIdentity } from '../content/brandIdentity'
 import { publicationReviewStatus } from '../utils/publicationReview'
 
 const people = computed(() => publicPeople.filter(person => person.visibility === 'public'))

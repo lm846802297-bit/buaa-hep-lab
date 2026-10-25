@@ -14,7 +14,7 @@ describe('Public academic website', () => {
     expect(html).toContain(publicBrandIdentity.name)
     expect(html).toContain(publicBrandIdentity.fractionMark)
     expect(html).toContain(publicBrandIdentity.academicFocus)
-    expect(html.toLowerCase()).toContain(publicBrandIdentity.englishDescriptor.toLowerCase())
+    expect(html).toContain(publicBrandIdentity.englishDescriptor)
     expect(html).toContain('暂定名称')
     // Keep exactly one collaboration entry in the header navigation,
     // styled prominently rather than duplicated as a second CTA.
@@ -90,6 +90,7 @@ describe('Public academic website', () => {
   })
   it('keeps the public content profile limited to approved academic fields', () => {
     expect(Object.keys(lab).sort()).toEqual(['name', 'provisional', 'shortName', 'institution', 'field', 'english', 'advisor', 'source', 'intro'].sort())
+    expect(lab.provisional).toBe(true)
     expect(JSON.stringify(lab)).not.toMatch(/[\w.-]+@[\w.-]+/)
     expect(Object.keys(advisorProfile).sort()).toEqual(['name', 'groupRole', 'english', 'institution', 'title', 'field', 'topics', 'intro', 'source'].sort())
     expect(JSON.stringify(advisorProfile)).not.toMatch(/邮箱|电话|办公|履历|照片|[\w.-]+@[\w.-]+/)

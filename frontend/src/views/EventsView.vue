@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { publicEvents, publicSeminarSeries } from '../content/lab'
+import { publicBrandIdentity } from '../content/brandIdentity'
 import { publicationReviewStatus } from '../utils/publicationReview'
 import { buildPublicIcsCalendar, listPublicArchivedEvents, listPublicUpcomingEvents } from '../utils/publicEvents'
 
