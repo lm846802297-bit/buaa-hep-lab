@@ -166,13 +166,37 @@ frontend/tests/security.test.ts 已有基于 SQLite 的 D1 适配器测试，覆
 
 以下步骤会创建/修改 Cloudflare 资源，**本次未执行**。只在隔离 Worker 目标与成本得到确认后执行：
 
+1. 在 Cloudflare Dashboard 中先创建一个空的 Worker，名称必须精确为 `buaa-hep-bcrypt-benchmark`。这样后续可以将 API Token 限定为该 Worker 的 Editor，而不必为了首次创建 Worker 授予整个 Workers 产品的 Admin 权限。
+2. 创建 account-owned API Token，资源范围只选目标 Cloudflare account，权限只给该 Worker 的 `Editor`。Cloudflare 的 Wrangler OAuth 登录不支持细粒度授权；此处应使用 `CLOUDFLARE_API_TOKEN`。此流程设置的是 Worker 脚本级 secret，不使用 account-level Secrets Store，所以不要仅为此额外授予 `secrets_store:write`。
+3. 在 PowerShell 中安全输入 API Token 和 Account ID，然后部署 Worker 并设置脚本 secret：
+
 ```powershell
 cd frontend
-node node_modules/wrangler/bin/wrangler.js deploy --config benchmarks/bcrypt/wrangler.jsonc
-node node_modules/wrangler/bin/wrangler.js secret put BENCHMARK_TOKEN --config benchmarks/bcrypt/wrangler.jsonc
+$apiSecure = Read-Host "Enter scoped Cloudflare API token" -AsSecureString
+$apiPtr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($apiSecure)
+try {
+  $env:CLOUDFLARE_API_TOKEN = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($apiPtr)
+} finally {
+  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($apiPtr)
+}
+$env:CLOUDFLARE_ACCOUNT_ID = Read-Host "Enter Cloudflare Account ID"
+try {
+  npx wrangler whoami
+  if ($LASTEXITCODE -ne 0) { throw "Wrangler authentication/account check failed." }
+
+  npx wrangler deploy --config benchmarks/bcrypt/wrangler.jsonc
+  if ($LASTEXITCODE -ne 0) { throw "Isolated Worker deployment failed; do not continue." }
+
+  npx wrangler secret put BENCHMARK_TOKEN --config benchmarks/bcrypt/wrangler.jsonc
+  if ($LASTEXITCODE -ne 0) { throw "Setting Worker script secret failed; do not send requests." }
+} finally {
+  Remove-Item Env:CLOUDFLARE_API_TOKEN -ErrorAction SilentlyContinue
+  Remove-Item Env:CLOUDFLARE_ACCOUNT_ID -ErrorAction SilentlyContinue
+  $apiSecure.Dispose()
+}
 ```
 
-为 `BENCHMARK_TOKEN` 生成至少 32 字符的随机值，在 Wrangler 的交互提示中设置为 Worker secret；不要将其提交到 Git。然后在 PowerShell 中安全输入同一个 token（输入不会回显）。**在 cost 6 pilot 前必须先完成真正的 POST 鉴权正对照**：匿名 POST 应返回 404；携带正确 token 的 `control` POST 应返回 200，且响应内容正确。不能用 GET 请求代替，也不能仅凭一个 404 判断 secret 已生效。
+为 `BENCHMARK_TOKEN` 生成至少 32 字符的独立高熵随机值，在 Wrangler 的交互提示中设置为 Worker secret；不要将其提交到 Git，也不要复用 Cloudflare API Token。**在 cost 6 pilot 前必须先完成真正的 POST 鉴权正对照**：匿名 POST 应返回 404；携带正确 token 的 `control` POST 应返回 200，且响应内容正确。不能用 GET 请求代替，也不能仅凭一个 404 判断 secret 已生效。
 
 ```powershell
 $secure = Read-Host "Enter BENCHMARK_TOKEN" -AsSecureString
