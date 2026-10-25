@@ -75,7 +75,8 @@
 - `project_id`、`workstream_id`：若来源登记了这些层级，则保存其稳定 ID；
 - `record_id` 与 `record_path`：例如 `RC-001` 和 `research/RC-001-vll-higgs-singlet-uv-eft.md`；
 - `task_id`、`run_id`、`run_plan_id`、`manifest_id`、`manifest_revision`：仅当来源确实存在这些记录时填写；不存在时必须为 null，不得从脚本文件名或日志名猜测；
-- `artifact_ids`：来源仓库中的 artifact ID 列表，作为不透明引用；
+- `artifact_ids`：仅当来源中确实存在规范 artifact ID 时填写，作为不透明引用；
+- `artifact_refs`：来源仓库内可直接追溯的文件引用，至少记录 `path`、精确 `commit_sha`、可获得的 `git_blob_sha`、可选 `sha256`、`role` 与 `description`。如果没有规范 artifact ID，保留 `artifact_id: null`，不得从文件名推造 ID。`git_blob_sha` 是 Git 对象标识，不是 SHA-256；两者必须使用不同字段。
 - `claim_evidence_path`：可选的 claim–evidence matrix 路径；
 - `source_schema_version`：来源 schema 版本，作为不透明字符串保存；
 - `source_content_sha256` 与 `hash_unavailable_reason`：有实际计算的内容 SHA-256 时记录；否则显式为 null 并说明原因。
@@ -135,6 +136,38 @@ v1 不将以下内容作为网站数据库的独立科学真值：
     "manifest_id": null,
     "manifest_revision": null,
     "artifact_ids": [],
+    "artifact_refs": [
+      {
+        "artifact_id": null,
+        "path": "validation/RC-001-local-validation-status-2026-10-23.md",
+        "commit_sha": "d6143c2aa15191ac8521e062d90860ba86713f00",
+        "git_blob_sha": "b5c09b4d215c36aefef62659f479f78354af007f",
+        "sha256": null,
+        "hash_unavailable_reason": "The index example has not independently computed SHA-256; git_blob_sha is a Git object ID, not SHA-256.",
+        "role": "validation_summary",
+        "description": "Local checks and explicit CI disposition; not a CI pass or physics correctness certificate."
+      },
+      {
+        "artifact_id": null,
+        "path": "validation/RC-001-uv-eft-two-point-difference.txt",
+        "commit_sha": "d6143c2aa15191ac8521e062d90860ba86713f00",
+        "git_blob_sha": "0bcc0bd1b393db6026580f88a668100921be8223",
+        "sha256": null,
+        "hash_unavailable_reason": "The index example has not independently computed SHA-256; git_blob_sha is a Git object ID, not SHA-256.",
+        "role": "validation_evidence",
+        "description": "Recorded exact symbolic/algebraic checks for the stated two-point UV–EFT subset."
+      },
+      {
+        "artifact_id": null,
+        "path": "validation/RC-001-dim6-independent-kernel-check.txt",
+        "commit_sha": "d6143c2aa15191ac8521e062d90860ba86713f00",
+        "git_blob_sha": "6fc04e3bcaa23e851517374eb8a064280eb001dd",
+        "sha256": null,
+        "hash_unavailable_reason": "The index example has not independently computed SHA-256; git_blob_sha is a Git object ID, not SHA-256.",
+        "role": "validation_evidence",
+        "description": "Recorded exact kernel/integral checks within the explicitly limited scope."
+      }
+    ],
     "source_schema_version": null,
     "source_content_sha256": null,
     "hash_unavailable_reason": "This draft index does not include a computed source-content SHA-256.",
@@ -245,7 +278,7 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 
 ## 9. 首个真实任务试点：RC-001
 
-建议先用现有 RC-001 做**研究变更索引试点**，而不是伪造一个“已完成”的计算运行：
+建议先用现有 RC-001 做**研究变更索引试点**，而不是伪造一个“已完成”的计算运行。以下示例中的来源文件路径和 Git blob SHA 已在固定 commit 上核对；它们是可追溯的仓库文件引用，不是网站附件，也不冒充规范 artifact ID：
 
 - `project_id`：`axial-vector-model-building`；
 - `workstream_id`：`vll-higgs-singlet-uv-eft`；
@@ -254,6 +287,7 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 - claim–evidence matrix：`research/RC-001-claim-evidence-matrix.md`；
 - 来源记录当前状态为 verification in progress，整体 model-level claim unresolved；
 - 当前未找到该活跃记录对应的已提交规范 run/manifest 实例，因此试点索引必须把 `run_id`、`manifest_id` 和 `manifest_revision` 留空。只有真实记录被创建、验证并提交后才能补上。
+- RC-001 将主基线 v153 标识为 ChatGPT Library 中的源文件，并明确说明该完整源文件尚未提交到研究仓库。网站索引可追溯到已提交的 RC-001、证据矩阵和 validation 文件，但不能声称网站已直接提供或验证未提交的完整 v153 源文件；若要让组员在网站内读取其内容，必须另行批准一个有限摘要快照，或在独立 PR 中审查后归档完整源文件。
 
 试点验收应检查：来源 commit 固定、索引可检索、私有/组内权限生效、claim 摘要指向正确来源、来源变更能被标记为过期、导出不会把索引伪装成完整运行清单。若组员没有私有研究仓库的访问权，应先决定是否提供经过批准的摘要/快照，不应通过公开链接绕过权限。
 
@@ -261,6 +295,7 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 
 - [ ] 网站索引不复制或重写来源 run_manifest、artifact 或 claim-evidence 真值。
 - [ ] 来源身份包含精确 commit 与稳定记录路径/ID；单独的分支名或文件名不够。
+- [ ] 对没有规范 artifact ID 的来源文件，使用精确 commit + path + Git blob SHA；不把 Git blob SHA 误写为 SHA-256，也不虚构 artifact ID。
 - [ ] 不存在的 run/manifest ID 不会从脚本、日志或文件名推断出来。
 - [ ] 来源完整性、schema 兼容性、执行状态和 claim 状态在 UI 中分别显示。
 - [ ] `linked` 或 `hash_match` 不被展示成“物理结论已验证”。
