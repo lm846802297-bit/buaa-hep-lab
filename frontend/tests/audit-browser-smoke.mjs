@@ -150,6 +150,10 @@ try {
     }))
     check(heroModules.worldline === (scheme === 'worldline-console') && heroModules.selectedTheme === (scheme === 'worldline-console' ? null : scheme), scheme + ' mounts only its own hero implementation')
     check(visual.accent === expectedAccent, scheme + ' keeps its own accent palette: ' + visual.accent)
+    const brand = page.locator('.worldline-header .worldline-brand, .public-header .public-brand')
+    check(await brand.count() === 1, scheme + ' renders exactly one shared public brand link')
+    check((await brand.locator('.brand-copy strong').textContent())?.trim() === '引力之外', scheme + ' renders the approved public brand name')
+    check((await brand.locator('.brand-copy small').textContent())?.trim() === '高能理论与粒子唯象研究', scheme + ' renders the shared academic-focus subtitle')
   }
   check(new Set(Object.values(themeAccents)).size === 5, 'all five public themes retain distinct computed accents')
 
