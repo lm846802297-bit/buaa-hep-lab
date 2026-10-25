@@ -13,7 +13,9 @@ Environment secrets（不要提交到仓库或放入命令行参数）：
 Environment variable：
 - `CLOUDFLARE_ACCOUNT_SUBDOMAIN`：该账户的 workers.dev 子域名标签。
 
-工作流只使用 `frontend/benchmarks/bcrypt/wrangler.jsonc`，不执行 Pages 部署、不绑定生产 D1/R2、不接入生产认证路由。它先部署 Worker，再设置 `BENCHMARK_TOKEN`，并验证匿名请求返回 404。若环境变量/secrets 未配置，工作流会失败关闭。部署前须在 Cloudflare dashboard 核实账户套餐和 CPU 限额。
+工作流只使用 `frontend/benchmarks/bcrypt/wrangler.jsonc`，不执行 Pages 部署、不绑定生产 D1/R2、不接入生产认证路由。它先部署 Worker，再设置 `BENCHMARK_TOKEN`，然后以真实 POST 请求验证两项条件：缺少 token 时返回 404；携带正确 token 的 `control` 请求返回 200，且响应字段与 `Cache-Control: no-store` 均符合契约。正对照失败时不得开始 pilot。若环境变量/secrets 未配置，工作流会失败关闭。部署前须在 Cloudflare dashboard 核实账户套餐和 CPU 限额。
+
+认证权限注意：此工作流使用 `wrangler secret put BENCHMARK_TOKEN` 设置 **Worker 脚本级 secret**，配置中没有 Cloudflare Secrets Store binding，因此不应仅为这条流程额外授予 account-level Secrets Store 写权限。对于首次创建的新 Worker，Cloudflare 当前授权文档要求 Workers 产品级 Admin；为避免给自动化 Token 过宽权限，可先在 Dashboard 中创建名为 `buaa-hep-bcrypt-benchmark` 的空 Worker，再创建仅对该 Worker 具有 Editor 权限的 API Token。该 Token 可部署现有 Worker 并设置其脚本 secret。Wrangler 的 OAuth 登录不支持细粒度授权；优先在部署环境使用受限的 account-owned API Token。
 
 部署后在 Workers Free 的 10 ms CPU 限额下，必须按 cost 分组执行 pilot：每个 cost 单独 16 个请求（8 个输入/操作组合 × 1 次预热 + 1 次测量）。先测 cost 6，再分别测 cost 7 和 cost 8。保留所有失败，不自动启动完整扫描；cost 7/8 的 CPU 超限是待测结果，不应因预期超限而循环重试。PowerShell 下使用前文 SecureString 方式设置本地 `BENCHMARK_TOKEN`，再运行：
 
