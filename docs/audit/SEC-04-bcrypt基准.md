@@ -1,6 +1,29 @@
 # SEC-04：bcrypt cost 6 / 7 / 8 基准与生产评估边界
 
-日期：2026-10-21，Asia/Shanghai。**当前受令牌保护的基准 Worker 已通过最新本地 CI，精确 run、artifact、源码 SHA 与结果见下文。Cloudflare production 的 bcrypt 调用级 CPU 仍未测；生产 cost 保持 6。历史 Windows 数据只作为旧基线，不与当前 CI 运行时直接比较。**
+日期：2026-10-25，Asia/Shanghai。
+
+## 当前审计状态
+
+**SEC-04 保持开放；Cloudflare 远程部署暂缓。生产 bcrypt cost 保持 6。** 本地基准脚本与工作流准备工作已经完成，但没有在 Cloudflare 部署隔离 Worker，也没有执行远程 pilot。不要将本地 workerd 数据、CI artifact 或 Pages 项目聚合指标描述为 Cloudflare 调用级 CPU 实测。
+
+| 项目 | 状态 | 证据/限制 |
+|---|---|---|
+| 指定提交的本地安装、定向测试、全量测试、Worker dry-run | 已验证 | 用户报告 SHA `42d30bce782ac284f653eb79e93e018f854df6e9`：786 项测试通过；dry-run 显示 `No bindings found.` |
+| 基准参数按单一 cost 分组、错误分类与失败报告落盘 | 已验证 | 同一提交下定向测试 10/10、全量测试 786/786；负向对照能令新测试失败；workerd cost 6 pilot 产生 16 行 |
+| Cloudflare 账户 Workers Free / 默认 CPU 10 ms | 用户确认，非本工具独立验证 | 远程 API 查询受权限限制；需在后续若有必要时复核实际 Worker CPU 设置 |
+| 隔离 Worker 部署与脚本 Secret | 暂缓 | 未创建/部署远程 Worker；未向 Cloudflare 发送基准请求 |
+| 匿名 POST 404 / 正确 Token POST 200 | 未验证 | 已将正反对照加入准备流程，但尚未执行 |
+| Cloudflare 调用级 CPU、超限 outcome 与 sample ID 关联 | 未验证 | 无远程日志或 `cloudflare-cost-*.json` |
+| 非生产完整登录/注册/改密路径 CPU | 未验证 | 本地功能/安全回归不等同于部署环境 CPU 测量 |
+| 生产 bcrypt cost | 保持 6 | 不依据本地 wall time 或混合 Pages 聚合分位数调整 |
+
+### 暂缓原因与恢复条件
+
+用户认为为远程 pilot 配置独立 Worker 与最小权限 Token 的操作成本过高，决定暂不进行远程部署。此决定不影响已完成的本地测试，也不构成远程 CPU 验收通过。**不继续创建 Cloudflare 资源、不要求用户现在配置 API Token、不运行远程 pilot。**
+
+只有在确实需要生产等效 CPU 证据时，才恢复远程流程：创建独立 Worker → 配置最小权限凭据与脚本 Secret → 验证匿名 POST 404 和正确 Token POST 200 → 按 cost 分组执行 pilot → 在 Workers Logs 中关联 sample ID、CPU time 和 outcome。Free 套餐下 cost 7/8 的超限必须作为有效结果保留，不自动重试。完整认证路径仍需在非生产环境另行评估。
+
+历史 Windows 数据只作为旧基线，不与当前 CI 运行时直接比较。
 
 ## 隔离 Cloudflare Worker：部署前置条件
 
