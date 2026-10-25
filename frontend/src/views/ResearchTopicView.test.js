@@ -166,6 +166,7 @@ describe('public research topic pages', () => {
     })
     const html = await renderToString(app)
     expect(html).toContain('没有找到这个研究专题')
+    expect(html).toContain(`返回${publicBrandIdentity.name}首页`)
     expect(html).not.toContain('相关代表论文')
   })
 })
