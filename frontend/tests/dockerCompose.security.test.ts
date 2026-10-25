@@ -12,8 +12,10 @@ const emptyEnvFile = join(tempDir, 'empty.env');
 writeFileSync(emptyEnvFile, '');
 
 const dockerAvailable = spawnSync('docker', ['compose', 'version'], { encoding: 'utf8' }).status === 0;
-if (process.env.CI === 'true' && !dockerAvailable) {
-  throw new Error('Docker Compose must be available in CI to verify the self-hosted deployment contract.');
+// Cloudflare Pages sets CI=true but does not provide Docker. Keep this integration check
+// skippable there; require Docker in GitHub Actions, where the repository CI validates it.
+if ((process.env.GITHUB_ACTIONS === 'true' || process.env.REQUIRE_DOCKER_COMPOSE === 'true') && !dockerAvailable) {
+  throw new Error('Docker Compose must be available in Docker-enabled CI to verify the self-hosted deployment contract.');
 }
 
 afterAll(() => rmSync(tempDir, { recursive: true, force: true }));
