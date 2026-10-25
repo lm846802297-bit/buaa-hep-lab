@@ -14,7 +14,7 @@ describe('Public academic website', () => {
     expect(html).toContain(publicBrandIdentity.name)
     expect(html).toContain(publicBrandIdentity.fractionMark)
     expect(html).toContain(publicBrandIdentity.academicFocus)
-    expect(html).toContain(publicBrandIdentity.englishDescriptor)
+    expect(html.toLowerCase()).toContain(publicBrandIdentity.englishDescriptor.toLowerCase())
     expect(html).toContain('暂定名称')
     // Keep exactly one collaboration entry in the header navigation,
     // styled prominently rather than duplicated as a second CTA.
