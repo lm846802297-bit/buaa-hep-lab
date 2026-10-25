@@ -44,6 +44,8 @@ try {
     check((await page.title()).includes('引力之外'), `homepage document title uses the brand at ${width}px`)
     check(await page.locator('meta[property="og:title"]').getAttribute('content') === await page.title(), `homepage Open Graph title matches the document title at ${width}px`)
     check(await page.locator('meta[name="twitter:title"]').getAttribute('content') === await page.title(), `homepage Twitter title matches the document title at ${width}px`)
+    check(await page.locator('meta[property="og:description"]').getAttribute('content') === await page.locator('meta[name="description"]').getAttribute('content'), `homepage Open Graph description matches the page description at ${width}px`)
+    check(await page.locator('meta[name="twitter:description"]').getAttribute('content') === await page.locator('meta[name="description"]').getAttribute('content'), `homepage Twitter description matches the page description at ${width}px`)
     if (width === 2048) {
       const composition = await page.locator('.worldline-home').evaluate(root => {
         const header = root.querySelector('.worldline-header').getBoundingClientRect()
@@ -770,6 +772,8 @@ try {
   check(await staticPage.locator('.physics-resource-card a').count() === 9, 'all public resource links work without JavaScript')
   check((await staticPage.title()).includes('引力之外'), 'homepage has the brand in static HTML title')
   check(await staticPage.locator('meta[property="og:title"]').getAttribute('content') === await staticPage.title(), 'homepage Open Graph title matches the static HTML title')
+  check(await staticPage.locator('meta[property="og:description"]').getAttribute('content') === await staticPage.locator('meta[name="description"]').getAttribute('content'), 'homepage Open Graph description matches the static page description')
+  check(await staticPage.locator('meta[name="twitter:description"]').getAttribute('content') === await staticPage.locator('meta[name="description"]').getAttribute('content'), 'homepage Twitter description matches the static page description')
   for (const route of [
     { path: '/research/dark', heading: '暗物质与暗扇区' },
     { path: '/people', heading: '团队与学术指导' },
@@ -780,6 +784,7 @@ try {
     check(await staticPage.locator('link[rel="canonical"]').getAttribute('href') === `https://buaa-hep-hub.pages.dev${route.path}`, `public route ${route.path} has static canonical metadata`)
     check((await staticPage.title()).includes('引力之外'), `public route ${route.path} has a branded static title`)
     check(await staticPage.locator('meta[property="og:title"]').getAttribute('content') === await staticPage.title(), `public route ${route.path} Open Graph title matches its static title`)
+    check(await staticPage.locator('meta[property="og:description"]').getAttribute('content') === await staticPage.locator('meta[name="description"]').getAttribute('content'), `public route ${route.path} Open Graph description matches its static description`)
   }
   await nojs.close()
 
