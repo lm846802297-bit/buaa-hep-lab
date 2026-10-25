@@ -26,6 +26,7 @@ The GitHub Actions workflow `.github/workflows/module-architecture.yml` runs the
 - Reusable components may not import route-level views.
 - Static content/data modules may not import UI components, views, composables, services, API modules, or UI libraries.
 - Cloudflare Pages Functions under `frontend/functions/api` may not import browser-application modules under `frontend/src`.
+- Browser application modules under `frontend/src` may not import server-side Pages Functions; they must call API endpoints over HTTP instead. This also catches `@/` alias paths that traverse out of `src` into `functions/api`.
 - If `src/shared` and `src/features` are introduced later, shared infrastructure may not depend on feature-specific implementation modules.
 
 These are intentionally narrow, high-confidence rules. They protect dependency direction without requiring a large directory migration or treating every existing cross-layer dependency as a blocker.
