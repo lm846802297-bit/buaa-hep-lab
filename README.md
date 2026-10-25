@@ -39,7 +39,7 @@
   <a href="#-中文文档"><img src="https://img.shields.io/badge/文档-简体中文-blue.svg" alt="Chinese Doc"></a>
   <a href="#-english-documentation"><img src="https://img.shields.io/badge/Document-English-green.svg" alt="English Doc"></a>
   <img src="https://img.shields.io/badge/License-MIT-emerald.svg" alt="License">
-  <img src="https://img.shields.io/badge/Tests-verified%20per%20commit-informational.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-CI%20gated-informational.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Python-3.11+-3776AB.svg?logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Vue.js-3.x-4FC08D.svg?logo=vuedotjs&logoColor=white" alt="Vue 3">
   <img src="https://img.shields.io/badge/FastAPI-0.110+-009688.svg?logo=fastapi&logoColor=white" alt="FastAPI">
