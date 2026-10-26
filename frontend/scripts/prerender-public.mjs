@@ -80,11 +80,12 @@ try {
   const { default: PeopleView } = await server.ssrLoadModule('/src/views/PeopleView.vue')
   const { default: EventsView } = await server.ssrLoadModule('/src/views/EventsView.vue')
   const { lab, publications, directions, publicPeople, publicEvents } = await server.ssrLoadModule('/src/content/lab.js')
+  const { publicBrandIdentity } = await server.ssrLoadModule('/src/content/brandIdentity.js')
   const template = await readFile(`${outputDir}/index.html`, 'utf8')
   const manifest = JSON.parse(await readFile(`${outputDir}/.vite/manifest.json`, 'utf8'))
 
-  const homeTitle = `${lab.name}${lab.provisional ? '（暂定）' : ''} | ${lab.field}`
-  const homeDescription = '北京航空航天大学粒子物理研究组：研究方向、经确认的代表论文与公开科研资源。课题组名称暂定。'
+  const homeTitle = `${publicBrandIdentity.name} | ${publicBrandIdentity.academicFocus}`
+  const homeDescription = '引力之外：高能理论与粒子唯象研究。北京航空航天大学粒子物理研究组（暂定名称）关注暗物质、中微子、希格斯物理与标准模型之外的新物理，并提供经确认的代表论文与公开科研资源。'
   const homeJsonLd = `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': [
     { '@type': 'ResearchOrganization', '@id': `${publicOrigin}/#group`, name: `${lab.name}${lab.provisional ? '（暂定名称）' : ''}`, url: `${publicOrigin}/`, description: lab.intro, parentOrganization: { '@type': 'CollegeOrUniversity', name: lab.institution } },
     { '@type': 'CollectionPage', url: `${publicOrigin}/`, name: '研究方向与代表论文', mainEntity: { '@type': 'ItemList', itemListElement: publications.map((paper, index) => ({ '@type': 'ListItem', position: index + 1, item: { '@type': 'ScholarlyArticle', name: paper.title, url: paper.source_url, identifier: `arXiv:${paper.id}`, author: paper.authors.map(name => ({ '@type': 'Person', name })), ...(paper.doi ? { sameAs: `https://doi.org/${paper.doi}` } : {}) } })) } },
@@ -99,7 +100,7 @@ try {
 
   for (const topic of directions) {
     const path = `/research/${topic.id}`
-    const title = `${topic.title} | BUAA HEP Hub`
+    const title = `${topic.title} | ${publicBrandIdentity.name}`
     const description = `${topic.question} ${topic.detail}`
     const jsonld = routeJsonLd('Article', routeUrl(path), title, description, {
       about: topic.tags.map(name => ({ '@type': 'Thing', name })),
@@ -113,10 +114,10 @@ try {
   const peoplePath = '/people'
   await renderPublicRoute(template, manifest, PeopleView, {}, {
     path: peoplePath,
-    title: '团队与学术指导 | BUAA HEP Hub',
+    title: `团队与学术指导 | ${publicBrandIdentity.name}`,
     description: '仅展示已确认可公开的学术人员资料与官方个人主页；本页面不是完整人员名册。',
     url: routeUrl(peoplePath),
-    jsonld: routeJsonLd('CollectionPage', routeUrl(peoplePath), '团队与学术指导 | BUAA HEP Hub', '已确认公开的学术人员资料。', {
+    jsonld: routeJsonLd('CollectionPage', routeUrl(peoplePath), `团队与学术指导 | ${publicBrandIdentity.name}`, '已确认公开的学术人员资料。', {
       mainEntity: publicPeople.filter(person => person.visibility === 'public').map(person => ({ '@type': 'Person', name: person.name, url: person.source_url, affiliation: person.institution })),
     }),
   }, 'src/views/PeopleView.vue')
@@ -124,10 +125,10 @@ try {
   const eventsPath = '/events'
   await renderPublicRoute(template, manifest, EventsView, {}, {
     path: eventsPath,
-    title: '公开学术活动 | BUAA HEP Hub',
+    title: `公开学术活动 | ${publicBrandIdentity.name}`,
     description: '经过确认的公开报告、研讨会与会议。内部组会排期与会议链接不会自动公开。',
     url: routeUrl(eventsPath),
-    jsonld: routeJsonLd('CollectionPage', routeUrl(eventsPath), '公开学术活动 | BUAA HEP Hub', '经过确认的公开报告、研讨会与会议。', {
+    jsonld: routeJsonLd('CollectionPage', routeUrl(eventsPath), `公开学术活动 | ${publicBrandIdentity.name}`, '经过确认的公开报告、研讨会与会议。', {
       mainEntity: publicEvents.filter(event => event.visibility === 'public').map(event => ({ '@type': 'Event', name: event.title, startDate: event.start_at, endDate: event.end_at, url: event.source_url })),
     }),
   }, 'src/views/EventsView.vue')
