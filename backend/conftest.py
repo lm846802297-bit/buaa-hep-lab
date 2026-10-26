@@ -16,3 +16,14 @@ def isolated_database():
     yield
     engine.dispose()
     _test_database.cleanup()
+
+
+@pytest.fixture(autouse=True)
+def clear_shared_login_rate_limits():
+    """Keep login throttling isolated between tests sharing the session DB."""
+    from sqlalchemy import inspect, text
+    from backend.database import engine
+
+    if inspect(engine).has_table("auth_rate_limits"):
+        with engine.begin() as db:
+            db.execute(text("DELETE FROM auth_rate_limits"))
