@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
+const NativeURL = global.URL
+
 describe('localBgStorage', () => {
   let mockStore = new Map()
 
@@ -43,10 +45,10 @@ describe('localBgStorage', () => {
     }
 
     global.indexedDB = mockIDB
-    global.URL = {
+    global.URL = Object.assign(class MockURL extends NativeURL {}, {
       createObjectURL: vi.fn(() => 'blob:mock-url'),
       revokeObjectURL: vi.fn()
-    }
+    })
     global.window = {
       dispatchEvent: vi.fn()
     }
