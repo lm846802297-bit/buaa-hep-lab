@@ -15,8 +15,6 @@ from .models import User
 SECRET_KEY = os.getenv("LABHUB_SECRET_KEY", "")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 30
-PRIMARY_INVITE_CODE = os.getenv("LABHUB_INVITE_CODE", "LAB-2026")
-VALID_INVITE_CODES = {PRIMARY_INVITE_CODE, "LAB-2026"}
 
 security = HTTPBearer(auto_error=False)
 

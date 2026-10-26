@@ -1,3 +1,4 @@
+import os
 import pytest
 from fastapi.testclient import TestClient
 from backend.main import app
@@ -83,7 +84,7 @@ def test_auto_association_and_stats():
         "email": zhang_email,
         "name": unique_presenter,
         "password": "password123",
-        "invite_code": "LAB-2026"
+        "invite_code": os.environ["LABHUB_INVITE_CODE"]
     })
     assert reg_res.status_code == 200
     zhang_user_id = reg_res.json()["user"]["id"]
@@ -108,7 +109,7 @@ def test_auto_association_and_stats():
         "email": lisi_email,
         "name": "初试李四",
         "password": "password123",
-        "invite_code": "LAB-2026"
+        "invite_code": os.environ["LABHUB_INVITE_CODE"]
     })
     assert reg_l.status_code == 200
     lisi_token = reg_l.json()["access_token"]

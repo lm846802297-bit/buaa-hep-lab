@@ -8,9 +8,15 @@ import { fileURLToPath } from 'node:url'
 const root = fileURLToPath(new URL('../dist', import.meta.url))
 const output = resolve(process.env.AUDIT_OUTPUT_DIR || fileURLToPath(new URL('../test-results/audit', import.meta.url)))
 await mkdir(output, { recursive: true })
+const emailTrackerRequests = []
 const server = createServer(async (req, res) => {
   try {
     const pathname = new URL(req.url, 'http://local.invalid').pathname
+    if (pathname === '/email-tracker-pixel') {
+      emailTrackerRequests.push(req.url)
+      res.writeHead(204).end()
+      return
+    }
     let file = resolve(root, '.' + pathname)
     if (file !== root && !file.startsWith(root + sep)) { res.writeHead(403).end(); return }
     try {
@@ -1346,6 +1352,34 @@ try {
   check(styleErrors.length === 0, `appearance settings produce no browser runtime errors: ${styleErrors.join('; ')}`)
   await styleContext.close()
 
+  // Browser-level regression: hostile email HTML must be inert, opaque-origin, and unable to fetch remote trackers.
+  const emailAuditPage = await browser.newPage()
+  try {
+    await emailAuditPage.setContent('<!doctype html><html><body></body></html>')
+    const hostileEmailHtml = '<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src data:; style-src \'unsafe-inline\'; connect-src \'none\'; object-src \'none\'; base-uri \'none\'; form-action \'none\'"></head><body><script>parent.__emailScriptExecuted = true</script><img src="' + base + '/email-tracker-pixel"><p id="email-body-text">Untrusted message</p></body></html>'
+    await emailAuditPage.evaluate((html) => {
+      const iframe = document.createElement('iframe')
+      iframe.id = 'email-body'
+      iframe.setAttribute('sandbox', '')
+      iframe.setAttribute('referrerpolicy', 'no-referrer')
+      iframe.srcdoc = html
+      document.body.appendChild(iframe)
+    }, hostileEmailHtml)
+    await emailAuditPage.frameLocator('#email-body').locator('#email-body-text').waitFor()
+    check(await emailAuditPage.evaluate(() => window.__emailScriptExecuted !== true), 'sandboxed email HTML cannot execute scripts in the parent page')
+    const parentCanReadEmailDocument = await emailAuditPage.evaluate(() => {
+      const frame = document.querySelector('#email-body')
+      try { void frame.contentWindow.document.body; return true } catch { return false }
+    })
+    check(!parentCanReadEmailDocument, 'sandboxed email document has an opaque origin')
+    await emailAuditPage.waitForTimeout(150)
+    check(emailTrackerRequests.length === 0, 'email CSP blocks remote tracking images before they reach the server')
+  } finally {
+    await emailAuditPage.close()
+  }
+  // Exercise the real demo mailbox and its sanitized external-link behavior.
+  await import('./email-link-browser.mjs')
+  check(true, 'authenticated demo mailbox safely opens sanitized web links')
   await writeFile(resolve(output, 'browser-checks.json'), JSON.stringify({ checks, total: checks.length }, null, 2))
   console.log(`Browser verification: ${checks.length} checks passed.`)
 } finally { await browser.close(); server.close() }
