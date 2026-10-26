@@ -3,19 +3,24 @@ from fastapi.testclient import TestClient
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from backend.main import app
-from backend.database import get_db, Base, engine
+from backend.database import Base, engine, SessionLocal
 from backend.models import User, SeminarSchedule
 from backend.auth import get_password_hash, create_access_token
 
 client = TestClient(app)
 
 @pytest.fixture
+def db_session():
+    with SessionLocal() as session:
+        yield session
+
+@pytest.fixture
 def auth_admin():
     result = client.post("/api/auth/login", json={"email": "admin@example.com", "password": "123456"})
     return {"Authorization": "Bearer " + result.json()["access_token"]}
 
-def test_past_seminar_auto_completes(auth_admin):
-    db = next(get_db())
+def test_past_seminar_auto_completes(auth_admin, db_session):
+    db = db_session
     today = datetime.now(ZoneInfo('Asia/Shanghai')).date()
     past_date = (today - timedelta(days=2)).isoformat()
     today_date = today.isoformat()
