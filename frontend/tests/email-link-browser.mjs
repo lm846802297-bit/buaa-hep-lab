@@ -28,8 +28,9 @@ const server = createServer(async (req, res) => {
 })
 await new Promise(resolveListen => server.listen(0, '127.0.0.1', resolveListen))
 const base = `http://127.0.0.1:${server.address().port}`
-const browser = await chromium.launch()
+let browser
 try {
+  browser = await chromium.launch()
   const context = await browser.newContext()
   await context.addInitScript(({ baseUrl }) => {
     if (location.protocol !== 'http:') return
@@ -68,6 +69,6 @@ try {
   await context.close()
   console.log('Authenticated demo mailbox: safe link and isolation checks passed.')
 } finally {
-  await browser.close()
+  if (browser) await browser.close()
   await new Promise(resolveClose => server.close(resolveClose))
 }
