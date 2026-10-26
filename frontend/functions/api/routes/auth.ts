@@ -185,7 +185,7 @@ app.post('/register', protectAuthAttempts('register'), async (c) => {
     return c.json({ detail: '该邮箱已被注册，请直接登录' }, 400);
   }
 
-  // 采用适配 Serverless 环境的计算轮次 (round 6, ~5ms)，彻底避免并发超出 Cloudflare Worker CPU 限额
+  // Preserve the existing bcrypt cost 6 policy. Local wall-time benchmarks do not establish Cloudflare CPU usage or prove the production CPU budget; reassess only with isolated Worker CPU and full authentication-path evidence.
   const hashed_password = await bcrypt.hash(password, 6);
   // The invitation, rather than a client-selected value or a code substring,
   // is the only source of truth for the account's initial permissions.

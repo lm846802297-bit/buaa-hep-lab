@@ -1271,7 +1271,10 @@ try {
     '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
     '/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf',
     '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
-    '/usr/share/fonts/truetype/freefont/FreeSans.ttf'
+    '/usr/share/fonts/truetype/freefont/FreeSans.ttf',
+    ...(process.platform === 'win32' && process.env.WINDIR
+      ? [resolve(process.env.WINDIR, 'Fonts', 'arial.ttf')]
+      : [])
   ]
   let fontFixture = null
   for (const candidate of fontCandidates) {
