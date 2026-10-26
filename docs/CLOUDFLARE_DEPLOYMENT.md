@@ -1,153 +1,74 @@
-# LabOrbit Cloudflare Serverless 全托管部署与无缝迁移指南
+# Cloudflare Pages 部署与附件存储：当前状态和验收边界
 
-> **本仓库生产环境警告（优先级高于本文其余通用示例）：** 本文保留上游通用迁移说明，其中包含创建数据库、导入示例数据和直传部署命令；这些步骤**不适用于现有 BUAA HEP Hub 生产环境**。生产项目 `buaa-hep-hub` 和 D1 数据库已经存在。不要照本文创建新库、执行 `data_d1.sql`、或在本地直接运行生产 `pages:deploy`。仓库发布流程见 [GitHub Actions 发布说明](RELEASE_AUTHORITY.md)；同时，截至 2026-10-26，Cloudflare Pages Dashboard 仍开启原生 Git 自动部署，合并 `main` 可能触发另一条生产部署路径。本地预览使用 `npm run pages:dev`。当前 `frontend/wrangler.json` 不启用 R2，不能假定 R2 已绑定。
+> **文档状态：当前仓库操作说明。** 本文依据仓库中的 `frontend/wrangler.json`、`.github/workflows/deploy.yml`、`frontend/functions/api/utils/uploadPolicy.ts` 和 `frontend/functions/api/routes/files.ts` 编写。源码配置不证明某次生产部署成功；线上状态应核对实际部署记录与健康检查，Actions 验证结果另行核对。
 
-本指南指导如何将课题组协作平台（LabOrbit）**彻底脱离对物理服务器的依赖**，完整迁移到 Cloudflare 全托管 Serverless 架构，实现免自备服务器的 Serverless 部署。免费套餐有明确用量上限，是否产生费用取决于账户套餐、资源配置及实际用量；请勿将免费额度视为永久保证。
+## 1. 当前仓库配置
 
----
+- 目标站点：`https://buaa-hep-hub.pages.dev/`。
+- 当前 Pages 配置声明 D1 绑定 `DB`，未声明 `FILES_BUCKET` / R2 绑定。
+- 在没有 `FILES_BUCKET` 绑定时，上传策略将单文件上限设为 **1 MiB**。更大的讲义、教材或数据文件应使用经核对的外部链接，不要绕过后端限制。
+- 代码保留可选 R2 适配，但代码存在不等于账户中已经创建存储桶、绑定已经生效或生产站点已部署该代码。
+- 仓库另有附件存储架构提案，其中讨论了 Workers KV 等备选路径。本文不批准选择或启用新的存储后端；任何存储后端变更都需要独立设计、隔离验收和明确批准。
 
-## 架构升级对比
+## 2. 正式发布路径
 
-| 维度 | 原物理服务器方案 | Cloudflare 全托管 Serverless 方案 |
-| :--- | :--- | :--- |
-| **服务器成本** | 需常开物理机/云服务器，电费与机器损耗 | **可在免费额度内运行**（需监控用量和套餐变更） |
-| **物理依赖** | 强依赖单台机器，断网/断电即瘫痪 | **零物理依赖**，全球 300+ 边缘数据中心全天候容灾 |
-| **访问方式** | 需内网穿透 / VPN / 本地端口转发 | **全球 CDN 域名直连**（如 `https://labhub.pages.dev`），自动配置 HTTPS |
-| **数据库** | 本地单个 `labhub.db` SQLite 文件 | **Cloudflare D1**（基于 SQLite 语法的分布式边缘关系数据库） |
-| **附件存储** | 本地磁盘目录 | **Cloudflare R2**（兼容 S3 的高可用对象存储，免流量费） |
-| **单文件限制** | 本地文件读写受机器限制 | **R2 已绑定时支持最大 15 MiB 附件**（PPT、PDF 讲义、文献、图片） |
-| **冷启动延迟** | Python 进程需占用 200MB+ 内存 | **TypeScript + Hono 轻量运行时**，冷启动 < 1ms |
-| **数据保留** | 原有账号、文献、排期与资料 | **100% 完整保留**，密码无缝兼容登录（bcryptjs） |
+仓库的正式发布流程由 `.github/workflows/deploy.yml` 管理。当前 Cloudflare Pages 还启用了连接 `main` 的原生 Git 自动部署，因此主线提交可能独立触发生产构建；该路径不会等待 GitHub Actions 验证。具体证据和双路径待处理事项见 [发布权威与核验记录](RELEASE_AUTHORITY.md)。不要为了方便而直接在本地运行 `wrangler pages deploy` 绕过门禁。
 
----
+1. 在 PR 的**当前 HEAD** 上运行与改动范围相符的测试、构建、包体积、浏览器和隔离运行时检查。新提交产生新 SHA 后，旧 SHA 的成功记录不能替代新提交的验证。
+2. 合并后，Actions 工作流根据变更范围判断是否需要 Pages 发布；发布候选必须满足工作流中的 PR/验证条件，且提交消息不得含有 `[skip-prod-deploy]`。这一标记只约束仓库工作流，不会阻止当前 Pages 原生 Git 集成独立构建和发布。
+3. 手动触发工作流时，必须显式勾选 `deploy_production`；默认的手动运行不应被当作生产部署。
+4. 发布工作流使用仓库 Actions Secrets `CLOUDFLARE_API_TOKEN` 和 `CLOUDFLARE_ACCOUNT_ID`。不要把这些值写入源码、README、测试 fixture 或日志。
+5. Actions 工作流部署后会执行线上健康与匿名授权检查。对任何发布路径，均应记录实际部署来源 SHA、部署状态及线上检查结果；原生 Git 部署成功不能记作 Actions 验证通过。
 
-## 免费额度与课题组容量核算
+### 常用本地检查
 
-| 服务组件 | Cloudflare 免费版月度额度 | 30 人课题组月度预估消耗 | 额度使用率 |
-| :--- | :--- | :--- | :--- |
-| **Cloudflare Pages** | **无限请求数**、无限流量 | ~50,000 次静态资源加载 | **< 1%**（无限额） |
-| **Pages Functions** | **100,000 次请求/天**（约 300 万次/月） | ~12,000 次 API 请求/月 | **< 0.4%** |
-| **Cloudflare D1** | **500 万行读取/天**，10 万行写入/天 | ~20,000 行读取/天，~500 行写入/天 | **< 0.5%** |
-| **Cloudflare R2** | **10 GB 存储**，每月 1,000 万次读取，**0 流量费** | ~2 GB 附件资料，每月 ~5,000 次读取 | **~20%**（永久免费） |
+从仓库根目录执行，按改动范围选择，不要求每个文档改动都运行完整应用栈：
 
-> 结论：对于 30 人左右的学术课题组，日常打卡、组会排期、文献分享、资料下载等操作，消耗不到 Cloudflare 免费配额的 1%，**通常可在免费额度内运行，但不能保证永久免费或在超额时仍可用**。
-
----
-
-## 5 分钟极简上线流程
-
-### 前置准备
-在你的终端中安装并验证 Node.js (>= 18)：
 ```bash
-node -v
+npm --prefix frontend ci
+npm --prefix frontend test
+npm --prefix frontend run build
+npm --prefix frontend run check:bundle
+node scripts/verify-cloudflare.mjs
 ```
 
----
+若改动了 FastAPI 路由、模型、服务或数据库行为，还需运行：
 
-### 第一步：登录 Cloudflare 账号
-在终端运行登录命令（会自动打开浏览器进行一次性授权）：
 ```bash
-npx wrangler login
+python -m pytest backend -q
 ```
 
----
+若改动涉及全局壳层、路由、主题、公开首页/专题导航或烟测脚本，还需按项目规范运行 Chromium 烟测。部署后的线上核验使用：
 
-### 第二步：创建云端数据库 D1 与附件存储桶 R2
-
-1. 进入 `frontend` 目录：
-   ```bash
-   cd frontend
-   ```
-
-2. **创建 D1 数据库**：
-   ```bash
-   npx wrangler d1 create labhub-db
-   ```
-   终端会输出如下信息：
-   ```json
-   [[d1_databases]]
-   binding = "DB"
-   database_name = "labhub-db"
-   database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-   ```
-   👉 **请将输出中的 `database_id` 复制并替换到 `frontend/wrangler.json` 中的 `database_id` 字段**。
-
-3. **创建 R2 存储桶**（用于存储最大 15 MiB 的附件）：
-   ```bash
-   npx wrangler r2 bucket create buaa-hep-hub-files
-   ```
-
----
-
-### 第三步：一键导入数据表结构与现有所有历史数据
-
-我们已经为你准备好了完整的建表脚本与历史数据导出脚本：
-
-1. **导入数据库结构（DDL + 索引）**：
-   ```bash
-   npx wrangler d1 execute labhub-db --remote --file=../scripts/schema_d1.sql
-   ```
-
-2. **导入课题组所有历史数据（账号、文献、排期、教材、偏好等）**：
-   ```bash
-   npx wrangler d1 execute labhub-db --remote --file=../scripts/data_d1.sql
-   ```
-
-> 验证：终端会输出 `users (5 rows)`, `library_papers (7 rows)`, `seminar_schedules (3 rows)` 等成功导入提示。
-
----
-
-### 第四步：打包前端并一键部署至 Cloudflare Pages
-
-在 `frontend` 目录下运行：
 ```bash
-npm run build
-npm run pages:deploy
-```
-如果是首次部署，终端会提示确认项目名称，建议输入 `lab-orbit`。
-
-部署完成后，终端会立即给出一个全球可访问的 HTTPS 网址，例如：
-```text
-✨ Deployment complete! Take a peek over at https://lab-orbit.pages.dev
+node scripts/verify-live.mjs https://buaa-hep-hub.pages.dev
 ```
 
-### 访问与全站初始化：
-- **如果是全新部署（全新 D1 数据库）**：
-  直接在浏览器中打开该网址（`https://lab-orbit.pages.dev`）。系统路由守卫检测到数据库尚无用户，**会自动强制重定向至 `/setup` 初始化向导**，引导您两步创建首位超级管理员账号并配置课题组名称；
-- **如果是从旧有系统迁移数据**：
-  若已在上一步成功执行了 `data_d1.sql` 历史数据导入，现有所有成员账号可直接在登录页输入原密码无缝登录！
+最后一条是线上核验，不应在部署前被描述为已通过；本地构建成功也不等于生产验收成功。
 
----
+## 3. D1 数据与 schema 变更
 
-## 进阶配置：绑定课题组自定义域名（可选）
+- 当前 D1 schema 源文件为 `scripts/schema_d1.sql`。
+- 不要把全量 schema 文件当作对现有生产数据库安全的增量迁移，也不要把演示 seed 数据导入生产库。
+- 任何生产 schema 变更都必须先核对实际线上 schema 与现有数据，提交单独的版本化迁移，说明备份、向前迁移、失败处理和回滚/恢复策略，并在隔离数据库上验证。
+- 不要在每次用户请求中执行 `ALTER TABLE` 来隐式迁移生产数据。请求路径只应使用已经完成并核验的 schema。
+- 本文档更新本身不修改数据库、迁移文件、绑定或生产数据。
 
-如果你有课题组的独立域名（例如 `lab.yourdomain.org`）：
-1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)；
-2. 点击左侧 **Workers & Pages** -> 选择 **labhub** 项目；
-3. 点击 **Custom domains**（自定义域）选项卡；
-4. 点击 **Set up a domain**，输入你的域名，Cloudflare 会全自动配置全球 Anycast CDN 与免费 SSL/TLS 证书（秒级生效）。
+## 4. R2 / 其他对象存储的未来启用门槛
 
----
+当前配置没有绑定 R2，因此以下内容是**未来变更的验收门槛，不是当前部署步骤**。
 
-## 本地开发与离线联调
+1. 先由项目负责人确认可用的账户/付款条件、配额和费用边界。不要因仓库存在可选代码而假设存储服务已可用。
+2. 单独确定存储后端。当前代码包含 R2 适配，而另一个架构提案讨论了 Workers KV；两者不能在未评估一致性、大小限制、访问控制、备份和成本的情况下互换。
+3. 若最终批准 R2，才创建指定桶并在 `frontend/wrangler.json` 配置 `FILES_BUCKET` 绑定。绑定名称、目标桶、部署环境和账户必须逐项核对；不要绑定到未知或生产不相关的桶。
+4. 在隔离环境验证：1 MiB 边界、目标最大文件大小、文件头/MIME 检查、重复文件处理、授权下载、对象写入成功但 D1 元数据写入失败、D1 元数据存在但对象缺失、存储不可用时的错误路径。
+5. 只有隔离环境测试通过且用户界面提示与后端限制一致后，才可提出生产变更 PR。该 PR 必须明确是否会触发 Pages 发布；合并后重新检查精确 SHA、部署记录和线上上传/下载行为。
 
-如果后续需要进行本地新功能开发与调试：
-```bash
-cd frontend
-# 启动包含本地 D1 与 R2 模拟环境的 Pages 服务
-npm run pages:dev
-```
-本地访问 `http://localhost:8788` 即可进行完全一致的测试。
+在 R2 未绑定时，不要把前端显示的 15 MiB 当成实际可用上限，也不要把大文件自动回退写入 D1。当前 API 对超出 D1 回退上限的文件应返回明确错误；如果实际行为与此不符，应先修复并测试，再考虑启用新存储后端。
 
----
+## 5. 本文档的权威边界
 
-## 数据定期备份方法
-
-Cloudflare D1 具备每日自动快照功能，你也可以在本地随时执行以下命令导出备份：
-```bash
-npx wrangler d1 backup create labhub-db
-```
-或直接将数据库导出为本地 SQL 文件：
-```bash
-npx wrangler d1 export labhub-db --remote --output=./backup_$(date +%Y%m%d).sql
-```
+- 本文档记录仓库中可核查的配置与流程，不记录 Cloudflare 控制台中未被读取/验证的资源状态。
+- `frontend/wrangler.json` 中存在 D1 配置，不足以证明数据库可访问、生产环境正在运行最新版本或线上健康检查成功。
+- 工作流文件存在，不足以证明 GitHub Secrets 已配置；必须检查实际工作流结果。
+- 任何旧版 README、上游 LabOrbit 部署说明或历史测试计数都不能替代当前仓库的配置、最新提交的测试证据和线上核验结果。
