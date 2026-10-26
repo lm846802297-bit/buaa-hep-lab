@@ -4,24 +4,22 @@
 
 ## 当前审计状态
 
-**SEC-04 保持开放；Cloudflare 远程部署暂缓。生产 bcrypt cost 保持 6。** 本地基准脚本与工作流准备工作已经完成，但没有在 Cloudflare 部署隔离 Worker，也没有执行远程 pilot。不要将本地 workerd 数据、CI artifact 或 Pages 项目聚合指标描述为 Cloudflare 调用级 CPU 实测。
+**SEC-04 保持开放；隔离 Worker 已收到 pilot 请求，但证据尚不足以完成分组验收。生产 bcrypt cost 保持 6。** 不要将本地 workerd 数据或 Pages 项目聚合指标描述为 Cloudflare 调用级 CPU 实测。
 
 | 项目 | 状态 | 证据/限制 |
 |---|---|---|
 | 指定提交的本地安装、定向测试、全量测试、Worker dry-run | 已验证 | 用户报告 SHA `42d30bce782ac284f653eb79e93e018f854df6e9`：786 项测试通过；dry-run 显示 `No bindings found.` |
 | 基准参数按单一 cost 分组、错误分类与失败报告落盘 | 已验证 | 同一提交下定向测试 10/10、全量测试 786/786；负向对照能令新测试失败；workerd cost 6 pilot 产生 16 行 |
 | Cloudflare 账户 Workers Free / 默认 CPU 10 ms | 用户确认，非本工具独立验证 | 远程 API 查询受权限限制；需在后续若有必要时复核实际 Worker CPU 设置 |
-| 隔离 Worker 部署与脚本 Secret | 暂缓 | 未创建/部署远程 Worker；未向 Cloudflare 发送基准请求 |
-| 匿名 POST 404 / 正确 Token POST 200 | 未验证 | 已将正反对照加入准备流程，但尚未执行 |
-| Cloudflare 调用级 CPU、超限 outcome 与 sample ID 关联 | 未验证 | 无远程日志或 `cloudflare-cost-*.json` |
+| 隔离 Worker 部署与 POST 请求 | 已观察到 | 用户提供的 Cloudflare Dashboard 截图显示 `buaa-hep-bcrypt-benchmark` 有 `/benchmark` POST 调用；截图本身不证明 Secret 配置细节 |
+| 匿名 POST 404 / 正确 Token control POST 200 | 未确认 | 现有截图和粘贴日志没有展示这两项请求各自的 HTTP 响应状态与响应体 |
+| Cloudflare 调用级 CPU、outcome 与 sample ID 关联 | 部分观察，未完成验收 | 用户提供的所选时间窗显示 148 Success、0 Errors；粘贴的部分调用记录显示 CPU 约 5–20 ms、wall 约 5–21 ms。没有完整导出、cost/operation/bytes 分组或 sample ID 对照，不能据此计算完整分布或确认全部样本 |
 | 非生产完整登录/注册/改密路径 CPU | 未验证 | 本地功能/安全回归不等同于部署环境 CPU 测量 |
 | 生产 bcrypt cost | 保持 6 | 不依据本地 wall time 或混合 Pages 聚合分位数调整 |
 
-### 暂缓原因与恢复条件
+### 后续范围与恢复条件
 
-用户认为为远程 pilot 配置独立 Worker 与最小权限 Token 的操作成本过高，决定暂不进行远程部署。此决定不影响已完成的本地测试，也不构成远程 CPU 验收通过。**不继续创建 Cloudflare 资源、不要求用户现在配置 API Token、不运行远程 pilot。**
-
-只有在确实需要生产等效 CPU 证据时，才恢复远程流程：创建独立 Worker → 配置最小权限凭据与脚本 Secret → 验证匿名 POST 404 和正确 Token POST 200 → 按 cost 分组执行 pilot → 在 Workers Logs 中关联 sample ID、CPU time 和 outcome。Free 套餐下 cost 7/8 的超限必须作为有效结果保留，不自动重试。完整认证路径仍需在非生产环境另行评估。
+隔离 Worker 已部署并收到请求；当前可见数据属于有限 pilot 证据，不构成完整扫描或完整 CPU 验收。继续前应先取得按 cost、operation、bytes、sample ID 对照的完整结果和 Workers invocation 记录。当前不自动启动完整扫描，也不重复创建 Worker。Free 套餐下 cost 7/8 的 CPU 超限必须作为有效结果保留，不自动重试。完整认证路径仍需在非生产环境另行评估。
 
 历史 Windows 数据只作为旧基线，不与当前 CI 运行时直接比较。
 
@@ -125,12 +123,11 @@ node frontend/benchmarks/bcrypt/run.mjs --runtime workerd --samples 50 --warmup 
 
 ## CI 与 Artifact 证据：历史成功记录与当前 HEAD 状态
 
-### 当前 HEAD 验证状态（2026-10-26）
+### 当前 HEAD 验证状态（2026-10-27）
 
-- 本次验证目标为 `final-audit` 分支 HEAD `a2fc44ef642d56edb8218ec28e5cb3a2eebcb685`。PR #3 已于 2026-10-23 关闭且未合并；其关闭时记录的 head `8d81367ab8879ff9795f516c3297978798ee530f` 不等于当前分支 tip，不得混为一谈。
-- [Workflow Run #635 / ID 40212460876](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/40212460876) 通过 `workflow_dispatch` 针对该 HEAD 运行。首次尝试与重跑均为 `validate=failure`、`deploy=skipped`；两次 validate 作业均没有任何步骤记录（`steps=[]`）、未分配 runner（`runner_id=0`），且没有可下载的作业日志或 Artifact。故状态为**阻塞/未验证**，不是测试失败的证据，更不是通过。
-- 同一时期的 [main Run #633 / ID 40210591628](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/40210591628) 在 `main` SHA `5e025dffb539c901637aa863aea17d3101552c8f` 上也在任何步骤开始前失败，`runner_id=0`，后续作业均跳过。这支持“runner/Actions 作业启动阶段受阻”的判断，但现有日志不足以确认具体根因；不得把它未经证实地归因于账单、代码或权限。
-- 当前 HEAD 未产生基准 Artifact。历史 Artifact 不能替代该 HEAD 的 CI。当前 HEAD 的 `run.mjs` 源码 SHA-256 为 `e642a15de9cde9d85b0eb3fa2cd755bfb22928291616a883c2b2e8ee81caa2cd`，与历史 Artifact 中的 `937853546425a9287d3f4eb301fceaef9c4f34a85b7a1c9df32442219dcbba8b` 不同；当前 runner 增加了 cost 选择及失败分类。因此，历史样本只能作为对应历史版本的证据，不能声称它验证了当前 HEAD 的完整 runner 行为。
+- PR #3 仍为 open，远端 `final-audit` HEAD 是 `7f8e885f10f0a3b2b25c5240638267cf57e626af`；本地冲突整理尚未推送，不改变该远端 SHA。
+- [Actions run 40366088252](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/40366088252) 在 `validate` 第一步前失败，`runner_id=0`、没有步骤日志或基准 Artifact。GitHub 返回的原因是账户付款失败或 spending limit 需要调整；这不是测试失败，也不是通过。用户已要求取消 CI，当前不重试。
+- 因当前 HEAD 的 Actions 作业未启动，没有对应的 `bcrypt-local-evidence` Artifact。历史 Artifact 不能替代当前 SHA 的 CI。历史源码 SHA 与当前 runner 不同，历史样本仅能代表其记录的旧 revision。
 
 ### 历史成功运行（仅作为历史证据）
 
@@ -189,7 +186,7 @@ frontend/tests/security.test.ts 已有基于 SQLite 的 D1 适配器测试，覆
 - **SHA 口径：** PR 的 `head_sha` 是分支提交；GitHub Actions 的 `pull_request` 工作流通常检出 PR 合并测试引用，因此 artifact 内的 `environment.revision` 可能是合并测试提交，而不是分支 `head_sha`。验收时必须同时记录 PR head SHA、base SHA、Actions run URL 和 artifact 内 revision；不能把这几个 SHA 混为一谈。
 - 更早的中间候选 `5c8a0ccebaaffdc4fdb27c5e49a5f19b54992689` 曾因运行器分支语法错误而失败；错误已修复，旧失败记录保留。后续任何代码/文档更新都会改变 PR head，合并门槛必须以最终 head 的 CI 与 artifact 为准，不能沿用上述中间候选的绿灯。
 
-## 在 Cloudflare 环境补完（需维护者明确批准；本次未上传或部署）
+## 在 Cloudflare 环境继续补完（有限 pilot 已有用户提供的 Dashboard 证据）
 
 独立工具位于 `frontend/benchmarks/bcrypt/`，不进入 `frontend/functions`，不绑定 D1/R2，不访问生产 API、账号或密码。CI 仅在 GitHub Actions runner 的 Node 与本地 workerd/Miniflare 中运行基准，并上传 `bcrypt-local-evidence` artifact；**CI 不会部署该 Worker**。
 

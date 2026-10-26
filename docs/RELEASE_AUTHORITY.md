@@ -1,10 +1,12 @@
 # BUAA HEP Hub 发布权威与核验记录
 
-更新：2026-10-21（Asia/Shanghai）。
+更新：2026-10-27（Asia/Shanghai）。
 
 ## 当前发布方式
 
-**仓库控制的唯一正式发布路径是 GitHub Actions 工作流 `.github/workflows/deploy.yml`。** 工作流对 PR 与 main push 执行验证；仅当事件来自 `main` 且不是 PR 时，在完整 `validate` 成功后调用仓库锁定的 Wrangler CLI 发布 Cloudflare Pages。部署后执行 `scripts/verify-live.mjs`，检查健康接口、匿名授权、公开 HTML、robots/sitemap 与内部路由 noindex。功能分支的 CI 不会部署生产。
+**仓库声明的正式发布流程是 GitHub Actions 工作流 `.github/workflows/deploy.yml`。** 工作流对 PR 与 main push 执行验证；仅当事件来自 `main` 且不是 PR 时，在完整 `validate` 成功后调用仓库锁定的 Wrangler CLI 发布 Cloudflare Pages。部署后执行 `scripts/verify-live.mjs`，检查健康接口、匿名授权、公开 HTML、robots/sitemap 与内部路由 noindex。功能分支的 CI 不会部署生产。
+
+但截至 2026-10-26，Cloudflare Pages Dashboard 也显示该项目已连接 GitHub 仓库、生产分支为 `main`，且原生自动部署开启。因此当前存在 Actions 与 Cloudflare Git integration 两条可能触发生产部署的路径；在关闭或改为仅预览之前，不能称 Actions 是唯一技术发布路径。任何合并到 `main` 的提交都可能同时触发两套部署。
 
 本次更新保留已有的 main push 自动发布链路，不将它改成仅手动发布。另增加本地 Node/workerd bcrypt 基准步骤和 artifact，并把“已请求的 main 发布但缺少 Cloudflare 凭据”从警告改为失败，避免出现“验证绿灯但没有发布”的误判。Wrangler 部署命令会记录 GitHub Actions 的完整源 SHA。不会在本地执行生产部署，也不会读取或复制任何 secret。
 
@@ -14,7 +16,7 @@
 
 这是一项**发布保护补偿措施**，不等于 GitHub 已经禁止直接推送。审计时 `main` 的分支元数据显示 `protected: false`；当前私有仓库的 Rulesets API 返回套餐限制（需要 GitHub Pro，或仓库公开后才可使用相应规则集）。由于课题组代码与研究工作流不应为了启用保护而默认公开，建议保持仓库私有；如果希望 GitHub 在服务端直接阻止未经 PR 的推送，需要在适用的付费方案下启用 `main` 的 PR 与必需状态检查规则。即使暂时无法启用，发布授权检查也必须保留。
 
-Cloudflare 原生 Pages Git Provider 在 2026-10-20 的控制台快照中显示未连接；这不代表没有 GitHub Actions 发布，因为 Actions 使用仓库 secret 调用 Wrangler Direct Upload。该控制台信息是历史快照，不应与最新部署状态混为一谈。
+Cloudflare 原生 Pages Git Provider 在 2026-10-20 的控制台快照中显示未连接；这只是历史状态。2026-10-26 的 Dashboard 检查已显示 GitHub 连接、生产分支 `main`、原生自动部署开启，构建根目录 `frontend`、输出目录 `dist`。该新状态覆盖旧快照。为避免 Actions 与 Pages 原生集成同时发布，合并生产变更前需先决定是否关闭 Cloudflare 自动部署或改为仅创建预览；本次没有修改该设置。
 
 ## 最近一次已验证的 main 发布（PR #3 更新前基线）
 

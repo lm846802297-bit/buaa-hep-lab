@@ -1,6 +1,8 @@
 import { ref } from 'vue'
 
 export const DEFAULT_COLOR_SCHEME = 'quiet-research'
+// Public-site default is the reference-matched Worldline blueprint; workspace remains independent.
+export const DEFAULT_PUBLIC_COLOR_SCHEME = 'worldline-console'
 export const DEFAULT_BG_TYPE = 'paper'
 export const DEFAULT_GLASS_STYLE = 'solid'
 
@@ -9,6 +11,7 @@ export const COLOR_SCHEMES = [
     id: 'quiet-research',
     name: 'Quiet Research（Claude 风格）',
     subtitle: '温暖纸白 · 墨色文字 · 陶土橙 · 编辑式衬线标题',
+    description: '温暖纸白与陶土橙，优先突出长文本、论文与公式阅读。',
     colors: ['#F7F5F0', '#B85E3F', '#FFFEFA'],
     primaryColor: '#B85E3F',
     baseColor: '#F7F5F0',
@@ -18,6 +21,7 @@ export const COLOR_SCHEMES = [
     id: 'classic-cyan',
     name: '经典冷青与玄青',
     subtitle: '静谧冷青高光 · 经典玄青基底',
+    description: '冷青强调色与深青底色，适合长时间阅读与低干扰工作。',
     colors: ['#081f28', '#c5e6df', '#102f33'], // Base, Primary Accent, Secondary Surface
     primaryColor: '#c5e6df',
     baseColor: '#081f28',
@@ -27,6 +31,7 @@ export const COLOR_SCHEMES = [
     id: 'obsidian-gray',
     name: '曜石碳灰',
     subtitle: '高级冷灰高光 · 纯粹石墨基底',
+    description: '石墨黑底与冷灰高光，减少视觉干扰并保持清晰层次。',
     colors: ['#090d16', '#94a3b8', '#161e2e'], // Base, Primary Accent, Secondary Surface
     primaryColor: '#94a3b8',
     baseColor: '#090d16',
@@ -36,10 +41,21 @@ export const COLOR_SCHEMES = [
     id: 'nebula-purple',
     name: '星云紫与深曜黑',
     subtitle: '深空星云紫高光 · 曜黑深邃基底',
+    description: '深空紫高光与近黑底色，保留现有星云视觉风格。',
     colors: ['#03020a', '#b89bf8', '#16122e'], // Base, Primary Accent, Secondary Surface
     primaryColor: '#b89bf8',
     baseColor: '#03020a',
     surfaceColor: '#16122e'
+  },
+  {
+    id: 'worldline-console',
+    name: '世界线蓝图',
+    subtitle: '命运石之门终端逻辑 · 暖白科学蓝图 · 深蓝线稿',
+    description: '命运石之门主题系统下的官网蓝图模式：保留暖白工程纸、深蓝线稿与物理公式，并提供可切换的复古终端主视觉。',
+    colors: ['#F4F1E9', '#29415D', '#FFFEFA'],
+    primaryColor: '#29415D',
+    baseColor: '#F4F1E9',
+    surfaceColor: '#FFFEFA'
   }
 ]
 
@@ -52,30 +68,35 @@ export const BG_OPTIONS = [
     id: 'paper',
     name: '纸白（推荐）',
     subtitle: '纯色背景 · 无动态特效 · 专注科研内容',
+    description: '使用纯色纸白背景，不启动动态背景组件。',
     type: 'static'
   },
   {
     id: 'clouds-static',
     name: '云山日光（静态）',
     subtitle: '静态日光云海 · 静谧清晰',
+    description: '使用本地静态云海壁纸，不需要 WebGL。',
     type: 'static'
   },
   {
     id: 'galaxy',
     name: '星际穿越（动态）',
     subtitle: '动态宇宙星空 · WebGL 粒子与引力交互',
+    description: '启用动态星空背景；在浅色和深色配色下均可使用。',
     type: 'dynamic'
   },
   {
     id: 'vanta-fog',
     name: '水波云雾（动态）',
     subtitle: '动态流体水雾 · WebGL 实时着色器',
+    description: '启用 Vanta FOG 动态背景；在浅色和深色配色下均可使用。',
     type: 'dynamic'
   },
   {
     id: 'custom-local',
     name: '自定义本地背景',
     subtitle: '支持本地高清图片与静音视频 · 纯本地加载不上云',
+    description: '只从当前浏览器本地加载图片或视频，不会上传到服务器。',
     type: 'custom'
   }
 ]
@@ -118,12 +139,24 @@ export const THEME_STYLES = [
 
 const COLOR_SCHEME_KEY = 'laborbit_color_scheme'
 const BG_TYPE_KEY = 'laborbit_bg_type'
+export const PUBLIC_COLOR_SCHEME_KEY = 'labhub_public_color_scheme'
+const PUBLIC_COLOR_SCHEME_IDS = new Set(COLOR_SCHEMES.map(({ id }) => id))
+
+function getInitialPublicColorScheme() {
+  try {
+    const saved = localStorage.getItem(PUBLIC_COLOR_SCHEME_KEY)
+    if (PUBLIC_COLOR_SCHEME_IDS.has(saved)) return saved
+  } catch (e) {
+    console.warn('Failed to read public color scheme from localStorage:', e)
+  }
+  return DEFAULT_PUBLIC_COLOR_SCHEME
+}
 const LEGACY_STORAGE_KEY = 'laborbit_theme_style'
 export const DEFAULT_MIGRATION_KEY = 'laborbit_default_v20261021_quiet_research'
 export const CUSTOM_COLOR_SCHEME_KEY = 'laborbit_custom_color_scheme'
 export const GLASS_STYLE_KEY = 'laborbit_glass_style'
 export const BG_DIM_KEY = 'laborbit_bg_dim_percent_v2'
-export const DEFAULT_BG_DIM = 100
+export const DEFAULT_BG_DIM = 35
 
 const LEGACY_STORAGE_NAMESPACE_MIGRATION_KEY = 'laborbit_storage_namespace_v20261021'
 
@@ -592,9 +625,12 @@ function getInitialBgType() {
 
 export const currentColorScheme = ref(getInitialColorScheme())
 export const currentBgType = ref(getInitialBgType())
+// Public-site appearance is persisted separately and never overwrites workspace preferences.
+export const publicColorScheme = ref(getInitialPublicColorScheme())
 
 // 兼容器：保留 currentThemeStyle 响应式对象
 function resolveLegacyTheme(scheme, bg) {
+  if (scheme === 'worldline-console') return 'worldline-console'
   if (scheme === 'quiet-research') return bg === 'paper' ? 'paper' : bg
   if (scheme === 'obsidian-gray') return 'clouds-static'
   if (scheme === 'nebula-purple') return 'galaxy'
@@ -644,9 +680,10 @@ export function applyThemeToDOM(scheme = currentColorScheme.value, bg = currentB
     if (!bg || bg === 'clouds-static' || bg === 'earth-orbit') actualBg = 'clouds-static'
   }
 
-  // Public routes use the site brand without mutating the saved workspace preference.
+  // Public routes use their own saved palette and keep the quiet paper background.
+  // This state is independent from the signed-in workspace preference.
   if (doc.getAttribute?.('data-public-page') === 'true' || doc.dataset?.publicPage === 'true') {
-    actualScheme = 'quiet-research'
+    actualScheme = publicColorScheme.value
     actualBg = 'paper'
   }
 
@@ -658,7 +695,7 @@ export function applyThemeToDOM(scheme = currentColorScheme.value, bg = currentB
     ? actualBg
     : DEFAULT_BG_TYPE
 
-  const legacyTheme = actualScheme === 'quiet-research' && actualBg === 'paper' ? 'paper' : (actualScheme === 'nebula-purple' ? 'galaxy' : (actualScheme === 'custom' ? 'custom' : (actualBg === 'vanta-fog' ? 'vanta-fog' : 'clouds-static')))
+  const legacyTheme = actualScheme === 'worldline-console' ? 'worldline-console' : (actualScheme === 'quiet-research' && actualBg === 'paper' ? 'paper' : (actualScheme === 'nebula-purple' ? 'galaxy' : (actualScheme === 'custom' ? 'custom' : (actualBg === 'vanta-fog' ? 'vanta-fog' : 'clouds-static'))))
 
   // 1. 设置解耦属性
   doc.setAttribute('data-color-scheme', actualScheme)
@@ -695,7 +732,7 @@ export function applyThemeToDOM(scheme = currentColorScheme.value, bg = currentB
           doc.style.removeProperty(v)
         }
       })
-      const baseBg = actualScheme === 'quiet-research' ? '#F7F5F0' : (actualScheme === 'obsidian-gray' ? '#090d16' : (actualScheme === 'nebula-purple' ? '#03020a' : '#081f28'))
+      const baseBg = actualScheme === 'quiet-research' ? '#F7F5F0' : (actualScheme === 'worldline-console' ? (actualBg === 'paper' ? '#F4F1E9' : '#07111d') : (actualScheme === 'obsidian-gray' ? '#090d16' : (actualScheme === 'nebula-purple' ? '#03020a' : '#081f28')))
       doc.style.backgroundColor = baseBg
     }
 
@@ -755,6 +792,22 @@ export function useThemeStyle() {
     }
   }
 
+  function setPublicColorScheme(scheme) {
+    if (!PUBLIC_COLOR_SCHEME_IDS.has(scheme)) return
+    publicColorScheme.value = scheme
+    try {
+      localStorage.setItem(PUBLIC_COLOR_SCHEME_KEY, scheme)
+    } catch (e) {
+      console.warn('Failed to save public color scheme to localStorage:', e)
+    }
+    if (typeof document !== 'undefined' && (
+      document.documentElement?.getAttribute?.('data-public-page') === 'true' ||
+      document.documentElement?.dataset?.publicPage === 'true'
+    )) {
+      applyThemeToDOM(currentColorScheme.value, currentBgType.value)
+    }
+  }
+
   function setBgType(bgType) {
     if (bgType !== 'paper' && bgType !== 'galaxy' && bgType !== 'vanta-fog' && bgType !== 'clouds-static' && bgType !== 'custom-local') return
     currentBgType.value = bgType
@@ -770,7 +823,10 @@ export function useThemeStyle() {
 
   // 兼容旧版 setThemeStyle 调用
   function setThemeStyle(style) {
-    if (style === 'paper') {
+    if (style === 'worldline-console') {
+      setColorScheme('worldline-console')
+      setBgType('paper')
+    } else if (style === 'paper') {
       setColorScheme('quiet-research')
       setBgType('paper')
     } else if (style === 'earth-orbit' || style === 'clouds-static') {
@@ -788,6 +844,8 @@ export function useThemeStyle() {
   return {
     currentColorScheme,
     currentBgType,
+    publicColorScheme,
+    setPublicColorScheme,
     isBgVideoPaused,
     setBgVideoPaused,
     toggleBgVideoPaused,

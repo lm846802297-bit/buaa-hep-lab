@@ -11,7 +11,16 @@ description: >-
 
 # LabOrbit Vibe-Coding 全栈开发与定制技能手册
 
-本 Skill 为开发者和 AI Agent（如 Antigravity, Claude Code, Cursor, Windsurf, Codex 等）提供利用 **Vibe-Coding（人类主导需求与交互审美 + AI 执行全栈代码研发）** 高效定制、二次开发与课题组迁移的完整标准作业程序（SOP）。
+本 Skill 为 GPT / ChatGPT、DSH 与 WorkBuddy 提供 LabOrbit 全栈定制指南。它是复杂任务的参考手册，**普通小改动只需遵循根目录 `AGENTS.md` 和相关章节，不必每次执行全文 SOP**。
+
+## 仓库协作与安全前置要求
+
+- `AGENTS.md` 是日常开发规则入口。按需阅读本 Skill 和架构文档；只有双后端、认证/授权、数据库迁移、文件/邮件/外部网络、安全问题或多会话任务才需要完整参考。
+- 普通独立任务：确认最新 `main`，查看计划修改文件及可能冲突的开放 PR 即可。只有多会话、共享热点、数据库/认证边界或文件交集不明确时，才运行 `node scripts/agent-preflight.mjs --paths <path1> <path2>` 并协调所有权。
+- 普通小功能完成后再创建 PR；长任务或需要并行协调时才提前创建 Draft PR。一个 PR 围绕一个明确目标，紧密耦合的代码和测试可以放在一起。
+- 测试按改动风险执行：普通前端改动运行前端测试，源文件变化再构建并检查公开页面；全局壳层、路由、主题或关键公开入口变化再运行浏览器烟测；后端改动运行后端测试；Cloudflare Functions / D1 / Wrangler 改动运行隔离运行时检查。认证、授权、schema 和双后端契约变更升级到相关前后端回归。
+- PR CI 验证功能一次。合并后只重新构建最终版本、检查公开页面并在 Pages 相关改动时部署和验证线上健康状态；不重复运行整套单元、后端和浏览器测试。
+- 不手动执行生产部署、远程 D1 写入/迁移或其他生产数据变更，除非用户明确授权。
 
 ---
 
@@ -202,36 +211,16 @@ app.post('/items/:id/score', async (c) => {
 
 ### 1. SQLite 自建模式数据库运维
 
-- **本地数据库文件**：默认存储在 `./data/labhub.db`。
-- **字段追加策略（加法迁移）**：
-  在 `backend/migrations.py` 中编写容错更新逻辑：
-  ```python
-  def run_migrations(engine):
-      with engine.connect() as conn:
-          try:
-              conn.execute(text("ALTER TABLE items ADD COLUMN score REAL DEFAULT 0.0;"))
-              conn.commit()
-          except Exception:
-              pass  # 字段已存在时安全跳过
-  ```
+- 本地数据库文件、模型和迁移入口以当前 `backend/` 配置为准；不要假定历史文档中的路径或数据库文件名仍然准确。
+- 优先使用可追踪、可重复、可验证的迁移，并分别测试空库与已有数据。
+- 不要用 `except Exception: pass` 吞掉所有迁移错误。只有明确识别的“迁移已应用/列已存在”情形才可以安全处理；其他异常必须显式失败并保留诊断信息。
 
 ### 2. Cloudflare D1 边缘数据库运维
 
-通过 Wrangler CLI 在 `frontend/` 目录执行：
-```bash
-cd frontend
-
-# 查看线上数据表字段
-npx wrangler d1 execute labhub-db --remote --command="PRAGMA table_info(seminars);"
-
-# 执行无损字段添加
-npx wrangler d1 execute labhub-db --remote --command="ALTER TABLE seminars ADD COLUMN custom_tag TEXT DEFAULT '';"
-
-# 执行迁移脚本
-npx wrangler d1 execute labhub-db --remote --file=../scripts/your_migration.sql
-```
-> [!IMPORTANT]
-> 严禁在线上直接执行 `DROP TABLE`。涉及字段类型或重构时，一律先新建列并回填默认值。
+- 资源绑定和数据库名称必须从当前 `frontend/wrangler.json` 读取；不得照抄旧示例中的 `labhub-db` 或其他历史资源名。
+- 迁移 SQL 的审查源以当前 `scripts/schema_d1.sql` 及仓库中版本化迁移为准。先在本地/隔离环境验证，再通过 PR 审查迁移与回滚/前向修复方案。
+- 远程只读检查、远程写入与生产迁移是不同风险等级。未经用户明确授权，不运行带 `--remote` 的写入/迁移命令，不在生产数据库试验，也不把临时 DDL 当作正式迁移流程。
+- 如任务确实需要生产操作，先说明目标资源、精确命令、影响、备份/恢复计划与验证方法，等待用户明确批准后再执行。
 
 ---
 
@@ -361,32 +350,22 @@ const icons = {
 
 ## 八、质量门禁与测试验收清单
 
-Vibe-Coding 的核心是“大胆重构，严格测试”。任何代码交付前必须完整执行以下命令：
+测试的目标是发现与本次改动相关的缺陷，不是每次交付都运行所有工具。按下表选择最小充分验证：
 
-### 1. 自动化单元测试全通检查
-```bash
-npm --prefix frontend test
-```
-- **合格基准**：57 个测试套件、369+ 个单元测试必须 **100% 全部通过 (Zero Failures)**；
-- 若修改了界面文案或数据结构，必须同步更新对应的 `*.test.js` 文件。
+| 改动范围 | 必需检查 |
+|---|---|
+| 纯文档/静态资源说明 | 检查差异、链接与命令是否正确；不跑应用测试 |
+| 普通前端逻辑或组件 | `npm --prefix frontend test` |
+| 前端页面、组件、内容或资源 | 前端测试；`frontend/src/` 或公开资源变化时再运行 `npm --prefix frontend run build` 和 `npm --prefix frontend run check:bundle` |
+| 全局壳层、路由、主题、公开首页/专题导航、浏览器烟测脚本 | 在构建检查之外运行 Chromium 烟测 |
+| FastAPI 后端 | `python -m pytest backend -q` |
+| Cloudflare Functions、Wrangler、D1 schema | `node scripts/verify-cloudflare.mjs`；必要时加相关前后端测试 |
+| 认证/授权、文件所有权、数据库迁移或双后端契约 | 对受影响的前后端路径执行回归和隔离安全检查 |
 
-### 2. 静态构建与 Pages 生产打包检查
-```bash
-# 验证标准构建无 TS/SFC/CSS 语法错误
-npm --prefix frontend run build
+- CI 必须对应 PR 的最新 HEAD。新提交后，以新 SHA 的结果为准。
+- 不要求每个任务都启动完整本地栈或额外执行 Demo 构建；仅当改动涉及集成启动、Demo 模式或相应部署路径时才执行。
+- 如果相关检查失败，修复实际缺陷；不要删除与本次改动相关的安全或权限测试来追求通过。
 
-# 验证纯前端 Demo 模式构建无阻断
-GITHUB_PAGES=true VITE_DEMO_MODE=true npm --prefix frontend run build
-```
-
-### 3. 本地集成启动验证
-```bash
-chmod +x ./start.sh
-./start.sh
-```
-访问 `http://127.0.0.1:8000`，使用演示账号或初始化注册流程，确认无网络报错与控制台运行时异常。
-
----
 
 ## 结语
 

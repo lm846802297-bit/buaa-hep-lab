@@ -48,9 +48,10 @@ const {
 } = useThemeStyle()
 
 function handleToggleBgVideoPaused() {
+  if (!supportsBackgroundFreeze.value) return
   const nextVal = !isBgVideoPaused.value
   setBgVideoPaused(nextVal)
-  notify(nextVal ? '已暂停视频背景并作为超清静态壁纸使用' : '已恢复动态视频背景播放')
+  notify(nextVal ? '已将当前动态背景定格为静态壁纸' : '已恢复动态背景播放')
 }
 
 function onBgDimInput(e) {
@@ -220,22 +221,25 @@ function handleResetCustomTheme() {
 }
 
 function handleBgTypeSelect(bg) {
-  if (currentBgType.value === bg.id) {
-    if (bg.id === 'custom-local' && !localBgMeta.value) {
-      triggerLocalFileInput()
-    }
-    return
-  }
-  setBgType(bg.id)
-  notify(`已切换为「${bg.name}」背景`)
+  // A local background is not a valid selection until a file has been saved.
+  // If the chooser is cancelled, keep the previously working background active.
   if (bg.id === 'custom-local' && !localBgMeta.value) {
     triggerLocalFileInput()
+    return
   }
+  if (currentBgType.value === bg.id) return
+  setBgType(bg.id)
+  notify(`已切换为「${bg.name}」背景`)
 }
 
 const localBgMeta = ref(null)
 const localBgUploading = ref(false)
 const localFileInputRef = ref(null)
+const supportsBackgroundFreeze = computed(() => (
+  currentBgType.value === 'galaxy' ||
+  currentBgType.value === 'vanta-fog' ||
+  (currentBgType.value === 'custom-local' && localBgMeta.value?.type === 'video')
+))
 
 async function loadLocalBgInfo() {
   localBgMeta.value = await getLocalBackgroundMeta()
@@ -272,7 +276,11 @@ async function onLocalFileSelected(e) {
 
 async function onRemoveLocalBg() {
   if (!confirm('确定要清除已保存的本地背景媒体吗？')) return
-  await removeLocalBackground()
+  const removed = await removeLocalBackground()
+  if (!removed) {
+    notify('清除本地背景失败，请重试', 'error')
+    return
+  }
   localBgMeta.value = null
   setBgType('clouds-static')
   notify('已清除本地背景，恢复为云山日光背景')
@@ -624,7 +632,7 @@ onMounted(() => {
               <span class="active-dot"></span> 当前生效
             </div>
           </div>
-          <p class="theme-card-desc">{{ bg.description }}</p>
+          <p class="theme-card-desc">{{ bg.description || bg.subtitle }}</p>
           <div class="theme-card-footer">
             <div class="bg-card-hint muted" style="font-size: 11px;">
               <template v-if="bg.id === 'custom-local'">
@@ -649,25 +657,27 @@ onMounted(() => {
           <div class="bg-freeze-title-group">
             <div class="bg-freeze-title-row">
               <AppIcon name="clock" :size="18" />
-              <h3 class="bg-freeze-title">暂停动态视频背景</h3>
+              <h3 class="bg-freeze-title">暂停动态背景</h3>
               <span
                 class="bg-freeze-badge"
-                :class="{ 'is-paused': isBgVideoPaused }"
+                :class="{ 'is-paused': isBgVideoPaused, 'is-unavailable': !supportsBackgroundFreeze }"
               >
-                {{ isBgVideoPaused ? '已定格为静态壁纸' : '动态视频播放中' }}
+                {{ !supportsBackgroundFreeze ? '当前背景无需暂停' : isBgVideoPaused ? '已定格为静态壁纸' : '动态背景播放中' }}
               </span>
             </div>
             <p class="muted bg-freeze-desc">
-              开启后，深空地球轨道或本地自定义视频将定格在当前帧，作为超清静态壁纸使用；有效释放 GPU 运算负担，大幅降低设备发热与能耗。
+              将星空、水雾等动态背景或本地视频定格为当前帧，暂停动画并释放不必要的渲染资源。纯色、静态图片背景不需要此操作。
             </p>
           </div>
           <button
             type="button"
             class="button small bg-freeze-toggle-btn"
             :class="isBgVideoPaused ? 'primary' : 'secondary'"
+            :disabled="!supportsBackgroundFreeze"
+            :title="supportsBackgroundFreeze ? '' : '当前背景是静态的，无需暂停'"
             @click="handleToggleBgVideoPaused"
           >
-            {{ isBgVideoPaused ? '恢复动态播放' : '定格为静态壁纸' }}
+            {{ !supportsBackgroundFreeze ? '当前背景无需暂停' : isBgVideoPaused ? '恢复动态播放' : '定格为静态壁纸' }}
           </button>
         </div>
       </div>
@@ -681,7 +691,7 @@ onMounted(() => {
               <span class="bg-dim-value-badge mono">{{ currentBgDim }}%</span>
             </label>
             <p class="muted bg-dim-desc">
-              调暗背景可衬托前景卡片与文字可读性。采用无色纯黑通透压暗，绝不改变壁纸原图色彩；各配色方案与液态玻璃实时同步。
+              仅对图片、视频和动态背景生效。采用无色纯黑通透压暗，不改变壁纸原图色彩；纯色纸白背景下此项不可用。
             </p>
           </div>
           <button
@@ -703,6 +713,7 @@ onMounted(() => {
             step="1"
             :value="currentBgDim"
             :style="{ '--val': currentBgDim + '%' }"
+            :disabled="currentBgType === 'paper'"
             @input="onBgDimInput"
             class="bg-dim-slider"
             aria-label="背景遮罩暗化程度"
@@ -851,11 +862,11 @@ onMounted(() => {
         <div class="font-preview-body">
           <div class="font-preview-row">
             <span class="preview-tag muted">中文排版</span>
-            <p class="font-preview-line-title">天体物理与交叉科学课题组</p>
+            <p class="font-preview-line-title">北航粒子物理研究组</p>
           </div>
           <div class="font-preview-row">
             <span class="preview-tag muted">西文排版</span>
-            <p class="font-preview-line-en">Astrophysics and Interdisciplinary Science Research Group</p>
+            <p class="font-preview-line-en">Beihang University Particle Physics Phenomenology Group</p>
           </div>
           <div class="font-preview-row">
             <span class="preview-tag muted">科学数字与符号</span>
@@ -1457,7 +1468,7 @@ onMounted(() => {
 }
 
 .anchor-pill.highlight-glass {
-  border-color: rgba(184, 155, 248, 0.4);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
   color: var(--accent);
   background: var(--glass);
 }
@@ -1516,24 +1527,17 @@ onMounted(() => {
 
 .theme-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(184, 155, 248, 0.35);
-  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4), 0 0 16px -4px rgba(184, 155, 248, 0.15);
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--line));
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.12), 0 0 16px -4px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
-[data-theme-style="vanta-fog"] .theme-card:hover {
-  border-color: rgba(197, 230, 223, 0.35);
-  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4), 0 0 16px -4px rgba(197, 230, 223, 0.15);
-}
 
 .theme-card.is-active {
   border-color: var(--accent);
-  background: linear-gradient(135deg, rgba(184, 155, 248, 0.08) 0%, rgba(20, 16, 35, 0.6) 100%);
-  box-shadow: 0 8px 28px -6px rgba(0, 0, 0, 0.5), 0 0 20px -4px var(--accent-glow, rgba(184, 155, 248, 0.3));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, var(--surface)) 0%, var(--surface) 100%);
+  box-shadow: 0 8px 28px -6px rgba(0, 0, 0, 0.16), 0 0 20px -4px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
-[data-theme-style="vanta-fog"] .theme-card.is-active {
-  background: linear-gradient(135deg, rgba(197, 230, 223, 0.08) 0%, rgba(13, 37, 44, 0.6) 100%);
-}
 
 .theme-card-header {
   display: flex;
@@ -2757,6 +2761,11 @@ onMounted(() => {
   border-color: var(--accent);
   color: var(--accent);
   font-weight: 600;
+}
+.bg-freeze-badge.is-unavailable {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--muted);
 }
 .bg-freeze-desc {
   font-size: 13px;

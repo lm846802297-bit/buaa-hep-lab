@@ -65,48 +65,47 @@ def init_clean_db(reset: bool = False):
             db.commit()
 
         if db.query(ResourceBook).count() == 0:
-
-            print("初始化权威学术参考教材资料...")
+            print("初始化高能粒子物理参考资料...")
             books = [
                 ResourceBook(
-                    title="天体物理学导论 (An Introduction to Modern Astrophysics)",
-                    original_title="An Introduction to Modern Astrophysics",
-                    authors="Bradley W. Carroll, Dale A. Ostlie",
+                    title="现代粒子物理 (Modern Particle Physics)",
+                    original_title="Modern Particle Physics",
+                    authors="Mark Thomson",
                     category="基础理论与专著",
-                    description="现代天体物理领域的经典基石教程，系统涵盖恒星物理、星系演化、宇宙学以及高能天体物理，内容详尽严谨，广受研究生推崇。",
+                    description="面向高年级本科生与研究生的粒子物理教材，涵盖衰变与截面、标准模型、希格斯、QCD、中微子和标准模型之外的新物理。阅读时仍须结合最新实验数据与勘误。",
                     cover_url="",
-                    tutorial_url="https://www.cambridge.org/highereducation/books/an-introduction-to-modern-astrophysics/F54E410EB6A3ACCE0F3EF3041BD13264",
-                    exercise_url="https://github.com/topics/astrophysics",
-                    github_url="https://github.com/astropy/astropy",
-                    download_url="#",
+                    tutorial_url="https://www.cambridge.org/cc/titles/modern-particle-physics",
+                    exercise_url="",
+                    github_url="",
+                    download_url=None,
                     order_num=1,
                 ),
                 ResourceBook(
-                    title="星系物理与演化理论 (Galaxy Formation and Evolution)",
-                    original_title="Galaxy Formation and Evolution",
-                    authors="Houjun Mo, Frank van den Bosch, Simon White",
-                    category="星系物理与结构",
-                    description="深入探讨暗物质晕、星系动力学、恒星形成与反馈机制的权威专著，是星系演化与数值模拟方向的必读教材。",
+                    title="量子场论与标准模型 (Quantum Field Theory and the Standard Model)",
+                    original_title="Quantum Field Theory and the Standard Model",
+                    authors="Matthew D. Schwartz",
+                    category="基础理论与专著",
+                    description="研究生层次的量子场论教材，系统讨论散射与衰变、费曼规则、重整化、规范理论、标准模型、有效场论和重整化群。",
                     cover_url="",
-                    tutorial_url="https://www.cambridge.org/core/books/galaxy-formation-and-evolution/8064F9CF1B25C651F7FE0AE9C60575B5",
-                    exercise_url="https://arxiv.org/abs/astro-ph/0407232",
-                    github_url="https://github.com/topics/astronomy-simulations",
-                    download_url="#",
+                    tutorial_url="https://www.cambridge.org/highereducation/books/quantum-field-theory-and-the-standard-model/A4CD66B998F2C696DCC75B984A7D5799",
+                    exercise_url="",
+                    github_url="",
+                    download_url=None,
                     order_num=2,
                 ),
                 ResourceBook(
-                    title="现代物理宇宙学导论 (Introduction to Cosmology)",
-                    original_title="Introduction to Cosmology",
-                    authors="Barbara Ryden",
-                    category="物理宇宙学",
-                    description="清晰透彻论述弗里德曼方程、宇宙微波背景辐射、暴胀与暗能量等现代宇宙学核心理论框架。",
+                    title="粒子物理评论 (Review of Particle Physics, 2026)",
+                    original_title="Review of Particle Physics (2026)",
+                    authors="Particle Data Group",
+                    category="实验数据与综述",
+                    description="粒子性质、标准模型综述、实验方法和新粒子搜索的权威入口。引用数值或限制时必须记录具体版本、条目和勘误；旧版数据不自动代表当前限制。",
                     cover_url="",
-                    tutorial_url="https://arxiv.org/abs/astro-ph/0509252",
-                    exercise_url="https://arxiv.org/abs/astro-ph/0509252",
-                    github_url="https://github.com/topics/cosmological-parameters",
-                    download_url="#",
+                    tutorial_url="https://pdg.lbl.gov/2026/",
+                    exercise_url="",
+                    github_url="",
+                    download_url=None,
                     order_num=3,
-                )
+                ),
             ]
             db.add_all(books)
             db.commit()
@@ -140,6 +139,7 @@ def _seed_default_invite_codes(db: Session) -> None:
 
 
 def _seed_demo_data(db: Session) -> None:
+    """Create synthetic demo users/events, while keeping paper metadata tied to real sources."""
     print("开始初始化课题组基础演示数据 (SEED_DEMO_DATA=1)...")
     try:
         # 1. 成员与老师用户
@@ -162,14 +162,14 @@ def _seed_demo_data(db: Session) -> None:
             email="wang@lab.edu",
             hashed_password=get_password_hash("lab123456"),
             role="teacher",
-            bio="观测天体物理与多波段巡天",
+            bio="暗物质与暗扇区唯象学（演示数据）",
         )
         prof_li = User(
             name="青年教师",
             email="li@lab.edu",
             hashed_password=get_password_hash("lab123456"),
             role="teacher",
-            bio="大尺度结构与理论天体物理",
+            bio="中微子与新相互作用（演示数据）",
         )
         student1 = User(
             name="张明 (博士生)",
@@ -177,7 +177,7 @@ def _seed_demo_data(db: Session) -> None:
             hashed_password=get_password_hash("lab123456"),
             role="student",
             can_manage_seminars=True,
-            bio="科学机器学习与数值模拟算法方向",
+            bio="暗物质唯象学与数值计算方向（演示数据）",
         )
         admin_example = User(
             name="测试管理员",
@@ -193,100 +193,215 @@ def _seed_demo_data(db: Session) -> None:
         db.refresh(prof_shu)
         db.refresh(student1)
 
-        # 2. arXiv 推荐文献（涵盖导师专属高亮推荐）
+        # 2. arXiv 推荐文献：全部使用课题组高能粒子物理唯象学方向的真实公开论文
+        # published_date 记录 arXiv 首次提交日期；journal 单独记录期刊发表信息。
         paper1 = ArxivPaper(
-            arxiv_id="2301.07094",
-            title="JWST High-Redshift Galaxy Survey in Deep Cosmological Fields",
-            authors=json.dumps(["A. Smith", "B. Johnson", "C. Davis et al."], ensure_ascii=False),
-            abstract="We present new high-resolution imaging and spectroscopy from the James Webb Space Telescope in deep cosmological fields, constraining early star formation and the galaxy luminosity function at z > 8.",
-            primary_category="astro-ph.CO",
-            published_date="2023-01-17",
-            pdf_url="https://arxiv.org/pdf/2301.07094.pdf",
+            arxiv_id="2508.13276",
+            title="Probing Purely Inelastic Scalar Dark Matter Across Colliders and Gravitational Wave Observatories",
+            authors=json.dumps(["Jinhui Guo", "Jia Liu", "Chenhao Peng", "Xiao-Ping Wang"], ensure_ascii=False),
+            abstract="演示用中文导读（非原文逐字摘要）：研究纯非弹性标量暗物质在热遗迹、一阶电弱相变、引力波和对撞机长寿命粒子信号中的互补唯象学；结论依赖质量分裂与模型参数。",
+            journal="Phys.Rev.D 112 (2025) 115014",
+            source_url="https://arxiv.org/abs/2508.13276",
+            primary_category="hep-ph",
+            published_date="2025-08-18",
+            pdf_url="https://arxiv.org/pdf/2508.13276.pdf",
             recommended_by_id=prof_shu.id,
-            recommend_comment="导师：这篇文章利用最新的 JWST 深度巡天数据对早期星系形成给出了极其严谨的约束，数据处理与光度红移拟合算法很值得我们在下周五组会深入探讨！",
+            recommend_comment="阅读重点：热共湮灭条件、暗物质质量分裂、一阶相变与长寿命粒子信号。请区分 benchmark、完整参数空间和未来灵敏度预测。",
             is_pinned=True,
         )
 
         paper2 = ArxivPaper(
-            arxiv_id="2402.08654",
-            title="Denoising Diffusion Probabilistic Models for Astronomical Image Reconstruction",
-            authors=json.dumps(["M. Zhang", "L. Wang", "C. Chen"], ensure_ascii=False),
-            abstract="Reconstructing high-fidelity astronomical observations from noisy and blurred detector data is an ill-posed inverse problem. Here we demonstrate how diffusion priors yield superior fidelity over traditional deconvolution algorithms.",
-            primary_category="astro-ph.IM",
-            published_date="2024-02-13",
-            pdf_url="https://arxiv.org/pdf/2402.08654.pdf",
+            arxiv_id="2509.23925",
+            title="Probing Scalar-Mediated Sterile Neutrinos with Gravitational Wave and Colliders Signals",
+            authors=json.dumps(["Qi Bi", "Jinhui Guo", "Jian Liao", "Jia Liu", "Xiao-Ping Wang"], ensure_ascii=False),
+            abstract="演示用中文导读（非原文逐字摘要）：研究标量介导惰性中微子模型，比较模型依赖的一阶电弱相变引力波预言与对撞机位移顶点搜索。",
+            journal="Phys.Rev.D 113 (2026) 095006",
+            source_url="https://arxiv.org/abs/2509.23925",
+            primary_category="hep-ph",
+            published_date="2025-09-28",
+            pdf_url="https://arxiv.org/pdf/2509.23925.pdf",
             recommended_by_id=student1.id,
-            recommend_comment="读了一下这篇使用扩散模型进行高分辨率天文图像超分辨重建的思路，数学推导非常扎实，感觉可以结合我们正在跑的模拟数据做实验测试。",
+            recommend_comment="讨论 Higgs–标量混合、惰性中微子寿命、相变完成条件和位移顶点接受度；灵敏度预测不等于观测证据。",
             is_pinned=False,
         )
 
-        db.add_all([paper1, paper2])
-        db.commit()
-        db.refresh(paper1)
+        paper3 = ArxivPaper(
+            arxiv_id="2510.20672",
+            title="An Axial-Vector Leptophilic Fifth Force Sourced by Solar Neutrinos",
+            authors=json.dumps(["Rundong Fang", "Ji-Heng Guo", "Jia Liu", "Xiao-Ping Wang", "YanLi Zhao"], ensure_ascii=False),
+            abstract="演示用中文导读（非原文逐字摘要）：研究太阳中微子源产生的轴矢量轻子第五力及其唯象学约束，并讨论模型假设下精密观测的互补检验。",
+            journal="Phys.Rev.D 113 (2026) 055041",
+            source_url="https://arxiv.org/abs/2510.20672",
+            primary_category="hep-ph",
+            published_date="2025-10-23",
+            pdf_url="https://arxiv.org/pdf/2510.20672.pdf",
+            recommended_by_id=prof_li.id,
+            recommend_comment="重点核对太阳中微子源的处理、相互作用结构、实验可观测量及约束所依赖的假设。",
+            is_pinned=False,
+        )
 
-        # 3. 组会排期
+        paper4 = ArxivPaper(
+            arxiv_id="2506.10673",
+            title="Ultimate Quantum Precision Limit at Colliders: Conditions and Case Studies",
+            authors=json.dumps(["Tengyu Ai", "Qi Bi", "Yuxin He", "Jia Liu", "Xiao-Ping Wang"], ensure_ascii=False),
+            abstract="演示用中文导读（非原文逐字摘要）：研究对撞机测量接近量子精度极限的条件与案例，区分信息论上界和实际实验精度。",
+            journal="Phys.Rev.Lett. 135 (2025) 241804",
+            source_url="https://arxiv.org/abs/2506.10673",
+            primary_category="hep-ph",
+            published_date="2025-06-12",
+            pdf_url="https://arxiv.org/pdf/2506.10673.pdf",
+            recommended_by_id=prof_wang.id,
+            recommend_comment="讨论量子信息界、可观测量构造和实验统计精度之间的关系，注意结论适用的测量与模型条件。",
+            is_pinned=False,
+        )
+
+        paper5 = ArxivPaper(
+            arxiv_id="2409.17243",
+            title="Long-lived Sterile Neutrino Searches at Future Muon Colliders",
+            authors=json.dumps(["Qi Bi", "Jinhui Guo", "Jia Liu", "Yan Luo", "Xiao-Ping Wang"], ensure_ascii=False),
+            abstract="演示用中文导读（非原文逐字摘要）：研究未来 μ 子对撞机对长寿命惰性中微子及位移信号的灵敏度，覆盖范围依赖质量、主动—惰性混合、寿命与探测器假设。",
+            journal="Phys.Rev.D 111 (2025) 075001",
+            source_url="https://arxiv.org/abs/2409.17243",
+            primary_category="hep-ph",
+            published_date="2024-09-25",
+            pdf_url="https://arxiv.org/pdf/2409.17243.pdf",
+            recommended_by_id=student1.id,
+            recommend_comment="阅读时记录质量—混合参数化、寿命与探测器接受度；不要把某一基准点的灵敏度当作普适排除结论。",
+            is_pinned=False,
+        )
+
+        paper6 = ArxivPaper(
+            arxiv_id="2603.17237",
+            title="Ultralight Scalar Dark Matter with Off-Diagonal Flavor Couplings",
+            authors=json.dumps(["Jinhui Guo", "Jia Liu", "Chenhao Peng", "Xiao-Ping Wang", "Hang Zhao"], ensure_ascii=False),
+            abstract="演示用中文导读（非原文逐字摘要）：研究具有非对角味耦合的超轻标量暗物质，以及时域测量和味物理观测的互补检验。",
+            journal="Phys.Rev.D 114 (2026) 015022",
+            source_url="https://arxiv.org/abs/2603.17237",
+            primary_category="hep-ph",
+            published_date="2026-03-18",
+            pdf_url="https://arxiv.org/pdf/2603.17237.pdf",
+            recommended_by_id=prof_wang.id,
+            recommend_comment="关注相干暗物质背景、味非对角耦合和时域/味物理观测之间的互补性，并明确模型参数依赖。",
+            is_pinned=False,
+        )
+
+        paper7 = ArxivPaper(
+            arxiv_id="2610.04971",
+            title="Probing anomalous Wtb couplings through bW spin correlations in top-quark pair production at the HL-LHC",
+            authors=json.dumps(["Qi Bi", "Zekun Li", "Chuntao Liu", "Jia Liu", "Xiao-Ping Wang"], ensure_ascii=False),
+            abstract="演示用中文导读（非原文逐字摘要）：研究顶夸克对产生中的 b 夸克与 W 玻色子自旋关联如何检验异常 Wtb 耦合，并估算 HL-LHC 的统计灵敏度。",
+            source_url="https://arxiv.org/abs/2610.04971",
+            primary_category="hep-ph",
+            published_date="2026-10-04",
+            pdf_url="https://arxiv.org/pdf/2610.04971.pdf",
+            recommended_by_id=prof_shu.id,
+            recommend_comment="重点检查自旋关联可观测量、异常耦合参数化、统计假设和 HL-LHC 灵敏度的适用条件。",
+            is_pinned=False,
+        )
+
+        db.add_all([paper1, paper2, paper3, paper4, paper5, paper6, paper7])
+        db.commit()
+
+        # 3. 组会排期：主题、文献和演示状态保持一一对应；时间按 2026-10-21 校准。
         seminar1 = SeminarSchedule(
-            date="2026-09-18",
+            date="2026-10-23",
             time="14:30",
-            location="物理楼 302 研讨室 / 腾讯会议 892-123-456",
+            location="演示排期，地点待确认",
             presenter_name="张明 (博士生)",
             presenter_id=student1.id,
-            topic="JWST 深度巡天早期星系形态演化与多波段光度拟合",
+            topic="纯非弹性标量暗物质：热共湮灭、相变与长寿命粒子信号",
             paper_id=paper1.id,
-            slides_url="https://example.com/slides-jwst-galaxies.pdf",
-            notes="请大家提前阅读导师推荐的 2301.07094 文献，重点关注其高红移星系光度红移的卡方计算细节。",
+            slides_url=None,
+            notes="阅读 arXiv:2508.13276，梳理暗物质质量分裂、热共湮灭、一阶相变和长寿命粒子搜索；区分 benchmark 与完整参数空间。",
             status="upcoming",
         )
         seminar2 = SeminarSchedule(
-            date="2026-09-11",
+            date="2026-10-30",
             time="14:30",
-            location="物理楼 302 研讨室",
-            presenter_name="李航 (硕士生)",
-            topic="基于前馈神经网络的变源光变曲线特征快速筛选",
-            slides_url="https://example.com/lightcurve-ml.pdf",
-            notes="已顺利完成，代码已同步至课题组内部仓库。",
+            location="演示排期，地点待确认",
+            presenter_name="青年教师",
+            presenter_id=prof_li.id,
+            topic="标量介导惰性中微子：相变引力波与位移顶点",
+            paper_id=paper2.id,
+            slides_url=None,
+            notes="阅读 arXiv:2509.23925，关注 Higgs–标量混合、惰性中微子寿命、相变完成条件和位移顶点接受度。",
+            status="upcoming",
+        )
+        seminar3 = SeminarSchedule(
+            date="2026-11-06",
+            time="14:30",
+            location="演示排期，地点待确认",
+            presenter_name="合作导师",
+            presenter_id=prof_wang.id,
+            topic="太阳中微子源的轴矢量轻子第五力",
+            paper_id=paper3.id,
+            slides_url=None,
+            notes="阅读 arXiv:2510.20672，核对太阳中微子源、相互作用结构、实验可观测量与约束假设。",
+            status="upcoming",
+        )
+        seminar4 = SeminarSchedule(
+            date="2026-10-16",
+            time="14:30",
+            location="演示排期，地点待确认",
+            presenter_name="张明 (博士生)",
+            presenter_id=student1.id,
+            topic="对撞机量子精度极限：可达条件与案例分析",
+            paper_id=paper4.id,
+            slides_url=None,
+            notes="阅读 arXiv:2506.10673，区分量子信息界、统计误差与具体实验可达精度。",
             status="completed",
         )
-        db.add_all([seminar1, seminar2])
-
-        # 4. 教材与综述资料库（聚合教程、习题集与代码直达）
+        seminar5 = SeminarSchedule(
+            date="2026-10-09",
+            time="14:30",
+            location="演示排期，地点待确认",
+            presenter_name="青年教师",
+            presenter_id=prof_li.id,
+            topic="未来 μ 子对撞机中的长寿命惰性中微子搜索",
+            paper_id=paper5.id,
+            slides_url=None,
+            notes="阅读 arXiv:2409.17243，明确质量、混合、寿命和探测器接受度的依赖。",
+            status="completed",
+        )
+        db.add_all([seminar1, seminar2, seminar3, seminar4, seminar5])
+        # 4. 高能粒子物理教材与权威综述
         books = [
             ResourceBook(
-                title="天体物理学导论 (An Introduction to Modern Astrophysics)",
-                original_title="An Introduction to Modern Astrophysics",
-                authors="Bradley W. Carroll, Dale A. Ostlie",
+                title="现代粒子物理 (Modern Particle Physics)",
+                original_title="Modern Particle Physics",
+                authors="Mark Thomson",
                 category="基础理论与专著",
-                description="现代天体物理领域的经典基石教程，系统涵盖恒星物理、星系演化、宇宙学以及高能天体物理，内容详尽严谨，广受研究生推崇。",
-                cover_url="https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=600&auto=format&fit=crop&q=80",
-                tutorial_url="https://www.cambridge.org/highereducation/books/an-introduction-to-modern-astrophysics/F54E410EB6A3ACCE0F3EF3041BD13264",
-                exercise_url="https://github.com/topics/astrophysics",
-                github_url="https://github.com/astropy/astropy",
+                description="面向高年级本科生与研究生的粒子物理教材，涵盖衰变与截面、标准模型、希格斯、QCD、中微子和标准模型之外的新物理。",
+                cover_url="",
+                tutorial_url="https://www.cambridge.org/cc/titles/modern-particle-physics",
+                exercise_url="",
+                github_url="",
                 download_url=None,
                 order_num=1,
             ),
             ResourceBook(
-                title="星系物理与演化理论 (Galaxy Formation and Evolution)",
-                original_title="Galaxy Formation and Evolution",
-                authors="Houjun Mo, Frank van den Bosch, Simon White",
-                category="星系物理与结构",
-                description="深入探讨暗物质晕、星系动力学、恒星形成与反馈机制的权威专著，是星系演化与数值模拟方向的必读教材。",
-                cover_url="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80",
-                tutorial_url="https://www.cambridge.org/core/books/galaxy-formation-and-evolution/8064F9CF1B25C651F7FE0AE9C60575B5",
-                exercise_url="https://arxiv.org/abs/astro-ph/0407232",
-                github_url="https://github.com/topics/astronomy-simulations",
+                title="量子场论与标准模型 (Quantum Field Theory and the Standard Model)",
+                original_title="Quantum Field Theory and the Standard Model",
+                authors="Matthew D. Schwartz",
+                category="基础理论与专著",
+                description="研究生层次的量子场论教材，系统讨论散射与衰变、费曼规则、重整化、规范理论、标准模型、有效场论和重整化群。",
+                cover_url="",
+                tutorial_url="https://www.cambridge.org/highereducation/books/quantum-field-theory-and-the-standard-model/A4CD66B998F2C696DCC75B984A7D5799",
+                exercise_url="",
+                github_url="",
                 download_url=None,
                 order_num=2,
             ),
             ResourceBook(
-                title="现代物理宇宙学导论 (Introduction to Cosmology)",
-                original_title="Introduction to Cosmology",
-                authors="Barbara Ryden",
-                category="物理宇宙学",
-                description="清晰透彻论述弗里德曼方程、宇宙微波背景辐射、暴胀与暗能量等现代宇宙学核心理论框架。",
-                cover_url="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=600&auto=format&fit=crop&q=80",
-                tutorial_url="https://arxiv.org/abs/astro-ph/0509252",
-                exercise_url="https://arxiv.org/abs/astro-ph/0509252",
-                github_url="https://github.com/topics/cosmological-parameters",
+                title="粒子物理评论 (Review of Particle Physics, 2026)",
+                original_title="Review of Particle Physics (2026)",
+                authors="Particle Data Group",
+                category="实验数据与综述",
+                description="粒子性质、标准模型综述、实验方法和新粒子搜索的权威入口。引用数值或限制时必须记录具体版本、条目和勘误；旧版数据不自动代表当前限制。",
+                cover_url="",
+                tutorial_url="https://pdg.lbl.gov/2026/",
+                exercise_url="",
+                github_url="",
                 download_url=None,
                 order_num=3,
             )

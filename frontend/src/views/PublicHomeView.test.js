@@ -11,7 +11,32 @@ describe('Public academic website', () => {
     const html = await renderToString(app)
     expect(html).toContain('高能粒子物理唯象学')
     expect(html).toContain('暂定名称')
+    // Keep exactly one collaboration entry in the header navigation,
+    // styled prominently rather than duplicated as a second CTA.
+    expect(html.match(/class="worldline-hub-link"/g)).toHaveLength(1)
     expect(html).toContain('href="/hub"')
+    expect(html).not.toContain('header-hub-cta')
+    expect(html).toContain('组内协作')
+    // The reference composition is implemented as a responsive blueprint hero,
+    // while all existing public content sections remain on the page.
+    expect(html).toContain('class="worldline-blueprint-layer"')
+    expect(html).toContain('id="worldline-hero-title"')
+    expect(html).toContain('Particle Physics')
+    expect(html).not.toContain('class="worldline-detector-photo"')
+    expect(html).toContain('class="worldline-home visual-blueprint"')
+    expect(html).not.toContain('class="public-header"')
+    expect(html).toContain('Scientific Atelier · 粒子加速器蓝图概念插画')
+    expect(html).toContain('课题组提供的视觉参考图 · 非实验数据')
+    expect(html).not.toContain('worldline-track-overlay')
+    expect(html).toContain('首页右侧主视觉模式')
+    expect(html).toContain('蓝图叠加')
+    expect(html).toContain('ATLAS 实景')
+    expect(html).toContain('碰撞事件')
+    expect(html).toContain('aria-pressed="true"')
+    expect(html).not.toContain('photo by zipckr (Flickr)')
+    expect(html).not.toContain('https://creativecommons.org/licenses/by/2.0/')
+    expect(html).toContain('并非真实实验事件显示图')
+    expect(html).toContain('aria-label="切换官网风格"')
     expect(html).toContain('BibTeX')
     expect(html).toContain('aria-label="导师：王小平"')
     expect(html).toContain('aria-label="学术指导：刘佳"')
@@ -43,6 +68,21 @@ describe('Public academic website', () => {
     expect(html).not.toContain('邮箱')
     expect(html).not.toContain('办公地点')
   })
+  it('makes all five detailed research guides easy to discover from the public homepage', async () => {
+    const app = createSSRApp(PublicHomeView)
+    app.component('router-link', { props: ['to'], setup: (props, { slots }) => () => h('a', { href: props.to }, slots.default?.()) })
+    const html = await renderToString(app)
+    expect(html).toContain('href="#research-guides"')
+    expect(html).toContain('id="research-guides"')
+    expect(html).toContain('专题导读')
+    expect(html).toContain('topic-guide-entry')
+    expect(html).toContain('进入暗物质与暗扇区专题导读')
+    expect(html).toContain('打开专题导读')
+    for (const direction of directions) {
+      expect(html).toContain('href="/research/' + direction.id + '"')
+      expect(html).toContain(direction.title)
+    }
+  })
   it('keeps the public content profile limited to approved academic fields', () => {
     expect(Object.keys(lab).sort()).toEqual(['name', 'provisional', 'shortName', 'institution', 'field', 'english', 'advisor', 'source', 'intro'].sort())
     expect(JSON.stringify(lab)).not.toMatch(/[\w.-]+@[\w.-]+/)
@@ -55,7 +95,8 @@ describe('Public academic website', () => {
     expect(publications.every(p => /^\d{4}\.\d{4,5}$/.test(p.id))).toBe(true)
     expect(new Set(publications.map(p => p.id)).size).toBe(publications.length)
     for (const direction of directions) {
-      expect(direction.references).toHaveLength(2)
+      expect(direction.references.length).toBeGreaterThanOrEqual(2)
+      expect(direction.references.length).toBeLessThanOrEqual(4)
       for (const id of direction.references) expect(publications.find(p => p.id === id)?.categories).toContain(direction.id)
     }
     expect(publicResources).toHaveLength(9)

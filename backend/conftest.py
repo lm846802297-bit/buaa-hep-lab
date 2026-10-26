@@ -19,11 +19,19 @@ def isolated_database():
 
 
 @pytest.fixture(autouse=True)
-def clear_shared_login_rate_limits():
-    """Keep login throttling isolated between tests sharing the session DB."""
-    from sqlalchemy import inspect, text
+def clear_auth_rate_limits_between_tests():
+    """Keep persistent rate-limit protection intact within each test, but isolate tests from one another."""
+    from sqlalchemy import text
     from backend.database import engine
 
-    if inspect(engine).has_table("auth_rate_limits"):
-        with engine.begin() as db:
-            db.execute(text("DELETE FROM auth_rate_limits"))
+    def clear_limits():
+        with engine.begin() as connection:
+            exists = connection.execute(text(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='auth_rate_limits'"
+            )).first()
+            if exists:
+                connection.execute(text("DELETE FROM auth_rate_limits"))
+
+    clear_limits()
+    yield
+    clear_limits()

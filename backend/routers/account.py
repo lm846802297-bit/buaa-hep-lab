@@ -5,7 +5,7 @@ import re
 from typing import Any, Dict, Optional
 import warnings
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from PIL import Image, ImageOps, UnidentifiedImageError
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
@@ -24,6 +24,23 @@ class ProfileInput(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra='forbid')
     real_name: str = Field('', max_length=100)
     nickname: str = Field('', max_length=50)
+
+    @model_validator(mode='before')
+    @classmethod
+    def reject_whitespace_only_real_name(cls, data):
+        # Explicit empty strings are allowed to clear optional profile fields.
+        # A non-empty value made only of whitespace is instead a malformed input.
+        if isinstance(data, dict):
+            real_name = data.get('real_name')
+            nickname = data.get('nickname')
+            if (
+                isinstance(real_name, str)
+                and real_name
+                and not real_name.strip()
+                and not (isinstance(nickname, str) and nickname.strip())
+            ):
+                raise ValueError('真实姓名不能仅包含空白字符')
+        return data
 
 
 @router.put('/profile', response_model=UserOut)

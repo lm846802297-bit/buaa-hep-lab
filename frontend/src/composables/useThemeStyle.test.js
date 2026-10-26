@@ -44,6 +44,13 @@ describe('useThemeStyle', () => {
     expect(currentGlassStyle.value).toBe('solid')
   })
 
+  it('defaults the public website to Worldline while keeping workspace preferences separate', async () => {
+    const { DEFAULT_PUBLIC_COLOR_SCHEME, publicColorScheme, currentColorScheme } = await import('./useThemeStyle')
+    expect(DEFAULT_PUBLIC_COLOR_SCHEME).toBe('worldline-console')
+    expect(publicColorScheme.value).toBe('worldline-console')
+    expect(currentColorScheme.value).toBe('quiet-research')
+  })
+
   it('allows changing theme style and persists to localStorage and DOM', async () => {
     const { useThemeStyle, currentThemeStyle } = await import('./useThemeStyle')
     const { setThemeStyle } = useThemeStyle()
@@ -65,12 +72,17 @@ describe('useThemeStyle', () => {
     const { useThemeStyle, currentColorScheme, currentBgType, colorSchemes, bgOptions } = await import('./useThemeStyle')
     const { setColorScheme, setBgType } = useThemeStyle()
 
-    expect(colorSchemes).toHaveLength(4)
-    expect(colorSchemes.map(s => s.id)).toEqual(['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple'])
+    expect(colorSchemes).toHaveLength(5)
+    expect(colorSchemes.map(s => s.id)).toEqual(['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'worldline-console'])
     expect(colorSchemes[0].baseColor).toBe('#F7F5F0')
     expect(colorSchemes[0].primaryColor).toBe('#B85E3F')
     expect(colorSchemes[0].colors).toBeDefined()
     expect(colorSchemes[0].colors.length).toBeGreaterThanOrEqual(3)
+    const worldline = colorSchemes.find(scheme => scheme.id === 'worldline-console')
+    expect(worldline.baseColor).toBe('#F4F1E9')
+    expect(worldline.primaryColor).toBe('#29415D')
+    expect(worldline.surfaceColor).toBe('#FFFEFA')
+    expect(worldline.colors).toEqual(['#F4F1E9', '#29415D', '#FFFEFA'])
 
     expect(bgOptions).toHaveLength(5)
     expect(bgOptions.map(b => b.id)).toEqual(['paper', 'clouds-static', 'galaxy', 'vanta-fog', 'custom-local'])
@@ -88,7 +100,41 @@ describe('useThemeStyle', () => {
     expect(document.documentElement.setAttribute).toHaveBeenCalledWith('data-bg-type', 'galaxy')
   })
 
-  it('keeps a selected workspace theme while public routes temporarily use Quiet Research', async () => {
+  it('applies every appearance card option and persists its selected ID', async () => {
+    const {
+      useThemeStyle,
+      colorSchemes,
+      bgOptions,
+      glassOptions,
+      currentColorScheme,
+      currentBgType,
+      currentGlassStyle
+    } = await import('./useThemeStyle')
+    const { setColorScheme, setBgType, setGlassStyle } = useThemeStyle()
+
+    for (const scheme of colorSchemes) {
+      setColorScheme(scheme.id)
+      expect(currentColorScheme.value).toBe(scheme.id)
+      expect(store['laborbit_color_scheme']).toBe(scheme.id)
+      expect(attrs['data-color-scheme']).toBe(scheme.id)
+    }
+
+    for (const bg of bgOptions) {
+      setBgType(bg.id)
+      expect(currentBgType.value).toBe(bg.id)
+      expect(store['laborbit_bg_type']).toBe(bg.id)
+      expect(attrs['data-bg-type']).toBe(bg.id)
+    }
+
+    for (const glass of glassOptions) {
+      setGlassStyle(glass.id)
+      expect(currentGlassStyle.value).toBe(glass.id)
+      expect(store['laborbit_glass_style']).toBe(glass.id)
+      expect(attrs['data-glass-style']).toBe(glass.id)
+    }
+  })
+
+  it('keeps a selected workspace theme while public routes use the independent Worldline public default', async () => {
     store['laborbit_color_scheme'] = 'obsidian-gray'
     store['laborbit_bg_type'] = 'galaxy'
     attrs['data-public-page'] = 'true'
@@ -98,12 +144,47 @@ describe('useThemeStyle', () => {
     // The active workspace preference remains dark even while the public page is rendered.
     expect(currentColorScheme.value).toBe('obsidian-gray')
     expect(currentBgType.value).toBe('galaxy')
-    expect(attrs['data-color-scheme']).toBe('quiet-research')
+    expect(attrs['data-color-scheme']).toBe('worldline-console')
     expect(attrs['data-bg-type']).toBe('paper')
-    expect(localStorage.setItem).not.toHaveBeenCalledWith('laborbit_color_scheme', 'quiet-research')
+    expect(localStorage.setItem).not.toHaveBeenCalledWith('laborbit_color_scheme', 'worldline-console')
     expect(localStorage.setItem).not.toHaveBeenCalledWith('laborbit_bg_type', 'paper')
 
     // Leaving the public routes restores the saved workspace theme and background.
+    attrs['data-public-page'] = 'false'
+    applyThemeToDOM(currentColorScheme.value, currentBgType.value)
+    expect(attrs['data-color-scheme']).toBe('obsidian-gray')
+    expect(attrs['data-bg-type']).toBe('galaxy')
+  })
+
+  it('persists public-site skin independently from the workspace preference', async () => {
+    store['laborbit_color_scheme'] = 'obsidian-gray'
+    store['laborbit_bg_type'] = 'galaxy'
+    store['labhub_public_color_scheme'] = 'classic-cyan'
+    attrs['data-public-page'] = 'true'
+
+    const {
+      currentColorScheme,
+      currentBgType,
+      publicColorScheme,
+      useThemeStyle,
+      applyThemeToDOM
+    } = await import('./useThemeStyle')
+    const { setPublicColorScheme } = useThemeStyle()
+
+    expect(currentColorScheme.value).toBe('obsidian-gray')
+    expect(currentBgType.value).toBe('galaxy')
+    expect(publicColorScheme.value).toBe('classic-cyan')
+    expect(attrs['data-color-scheme']).toBe('classic-cyan')
+    expect(attrs['data-bg-type']).toBe('paper')
+
+    setPublicColorScheme('worldline-console')
+    expect(publicColorScheme.value).toBe('worldline-console')
+    expect(store['labhub_public_color_scheme']).toBe('worldline-console')
+    expect(attrs['data-color-scheme']).toBe('worldline-console')
+    expect(store['laborbit_color_scheme']).toBe('obsidian-gray')
+    expect(store['laborbit_bg_type']).toBe('galaxy')
+
+    // A workspace route still restores the workspace's own palette and background.
     attrs['data-public-page'] = 'false'
     applyThemeToDOM(currentColorScheme.value, currentBgType.value)
     expect(attrs['data-color-scheme']).toBe('obsidian-gray')
@@ -163,7 +244,7 @@ describe('useThemeStyle', () => {
 
   it('keeps Quiet Research available alongside every pre-existing theme', async () => {
     const { colorSchemes } = await import('./useThemeStyle')
-    expect(colorSchemes.map(s => s.id)).toEqual(['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple'])
+    expect(colorSchemes.map(s => s.id)).toEqual(['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'worldline-console'])
     expect(colorSchemes[0].name).toContain('Claude 风格')
   })
 
@@ -202,4 +283,13 @@ describe('useThemeStyle', () => {
     expect(isBgVideoPaused.value).toBe(false)
     expect(localStorage.setItem).toHaveBeenCalledWith('laborbit_bg_video_paused', 'false')
   })
+  it('provides a visible description for every theme card and a readable wallpaper dim default', async () => {
+    const { colorSchemes, bgOptions, glassOptions, DEFAULT_BG_DIM } = await import('./useThemeStyle')
+    for (const option of [...colorSchemes, ...bgOptions, ...glassOptions]) {
+      expect(typeof option.description).toBe('string')
+      expect(option.description.trim().length).toBeGreaterThan(0)
+    }
+    expect(DEFAULT_BG_DIM).toBe(35)
+  })
+
 })

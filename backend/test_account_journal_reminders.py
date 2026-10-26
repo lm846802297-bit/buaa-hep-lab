@@ -29,9 +29,7 @@ def test_account_profile_avatar_credentials():
     user, headers = login('account-fixture@example.org', 'initial123')
     result = client.put('/api/account/profile', headers=headers, json={'real_name': '测试真名', 'nickname': '测试昵称'})
     assert result.status_code == 200 and result.json()['name'] == '测试昵称'
-    empty_profile = client.put('/api/account/profile', headers=headers, json={'real_name': '   ', 'nickname': ''})
-    assert empty_profile.status_code == 200, empty_profile.text
-    assert empty_profile.json()['real_name'] == ''
+    assert client.put('/api/account/profile', headers=headers, json={'real_name': '   ', 'nickname': ''}).status_code == 422
     assert client.put('/api/account/profile', headers=headers, json={'real_name': 'Name', 'role': 'admin'}).status_code == 422
     image = Image.new('RGB', (60, 40), 'blue'); stream = io.BytesIO(); image.save(stream, format='PNG')
     uploaded = client.post('/api/account/avatar', headers=headers, files={'file': ('avatar.png', stream.getvalue(), 'image/png')})
@@ -46,7 +44,7 @@ def test_account_profile_avatar_credentials():
     updated = client.put('/api/account/credentials', headers=headers, json={'current_password': 'initial123', 'email': 'updated-account@example.org', 'new_password': 'changed123'})
     assert updated.status_code == 200, updated.text
     assert client.get('/api/auth/me', headers=headers).status_code == 401
-    assert client.get('/api/auth/me', headers={'Authorization': 'Bearer ' + updated.json()['access_token']}).json()['real_name'] == ''
+    assert client.get('/api/auth/me', headers={'Authorization': 'Bearer ' + updated.json()['access_token']}).json()['real_name'] == '测试真名'
     assert client.post('/api/auth/login', json={'email': 'account-fixture@example.org', 'password': 'initial123'}).status_code == 401
     login('updated-account@example.org', 'changed123')
 

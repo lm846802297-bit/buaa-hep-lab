@@ -1,12 +1,20 @@
 # UI 设计约定
 
-- 新建页面或修改页面、组件样式前，必须先阅读项目根目录的 `design.md`，严格遵循其中的颜色、字体、间距、布局、组件和动效规则。
-- 优先复用 `frontend/src/index.css` 的设计变量和现有通用组件；新增或调整规范时同步更新 `design.md`，保证所有页面风格一致。
+- 新建页面或修改页面/组件样式前，阅读根目录 `design.md`；优先复用现有设计变量与通用组件。
+- 只有修改设计规范时才同步更新 `design.md`。
 
-# Vibe-Coding 与 Agent Skill 规范
+# 日常开发与发布
 
-- 项目内置专属全栈开发与定制技能：**`vibe-coding-lab-orbit`**。
-- 规范文件位于 `.agents/skills/vibe-coding-lab-orbit/SKILL.md`，并在 `skills/vibe-coding-lab-orbit/SKILL.md` 镜像归档供开发者查阅。
-- 任何 AI Agent（如 Antigravity, Claude Code, Cursor, Windsurf, Codex 等）在承接功能咨询、业务调整、界面重构、特定学科课题组迁移适配、前后端接口对接、数据库迁移或 3D 动画调优等任务时，**必须先阅读并严格遵循该 Skill 的八大标准作业程序 (SOP)**。
-- 任何功能开发与代码交付前，必须执行 `npm --prefix frontend test` 确保 369+ 个单元测试 100% 通过。
-
+- `main` 是稳定分支。代码改动走任务分支和 PR，不直接推送 `main`。
+- 开工时查看相关源码、最新 `main` SHA，并只检查会修改相同文件的开放 PR。普通独立任务不必逐一审查所有 PR，也不必机械执行完整预检；涉及多个会话、共享热点或不确定的文件交集时，再运行 `node scripts/agent-preflight.mjs --paths <path1> <path2>` 或做等价检查。
+- Draft PR 是可选项：长任务或需要多会话协调时提前创建；普通小功能完成后直接创建 PR。一个 PR 围绕一个明确目标，不等待无关 PR。
+- 普通任务先读本文件和相关源码即可。只有全栈双后端、认证/授权、数据库迁移、文件/邮件/外部网络、安全问题或并行开发任务，才需要进一步阅读对应的 Skill 与架构文档。
+- 按改动范围运行必要检查：
+  - 纯文档：检查差异和链接，不跑代码测试。
+  - 前端代码：`npm --prefix frontend test`；前端源文件或资源变更再构建并运行 `npm --prefix frontend run check:bundle`。
+  - 全局壳层、路由、主题、公开首页/专题导航或浏览器烟测脚本：额外运行 Chromium 烟测；普通页面/组件小改动不必每次启动浏览器套件。
+  - `backend/`：运行 `python -m pytest backend -q`。
+  - Cloudflare Functions、Wrangler 或 D1 schema：运行隔离 Cloudflare 检查；认证、授权、资源所有权或 schema 变更时升级到相关前后端回归。
+- PR CI 负责验证功能。合并后，主分支工作流只重新构建最终版本、检查公开页面完整性；仅 Pages 相关改动才部署，并执行线上健康与匿名授权检查。**合并后不重复运行 PR 阶段的单元、后端和浏览器测试**；发布前还会核对该 PR 最新 HEAD 的 CI 已通过。
+- 新提交必须使用新 SHA 的 CI 结果。失败时修复真实缺陷，不删除相关安全检查来追求绿色。
+- 未经用户明确授权，不手动执行生产部署、远程 D1 写入/迁移或其他会改变生产数据的操作。通过 PR 合并触发的既有自动发布规则仍按工作流执行。

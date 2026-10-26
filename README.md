@@ -1,645 +1,146 @@
 # 北航粒子物理研究组网站（暂定名称）
 
-公开学术官网与组内科研协作平台，基于 [LabOrbit](https://github.com/Chocologism/lab-orbit) 源码定制。
+面向高能粒子物理研究组的公开学术官网与组内协作平台。本站基于 [LabOrbit](https://github.com/Chocologism/lab-orbit) 项目定制，当前名称仍为暂定名称。
 
-- 线上网站：https://buaa-hep-hub.pages.dev/
-- 使用与部署说明：[北航课题组使用说明](北航课题组使用说明.md)
-- 发布方式与验收证据：[发布权威记录](docs/RELEASE_AUTHORITY.md)。生产发布以 `main` 上的 GitHub Actions 部署 job 和发布后检查为准。
-- 成员注册仅邮箱、密码和有效邀请码必填，真实姓名与昵称选填。
-- 公开页将王小平老师列为导师、刘佳老师列为学术指导；展示单位、职称、研究简介与方向等核对过的公开学术信息。
-- 当前生产部署目标为 Cloudflare Pages + D1，暂不启用 R2；`frontend/wrangler.json` 因此不声明 `FILES_BUCKET` 绑定，避免部署依赖尚未创建的桶。代码保留可选 R2 适配，但未绑定时附件走 D1，单文件上限为 1 MiB；超过上限请使用外部网盘链接。未来只有在 Cloudflare 创建 `buaa-hep-hub-files` 桶、配置 `FILES_BUCKET` 并通过上传/下载验收后，才可将 R2 视为启用，届时上限可提高至 15 MiB。
-- 本仓库不包含生产数据库、用户账号数据、初始化码或登录凭据。部署密钥需要在自己的环境单独配置。
-- 从 GitHub 下载源码后，本地运行前需安装前端依赖并构建：`npm --prefix frontend ci`、`npm --prefix frontend run build`，然后运行 `start-windows.cmd`。
-- Cloudflare Pages 生产发布由 GitHub Actions 的 `.github/workflows/deploy.yml` 执行；功能分支仅验证，合并到 `main` 后才进入生产发布流程。
+- **网站入口：** <https://buaa-hep-hub.pages.dev/>
+- **Windows 本地使用：** [北航课题组使用说明](北航课题组使用说明.md)
+- **部署与存储边界：** [Cloudflare Pages 部署说明](docs/CLOUDFLARE_DEPLOYMENT.md)
+- **开发与验证规则：** [AGENTS.md](AGENTS.md)
+- **文档导航：** [文档索引](docs/README.md)
+- **测试与验证命令：** [测试与验证命令对照表](docs/TESTING_AND_VALIDATION.md)
+- **研究内容模板：** [研究专题审核与复现模板](docs/research-content-template.md)
+- **审计与验收记录：** [实施与验收报告](docs/audit/实施与验收报告.md)
+- **来源与协作致谢：** [CONTRIBUTORS.md](CONTRIBUTORS.md)
 
-本轮已按审计修复资料/组会权限与 Token 撤销，加入登录限速；公开页采用课题组确认的 16 篇论文、6 类与 5 个研究方向。
+> 网站入口不等同于部署验收结论。当前线上状态应以对应的发布记录和健康检查为准；仅凭仓库配置不能认定某次生产部署成功。
 
-对外官网的五个研究方向现包含问题、方法、实验联系和相关论文；新增无需登录的“物理资源”导航，收录文献、实验数据与计算工具的九个官方入口。公开白名单与组内学习初稿继续独立维护。
+## 项目功能
 
-登录后的资料库与工作台现提供“学习与计算”入口（`/learning`）：五个基础学习专题、权威资源索引、公式源码、笔记导出和复现记录模板。内容为非保密学习初稿，学术维护者待指定；两体衰变 Python 基准可本地执行，FeynCalc 示例尚未在 Mathematica 中实测。静态学习资料不适合存放保密内容。
+- **公开学术官网：** 研究方向、代表论文、团队与学术指导信息、公开学术资源。
+- **研究专题与文献：** 研究方向导航、论文元数据、外部文献入口与 BibTeX 导出。
+- **组会与协作：** 登录后的学术日程、文献归档、资源和个人工作台，具体权限以应用实现为准。
+- **学习与计算：** `/learning` 提供基础学习资料与计算示例。现有内容仍有待学术维护者审核；不得把学习初稿当作已独立复现的研究结论，也不要存放未公开或保密材料。
+- **演示模式：** 演示数据与真实协作数据隔离。上游 [LabOrbit 在线演示](https://chocologism.github.io/lab-orbit/) 属于独立演示站点，不是本仓库生产实例。
 
-验证方法、性能基线和运行时边界见 [实施与验收报告](docs/audit/实施与验收报告.md)。CI 对前端与 API 执行自动化测试、生产构建、入口预算检查、浏览器和本地 Pages 运行时检查。GitHub Pages 演示发布改为手动且需启用变量；Cloudflare Pages 发布通过 GitHub Actions 执行；所需凭据缺失时部署 job 必须失败，不得把验证通过等同于发布成功。
+## 架构与部署状态
 
-以下保留原项目说明与来源信息。
+| 形态 | 主要组件 | 说明 |
+|---|---|---|
+| 前端 | Vue 3、Vite | 公开页面、工作台与演示构建 |
+| 自建后端 | FastAPI、SQLite | 适用于本地或自建服务，具体启动方式见使用说明 |
+| Cloudflare 托管 | Pages Functions、D1 | 当前仓库配置声明 D1 绑定 `DB` |
+| 对象存储 | R2（可选扩展） | 当前配置未声明 `FILES_BUCKET`；未绑定时附件回退到 D1，单文件上限为 1 MiB |
 
----
+部署凭据和生产数据不存放在公开源码中。不要将密钥、初始化码、数据库文件或用户数据提交到仓库。R2 是否启用必须依据实际绑定与隔离环境上传/下载验收确认，不能从代码中存在相关适配器推断。
 
-<p align="center">
-  <img src="docs/images/LO_logo_wide.svg" alt="LabOrbit Logo" width="500" />
-</p>
+生产发布由 [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) 管理。发布必须满足工作流中的验证与发布条件；带有 `[skip-prod-deploy]` 标记的变更不会按常规路径自动发布，手动触发时也必须显式选择 `deploy_production`。未经明确授权，不要直接运行 `wrangler pages deploy` 或对远程 D1 执行写入/迁移。
 
-<p align="center">
-  <strong>学术课题组科研协作平台 / Academic Research Lab Hub</strong>
-</p>
+## 本地开发与验证
 
-<p align="center">
-  <a href="https://chocologism.github.io/lab-orbit/"><img src="https://img.shields.io/badge/Live%20Demo-LabOrbit%20Online-6366f1?style=for-the-badge&logo=githubpages&logoColor=white" alt="Live Demo"></a>
-</p>
+### 环境要求
 
-<p align="center">
-  <a href="#-中文文档"><img src="https://img.shields.io/badge/文档-简体中文-blue.svg" alt="Chinese Doc"></a>
-  <a href="#-english-documentation"><img src="https://img.shields.io/badge/Document-English-green.svg" alt="English Doc"></a>
-  <img src="https://img.shields.io/badge/License-MIT-emerald.svg" alt="License">
-  <img src="https://img.shields.io/badge/Tests-738%20passed-brightgreen.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/Python-3.11+-3776AB.svg?logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/Vue.js-3.x-4FC08D.svg?logo=vuedotjs&logoColor=white" alt="Vue 3">
-  <img src="https://img.shields.io/badge/FastAPI-0.110+-009688.svg?logo=fastapi&logoColor=white" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Cloudflare-D1%20%7C%20Pages-F38020.svg?logo=cloudflare&logoColor=white" alt="Cloudflare">
-  <img src="https://img.shields.io/badge/Vibe--Coding-AI--Assisted-8A2BE2.svg" alt="Vibe Coding">
-  <img src="https://img.shields.io/badge/Non--Profit-Open%20Source-ff69b4.svg" alt="Non-Profit">
-</p>
+- Node.js 24（与当前 CI 配置一致）。
+- Python 3.11 或更新版本（运行自建后端及其测试时需要）。
 
----
+Windows 用户请优先按[课题组使用说明](北航课题组使用说明.md)启动本地版本。源码构建与本地运行是两回事：构建前端不会自动启动 FastAPI 服务，也不会连接生产数据库。
 
-## 快速导航 / Quick Navigation
+### 常用命令
 
-- [🇨🇳 中文文档](#-中文文档)
-  - [在线演示 (Live Demo)](#在线演示-live-demo)
-  - [一、项目初衷 (Motivation)](#一项目初衷-motivation)
-  - [二、模块设计与系统架构 (Architecture)](#二模块设计与系统架构-architecture)
-  - [三、使用手册与快速上手 (User Manual)](#三使用手册与快速上手-user-manual)
-  - [四、课题组二次开发与 Vibe-Coding 定制 (Customization & Vibe-Coding Skill)](#四课题组二次开发与-vibe-coding-定制-customization--vibe-coding-skill)
-  - [五、版权、致谢与开源声明 (Copyright & Acknowledgements)](#五版权致谢与开源声明-copyright--acknowledgements)
-  - [六、赞助与支持 (Buy Me a Coffee)](#六赞助与支持-buy-me-a-coffee)
-- [🇬🇧 English Documentation](#-english-documentation)
-  - [Online Demo (Live Preview)](#online-demo-live-preview)
-  - [1. Motivation](#1-motivation)
-  - [2. Modular Design & Architecture](#2-modular-design--architecture)
-  - [3. User Manual & Getting Started](#3-user-manual--getting-started)
-  - [4. Lab Customization & Vibe-Coding Skill](#4-lab-customization--vibe-coding-skill)
-  - [5. Copyright, Acknowledgements & Open Source Statement](#5-copyright-acknowledgements--open-source-statement)
-  - [6. Sponsor & Buy Me a Coffee](#6-sponsor--buy-me-a-coffee)
-
----
-
-# 🇨🇳 中文文档
-
-## 在线演示 (Live Demo)
-
-无需配置或搭建后端，即可直接在浏览器体验课题组“已正常使用一段时间”后的真实视觉设计与交互流程：
-
-👉 **[点击直接体验 LabOrbit 在线演示版 (GitHub Pages)](https://chocologism.github.io/lab-orbit/)**
-
-- **免密秒进**：无需注册或登录，默认以课题组负责人「李华（教授/管理员）」身份直接进入管理工作台；
-- **全套预置数据**：预填天体物理与交叉科学课题组真实学术数据（组会排期、arXiv 推荐精选、通知公告、研讨评论与经典教材）；
-- **角色专属向导**：右下角常驻演示控制浮窗，点击 `🎓 功能向导` 启动交互式引导；管理员与组员视角各自适配了针对性的功能漫游向导；
-- **双重视角切换**：浮窗内支持在「管理员 / 课题组长」与「普通组员 / 研究生」视角间一键无缝切换，体验不同角色的权限与界面设计；
-- **纯前端沙盒**：数据基于浏览器本地（`localStorage`）隔离持久化，配备半透明演示水印与一键 `🔄 重置` 恢复出厂状态。
-
----
-
-## 一、项目初衷 (Motivation)
-
-在高校与科研院所课题组的日常科研协作中，常会遇到一些繁琐却高频的小问题：
-
-1. **文献分享易被冲淡**：在微信群、QQ 群或邮件里随手分享的 arXiv 论文或顶刊链接，往往很快被日常聊天刷过去，缺乏集中归档、标签分类与组内交流记录；
-2. **组会排期沟通琐碎**：组会常靠口头通知或共享表格登记，容易发生时间冲突；轮值主讲人有时也会忘记提前填报题目摘要或上传幻灯片；
-3. **基础参考资料分散**：经典的参考教材、讲义 PPT 与代码仓库散落在不同网盘或个人电脑中，新人进组时常常需要反复找人索要；
-4. **学术报告通知零散**：院系前沿讲座常以海报图片或邮件分发，手动转录至个人日程容易遗漏。
-
-**LabOrbit** 最初正是为了解决这些实际需求而开发的一个轻量协作工具，将文献推荐、组会排期、资料归档与日程提醒整合在一个界面中，支持本地私有部署，也支持通过 Cloudflare 免费服务托管。
-
----
-
-## 二、模块设计与系统架构 (Architecture)
-
-系统采用前后端分离架构，提供两种部署形态：
-- **自建服务模式**：基于 Python FastAPI 与 SQLite，适合在局域网工作站或云服务器上直接运行；
-- **Serverless 托管模式**：基于 Cloudflare Pages Functions、D1 关系数据库与 R2 存储桶，无需自备常开服务器。
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          LabOrbit 前端 (Frontend)                         │
-│           Vue 3 + Vite + Tailwind CSS + Three.js + KaTeX                │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-         ┌──────────────────────────┴──────────────────────────┐
-         ▼                                                     ▼
-┌──────────────────────────────────┐  ┌──────────────────────────────────┐
-│        自建模式 (Self-Hosted)    │  │    Serverless 托管 (Cloudflare)  │
-│      FastAPI + SQLite + Docker   │  │     Pages Functions + D1 + R2    │
-├──────────────────────────────────┤  ├──────────────────────────────────┤
-│ • Python 异步后端 API            │  │ • Cloudflare Pages 静态与边缘函数│
-│ • SQLite3 本地单文件数据库       │  │ • Cloudflare D1 边缘关系数据库   │
-│ • 本地目录持久化存储             │  │ • Cloudflare R2 对象存储 (免流量)│
-└──────────────────────────────────┘  └──────────────────────────────────┘
-```
-
-### 核心功能模块
-
-```
-• 1. 工作台主页 (Home Dashboard)
-  ├─ 快捷入口：一键录入 arXiv 推荐、快速登记日程与智能粘贴导入
-  ├─ 通知公告：重要截稿日期与讲座滚动的公告栏
-  ├─ 每周日程：按周查看全组会议安排与个人倒计时看板
-  └─ 个人待办：下一次主讲或文献分享的到期提醒
-
-• 2. 组会与学术日程 (Seminar & Schedule)
-  ├─ 视图切换：时间轴、周历及学术会议列表
-  ├─ 封面相册：基于 Three.js 实现的 3D 轮播展示海报与近期组会
-  ├─ 主讲人填报：到期前提醒主讲人补充题目、摘要与课件链接
-  ├─ 日历导出：支持生成标准 iCalendar (.ics) 文件同步至手机或日历软件
-  └─ 批量导入：支持解析带有主讲人和主题的 CSV 排期表
-
-• 3. 智能粘贴与协作待审 (Smart Paste & Pending Queue)
-  ├─ 智能识别：支持一键粘贴纯文本通知、长排期表或拖入学术海报截图
-  ├─ 多模态解析：借助 AI 视觉与启发式正则引擎自动提取时间、地点、报告人与摘要
-  ├─ 分类推断：自动判断为学术报告、组会、文献推荐或通知
-  └─ 协作待审队列：成员提交草案进入待审池，管理员统一批量审核并一键同步入历
-
-• 4. 文献推荐与集中文献库 (Literature Hub & Archive)
-  ├─ 自动解析：输入 arXiv 编号/链接或 DOI，异步获取标题、作者与摘要
-  ├─ 范围控制：支持“公开推荐”（全组可见）与“定向推荐”（仅指定成员可见）
-  ├─ 重点标记：课题组负责人（PI）推荐带有高亮徽章
-  ├─ 研讨评论：组员标记阅读状态，沉淀简短讨论与笔记
-  └─ 集中文献库：汇聚全组学术文献，支持按来源（推荐/组会/定向收录）过滤与全字段检索
-
-• 5. 教材资料文库 (Resource Hub)
-  ├─ 分类归档：按基础理论、专业方向及工具库分门别类
-  ├─ 检索定位：支持拼音首字母筛选与常用资料星标收藏
-  └─ 资源链接：汇总在线教程、配套 GitHub 代码仓库与下载链接
-
-• 6. 学术邮箱与海报解析 (Mailbox & OCR)
-  ├─ 邮箱互联：支持配置高校或研究所 IMAP/SMTP 邮箱
-  ├─ 海报识别：提取报告海报中的时间、地点与报告人信息
-  └─ 一键入历：确认信息后直接添加到组内公共日程
-
-• 7. 学术 AI 辅助 (AI Assistant)
-  ├─ 公式渲染：基于 KaTeX 实时排版 LaTeX 数学公式
-  ├─ 翻译与润色：保留专业术语与公式符号的学术翻译
-  └─ 接口兼容：支持对接主流大模型 API 服务
-
-• 8. 系统与权限设置 (Settings & Governance)
-  ├─ 注册邀请码：内置邀请码验证（默认 LAB-2026），避免无关人员注册
-  ├─ 角色管理：管理员 (Admin)、教师/负责人 (Teacher)、组员 (Student) 三级权限
-  └─ 界面配置：支持深色/浅色及多套界面主题切换
-```
-
----
-
-## 三、使用手册与快速上手 (User Manual)
-
-### 1. 部署运行方式
-
-#### 方式一：本地脚本启动（推荐体验与开发）
-
-克隆代码后直接运行根目录的启动脚本。脚本会自动检测 Python 环境、安装后端依赖、构建前端并启动服务：
+从仓库根目录执行：
 
 ```bash
-git clone https://github.com/Chocologism/lab-orbit.git
-cd lab-orbit
-chmod +x start.sh
-./start.sh
+# 安装根目录与前端依赖
+npm ci
+
+# 前端单元测试
+npm run test:unit
+
+# 构建前端，并执行本地 Cloudflare Functions 隔离验证
+npm run build
+
+# 检查公开入口、预渲染内容与 bundle 依赖
+npm run check:bundle
 ```
 
-服务启动后，浏览器打开 `http://127.0.0.1:8000` 即可访问。
-
-#### 方式二：Docker 容器化部署（适合私有服务器）
-
-仓库内提供配置好的 Dockerfile 与 Docker Compose 编排文件，可在服务器后台运行并自动持久化数据：
+后端回归测试：
 
 ```bash
-docker compose -f deploy/docker-compose.yml up -d
+python -m pip install -r backend/requirements-test.txt
+python -m pytest backend -q
 ```
 
-- **服务端口**：默认映射宿主机 `8000` 端口；
-- **数据目录**：数据库保存于宿主机 `./data/labhub.db`，容器更新重启不影响已有数据；
-- **环境变量**：可在 `deploy/docker-compose.yml` 中修改注册邀请码 `LABHUB_INVITE_CODE` 与密钥 `LABHUB_SECRET_KEY`。
+根据改动范围选择必要检查，不要求纯文档修改运行完整应用测试。新提交必须用对应 SHA 的实际结果验收；跳过、未运行或被基础设施阻塞的检查不能记作通过。更细的验证入口见 [测试与验证命令对照表](docs/TESTING_AND_VALIDATION.md)；开发规则见 [AGENTS.md](AGENTS.md)。
 
-#### 方式三：Cloudflare 托管部署（无需自备服务器）
+## 科研记录与学术内容边界
 
-若没有独立的常开服务器，可部署在 Cloudflare 免费套餐（Pages + D1 数据库 + R2 存储桶）上：
+拟议的科研记录索引将作为协作导航与展示层，不替代研究仓库中的研究变更、运行清单、产物指纹和 claim–evidence 记录。此处描述的是设计方向，不表示相关生产 API、数据库表、迁移或自动执行器已经实现。
 
-1. **登录 Wrangler**：
-   ```bash
-   npm install -g wrangler
-   npx wrangler login
-   ```
-2. **创建 D1 数据库与 R2 存储桶**：
-   ```bash
-   cd frontend
-   npx wrangler d1 create labhub-db
-   npx wrangler r2 bucket create labhub-files
-   npx wrangler d1 execute labhub-db --file=functions/schema.sql
-   ```
-3. **构建并发布**：
-   ```bash
-   npm run build
-   npx wrangler pages deploy dist --project-name lab-orbit
-   ```
+公开研究内容应经过来源核对与学术审核，并区分模型预言、实验灵敏度、实验允许/排除与已观测结论。未经批准，不要将内部研究资料、未公开结果或用户信息放入公开页面或静态文件。
 
-具体配置说明与数据迁移步骤可参考 [Cloudflare 部署指南](docs/CLOUDFLARE_DEPLOYMENT.md)。
+## 上游来源、贡献与许可
+
+本项目基于 [LabOrbit](https://github.com/Chocologism/lab-orbit) 定制。上游作者、协作贡献和使用的开源组件见 [CONTRIBUTORS.md](CONTRIBUTORS.md)；上游项目的操作说明和演示数据不一定适用于本仓库。
+
+当前仓库根目录未发现 `LICENSE` 文件，因此不要仅凭上游 README 中的徽章推断本仓库自身的许可状态。公开再分发前应核对上游许可证，并确认本仓库是否需要补充明确的许可文件。
 
 ---
 
-### 2. 初始配置说明
+# English Documentation
 
-系统采用「首位注册即管理员」的极简两步向导机制，在完成首次部署或配置新域名后即可快速完成全站初始化：
+This repository contains a customized academic website and collaboration hub for a high-energy particle physics group. It is derived from [LabOrbit](https://github.com/Chocologism/lab-orbit); the site name is still provisional.
 
-#### 如何进入系统初始化向导：
+## Key links
 
-- **自建服务 / 本地与 Docker 部署**：
-  服务启动后，直接访问 `http://127.0.0.1:8000`（或您的服务器 IP/域名）。系统路由守卫检测到未初始化时会自动跳转至 `/setup`；亦可手动访问 `http://127.0.0.1:8000/setup`。
-- **Cloudflare 全托管部署（Pages + D1）**：
-  按照上述步骤部署完成后，直接在浏览器中打开 Cloudflare Pages 为您生成的默认项目域名（如 `https://lab-orbit.pages.dev`）或已绑定的自定义二级域名（如 `https://lab.yourdomain.org`）。前端边缘检测到 D1 数据库内尚无用户时，**会自动强制重定向至 `/setup` 初始化页面**；也可以在域名后直接访问 `https://your-domain.pages.dev/setup`。
-- **配置了 Nginx / Caddy 反向代理或私有自定义域名**：
-  访问您的自定义公网/校网域名根路径（如 `https://hub.physics.edu.cn/`），站点同样会自动检测并引导进入 `/setup` 页面。
+- **Website:** <https://buaa-hep-hub.pages.dev/>
+- **Windows setup and user guide:** [北航课题组使用说明](北航课题组使用说明.md)
+- **Cloudflare deployment boundaries:** [Deployment guide](docs/CLOUDFLARE_DEPLOYMENT.md)
+- **Development rules:** [AGENTS.md](AGENTS.md)
+- **Documentation index:** [docs/README.md](docs/README.md)
+- **Test and validation commands:** [Testing and validation matrix](docs/TESTING_AND_VALIDATION.md)
+- **Research-content template:** [Review and reproducibility template](docs/research-content-template.md)
+- **Audit record:** [Implementation and acceptance report](docs/audit/实施与验收报告.md)
+- **Credits:** [CONTRIBUTORS.md](CONTRIBUTORS.md)
 
-> 💡 **特别提醒（与 GitHub Pages 演示模式的区别）**：
-> 官方 GitHub Pages 演示站（`*.github.io`）因为预置了完整的脱敏学术演示数据，会自动激活只读沙盒模式；而在您自己的 Cloudflare Pages、独立服务器或自建域名上部署时，属于全新的生产环境实例，初次打开均会自动进入此初始化向导。
+The website URL alone is not evidence of a successful deployment. Check the corresponding release run and health checks for current deployment status.
 
-#### 初始化向导步骤与配置内容：
+## Features and architecture
 
-1. **步骤一：设立超级管理员**：填写首任管理员用户名、真实姓名、工作邮箱与登录密码（建议由课题组负责人或指定运维学生填写）；
-2. **步骤二：课题组品牌与协作配置**：
-   - **课题组名称与缩写**：例如「天体物理与交叉科学课题组」（缩写 `LabOrbit`），系统标题与导航徽标将自动同步更新；
-   - **所属机构与地点**：填入学院/系所名称及默认研讨室（如“物理楼 302 / 腾讯会议”）；
-   - **初始注册邀请码**：设定用于吸纳本组组员的注册口令（系统默认预填 `LAB-2026`，可自由设定）。
+- Public research pages, paper links, team/advisor information and curated academic resources.
+- Research-topic navigation, literature metadata and BibTeX export.
+- Authenticated collaboration features for seminars, literature, resources and personal workspace.
+- A `/learning` area with introductory notes and computation examples. Some material remains a draft pending academic review; it must not be presented as independently reproduced research.
+- Vue 3/Vite frontend; FastAPI/SQLite self-hosted backend; Cloudflare Pages Functions with D1 for the hosted deployment.
 
-#### 安全自锁与成员邀请：
+The current Cloudflare configuration declares D1 binding `DB` and does not declare `FILES_BUCKET`/R2. Without an R2 binding, the current attachment fallback is D1 with a 1 MiB per-file limit. Credentials, production databases and user data must never be committed to source control.
 
-- **安全自锁防重置**：完成第二步并点击确认后，管理员账号自动登入并进入主工作台。此时系统后端 API（`POST /api/system/setup`）与前端路由守卫将**永久锁定并禁用 `/setup` 路径**。任何后续针对 `/setup` 的未授权访问都会被拦截并重定向回首页或登录页，彻底杜绝数据覆盖或恶意重置风险。
-- **邀请课题组组员**：
-  初始化完成后，管理员可将设定的注册邀请码告知本组师生，成员在登录页（`/login`）点击“注册新账号”输入该邀请码即可自主加入。
-- **角色与权限层级说明**：
-  - **管理员 (Admin)**：负责系统全局设置、成员角色调整（如授予组会管理权）、批量导入排期以及处理组内反馈；
-  - **教师 / 课题组长 (Teacher/PI)**：发布置顶公告、重点星标推荐文献、指定组会主讲人与审核协作草案；
-  - **组员 (Student)**：正常推荐前沿文献、登记组会题目课件、借阅/下载教材资料与沉淀阅读笔记。
+Production release is governed by [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). Follow its validation and release conditions; do not manually run `wrangler pages deploy` or write to remote D1 without explicit authorization. The upstream [LabOrbit demo](https://chocologism.github.io/lab-orbit/) is a separate demo site, not this repository's production instance.
 
----
+## Development and testing
 
-### 3. 常见工作流程
+Use Node.js 24 for the current CI-compatible frontend workflow. Python 3.11+ is required for the self-hosted backend and its tests.
 
-- **智能粘贴与海报解析入历**：
-  点击导航栏或工作台的“智能粘贴”，直接粘贴通知文本、微信/邮件消息，或拖入讲座海报截图。系统会自动提取时间、地点、报告人与摘要等关键元数据，确认无误后可一键加入公共日程或提交待审池。
-- **协作排期与审核流转**：
-  组员提交的学术会议或讲座草案会自动沉淀至“待审队列”；管理员与导师可在专属面板中批量审阅、一键通过或调整细节，兼顾组员共建活力与团队日程的准确性。
-- **文献推荐与集中文献库沉淀**：
-  在页面右上角点击“推荐文献”，填入 arXiv 编号或 DOI，系统会自动解析元信息。支持“公开推荐”或面向导师/特定组员的“定向推荐”。全组推荐与组会分享的论文将自动归集于“文献库”，支持多维度筛选检索与阅读状态追踪。
-- **组会排期与日历同步**：
-  学期初管理员可通过 CSV 文件一次性批量导入排期。系统在轮值到期前自动提示主讲人补充题目与课件，组员可随时导出 `.ics` 日历文件同步至手机与个人日程。
-- **参考资料与文库整理**：
-  在“资料整合”中录入组内常用教材、参考书与讲义链接，支持按拼音字母检索与星标收藏，大幅降低新成员进组的学习门槛。
-
----
-
-## 四、课题组二次开发与 Vibe-Coding 定制 (Customization & Vibe-Coding Skill)
-
-为了让任何高校院系或科研课题组（如计算机视觉、自然语言处理、生物信息、计算化学、凝聚态物理等）都能以极低门槛将 LabOrbit 改造为本组专属的科研协作平台，本项目原生内置了完备的 **Vibe-Coding 专属开发技能（Agent Skill）**：`vibe-coding-lab-orbit`。
-
-### 1. 技能存放路径与规范
-- **AI 智能体自动发现入口**：[`.agents/skills/vibe-coding-lab-orbit/SKILL.md`](.agents/skills/vibe-coding-lab-orbit/SKILL.md)（规范目录，兼容 Antigravity、Cursor、Windsurf、Claude Code、Codex 等主流 AI 编程 Agent）；
-- **开发者网页查阅入口**：[`skills/vibe-coding-lab-orbit/SKILL.md`](skills/vibe-coding-lab-orbit/SKILL.md)（镜像目录，便于直接在 GitHub 网页文件树中查阅）。
-
-### 2. 核心覆盖能力 (Core Capabilities)
-该 Skill 沉淀了从架构定位到生产验收的 8 大全栈标准作业程序 (SOP)：
-1. **全栈架构地图与代码定位**：完整梳理 12 个前端主视图、核心公共组件库（`BaseDialog`、`AppIcon`、`SmartPaste` 等）与三轨后端服务地图，秒级定位业务代码；
-2. **课题组一键适配与自动化重整**：提供针对不同学科的站点名称、Logo 与 Favicon、学科预置数据种子（Seed & Mock）及高校专属邮箱后缀的平滑替换方案；
-3. **全栈双轨功能开发与接口对接**：阐明「三轨一致性原则（Triple Consistency）」——FastAPI（自建）+ Cloudflare Pages Functions（托管）+ Demo Adapter（静态沙盒）同步开发与契约保持；
-4. **数据库操作与平滑迁移**：规范 SQLite 与 Cloudflare D1 的安全加法迁移方案，杜绝破坏性数据变更；
-5. **页面布局与视觉重整规范**：详述 Liquid Glass 流动毛玻璃设计变量、`BaseDialog` 双重坐标判定防误关黄金规则，以及多端自适应响应式设计；
-6. **3D 动画、微动效与 KaTeX 渲染**：指导调节 Three.js 封面轮播景深与手势阻尼、Hover 卡片微动效，以及 LaTeX 数学公式实时排版引擎；
-7. **设计图标体系扩展与品牌替换**：基于 `AppIcon.vue` 的 50+ 语义化 SVG 矢量图标字典扩展机制；
-8. **质量门禁与测试验收清单**：包含 102 个测试文件、738 项测试 100% 通过核查、多环境静态构建与本地服务拉起验证。
-
-### 3. 如何借助 AI 进行 Vibe-Coding 定制
-在支持 Agent Skill 的编辑器（如 Antigravity、Cursor、Windsurf 等）中，无需手动翻阅全站代码，只需像与架构师对话一样提出需求，AI 将自动加载该 Skill 并执行精确修改：
-
-> **示例提问与指令：**
-> - *"我想把 LabOrbit 适配到我们人工智能与计算机视觉课题组，请按照 `vibe-coding-lab-orbit` skill 的指南，帮我把预置数据、论文推荐分类和站点名称一键更新。"*
-> - *"请在文献库卡片上新增一个‘一键复制 BibTeX’的按钮，并遵循三轨一致性原则补充接口和演示沙盒。"*
-> - *"帮我把组会 3D 海报轮播的旋转惯性调大一点，卡片加一个发光悬停特效。"*
-
-修改完成后，AI 将自动运行 `npm --prefix frontend test` 确保全部 738 项测试 100% 通过，杜绝功能回退。
-
----
-
-## 五、版权、致谢与开源声明 (Copyright & Acknowledgements)
-
-### 1. 开发方式 (Vibe-Coding)
-
-本项目在开发中采用了 **Vibe-Coding** 方式：由人类开发者把控实际需求、交互流程与整体架构，借助 AI 编程工具进行代码编写、接口联调与测试用例补全，快速完成系统构建与重构。
-
-### 2. 贡献者与 AI 结对协作 (Contributors)
-
-本项目由人类维护者主导需求把控与交互架构，并与 AI 结对编程助手共同构建完成：
-
-| 贡献者 / 协作伙伴 | 角色定位 | 贡献范畴 |
-| :--- | :--- | :--- |
-| **[@Chocologism](https://github.com/Chocologism)** | Project Lead / Core Maintainer | 需求设计、业务逻辑、前端交互与部署运维 💻 🎨 🚀 |
-| **Google DeepMind Antigravity** | AI Pair Programmer | 前端 Vue 3 组件生态、全栈架构重构、海报识别与 Cloudflare 适配 🤖 💡 🛠️ |
-| **OpenAI Codex** | AI Pair Programmer | 后端 FastAPI 路由、数据库模型、测试用例补全与接口联调 🤖 🧪 ⚡ |
-
-### 3. 开源组件与设计致谢
-
-界面的视觉效果与交互体验使用了以下开源项目：
-- **Three.js**：用于组会日程海报的 3D 轮播展示；
-- **Tailwind CSS**：提供页面样式与响应式布局支持；
-- **KaTeX**：提供 LaTeX 数学公式实时排版渲染；
-- **Lucide Icons**：提供统一的矢量图标库；
-- **Vue 3 & FastAPI**：构成前后端核心技术栈。
-
-### 4. 开源协议与非营利声明
-
-- **MIT License**：本项目基于通用的 [MIT 许可证](LICENSE) 开源，可自由使用、修改与部署；
-- **非营利声明**：本项目完全开源，为个人/课题组科研实际需求驱动的非营利工具，不包含任何商业变现或付费功能；
-- **欢迎共建**：欢迎提出改进建议、提交 Issue 或发起 Pull Request。
-
----
-
-## 六、赞助与支持 (Buy Me a Coffee)
-
-如果 LabOrbit 对你的科研日常、课题组协作或开发有所帮助，欢迎请作者喝杯咖啡 ☕️，感谢你的认可与支持！
-
-<p align="center">
-  <img src="docs/images/sponsor_qr.jpg" alt="Buy Me a Coffee / Alipay QR Code" width="220" style="border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);" />
-  <br>
-  <sub>扫码支持作者（支付宝）</sub>
-</p>
-
----
-
-# 🇬🇧 English Documentation
-
-## Online Demo (Live Preview)
-
-Experience the visual design and full interactive workflow without deploying any backend:
-
-👉 **[Launch LabOrbit Live Demo (GitHub Pages)](https://chocologism.github.io/lab-orbit/)**
-
-- **Instant Zero-Auth Access**: Jump straight into the full research dashboard as lab director "Prof. Hua Li (Advisor / Admin)";
-- **Realistic Preloaded Dataset**: Seeded with astrophysics research group data including scheduled seminars, curated arXiv preprints, announcements, and resources;
-- **Role-Specific Tours**: Launch the `🎓 Feature Tour` from the bottom-right demo floating pill for a guided walkthrough tailored specifically to either the Admin or Student perspective;
-- **Role Switching**: Effortlessly toggle between "Administrator / PI" and "Student / Researcher" views to explore their respective permissions and interfaces;
-- **Local Sandbox**: Data modifications are saved in your browser (`localStorage`) with a discreet demonstration watermark and a one-click `🔄 Reset` to factory state.
-
----
-
-## 1. Motivation
-
-In academic research groups, researchers and students often encounter small but recurring collaboration frictions:
-
-1. **Scattered Literature Sharing**: Interesting arXiv preprints or journal papers shared in chat groups quickly get buried under daily messages, lacking a central place for archiving and discussion;
-2. **Disorganized Seminar Tracking**: Meeting schedules recorded on spreadsheets or via chat can result in scheduling conflicts, and speakers sometimes forget to fill in titles or upload slides ahead of time;
-3. **Fragmented Reference Materials**: Reference textbooks, lecture notes, and tutorial code repositories are scattered across personal computers and drives, making onboarding difficult for new students;
-4. **Scattered Colloquium Notices**: Department seminar announcements sent as email attachments or image posters are easily overlooked without proper calendar integration.
-
-**LabOrbit** was built to address these practical lab needs by organizing paper sharing, seminar schedules, reference materials, and academic reminders in one simple interface. It can be run on a local workstation or deployed serverless on Cloudflare's free tier.
-
----
-
-## 2. Modular Design & Architecture
-
-LabOrbit is structured as a decoupled frontend-backend application with two deployment options:
-- **Self-Hosted Mode**: Built with Python FastAPI and SQLite, suitable for local workstations or private Linux servers;
-- **Serverless Mode**: Built with Cloudflare Pages Functions, D1 database, and R2 storage, requiring no dedicated server hardware.
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          LabOrbit Frontend Interface                     │
-│           Vue 3 + Vite + Tailwind CSS + Three.js + KaTeX                │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-         ┌──────────────────────────┴──────────────────────────┐
-         ▼                                                     ▼
-┌──────────────────────────────────┐  ┌──────────────────────────────────┐
-│   Option A: Self-Hosted / Docker │  │ Option B: Cloudflare Serverless  │
-│      FastAPI + SQLite + Docker   │  │    Pages Functions + D1 + R2     │
-├──────────────────────────────────┤  ├──────────────────────────────────┤
-│ • Python Async backend API       │  │ • Cloudflare Pages & Edge API    │
-│ • SQLite3 single-file database   │  │ • Cloudflare D1 SQL database     │
-│ • Local disk file storage        │  │ • Cloudflare R2 object storage   │
-└──────────────────────────────────┘  └──────────────────────────────────┘
-```
-
-### Functional Modules
-
-```
-• 1. Home Dashboard
-  ├─ Quick Actions: Paste arXiv IDs, add seminar events, or trigger Smart Paste
-  ├─ Notices: Important submission deadlines and rolling announcements
-  ├─ Weekly Schedule: Interactive week-by-week group schedule
-  └─ Countdown Badges: Timers for upcoming personal talks and journal clubs
-
-• 2. Seminar & Academic Schedule
-  ├─ Views: Timeline, Weekly Calendar, and Conference listings
-  ├─ 3D Carousel: Three.js cover display for seminar posters
-  ├─ Speaker Reminders: Prompts speakers to submit titles, abstracts, and slides
-  ├─ Calendar Sync: Standard iCalendar (.ics) export for phone/desktop calendars
-  └─ Batch Import: CSV import for semester-long schedules
-
-• 3. Smart Paste & Collaborative Pending Queue
-  ├─ Multimodal Parsing: Paste raw text notices, multi-line schedules, or drop poster screenshots
-  ├─ AI & Heuristic Classifier: Automatically extracts date, time, speaker, venue, and abstracts
-  ├─ Categorization: Classifies inputs into seminars, conferences, literature, or announcements
-  └─ Pending Review Queue: Submissions from members enter a moderation pool for PI/Admin approval
-
-• 4. Collaborative Literature Hub & Curated Library
-  ├─ Auto Metadata: Fetches title, authors, and abstract via arXiv ID or DOI
-  ├─ Visibility Control: Public (lab-wide) or Directed (selected peers/advisors)
-  ├─ Highlights: Distinct badges for PI-recommended papers
-  ├─ Discussions: Reading status markers and comments for lab discussions
-  └─ Curated Library: Unified archive of all lab papers with source filters and keyword search
-
-• 5. Resource & Textbook Hub
-  ├─ Categories: Theory, Research Fields, and Computation Tools
-  ├─ Quick Search: Alphabetical and pinyin filtering with favorites
-  └─ External Links: Summaries of tutorials, lecture slides, and GitHub code
-
-• 6. Mailbox & Poster OCR
-  ├─ Mailbox Sync: Connects with university IMAP/SMTP mailboxes
-  ├─ Poster OCR: Extracts date, venue, and speaker from seminar posters
-  └─ Calendar Addition: One-click addition to the lab calendar
-
-• 7. AI Academic Assistant
-  ├─ Formula Rendering: Live KaTeX rendering for LaTeX equations
-  ├─ Translation & Polishing: Field-aware translation preserving math symbols
-  └─ Provider Support: Compatible with standard LLM endpoints
-
-• 8. System & Permissions
-  ├─ Registration Code: Default invite code (LAB-2026) to manage registration
-  ├─ Role Hierarchy: Admin, PI/Teacher, and Student roles
-  └─ Theme Settings: Light/Dark mode and background theme options
-```
-
----
-
-## 3. User Manual & Getting Started
-
-### 1. Deployment Options
-
-#### Option A: Quick Local Script (Recommended for Evaluation)
-
-Clone the repository and run the start script, which sets up the Python environment, installs dependencies, builds the frontend, and launches the service:
+From the repository root:
 
 ```bash
-git clone https://github.com/Chocologism/lab-orbit.git
-cd lab-orbit
-chmod +x start.sh
-./start.sh
+npm ci
+npm run test:unit
+npm run build
+npm run check:bundle
 ```
 
-Once running, visit `http://127.0.0.1:8000` in your web browser.
-
-#### Option B: Docker Deployment (Recommended for Private Servers)
-
-Use Docker Compose to run LabOrbit as a persistent service with volume storage:
+For backend tests:
 
 ```bash
-docker compose -f deploy/docker-compose.yml up -d
+python -m pip install -r backend/requirements-test.txt
+python -m pytest backend -q
 ```
 
-- **Port**: Maps to host port `8000` by default;
-- **Persistence**: SQLite database is saved to `./data/labhub.db`;
-- **Environment**: Adjust `LABHUB_INVITE_CODE` and `LABHUB_SECRET_KEY` in `deploy/docker-compose.yml` as needed.
+Choose checks according to the change. A skipped or blocked check is not a pass, and validation results must refer to the exact commit SHA. See the [test and validation matrix](docs/TESTING_AND_VALIDATION.md) for available checks and [AGENTS.md](AGENTS.md) for development rules.
 
-#### Option C: Cloudflare Serverless (Zero Hardware Cost)
+The proposed research-record index is intended as a collaboration/navigation layer, not a replacement for canonical research-change records, run manifests, artifacts or claim–evidence records. This describes the intended design only; it does not imply that a production API, database migration or execution service exists.
 
-Deploy directly to Cloudflare's free tier (Pages + D1 database + R2 storage):
+## Upstream credit and licensing
 
-1. **Log in with Wrangler**:
-   ```bash
-   npm install -g wrangler
-   npx wrangler login
-   ```
-2. **Create D1 Database & R2 Bucket**:
-   ```bash
-   cd frontend
-   npx wrangler d1 create labhub-db
-   npx wrangler r2 bucket create labhub-files
-   npx wrangler d1 execute labhub-db --file=functions/schema.sql
-   ```
-3. **Build & Deploy**:
-   ```bash
-   npm run build
-   npx wrangler pages deploy dist --project-name lab-orbit
-   ```
+This project is customized from [LabOrbit](https://github.com/Chocologism/lab-orbit). See [CONTRIBUTORS.md](CONTRIBUTORS.md) for project provenance and acknowledgements. Upstream setup instructions and demo data may not apply to this repository.
 
-For detailed configuration steps, see the [Cloudflare Deployment Guide](docs/CLOUDFLARE_DEPLOYMENT.md).
-
----
-
-### 2. Initial Setup & Roles
-
-LabOrbit features a streamlined two-step setup wizard where the first registered user is automatically granted Super Administrator privileges:
-
-#### How to Access the Setup Wizard:
-
-- **Self-Hosted / Local & Docker Deployment**:
-  Visit `http://127.0.0.1:8000` (or `http://YOUR_SERVER_IP:8000`). If uninitialized, the frontend router guard will automatically redirect you to `/setup`. You can also directly navigate to `http://127.0.0.1:8000/setup`.
-- **Cloudflare Serverless Deployment (Pages + D1)**:
-  Once deployed, open your Cloudflare Pages default domain (e.g., `https://lab-orbit.pages.dev`) or your bound custom domain (e.g., `https://lab.yourdomain.org`). When the edge API detects that the D1 database has zero users, **it will automatically redirect you to `/setup`**. You can also navigate directly to `https://your-domain.pages.dev/setup`.
-- **Custom Domains & Reverse Proxies (Nginx / Caddy)**:
-  Navigating to the root path of your configured custom domain (e.g., `https://hub.physics.edu.cn/`) will automatically route you to the setup wizard.
-
-> 💡 **Note on Demo Mode vs. Production**:
-> The official GitHub Pages site (`*.github.io`) runs a pre-seeded read-only sandbox. In contrast, your own deployment on Cloudflare Pages or private servers represents a clean production instance, and will always present the initial setup wizard on first launch.
-
-#### Setup Wizard Steps:
-
-1. **Step 1: Super Administrator Creation**: Specify the initial admin's display name, real name, academic email, and password (typically completed by the PI or designated lab manager);
-2. **Step 2: Lab Branding & Settings**:
-   - **Lab Name & Acronym**: e.g., "Astrophysics and Interdisciplinary Science Research Group" (Short name: `LabOrbit`), which dynamically updates site headers and browser titles;
-   - **Institution & Venue**: Set your university/institute affiliation and default seminar location (e.g., "Physics Hall 302 / Zoom");
-   - **Default Invite Code**: Set the registration passcode for your members (defaults to `LAB-2026`).
-
-#### Security Auto-Lock & Member Onboarding:
-
-- **Permanent Auto-Lock**: Once initialized, the administrator is automatically logged in. Both the backend API (`POST /api/system/setup`) and frontend routing guards **permanently lock and disable the `/setup` page**. Any subsequent attempts to access `/setup` will be rejected and redirected to the home or login page, preventing unauthorized resets.
-- **Onboarding Members**:
-  Share the configured invite code with your students and researchers. They can register themselves at `/login` by selecting "Register" and providing the invite code.
-- **Role Hierarchy**:
-  - **Administrator (Admin)**: Full system configuration, member role adjustment, bulk CSV schedule import, and feedback management;
-  - **Teacher / PI**: Post pinned announcements, star priority literature recommendations, assign speakers, and review pending submissions;
-  - **Student**: Recommend papers, submit seminar metadata and presentation slides, and access resource archives.
-
----
-
-### 3. Common Workflows
-
-- **Smart Paste & Multimodal Poster Ingestion**:
-  Click "Smart Paste" on the dashboard or schedule page. Paste announcement text, forwarded chat messages, or drop seminar poster images. The system automatically classifies and extracts event metadata, allowing one-click scheduling or submission to the review queue.
-- **Collaborative Scheduling & Approval Flow**:
-  Items submitted by regular members are routed to a "Pending Review" queue. Admins and PIs can review, edit, approve, or reject submissions in bulk, ensuring both collaborative contribution and calendar accuracy.
-- **Paper Sharing & Curated Library Archiving**:
-  Click "Recommend Paper" on the dashboard or library, enter an arXiv ID or DOI, and metadata is retrieved automatically. Choose "Public" or "Directed Sharing". All recommended and seminar papers are permanently archived in the searchable Literature Library with personal reading status tags.
-- **Seminar Scheduling & Calendar Sync**:
-  Admins can import semester schedules via CSV. Speakers receive reminders a week before their talk to submit their abstract and slides. Members can export `.ics` files to sync schedules with Apple, Google, or Outlook calendars.
-- **Resource Hub & Onboarding**:
-  Add recommended textbooks, lecture slides, and GitHub companion code in the resource section for quick alphabetical lookup, making onboarding seamless for new students.
-
----
-
-## 4. Lab Customization & Vibe-Coding Skill
-
-To enable any research laboratory across various disciplines (Computer Science, Bio-medicine, Computational Chemistry, Physics, Materials Science, etc.) to effortlessly customize and rebrand LabOrbit into their dedicated hub, the project natively provides a comprehensive **Vibe-Coding Agent Skill**: `vibe-coding-lab-orbit`.
-
-### 1. Skill Specifications & Locations
-- **Agent Auto-Discovery Path**: [`.agents/skills/vibe-coding-lab-orbit/SKILL.md`](.agents/skills/vibe-coding-lab-orbit/SKILL.md) (Standard location recognized by Antigravity, Cursor, Windsurf, Claude Code, and Codex);
-- **GitHub Web Directory**: [`skills/vibe-coding-lab-orbit/SKILL.md`](skills/vibe-coding-lab-orbit/SKILL.md) (Directly readable on the GitHub repository tree).
-
-### 2. Core Capabilities Covered
-The skill establishes 8 full-stack Standard Operating Procedures (SOPs):
-1. **Codebase Navigation**: Quick-reference map covering all 12 frontend views, common UI components, and dual-backend routes;
-2. **Domain & Lab Adaptation**: Step-by-step migration guide to adapt lab names, logos, seed data, and university email presets for different academic domains;
-3. **Full-Stack API Wiring ("Triple Consistency")**: Guidelines for implementing new features simultaneously across FastAPI (self-hosted), Cloudflare Pages Functions (serverless), and Demo Adapter (GitHub Pages sandbox);
-4. **Database Operations & Migrations**: Additive migration rules for SQLite and Cloudflare D1 to ensure zero downtime and data safety;
-5. **UI & Layout Customization**: Liquid Glass design tokens, `BaseDialog` double-mousedown backdrop guard, and responsive design standards;
-6. **3D Animations & Scientific Typesetting**: Three.js 3D cover carousel tuning, CSS micro-interactions, and KaTeX LaTeX rendering;
-7. **Semantic Icon System**: Extending the central `AppIcon.vue` SVG icon library;
-8. **Pre-Flight Gates & Test Verification**: Complete test verification suite ensuring 100% pass rate across all 738 tests before shipping.
-
-### 3. How to Customize via Vibe-Coding
-In any AI-assisted coding environment (such as Antigravity, Cursor, or Windsurf), developers or lab members can simply issue high-level prompts:
-
-> **Example Prompts:**
-> - *"Please adapt LabOrbit for our NLP & Computer Vision lab following the `vibe-coding-lab-orbit` skill guide, updating the site metadata, demo papers, and seed categories."*
-> - *"Add a 'Copy BibTeX' button to the literature card, following the Triple Consistency rule to keep FastAPI, Cloudflare Functions, and demo mock in sync."*
-> - *"Adjust the 3D seminar carousel dampening and add a glowing hover border to the cards."*
-
-The AI assistant will automatically consult the SOP, make precise modifications across the stack, and run `npm --prefix frontend test` to ensure all 738 tests pass with zero regressions.
-
----
-
-## 5. Copyright, Acknowledgements & Open Source Statement
-
-### 1. Development Approach (Vibe-Coding)
-
-This project was developed using a **Vibe-Coding** approach: human developers defined the real-world workflow requirements, interactions, and system architecture, while AI coding assistants supported code implementation, API wiring, and automated test coverage to iterate quickly.
-
-### 2. Contributors & AI Pair Programming
-
-This project was architected and led by human maintainers in collaboration with AI pair programmers:
-
-| Contributor / Partner | Role | Focus Areas |
-| :--- | :--- | :--- |
-| **[@Chocologism](https://github.com/Chocologism)** | Project Lead / Core Maintainer | Architecture design, domain logic, frontend UX, deployment 💻 🎨 🚀 |
-| **Google DeepMind Antigravity** | AI Pair Programmer | Vue 3 UI ecosystem, full-stack refactoring, poster OCR, Cloudflare edge 🤖 💡 🛠️ |
-| **OpenAI Codex** | AI Pair Programmer | FastAPI routing, data schemas, test suites, API wiring 🤖 🧪 ⚡ |
-
-### 3. Open Source Projects & UI Libraries
-
-The user interface and animations make use of several open-source libraries:
-- **Three.js**: 3D carousel presentation for seminar posters;
-- **Tailwind CSS**: Utility-first CSS styling and responsive layout;
-- **KaTeX**: Fast real-time LaTeX math rendering;
-- **Lucide Icons**: Clean and consistent icon set;
-- **Vue 3 & FastAPI**: Core frontend and backend frameworks.
-
-### 4. License & Non-Profit Statement
-
-- **License**: Released under the [MIT License](LICENSE). Free to use, adapt, and self-host;
-- **Non-Profit Statement**: This is a 100% open-source, non-profit tool developed for academic research workflows. It contains no commercial promotion, paid features, or monetization;
-- **Contributions**: Feedback, issue reports, and pull requests are warmly welcomed.
-
----
-
-## 6. Sponsor & Buy Me a Coffee
-
-If LabOrbit helps your research workflow, lab collaboration, or engineering setup, feel free to buy the author a coffee ☕️ to support ongoing maintenance and feature development!
-
-<p align="center">
-  <img src="docs/images/sponsor_qr.jpg" alt="Buy Me a Coffee / Alipay QR Code" width="220" style="border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);" />
-  <br>
-  <sub>Scan with Alipay to support the author</sub>
-</p>
+No root-level `LICENSE` file is currently present in this repository. Do not infer this repository's license solely from an inherited upstream README badge; verify the upstream license and confirm the appropriate license file before redistribution.

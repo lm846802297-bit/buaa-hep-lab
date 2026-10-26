@@ -192,6 +192,7 @@ class LibraryPaper(Base):
     authors = Column(Text, default="[]")
     abstract = Column(Text, default="")
     primary_category = Column(String(50), default="")
+    # For arXiv records, this stores the first arXiv submission date, not the journal publication date.
     published_date = Column(String(30), default="")
     pdf_url = Column(Text)
     metadata_status = Column(String(20), default="ready")

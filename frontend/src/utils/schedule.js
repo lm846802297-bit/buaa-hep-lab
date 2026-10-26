@@ -1,7 +1,8 @@
 import { isDemoMode } from '../mock/isDemo'
+import { DEMO_BASE_DATE_STR } from '../mock/demoData'
 
-export const DEMO_FROZEN_DATE_STR = '2026-09-10'
-export const DEMO_FROZEN_TIME_MS = Date.parse('2026-09-10T12:00:00+08:00')
+export const DEMO_FROZEN_DATE_STR = DEMO_BASE_DATE_STR
+export const DEMO_FROZEN_TIME_MS = Date.parse(`${DEMO_BASE_DATE_STR}T12:00:00+08:00`)
 
 // Calendar arithmetic uses UTC only as a timezone-free carrier for YYYY-MM-DD.
 // Actual seminar times always refer to the research group's Asia/Shanghai zone.

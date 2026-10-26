@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { currentThemeStyle, currentBgType, isBgVideoPaused } from '../composables/useThemeStyle'
+import { currentThemeStyle, currentBgType, currentBgDim, isBgVideoPaused } from '../composables/useThemeStyle'
 import { getLocalBackground } from '../utils/localBgStorage'
 import {
   getOrLoadRawOrbitVideoUrl,
@@ -15,6 +15,7 @@ const defaultVideoRef = ref(null)
 const localVideoRef = ref(null)
 const isLogin = computed(() => route.path === '/login')
 const localMedia = ref(null)
+const frozenBackgroundFrame = ref(null)
 const rawOrbitUrl = ref(getImmediateRawOrbitVideoUrl())
 const isOrbitPlaying = ref(false)
 
@@ -519,6 +520,41 @@ function destroyVantaFog() {
   }
 }
 
+// Keep the last visible frame locally while stopping the expensive animation loop.
+function freezeDynamicBackground() {
+  if (!isBgVideoPaused.value) return
+  const type = currentBgType.value
+
+  try {
+    frozenBackgroundFrame.value = containerRef.value?.querySelector('canvas')?.toDataURL() || null
+  } catch {}
+
+  if (type === 'galaxy' && animateId) {
+    cancelAnimationFrame(animateId)
+    animateId = null
+  } else if (type === 'vanta-fog') {
+    if (typeof vantaEffect?.setOptions === 'function') vantaEffect.setOptions({ speed: 0 })
+    else vantaEffect?.pause?.()
+  }
+}
+
+function resumeDynamicBackground() {
+  frozenBackgroundFrame.value = null
+  const type = currentBgType.value
+  if (type === 'galaxy') {
+    if (!animateId && renderer && mesh) {
+      lastTimestamp = performance.now()
+      animateId = requestAnimationFrame(update)
+    }
+  } else if (type === 'vanta-fog') {
+    if (typeof vantaEffect?.setOptions === 'function') {
+      vantaEffect.setOptions({ speed: route.path === '/login' ? 2.0 : 0.4 })
+    } else {
+      vantaEffect?.play?.()
+    }
+  }
+}
+
 // ==========================================
 // 3. 统一调度与生命周期
 // ==========================================
@@ -679,21 +715,21 @@ function startAtmosphere(bgType) {
     if (bgType === 'clouds-static') {
       destroyGalaxy()
       destroyVantaFog()
-      if (containerRef.value) {
-        containerRef.value.innerHTML = ''
-      }
+      containerRef.value.innerHTML = ''
     } else if (bgType === 'vanta-fog') {
       destroyGalaxy()
-      initVantaFog().catch(() => onMediaLoaded())
+      initVantaFog()
+        .then(freezeDynamicBackground)
+        .catch(onMediaLoaded)
     } else if (bgType === 'galaxy') {
       destroyVantaFog()
-      initGalaxy().catch(() => onMediaLoaded())
+      initGalaxy()
+        .then(freezeDynamicBackground)
+        .catch(onMediaLoaded)
     } else if (bgType === 'custom-local') {
       destroyGalaxy()
       destroyVantaFog()
-      if (containerRef.value) {
-        containerRef.value.innerHTML = ''
-      }
+      containerRef.value.innerHTML = ''
       refreshLocalMedia()
     }
   }
@@ -717,6 +753,7 @@ function stopAtmosphere() {
 }
 
 watch(currentBgType, (newBg) => {
+  frozenBackgroundFrame.value = null
   startAtmosphere(newBg)
   nextTick(() => {
     onMediaLoaded()
@@ -726,8 +763,10 @@ watch(currentBgType, (newBg) => {
 watch(isBgVideoPaused, (paused) => {
   if (paused) {
     pauseVideoForPowerSaving()
+    freezeDynamicBackground()
   } else {
     resumeVideoPlayback()
+    resumeDynamicBackground()
   }
 })
 
@@ -789,6 +828,7 @@ onBeforeUnmount(() => {
   <div class="forecast-atmosphere" aria-hidden="true">
     <!-- 默认深空轨道 4K 视频背景（原版无损，持久保活，秒切秒播） -->
     <div
+      v-if="currentBgType === 'earth-orbit'"
       class="earth-orbit-media-layer"
       :class="{ 'is-active': currentBgType === 'earth-orbit' }"
     >
@@ -845,7 +885,14 @@ onBeforeUnmount(() => {
       ref="containerRef"
       class="galaxy-atmosphere-canvas vanta-atmosphere-canvas atmosphere-canvas"
     ></div>
-    <div class="atmosphere-shade" :class="{ 'is-login': isLogin }"></div>
+    <img
+      v-if="frozenBackgroundFrame && (currentBgType === 'galaxy' || currentBgType === 'vanta-fog')"
+      :src="frozenBackgroundFrame"
+      class="custom-bg-media frozen-atmosphere-frame"
+      alt=""
+      decoding="async"
+    />
+    <div class="atmosphere-shade" :class="{ 'is-login': isLogin }" :style="{ opacity: isLogin ? 0 : currentBgDim / 100 }"></div>
   </div>
 </template>
 

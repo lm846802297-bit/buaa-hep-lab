@@ -6,6 +6,8 @@ const MobileHeader = defineAsyncComponent(() => import('./components/MobileHeade
 const MobileNavBar = defineAsyncComponent(() => import('./components/MobileNavBar.vue'))
 const FeedbackHost = defineAsyncComponent(() => import('./components/FeedbackHost.vue'))
 const NoticeScanBanner = defineAsyncComponent(() => import('./components/NoticeScanBanner.vue'))
+const PublicThemeSwitcher = defineAsyncComponent(() => import('./components/PublicThemeSwitcher.vue'))
+const WorldlineEffects = defineAsyncComponent(() => import('./components/WorldlineEffects.vue'))
 const ForecastAtmosphere = defineAsyncComponent(() => import('./components/ForecastAtmosphere.vue'))
 const MidAutumnMooncakes = defineAsyncComponent(() => import('./components/MidAutumnMooncakes.vue'))
 const NationalDayCelebration = defineAsyncComponent(() => import('./components/NationalDayCelebration.vue'))
@@ -124,7 +126,9 @@ function onUpdatePinned(val) {
 <template>
   <div class="app-shell" :class="{ 'is-home': isHome, 'has-sidebar': showNavbar, 'sidebar-collapsed': !isPinned && showNavbar }">
     <WorkspaceSession v-if="showNavbar" />
-    <ForecastAtmosphere v-if="!isPublic && currentColorScheme !== 'quiet-research'" />
+    <WorldlineEffects />
+    <PublicThemeSwitcher v-if="isPublic && route.path !== '/'" />
+    <ForecastAtmosphere v-if="!isPublic && currentBgType !== 'paper'" />
     <MidAutumnMooncakes v-if="!isPublic" />
     <NationalDayCelebration v-if="!isPublic" />
     <a href="#main-content" class="skip-link">跳到主要内容</a>
@@ -132,7 +136,8 @@ function onUpdatePinned(val) {
     <Navbar v-if="showNavbar" :pinned="isPinned" @update:pinned="onUpdatePinned" />
     <main id="main-content" :class="!showNavbar ? 'public-workspace' : (isHome ? 'home-workspace' : (isAssistant ? 'assistant-workspace' : 'workspace'))">
       <router-view v-slot="{ Component }">
-        <Transition :css="false" mode="out-in" @enter="enterPage" @leave="leavePage">
+        <component v-if="isPublic" :is="Component" :key="route.path" />
+        <Transition v-else :css="false" mode="out-in" @enter="enterPage" @leave="leavePage">
           <KeepAlive include="AssistantView">
             <component :is="Component" :key="route.path" />
           </KeepAlive>
