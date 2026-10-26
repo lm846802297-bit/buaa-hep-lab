@@ -6,7 +6,7 @@
 
 **仓库声明的正式发布流程是 GitHub Actions 工作流 `.github/workflows/deploy.yml`。** 工作流对 PR 与 main push 执行验证；仅当事件来自 `main` 且不是 PR 时，在完整 `validate` 成功后调用仓库锁定的 Wrangler CLI 发布 Cloudflare Pages。部署后执行 `scripts/verify-live.mjs`，检查健康接口、匿名授权、公开 HTML、robots/sitemap 与内部路由 noindex。功能分支的 CI 不会部署生产。
 
-但截至 2026-10-26，Cloudflare Pages Dashboard 也显示该项目已连接 GitHub 仓库、生产分支为 `main`，且原生自动部署开启。因此当前存在 Actions 与 Cloudflare Git integration 两条可能触发生产部署的路径；在关闭或改为仅预览之前，不能称 Actions 是唯一技术发布路径。任何合并到 `main` 的提交都可能同时触发两套部署。
+截至 2026-10-26，Cloudflare Pages Dashboard 显示该项目已连接 GitHub 仓库、生产分支为 `main`，且原生自动部署开启。2026-10-27 合并后，Pages 原生 Git 集成已将最新 `main` SHA 发布为 Active；对应 PR 的 GitHub Actions 验证因账户付款/支出限额问题未启动。因此双发布路径风险已实际出现。后续生产合并前仍需决定是否关闭 Cloudflare 自动部署或改为仅创建预览；不能把原生 Pages 部署标作 Actions 验证通过。
 
 本次更新保留已有的 main push 自动发布链路，不将它改成仅手动发布。另增加本地 Node/workerd bcrypt 基准步骤和 artifact，并把“已请求的 main 发布但缺少 Cloudflare 凭据”从警告改为失败，避免出现“验证绿灯但没有发布”的误判。Wrangler 部署命令会记录 GitHub Actions 的完整源 SHA。不会在本地执行生产部署，也不会读取或复制任何 secret。
 
@@ -18,20 +18,22 @@
 
 Cloudflare 原生 Pages Git Provider 在 2026-10-20 的控制台快照中显示未连接；这只是历史状态。2026-10-26 的 Dashboard 检查已显示 GitHub 连接、生产分支 `main`、原生自动部署开启，构建根目录 `frontend`、输出目录 `dist`。该新状态覆盖旧快照。为避免 Actions 与 Pages 原生集成同时发布，合并生产变更前需先决定是否关闭 Cloudflare 自动部署或改为仅创建预览；本次没有修改该设置。
 
-## 最近一次已验证的 main 发布（PR #3 更新前基线）
+## 最近一次观察到的应用代码生产部署（2026-10-27）
 
 | 项目 | 证据 |
 |---|---|
-| main 源提交 | `fb287b4fac1a7c45e02ee3d1e276ebdabf476269` |
-| GitHub Actions | [run 39529826480](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39529826480) |
-| 验证 job | `validate: success` |
-| 部署 job | `deploy: success` |
-| Cloudflare 版本 URL | `https://2d105688.buaa-hep-hub.pages.dev`（部署日志返回） |
+| 应用代码 main 源提交 | `e4b4014468856787c6f0efd0f4ded9420ac5359b` |
+| Cloudflare 部署记录 | Production / `main` / `Active`，来源 SHA 与当前 `main` 一致 |
+| Cloudflare 版本 URL | `https://590d84b5.buaa-hep-hub.pages.dev` |
 | 稳定生产 URL | `https://buaa-hep-hub.pages.dev` |
-| 发布后检查 | `node scripts/verify-live.mjs` 成功；健康、公开 HTML/元数据、匿名 API 授权与内部路由 noindex 检查通过 |
-| 凭据处理 | Actions 日志只显示已掩码的凭据变量；未读取、导出或写入凭据值 |
+| 发布路径 | Cloudflare Pages 原生 Git 集成（根据活跃生产记录与仓库连接状态判断）；没有执行本地 `pages:deploy` |
+| 发布后检查 | `node scripts/verify-live.mjs https://buaa-hep-hub.pages.dev` 成功；健康接口、匿名授权、公开 HTML/元数据、robots、sitemap 与 `/hub` noindex 检查通过 |
+| GitHub Actions 验证 | **未通过。** PR #68 的 run [40392300351](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/40392300351) 与 PR #71 的 run [40394374245](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/40394374245) 在验证步骤前因账户付款失败/支出限额而未启动；不能称为 Actions 验证通过 |
+| 凭据处理 | 只读取 Wrangler 身份和部署元数据；没有读取或记录 Cloudflare secret 值 |
 
-此表是更新前的基线。PR #3 的新提交尚未发布；合并后必须检查由合并 SHA 触发的 main workflow，并将新 run、SHA、版本 URL 和健康检查结果追加为最新证据。不能把 PR validate 成功等同于生产部署成功。
+该部署由 Cloudflare Pages 原生 Git 集成完成，不等于仓库规定的 GitHub Actions 发布验证成功。恢复 Actions 账户计费后，仍需在最终 head 上跑通 PR 验证，并确认 main 发布工作流完成。历史成功的 Actions 发布基线见 [pages-release-evidence.json](audit/pages-release-evidence.json) 中的 `latestVerifiedMainBeforeSec04Update`；不能把它与本次部署混为一谈。
+
+该记录对应应用代码变更的部署；后续只改审计文档的 main 提交即使触发 Pages 构建，也不会改变这里记录的应用代码 SHA。
 
 ## 生产资源与兼容性边界
 

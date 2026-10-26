@@ -1,7 +1,7 @@
 {
-  "observedAt": "2026-10-21T01:56:10Z",
+  "observedAt": "2026-10-26T20:22:24Z",
   "repository": "lm846802297-bit/buaa-hep-lab",
-  "sourceOfTruth": "GitHub Actions workflow run; Cloudflare dashboard snapshot below is historical",
+  "sourceOfTruth": "GitHub Actions is the formal gated release path; Cloudflare Pages deployment records show observed production state when native Git integration is enabled.",
   "latestVerifiedMainBeforeSec04Update": {
     "commit": "fb287b4fac1a7c45e02ee3d1e276ebdabf476269",
     "runId": 39529826480,
@@ -14,6 +14,38 @@
     "deploymentLog": "Deployment complete",
     "postDeployCheck": "success: health, public HTML/metadata, anonymous authorization and internal-route noindex checks",
     "credentialHandling": "required credential variables were present; values remained masked in logs and were not inspected"
+  },
+  "latestObservedApplicationDeployment": {
+    "observedAt": "2026-10-26T20:22:24Z",
+    "commit": "e4b4014468856787c6f0efd0f4ded9420ac5359b",
+    "environment": "Production",
+    "branch": "main",
+    "source": "Cloudflare Pages native Git integration (inferred from the active production record for the current main SHA while GitHub Actions validation was blocked)",
+    "deploymentId": "590d84b5-7d0b-440d-85db-7ea44faf791a",
+    "deploymentUrl": "https://590d84b5.buaa-hep-hub.pages.dev",
+    "deploymentStatus": "Active",
+    "productionAlias": "https://buaa-hep-hub.pages.dev",
+    "observedWith": "Wrangler 4.152.0, read-only pages deployment list",
+    "postDeployCheck": {
+      "command": "node scripts/verify-live.mjs https://buaa-hep-hub.pages.dev",
+      "status": "success",
+      "checks": "health endpoint, anonymous authorization for auth/resources/mailbox endpoints, prerendered homepage metadata, robots.txt, sitemap.xml and /hub noindex"
+    },
+    "githubActionsEvidence": [
+      {
+        "pr": 68,
+        "headSha": "2fb56b4afb7a7f10f6774c1107bba95725c9aac4",
+        "runId": 40392300351,
+        "result": "changes job failed before validation steps because recent account payments failed or the spending limit needed to be increased"
+      },
+      {
+        "pr": 71,
+        "headSha": "a325a55ca3fb1bdc5fb7a3e3c44324a7171b5024",
+        "runId": 40394374245,
+        "result": "changes job failed before validation steps because recent account payments failed or the spending limit needed to be increased"
+      }
+    ],
+    "credentialHandling": "Wrangler identity and deployment metadata were read only; no Cloudflare secret values were accessed"
   },
   "historicalCloudflareDashboardSnapshot": {
     "observedAt": "2026-10-20T21:43:25Z",
@@ -98,9 +130,11 @@
     "redactions": "Cloudflare dashboard account identifiers and the D1 database UUID are omitted from this evidence file; no secret values were read."
   },
   "interpretation": [
-    "The Cloudflare dashboard snapshot predates GitHub Actions run 39529826480; its old deployment SHA is historical, not the current verified source.",
+    "The latest observed Production deployment is active at main SHA e4b4014468856787c6f0efd0f4ded9420ac5359b and passed the repository's read-only live checks.",
+    "This deployment is not Actions-verified: the recorded PR checks failed before running validation because of the GitHub account billing/spending-limit error.",
+    "The Cloudflare dashboard snapshot and aggregate metrics below are historical; the active deployment record above is the current observed deployment evidence.",
     "The current repository wrangler config declares D1 only and no R2 binding. Do not claim R2 is active.",
     "Project-wide CPU quantiles cannot isolate bcrypt operations, costs or authentication routes.",
-    "The current SEC-04 PR is not production-deployed until its merge SHA's main workflow succeeds."
+    "Production bcrypt cost remains 6; no full SEC-04 scan or cost change is represented by this deployment."
   ]
 }
