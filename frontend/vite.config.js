@@ -7,7 +7,7 @@ const repoName = process.env.GITHUB_REPOSITORY ? `/${process.env.GITHUB_REPOSITO
 
 export default defineConfig({
   base: isGitHubPages ? repoName : '/',
-  plugins: [vue()],
+  plugins: [vue({ template: { transformAssetUrls: { includeAbsolute: false } } })],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src')
