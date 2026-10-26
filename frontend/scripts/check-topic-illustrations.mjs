@@ -108,9 +108,9 @@ for (const topic of terms.topics) {
 // Use a real XML parser rather than relying on browser error recovery for malformed SVG.
 const parserCode = 'import sys, xml.etree.ElementTree as ET; [ET.parse(path) for path in sys.argv[1:]]'
 const pythonCommands = [
-  { command: 'python3', prefix: [] },
-  { command: 'python', prefix: [] },
   { command: 'py', prefix: ['-3'] },
+  { command: 'python', prefix: [] },
+  { command: 'python3', prefix: [] },
 ]
 let parsed = false
 for (const candidate of pythonCommands) {
