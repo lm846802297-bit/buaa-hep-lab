@@ -4,30 +4,28 @@
 
 ## 当前审计状态
 
-**SEC-04 保持开放；Cloudflare 远程部署暂缓。生产 bcrypt cost 保持 6。** 本地基准脚本与工作流准备工作已经完成，但没有在 Cloudflare 部署隔离 Worker，也没有执行远程 pilot。不要将本地 workerd 数据、CI artifact 或 Pages 项目聚合指标描述为 Cloudflare 调用级 CPU 实测。
+**SEC-04 保持开放；隔离 Worker 已收到 pilot 请求，但证据尚不足以完成分组验收。生产 bcrypt cost 保持 6。** 不要将本地 workerd 数据或 Pages 项目聚合指标描述为 Cloudflare 调用级 CPU 实测。
 
 | 项目 | 状态 | 证据/限制 |
 |---|---|---|
 | 指定提交的本地安装、定向测试、全量测试、Worker dry-run | 已验证 | 用户报告 SHA `42d30bce782ac284f653eb79e93e018f854df6e9`：786 项测试通过；dry-run 显示 `No bindings found.` |
 | 基准参数按单一 cost 分组、错误分类与失败报告落盘 | 已验证 | 同一提交下定向测试 10/10、全量测试 786/786；负向对照能令新测试失败；workerd cost 6 pilot 产生 16 行 |
 | Cloudflare 账户 Workers Free / 默认 CPU 10 ms | 用户确认，非本工具独立验证 | 远程 API 查询受权限限制；需在后续若有必要时复核实际 Worker CPU 设置 |
-| 隔离 Worker 部署与脚本 Secret | 暂缓 | 未创建/部署远程 Worker；未向 Cloudflare 发送基准请求 |
-| 匿名 POST 404 / 正确 Token POST 200 | 未验证 | 已将正反对照加入准备流程，但尚未执行 |
-| Cloudflare 调用级 CPU、超限 outcome 与 sample ID 关联 | 未验证 | 无远程日志或 `cloudflare-cost-*.json` |
+| 隔离 Worker 部署与 POST 请求 | 已观察到 | 用户提供的 Cloudflare Dashboard 截图显示 `buaa-hep-bcrypt-benchmark` 有 `/benchmark` POST 调用；截图本身不证明 Secret 配置细节 |
+| 匿名 POST 404 / 正确 Token control POST 200 | 未确认 | 现有截图和粘贴日志没有展示这两项请求各自的 HTTP 响应状态与响应体 |
+| Cloudflare 调用级 CPU、outcome 与 sample ID 关联 | 部分观察，未完成验收 | 用户提供的所选时间窗显示 148 Success、0 Errors；粘贴的部分调用记录显示 CPU 约 5–20 ms、wall 约 5–21 ms。没有完整导出、cost/operation/bytes 分组或 sample ID 对照，不能据此计算完整分布或确认全部样本 |
 | 非生产完整登录/注册/改密路径 CPU | 未验证 | 本地功能/安全回归不等同于部署环境 CPU 测量 |
 | 生产 bcrypt cost | 保持 6 | 不依据本地 wall time 或混合 Pages 聚合分位数调整 |
 
-### 暂缓原因与恢复条件
+### 后续范围与恢复条件
 
-用户认为为远程 pilot 配置独立 Worker 与最小权限 Token 的操作成本过高，决定暂不进行远程部署。此决定不影响已完成的本地测试，也不构成远程 CPU 验收通过。**不继续创建 Cloudflare 资源、不要求用户现在配置 API Token、不运行远程 pilot。**
-
-只有在确实需要生产等效 CPU 证据时，才恢复远程流程：创建独立 Worker → 配置最小权限凭据与脚本 Secret → 验证匿名 POST 404 和正确 Token POST 200 → 按 cost 分组执行 pilot → 在 Workers Logs 中关联 sample ID、CPU time 和 outcome。Free 套餐下 cost 7/8 的超限必须作为有效结果保留，不自动重试。完整认证路径仍需在非生产环境另行评估。
+隔离 Worker 已部署并收到请求；当前可见数据属于有限 pilot 证据，不构成完整扫描或完整 CPU 验收。继续前应先取得按 cost、operation、bytes、sample ID 对照的完整结果和 Workers invocation 记录。当前不自动启动完整扫描，也不重复创建 Worker。Free 套餐下 cost 7/8 的 CPU 超限必须作为有效结果保留，不自动重试。完整认证路径仍需在非生产环境另行评估。
 
 历史 Windows 数据只作为旧基线，不与当前 CI 运行时直接比较。
 
 ## 隔离 Cloudflare Worker：部署前置条件
 
-本次 SEC-04 窄范围集成**不包含** `.github/workflows/sec04-bcrypt-isolated.yml`，也不部署 Cloudflare Worker。远程部署已暂缓，因此以下仅作为未来恢复远程测量时的前置条件记录，不代表当前可从 Actions UI 触发部署。若后续希望使用 GitHub Actions，应另行审查一个窄范围变更，将部署工作流纳入默认分支，并先配置 GitHub Environment `sec04-benchmark` 的 required reviewer 与所需 secrets/variables。
+本工作流**不会**由 push、pull request 或普通 CI 自动触发。当前 `.github/workflows/sec04-bcrypt-isolated.yml` 仅存在于 `final-audit`，尚未进入默认分支 `main`；GitHub 要求 `workflow_dispatch` 工作流文件先存在于默认分支，因此现在不能直接从 Actions UI 手动触发。不要为此合并整个已分叉的 `final-audit` 分支。当前部署应由维护者在本地 PowerShell/Wrangler 中执行；若后续希望使用 GitHub Actions，应另行审查一个窄范围变更，将该工作流及其所需基准文件纳入默认分支。该工作流设计使用 GitHub Environment `sec04-benchmark`；只有在工作流进入默认分支后，才配置此环境的 required reviewer 与下列 secrets/variables。
 
 Environment secrets（不要提交到仓库或放入命令行参数）：
 - `CLOUDFLARE_API_TOKEN`：仅授予部署该 Worker 所需权限的 Cloudflare API token。
@@ -36,9 +34,9 @@ Environment secrets（不要提交到仓库或放入命令行参数）：
 Environment variable：
 - `CLOUDFLARE_ACCOUNT_SUBDOMAIN`：该账户的 workers.dev 子域名标签。
 
-未来部署流程必须只使用 `frontend/benchmarks/bcrypt/wrangler.jsonc`，不得执行 Pages 部署、绑定生产 D1/R2 或接入生产认证路由。部署 Worker 并设置 `BENCHMARK_TOKEN` 后，必须用真实 POST 请求验证：缺少 token 时返回 404；携带正确 token 的 `control` 请求返回 200，且响应字段与 `Cache-Control: no-store` 符合契约。正对照失败时不得开始 pilot。部署前须在 Cloudflare Dashboard 核实账户套餐和 CPU 限额。
+工作流只使用 `frontend/benchmarks/bcrypt/wrangler.jsonc`，不执行 Pages 部署、不绑定生产 D1/R2、不接入生产认证路由。它先部署 Worker，再设置 `BENCHMARK_TOKEN`，然后以真实 POST 请求验证两项条件：缺少 token 时返回 404；携带正确 token 的 `control` 请求返回 200，且响应字段与 `Cache-Control: no-store` 均符合契约。正对照失败时不得开始 pilot。若环境变量/secrets 未配置，工作流会失败关闭。部署前须在 Cloudflare dashboard 核实账户套餐和 CPU 限额。
 
-认证权限注意：未来流程使用 `wrangler secret put BENCHMARK_TOKEN` 设置 **Worker 脚本级 secret**，配置中没有 Cloudflare Secrets Store binding，因此不应仅为此额外授予 account-level Secrets Store 写权限。对于首次创建的新 Worker，Cloudflare 当前授权文档要求 Workers 产品级 Admin；为避免给自动化 Token 过宽权限，可先在 Dashboard 中创建名为 `buaa-hep-bcrypt-benchmark` 的空 Worker，再创建仅对该 Worker 具有 Editor 权限的 API Token。该 Token 可部署现有 Worker 并设置其脚本 secret。Wrangler 的 OAuth 登录不支持细粒度授权；优先在部署环境使用受限的 account-owned API Token。
+认证权限注意：此工作流使用 `wrangler secret put BENCHMARK_TOKEN` 设置 **Worker 脚本级 secret**，配置中没有 Cloudflare Secrets Store binding，因此不应仅为这条流程额外授予 account-level Secrets Store 写权限。对于首次创建的新 Worker，Cloudflare 当前授权文档要求 Workers 产品级 Admin；为避免给自动化 Token 过宽权限，可先在 Dashboard 中创建名为 `buaa-hep-bcrypt-benchmark` 的空 Worker，再创建仅对该 Worker 具有 Editor 权限的 API Token。该 Token 可部署现有 Worker 并设置其脚本 secret。Wrangler 的 OAuth 登录不支持细粒度授权；优先在部署环境使用受限的 account-owned API Token。
 
 部署后在 Workers Free 的 10 ms CPU 限额下，必须按 cost 分组执行 pilot：每个 cost 单独 16 个请求（8 个输入/操作组合 × 1 次预热 + 1 次测量）。先测 cost 6，再分别测 cost 7 和 cost 8。保留所有失败，不自动启动完整扫描；cost 7/8 的 CPU 超限是待测结果，不应因预期超限而循环重试。PowerShell 下使用前文 SecureString 方式设置本地 `BENCHMARK_TOKEN`，再运行：
 
@@ -123,12 +121,23 @@ node frontend/benchmarks/bcrypt/run.mjs --runtime workerd --samples 50 --warmup 
 | workerd | 72 | compare-mismatch | 7 | 7.047 | 7.452 | 7.900 |
 | workerd | 72 | compare-mismatch | 8 | 13.014 | 13.718 | 14.639 |
 
-## 当前 PR head 的 CI 与可复核基准证据
+## CI 与 Artifact 证据：历史成功记录与当前 HEAD 状态
 
-- 当前 PR head：`c679a24a4d8d176fe355fe7538cd52d9526ef6eb`。
+### 当前 HEAD 验证状态（2026-10-27）
+
+- PR #3 仍为 open，远端 `final-audit` HEAD 是 `7f8e885f10f0a3b2b25c5240638267cf57e626af`；本地冲突整理尚未推送，不改变该远端 SHA。
+- [Actions run 40366088252](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/40366088252) 在 `validate` 第一步前失败，`runner_id=0`、没有步骤日志或基准 Artifact。GitHub 返回的原因是账户付款失败或 spending limit 需要调整；这不是测试失败，也不是通过。用户已要求取消 CI，当前不重试。
+- 因当前 HEAD 的 Actions 作业未启动，没有对应的 `bcrypt-local-evidence` Artifact。历史 Artifact 不能替代当前 SHA 的 CI。历史源码 SHA 与当前 runner 不同，历史样本仅能代表其记录的旧 revision。
+
+### 历史成功运行（仅作为历史证据）
+
+- 历史 PR head：`c679a24a4d8d176fe355fe7538cd52d9526ef6eb`。
 - [GitHub Actions run 39601665582](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39601665582) 对该 head 的 `validate=success`、`deploy=skipped`；隔离基准未部署，生产站点也未由该 PR run 发布。
 - 同一 head 的独立 FastAPI backend regression run [39601665692](https://github.com/lm846802297-bit/buaa-hep-lab/actions/runs/39601665692) 为 `success`。该套件是独立后端测试，不等同于 Pages 生产 bcrypt CPU 验收。
-- `bcrypt-local-evidence` artifact ID `12346154108`，包含 `node.json` 与 `workerd.json`。两份记录的 `environment.revision=fcf18a738ffc943d472f3c8f97b0d809271d5b98`，与该 PR run 的合并测试提交一致；每份 1,320 行：1,200 个测量样本、120 次预热、24 个分组、0 次失败。PR head、PR base SHA 与合并测试 revision 是不同概念，必须分别记录。
+- 历史 PR base SHA：`7ba3feba5f392b49056e2748506df4c1ce326449`（合并测试提交的第一父提交）；历史 PR head SHA：`c679a24a4d8d176fe355fe7538cd52d9526ef6eb`；Artifact 内部 `environment.revision`：`fcf18a738ffc943d472f3c8f97b0d809271d5b98`。后者是合并测试提交，其父提交依次为 base `7ba3feba…` 与 PR head `c679a24…`，三者不可互换。
+- Artifact ID `12346154108`（Run `39601665582`），ZIP SHA-256：`16ae81f289c34626c99bbb520c9e1d4070b32d2e7c95b878bd4e6ca23905cbc0`；`node.json` SHA-256：`133617d0e4979afce669b5811ba6b0a11f7d21bf93f6e23b054a01ad8ed0a6d7`；`workerd.json` SHA-256：`6bcf649e0ab5dc638bb0d380072dc9d28171f462185a957dcdcb0a48bacf1c80`。
+- 已独立核对原始行与汇总：Node 和 workerd 各 1,320 行，分别为 120 条预热记录与 1,200 条测量记录；24 个测量分组各 50 个样本，24 个预热分组各 5 个样本；样本 ID 唯一且字段与记录列一致；原始错误数及汇总失败数均为 0，汇总 attempts/failures/min/max 与原始测量行一致。
+- Artifact 中记录的六个源码 SHA-256（`core.mjs`、`fixtures.json`、`worker.mjs`、`run.mjs`、`wrangler.jsonc`、`package-lock.json`）已与内部 revision `fcf18a738ffc943d472f3c8f97b0d809271d5b98` 的文件内容逐一比对，全部匹配。该结论只适用于这一历史 revision。
 - 运行环境：Linux x64 GitHub-hosted runner；AMD EPYC 9V74，报告显示 2 个逻辑 CPU；Node v24.21.0、bcryptjs 3.0.3、Wrangler 4.131.0、workerd 1.20260910.1；兼容日期 `2026-09-17`、`nodejs_compat`。
 - 该 artifact 的 cost 6、12-byte 样本（n=50，单位 ms）：
   
@@ -177,9 +186,9 @@ frontend/tests/security.test.ts 已有基于 SQLite 的 D1 适配器测试，覆
 - **SHA 口径：** PR 的 `head_sha` 是分支提交；GitHub Actions 的 `pull_request` 工作流通常检出 PR 合并测试引用，因此 artifact 内的 `environment.revision` 可能是合并测试提交，而不是分支 `head_sha`。验收时必须同时记录 PR head SHA、base SHA、Actions run URL 和 artifact 内 revision；不能把这几个 SHA 混为一谈。
 - 更早的中间候选 `5c8a0ccebaaffdc4fdb27c5e49a5f19b54992689` 曾因运行器分支语法错误而失败；错误已修复，旧失败记录保留。后续任何代码/文档更新都会改变 PR head，合并门槛必须以最终 head 的 CI 与 artifact 为准，不能沿用上述中间候选的绿灯。
 
-## 在 Cloudflare 环境补完（需维护者明确批准；本次未上传或部署）
+## 在 Cloudflare 环境继续补完（有限 pilot 已有用户提供的 Dashboard 证据）
 
-独立工具位于 `frontend/benchmarks/bcrypt/`，不进入 `frontend/functions`，不绑定 D1/R2，不访问生产 API、账号或密码。本次集成仅迁移基准脚本、单元测试和历史本地审计数据，不迁移或新增 CI/部署工作流。未来若单独引入本地基准 CI，应仅在 GitHub Actions runner 的 Node 与本地 workerd/Miniflare 中运行并上传 `bcrypt-local-evidence` artifact；不得在普通 CI 中部署 Worker。
+独立工具位于 `frontend/benchmarks/bcrypt/`，不进入 `frontend/functions`，不绑定 D1/R2，不访问生产 API、账号或密码。CI 仅在 GitHub Actions runner 的 Node 与本地 workerd/Miniflare 中运行基准，并上传 `bcrypt-local-evidence` artifact；**CI 不会部署该 Worker**。
 
 ### 访问控制与安全边界
 
