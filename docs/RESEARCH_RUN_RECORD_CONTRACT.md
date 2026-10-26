@@ -1,6 +1,6 @@
 # 科研记录索引与计算记录 API 契约（Research Record Index）
 
-- **状态：设计提案 v1.0.0；项目负责人于 2026-10-27 认可其作为后续设计依据。** 具体 API、数据库结构和生产变更仍需独立设计与审阅。
+- **状态：设计提案 v1.0.0。** 项目负责人于 2026-10-27 认可默认只链接来源、有限摘要须另行审批的访问原则；具体数据模型、API、审批机制和生产变更仍待独立审阅。
 - **本次范围：** 定义课题组网站如何索引、展示和授权访问既有研究变更、计算运行、运行清单、产物与 claim–evidence 记录。
 - **不在本次范围内：** 生产 API、数据库表、迁移、自动执行器、向研究仓库写入、生产存储绑定或任何生产数据修改。
 - **关键设计决定：** 网站数据库是**协作索引与展示层**，不是新的科学记录事实源。不要复制一套与研究仓库并行的 run manifest、artifact 和 claim schema。来源访问默认采用 `link_only`；只有经明确审批的有限摘要/片段才允许作为 `attached_snapshot` 展示。
@@ -19,16 +19,16 @@
 
 [high-energy-theory-research 的候选 schema 说明](https://github.com/lm846802297-bit/high-energy-theory-research/blob/d6143c2aa15191ac8521e062d90860ba86713f00/schema/v1.4.3.7/README.md) 明确标记为 **candidate / not released**；`DD-ART-007` 至 `DD-ART-010` 仍待批准。候选包中部分 schema 的标题和 `$id` 仍标注 v1.4.2 或 v1.4.3.6，而目录版本为 v1.4.3.7。网站不得将该候选包当作已发布的规范，也不得自行修补版本差异后声称兼容。
 
-因此，v1 仅保存规范化来源指针与必要的展示快照。来源 schema 版本作为不透明元数据保存；在研究仓库正式批准并发布 schema 契约之前，不执行规范性 schema 校验或自动迁移。
+因此，v1 默认仅保存规范化来源指针和网站自身的协作元数据；来源内容的有限展示快照须单独审批。来源 schema 版本作为不透明元数据保存；在研究仓库正式批准并发布 schema 契约之前，不执行规范性 schema 校验或自动迁移。
 
 ## 2. 权威边界与状态语义
 
 | 信息 | 权威来源 | 网站 v1 的处理方式 |
 |---|---|---|
 | 研究问题、基准、假设、推导与研究变更历史 | 对应 research-change 记录 | 保存仓库 URL、精确 commit、记录 ID 与路径；不另建重复正文 |
-| 一次运行的执行状态、输入、代码、环境、输出和指纹 | 已批准版本的 run / run_manifest 记录 | 保存引用；若显示状态，明确标为来源快照 |
+| 一次运行的执行状态、输入、代码、环境、输出和指纹 | 已批准版本的 run / run_manifest 记录 | 默认仅保存引用；有限状态摘要须逐项获批，显示时明确标为来源快照 |
 | 文件/目录身份、SHA-256、生成来源与完整性 | 已批准版本的 artifact 记录及仓库内实际文件 | 保存 artifact ID、路径和来源 commit；不把站内附件 ID 当成同一个 artifact ID |
-| 物理 claim 与其证据、适用范围和未解决事项 | claim 记录或 claim–evidence matrix | 链接到来源；展示的摘要必须注明来源路径、commit 与快照时间 |
+| 物理 claim 与其证据、适用范围和未解决事项 | claim 记录或 claim–evidence matrix | 默认仅链接到来源；获批的有限摘要必须注明来源路径、commit 与快照时间 |
 | 网站内部的标题、专题入口、组内可见性和收藏导航 | 本网站 | 网站自己的数据库可维护这些协作元数据 |
 
 不得用单一的 `validated=true` 或 `status=passed` 表示整项研究已经验证。以下是互相独立的维度：
@@ -51,14 +51,14 @@
 | `schema_version` | 字符串 | 是 | 网站索引契约版本，当前提案为 `1.0.0`；与来源 schema 版本分开 |
 | `record_version` | 正整数 | 是 | 网站索引记录的并发更新版本 |
 | `title` | 字符串 | 是 | 去除首尾空白，1–200 字符 |
-| `summary` | 字符串 | 否 | 简短导航摘要；不得把未核实结果写成已证实物理结论 |
+| `summary` | 字符串 | 否 | 网站自有的简短导航文字；引用或转述私有来源内容时须先获得有限快照审批，不得把未核实结果写成已证实物理结论 |
 | `topic_slug` | 字符串 | 否 | 关联静态研究专题的稳定 slug，不使用后端自增 ID |
 | `record_kind` | 枚举 | 是 | `research_change` / `run_manifest` / `artifact_bundle` / `claim_evidence_matrix` / `external_record` / `manual_note` |
 | `lifecycle_state` | 枚举 | 是 | `draft` / `active` / `archived` |
 | `visibility` | 枚举 | 是 | v1 仅支持 `private` / `group`；公开发布需独立审核 |
 | `owner_user_id` | 本地用户 ID | 是 | 只在当前后端解释，不跨环境假定 ID 相同 |
 | `source_ref` | 对象 | 是 | 精确标识来源仓库、commit、记录类型/ID/路径、来源访问模式和可用的 manifest/artifact 指针 |
-| `display_snapshot` | 对象 | 是 | 网站用于展示的来源检查、运行状态与 claim 摘要快照；不能覆盖来源真值 |
+| `display_snapshot` | 对象 | 是 | 保存网站自身的来源检查元数据；来源运行状态和 claim 摘要默认不展示，仅允许展示已审批的有限快照，不能覆盖来源真值 |
 | `site_attachment_ids` | 字符串数组 | 是 | 网站自己的附件 ID；不与研究仓库的 artifact ID 混用 |
 | `snapshot_approvals` | 对象数组 | 是 | 经批准的来源摘要/片段的审批与指纹记录；默认空数组；不得仅因附件已上传而自动批准 |
 | `created_at` / `updated_at` | RFC 3339 时间 | 是 | UTC 时间，API 输出统一使用 `Z` 结尾 |
@@ -85,11 +85,11 @@
 
 ### 3.2 `display_snapshot`
 
-该对象只保存 UI 展示需要的快照：
+该对象区分网站自身的检查元数据与来源内容。默认 `link_only` 时，来源运行状态和 claim 内容字段为 null；仅在逐项审批有限快照并满足受众、撤销和过期限制后才可展示相应内容：
 
 - `source_integrity_status` 与 `source_checked_at`；
 - `schema_compatibility_status`；
-- `execution_status_snapshot` 与 `execution_snapshot_at`，只在来源确实提供运行状态时填写；
+- `execution_status_snapshot` 与 `execution_snapshot_at`，只在来源确实提供状态且有限展示已获批时填写；
 - `claim_status_summary`、`claim_status_source_path`、`claim_status_source_commit` 与 `summary_snapshot_at`。
 
 claim 摘要应保留来源的限定语，例如“Verification in progress; overall model-level claim unresolved”。网站不得将其转换为笼统的“验证通过”；当显式来源检查发现来源 commit 或文件内容变化时，必须标记相关摘要/快照为 stale，不能静默沿用旧摘要。v1 不承诺持续轮询私有仓库。
@@ -103,7 +103,7 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 - 独立复现记录、验证活动和实验约束评估；
 - 物理 claim 的正式状态与证据链。
 
-这些内容应继续留在来源 research-change、run_manifest、artifact 和 claim–evidence 记录中。若 UI 需要展示，后续应通过有版本约束的只读解析/投影来实现，并展示来源 commit、manifest revision/fingerprint 和读取时间。不得在本 PR 中实现远程代码执行或向研究仓库写入。
+这些内容应继续留在来源 research-change、run_manifest、artifact 和 claim–evidence 记录中。只读解析或投影不能绕过默认链接策略：若 UI 确需显示来源内容，仅允许经过逐项审批且受受众、撤销和过期限制的有限摘要或片段，并记录来源 commit、manifest revision/fingerprint 和读取时间。不得展示完整私有输出或以投影为由复制未审批内容。不得在本 PR 中实现远程代码执行或向研究仓库写入。
 
 ## 4. 示例索引对象（RC-001 映射草案，不是已创建记录）
 
@@ -177,7 +177,7 @@ v1 不将以下内容作为网站数据库的独立科学真值：
     "source_integrity_status": "not_checked",
     "source_checked_at": null,
     "schema_compatibility_status": "not_applicable",
-    "execution_status_snapshot": "not_applicable",
+    "execution_status_snapshot": null,
     "execution_snapshot_at": null,
     "claim_status_summary": null,
     "claim_status_source_path": null,
@@ -297,11 +297,11 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 - [ ] 来源身份包含精确 commit 与稳定记录路径/ID；单独的分支名或文件名不够。
 - [ ] 对没有规范 artifact ID 的来源文件，使用精确 commit + path + Git blob SHA；不把 Git blob SHA 误写为 SHA-256，也不虚构 artifact ID。
 - [ ] 不存在的 run/manifest ID 不会从脚本、日志或文件名推断出来。
-- [ ] 来源完整性、schema 兼容性、执行状态和 claim 状态在 UI 中分别显示。
+- [ ] 来源完整性与 schema 兼容性等网站检查状态与来源内容分开；执行状态或 claim 内容仅在有限快照获批时分别展示。
 - [ ] `linked` 或 `hash_match` 不被展示成“物理结论已验证”。
 - [ ] 私有记录不能被其他普通成员通过列表、详情、导出或附件引用端点读取。
 - [ ] 未审批、已撤销、已过期或指纹不匹配的摘要快照不会向组员显示；审批身份、目标可见性、来源 commit/path 与源/快照哈希可追溯。
-- [ ] 快照可见性不会超过索引记录可见性，来源更新会使相关快照进入待复核状态。
+- [ ] 快照可见性不会超过索引记录可见性；显式检查发现来源更新后，相关快照进入待复核状态。
 - [ ] `record_version` 冲突不会覆盖并发修改；来源变更保留旧索引记录和替代关系。
 - [ ] Demo 数据明确标记为合成数据，且不访问生产后端或私有研究仓库。
 - [ ] 候选 schema 在正式批准前仅作为不透明来源元数据，不被网站当作已发布的规范。
@@ -309,9 +309,9 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 
 ## 11. 当前决定与下一步
 
-### 已批准的访问策略（2026-10-26）
+### 已认可的访问原则（2026-10-27）
 
-项目负责人已确认采用以下基线：
+项目负责人已认可默认只链接来源、有限摘要须另行审批。以下是为落实该原则提出的设计细节，仍需在实现前审阅：
 
 1. `link_only` 是默认模式。索引保存精确来源链接、commit 和路径，但不授予来源仓库访问权，也不复制私有文件。
 2. 只有确有组内阅读需要时，才允许 `attached_snapshot`；必须对具体摘要/节选逐项审批，记录审批人及权限、来源 commit/path、源文件与快照指纹、脱敏状态和目标可见范围。
@@ -324,4 +324,4 @@ v1 不将以下内容作为网站数据库的独立科学真值：
 2. 哪些摘要适合缓存，哪些必须仅提供跳转；
 3. 研究仓库 schema 获得正式批准后，如何通过版本化适配器映射 run、manifest、artifact 和 claim。
 
-项目负责人于 2026-10-27 认可本索引提案作为后续设计依据；该认可不等于批准数据库迁移、API 设计的全部细节或生产部署。具体实现应在独立 PR 中说明数据结构、权限、来源访问与验证结果。GitHub Actions 的账户计费问题仍待处理；不能把被跳过或未运行的检查记作通过。研究仓库候选 schema 的正式发布、迁移和物理结果的科学验收仍由各自的治理与研究流程决定。
+项目负责人于 2026-10-27 认可上述默认链接与有限摘要另行审批的访问原则；具体模型、API、审批机制、数据库迁移和生产部署仍待独立审阅。具体实现应在独立 PR 中说明数据结构、权限、来源访问与验证结果。GitHub Actions 的账户计费问题仍待处理；不能把被跳过或未运行的检查记作通过。研究仓库候选 schema 的正式发布、迁移和物理结果的科学验收仍由各自的治理与研究流程决定。
