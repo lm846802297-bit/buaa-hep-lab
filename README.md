@@ -38,7 +38,6 @@
 <p align="center">
   <a href="#-中文文档"><img src="https://img.shields.io/badge/文档-简体中文-blue.svg" alt="Chinese Doc"></a>
   <a href="#-english-documentation"><img src="https://img.shields.io/badge/Document-English-green.svg" alt="English Doc"></a>
-  <img src="https://img.shields.io/badge/License-MIT-emerald.svg" alt="License">
   <img src="https://img.shields.io/badge/Tests-CI%20gated-informational.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Python-3.11+-3776AB.svg?logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Vue.js-3.x-4FC08D.svg?logo=vuedotjs&logoColor=white" alt="Vue 3">
@@ -326,7 +325,7 @@ R2 仅是未来可选扩展。只有在资源、费用/账户条件、`FILES_BUC
 
 ### 4. 开源协议与非营利声明
 
-- **MIT License**：本项目基于通用的 [MIT 许可证](LICENSE) 开源，可自由使用、修改与部署；
+- **许可状态**：当前仓库根目录未包含 `LICENSE` 文件，项目许可尚待明确；请勿仅凭上游说明或历史徽章将本仓库描述为 MIT licensed；
 - **非营利声明**：本项目完全开源，为个人/课题组科研实际需求驱动的非营利工具，不包含任何商业变现或付费功能；
 - **欢迎共建**：欢迎提出改进建议、提交 Issue 或发起 Pull Request。
 
@@ -601,7 +600,7 @@ The user interface and animations make use of several open-source libraries:
 
 ### 4. License & Non-Profit Statement
 
-- **License**: Released under the [MIT License](LICENSE). Free to use, adapt, and self-host;
+- **License status**: This repository currently has no root-level `LICENSE` file, so its license remains to be clarified. Do not describe this repository as MIT-licensed based only on inherited upstream documentation or a historical badge;
 - **Non-Profit Statement**: This is a 100% open-source, non-profit tool developed for academic research workflows. It contains no commercial promotion, paid features, or monetization;
 - **Contributions**: Feedback, issue reports, and pull requests are warmly welcomed.
 
