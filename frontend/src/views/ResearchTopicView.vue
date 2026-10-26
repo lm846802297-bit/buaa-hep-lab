@@ -1,6 +1,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { directions, publications, publicContentIndexCheckedAt } from '../content/lab'
+import { publicBrandIdentity } from '../content/brandIdentity'
 import { publicationReviewStatus } from '../utils/publicationReview'
 import { researchTopicDetails, researchTopicResources } from '../content/researchTopicDetails'
 import { researchTopicDeepGuides } from '../content/researchTopicDeepGuides'
@@ -56,8 +57,8 @@ const topicSectionTitles = computed(() => Object.fromEntries(
 const contentReview = computed(() => publicationReviewStatus(publicContentIndexCheckedAt))
 onMounted(async () => {
   document.title = topic.value
-    ? `${topic.value.title} | BUAA HEP Hub`
-    : '研究专题不存在 | BUAA HEP Hub'
+    ? `${topic.value.title} | ${publicBrandIdentity.name}`
+    : `研究专题不存在 | ${publicBrandIdentity.name}`
   await nextTick()
   observeTopicSections()
 })
@@ -75,7 +76,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
     <nav class="topic-breadcrumb" aria-label="面包屑">
       <a href="/" class="topic-breadcrumb-home">
         <span aria-hidden="true">⌂</span>
-        <span>返回课题组首页</span>
+        <span>返回{{ publicBrandIdentity.name }}首页</span>
       </a>
       <span aria-hidden="true">/</span>
       <a href="/#research">研究方向</a>
@@ -115,7 +116,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
         <aside v-if="topicDetail" class="topic-sidebar" aria-label="专题目录">
           <a href="/" class="topic-sidebar-home">
             <span class="topic-sidebar-home-icon" aria-hidden="true">⌂</span>
-            <span>返回课题组首页</span>
+            <span>返回{{ publicBrandIdentity.name }}首页</span>
             <span class="topic-sidebar-home-arrow" aria-hidden="true">↗</span>
           </a>
           <div class="topic-sidebar-heading">
@@ -318,7 +319,7 @@ onBeforeUnmount(() => topicSectionObserver?.disconnect())
 
       <footer class="topic-footer">
         <p>本专题是带有来源入口、适用条件与失效边界的研究导读；它不替代原始论文、独立计算或实验分析复现。正式引用时请以所链接的原始来源及其版本为准。</p>
-        <router-link to="/" class="button secondary">返回课题组首页</router-link>
+        <router-link to="/" class="button secondary">返回{{ publicBrandIdentity.name }}首页</router-link>
       </footer>
         </div>
       </div>

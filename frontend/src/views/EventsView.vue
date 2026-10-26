@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { publicEvents, publicSeminarSeries } from '../content/lab'
+import { publicBrandIdentity } from '../content/brandIdentity'
 import { publicationReviewStatus } from '../utils/publicationReview'
 import { buildPublicIcsCalendar, listPublicArchivedEvents, listPublicUpcomingEvents } from '../utils/publicEvents'
 
@@ -31,13 +32,13 @@ function downloadCalendar() {
   link.click()
   URL.revokeObjectURL(url)
 }
-onMounted(() => { document.title = '公开学术活动 | BUAA HEP Hub' })
+onMounted(() => { document.title = `公开学术活动 | ${publicBrandIdentity.name}` })
 </script>
 
 <template>
   <main class="events-page">
     <nav class="breadcrumb" aria-label="面包屑">
-      <router-link to="/">BUAA HEP Hub</router-link><span aria-hidden="true">/</span><span aria-current="page">学术活动</span>
+      <router-link to="/">{{ publicBrandIdentity.name }}</router-link><span aria-hidden="true">/</span><span aria-current="page">学术活动</span>
     </nav>
     <header class="page-hero">
       <p class="eyebrow">SEMINARS & ACADEMIC EVENTS</p>
