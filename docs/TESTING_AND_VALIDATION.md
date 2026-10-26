@@ -59,6 +59,8 @@ npm run build
 
 因此，`npm run build` 不只是 Vite 打包，还包含本地 Cloudflare Functions 验证。它不会因为命令名里有 build 就自动部署生产环境。
 
+**Windows 注意：** 根目录脚本最后使用 `rm -rf` 与 `cp -a`，面向 POSIX shell；在原生 PowerShell/CMD 中可能失败。Windows 原生环境可分别运行 `npm --prefix frontend run build`、`npm run verify:cloudflare` 和 `npm run check:bundle`，或在 WSL/Git Bash 中运行根目录构建。
+
 ### 公开入口与 bundle 检查
 
 ```bash
@@ -79,7 +81,7 @@ Demo 构建使用 `VITE_DEMO_MODE=true` 和 GitHub Pages base 路径，产物位
 
 仅在高影响的 UI 变更时运行，例如全局壳层、路由、主题系统、公开首页/研究专题导航，以及浏览器烟测脚本本身的改动。
 
-先完成构建，再安装 Playwright 对应的 Chromium：
+先完成构建，再安装 Playwright 对应的 Chromium（Windows 原生环境请按上面的构建平台说明选择命令）：
 
 ```bash
 npm run build
