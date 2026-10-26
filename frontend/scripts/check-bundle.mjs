@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { gzipSync } from 'node:zlib'
 import { directions, publicPeople, publicEvents, publicSeminarSeries } from '../src/content/lab.js'
+import { publicBrandIdentity } from '../src/content/brandIdentity.js'
 
 const manifest = JSON.parse(await readFile('dist/.vite/manifest.json', 'utf8'))
 const seen = new Set()
@@ -24,9 +25,9 @@ assert(html.includes('高能粒子物理唯象学') && html.includes('https://ar
 assert(!html.includes('rel="preload" as="image"'), 'Global background preload must not return')
 
 const publicRoutes = [
-  ...directions.map(topic => ({ path: `research/${topic.id}`, title: `${topic.title} | BUAA HEP Hub`, content: topic.question })),
-  { path: 'people', title: '团队与学术指导 | BUAA HEP Hub', content: '不是完整人员名册' },
-  { path: 'events', title: '公开学术活动 | BUAA HEP Hub', content: '内部组会排期' },
+  ...directions.map(topic => ({ path: `research/${topic.id}`, title: `${topic.title} | ${publicBrandIdentity.name}`, content: topic.question })),
+  { path: 'people', title: `团队与学术指导 | ${publicBrandIdentity.name}`, content: '不是完整人员名册' },
+  { path: 'events', title: `公开学术活动 | ${publicBrandIdentity.name}`, content: '内部组会排期' },
 ]
 const publicHtml = [html]
 for (const route of publicRoutes) {

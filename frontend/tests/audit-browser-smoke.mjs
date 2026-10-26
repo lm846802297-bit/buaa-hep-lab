@@ -41,6 +41,11 @@ try {
     await page.setViewportSize({ width, height: width === 2048 ? 768 : 900 })
     await page.goto(base, { waitUntil: 'networkidle' })
     await page.locator('.app-shell .lab-public').waitFor()
+    check((await page.title()).includes('引力之外'), `homepage document title uses the brand at ${width}px`)
+    check(await page.locator('meta[property="og:title"]').getAttribute('content') === await page.title(), `homepage Open Graph title matches the document title at ${width}px`)
+    check(await page.locator('meta[name="twitter:title"]').getAttribute('content') === await page.title(), `homepage Twitter title matches the document title at ${width}px`)
+    check(await page.locator('meta[property="og:description"]').getAttribute('content') === await page.locator('meta[name="description"]').getAttribute('content'), `homepage Open Graph description matches the page description at ${width}px`)
+    check(await page.locator('meta[name="twitter:description"]').getAttribute('content') === await page.locator('meta[name="description"]').getAttribute('content'), `homepage Twitter description matches the page description at ${width}px`)
     if (width === 2048) {
       const composition = await page.locator('.worldline-home').evaluate(root => {
         const header = root.querySelector('.worldline-header').getBoundingClientRect()
@@ -145,6 +150,10 @@ try {
     }))
     check(heroModules.worldline === (scheme === 'worldline-console') && heroModules.selectedTheme === (scheme === 'worldline-console' ? null : scheme), scheme + ' mounts only its own hero implementation')
     check(visual.accent === expectedAccent, scheme + ' keeps its own accent palette: ' + visual.accent)
+    const brand = page.locator('.worldline-header .worldline-brand, .public-header .public-brand')
+    check(await brand.count() === 1, scheme + ' renders exactly one shared public brand link')
+    check((await brand.locator('.brand-copy strong').textContent())?.trim() === '引力之外', scheme + ' renders the approved public brand name')
+    check((await brand.locator('.brand-copy small').textContent())?.trim() === '高能理论与粒子唯象研究', scheme + ' renders the shared academic-focus subtitle')
   }
   check(new Set(Object.values(themeAccents)).size === 5, 'all five public themes retain distinct computed accents')
 
@@ -725,6 +734,11 @@ try {
     for (const topic of ['dark', 'neutrino', 'collider', 'phase', 'precision']) {
       await page.goto(`${base}/research/${topic}`, { waitUntil: 'networkidle' })
       await page.locator('.research-topic-page').waitFor()
+      check((await page.title()).includes('引力之外'), `research topic ${topic} uses the brand in its title at ${width}px`)
+      check(await page.locator('meta[property="og:title"]').getAttribute('content') === await page.title(), `research topic ${topic} Open Graph title matches its document title at ${width}px`)
+      check(await page.locator('meta[name="twitter:title"]').getAttribute('content') === await page.title(), `research topic ${topic} Twitter title matches its document title at ${width}px`)
+      check(await page.locator('meta[property="og:description"]').getAttribute('content') === await page.locator('meta[name="description"]').getAttribute('content'), `research topic ${topic} Open Graph description matches its document description at ${width}px`)
+      check(await page.locator('meta[name="twitter:description"]').getAttribute('content') === await page.locator('meta[name="description"]').getAttribute('content'), `research topic ${topic} Twitter description matches its document description at ${width}px`)
       check(await page.getByRole('button', { name: '切换官网风格' }).isVisible(), `public skin icon is visible on research topic ${topic}`)
       check(await page.locator('h1').isVisible(), `research topic ${topic} renders at ${width}px`)
       const illustration = page.locator('.topic-visual-panel img')
@@ -760,6 +774,11 @@ try {
     await page.goto(`${base}/research/not-a-real-topic`, { waitUntil: 'networkidle' })
     check(await page.getByRole('heading', { name: '没有找到这个研究专题。' }).isVisible(), `unknown research topic has a recovery state at ${width}px`)
     await page.goto(`${base}/people`, { waitUntil: 'networkidle' })
+    check((await page.title()).includes('引力之外'), `public people page title uses the brand at ${width}px`)
+    check(await page.locator('meta[property="og:title"]').getAttribute('content') === await page.title(), `public people Open Graph title matches its document title at ${width}px`)
+    check(await page.locator('meta[name="twitter:title"]').getAttribute('content') === await page.title(), `public people Twitter title matches its document title at ${width}px`)
+    check(await page.locator('meta[property="og:description"]').getAttribute('content') === await page.locator('meta[name="description"]').getAttribute('content'), `public people Open Graph description matches its document description at ${width}px`)
+    check(await page.locator('meta[name="twitter:description"]').getAttribute('content') === await page.locator('meta[name="description"]').getAttribute('content'), `public people Twitter description matches its document description at ${width}px`)
     check(await page.getByRole('button', { name: '切换官网风格' }).isVisible(), `public skin icon is visible on team directory at ${width}px`)
     check(await page.getByRole('heading', { name: '团队与学术指导' }).isVisible(), `public people directory renders at ${width}px`)
     check(await page.locator('.person-card').count() === 2, 'only the two approved public academic profiles render')
@@ -767,6 +786,11 @@ try {
     check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `public people directory fits ${width}px`)
     if (width === 390 || width === 1440) await page.screenshot({ path: resolve(output, `people-${width}.png`), fullPage: true })
     await page.goto(`${base}/events`, { waitUntil: 'networkidle' })
+    check((await page.title()).includes('引力之外'), `public events page title uses the brand at ${width}px`)
+    check(await page.locator('meta[property="og:title"]').getAttribute('content') === await page.title(), `public events Open Graph title matches its document title at ${width}px`)
+    check(await page.locator('meta[name="twitter:title"]').getAttribute('content') === await page.title(), `public events Twitter title matches its document title at ${width}px`)
+    check(await page.locator('meta[property="og:description"]').getAttribute('content') === await page.locator('meta[name="description"]').getAttribute('content'), `public events Open Graph description matches its document description at ${width}px`)
+    check(await page.locator('meta[name="twitter:description"]').getAttribute('content') === await page.locator('meta[name="description"]').getAttribute('content'), `public events Twitter description matches its document description at ${width}px`)
     check(await page.getByRole('button', { name: '切换官网风格' }).isVisible(), `public skin icon is visible on events page at ${width}px`)
     check(await page.getByRole('heading', { name: '学术活动' }).isVisible(), `public events page renders at ${width}px`)
     check(await page.getByText('目前没有已核验的近期公开活动。组内内部组会不会自动发布到此页面。').isVisible(), 'no unreviewed or internal seminar records are shown publicly')
@@ -784,6 +808,10 @@ try {
   check(await staticPage.locator('a[href="https://arxiv.org/abs/2210.09335"]').count() > 0, 'static HTML includes approved research links')
   check(await staticPage.locator('.research-static article').count() === 5, 'all five detailed research descriptions are readable without JavaScript')
   check(await staticPage.locator('.physics-resource-card a').count() === 9, 'all public resource links work without JavaScript')
+  check((await staticPage.title()).includes('引力之外'), 'homepage has the brand in static HTML title')
+  check(await staticPage.locator('meta[property="og:title"]').getAttribute('content') === await staticPage.title(), 'homepage Open Graph title matches the static HTML title')
+  check(await staticPage.locator('meta[property="og:description"]').getAttribute('content') === await staticPage.locator('meta[name="description"]').getAttribute('content'), 'homepage Open Graph description matches the static page description')
+  check(await staticPage.locator('meta[name="twitter:description"]').getAttribute('content') === await staticPage.locator('meta[name="description"]').getAttribute('content'), 'homepage Twitter description matches the static page description')
   for (const route of [
     { path: '/research/dark', heading: '暗物质与暗扇区' },
     { path: '/people', heading: '团队与学术指导' },
@@ -792,6 +820,9 @@ try {
     await staticPage.goto(base + route.path)
     check(await staticPage.getByRole('heading', { name: route.heading, exact: true }).isVisible(), `public route ${route.path} renders without JavaScript`)
     check(await staticPage.locator('link[rel="canonical"]').getAttribute('href') === `https://buaa-hep-hub.pages.dev${route.path}`, `public route ${route.path} has static canonical metadata`)
+    check((await staticPage.title()).includes('引力之外'), `public route ${route.path} has a branded static title`)
+    check(await staticPage.locator('meta[property="og:title"]').getAttribute('content') === await staticPage.title(), `public route ${route.path} Open Graph title matches its static title`)
+    check(await staticPage.locator('meta[property="og:description"]').getAttribute('content') === await staticPage.locator('meta[name="description"]').getAttribute('content'), `public route ${route.path} Open Graph description matches its static description`)
   }
   await nojs.close()
 

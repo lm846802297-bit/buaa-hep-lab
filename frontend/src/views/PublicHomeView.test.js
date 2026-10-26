@@ -3,6 +3,7 @@ import { createSSRApp, h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import PublicHomeView from './PublicHomeView.vue'
 import { lab, advisorProfile, collaborators, publications, directions, publicResources } from '../content/lab'
+import { publicBrandIdentity } from '../content/brandIdentity'
 
 describe('Public academic website', () => {
   it('renders research and verified papers without a session or backend', async () => {
@@ -10,6 +11,10 @@ describe('Public academic website', () => {
     app.component('router-link', { props: ['to'], setup: (props, { slots }) => () => h('a', { href: props.to }, slots.default?.()) })
     const html = await renderToString(app)
     expect(html).toContain('高能粒子物理唯象学')
+    expect(html).toContain(publicBrandIdentity.name)
+    expect(html).toContain(publicBrandIdentity.fractionMark)
+    expect(html).toContain(publicBrandIdentity.academicFocus)
+    expect(html.toLowerCase()).toContain(publicBrandIdentity.englishDescriptor.toLowerCase())
     expect(html).toContain('暂定名称')
     // Keep exactly one collaboration entry in the header navigation,
     // styled prominently rather than duplicated as a second CTA.
@@ -85,6 +90,7 @@ describe('Public academic website', () => {
   })
   it('keeps the public content profile limited to approved academic fields', () => {
     expect(Object.keys(lab).sort()).toEqual(['name', 'provisional', 'shortName', 'institution', 'field', 'english', 'advisor', 'source', 'intro'].sort())
+    expect(lab.provisional).toBe(true)
     expect(JSON.stringify(lab)).not.toMatch(/[\w.-]+@[\w.-]+/)
     expect(Object.keys(advisorProfile).sort()).toEqual(['name', 'groupRole', 'english', 'institution', 'title', 'field', 'topics', 'intro', 'source'].sort())
     expect(JSON.stringify(advisorProfile)).not.toMatch(/邮箱|电话|办公|履历|照片|[\w.-]+@[\w.-]+/)

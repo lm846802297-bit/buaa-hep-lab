@@ -4,6 +4,8 @@ import PublicThemeSwitcher from './PublicThemeSwitcher.vue'
 import PublicSectionNav from './PublicSectionNav.vue'
 import { usePublicHeroVisual } from '../composables/usePublicHeroVisual'
 import { lab } from '../content/lab'
+import PublicBrand from './PublicBrand.vue'
+import { publicBrandIdentity } from '../content/brandIdentity'
 
 const menuOpen = ref(false)
 const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisual()
@@ -13,10 +15,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   <div class="worldline-home" :class="'visual-' + heroVisualMode">
     <PublicSectionNav />
     <header class="worldline-header">
-      <a href="#top" class="worldline-brand" aria-label="课题组首页" @click="menuOpen = false">
-        <svg class="worldline-brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="24" cy="24" r="17"/><ellipse cx="24" cy="24" rx="9" ry="22" transform="rotate(45 24 24)"/><path d="M3 24h42"/><circle cx="24" cy="24" r="3" fill="currentColor"/></svg>
-        <span><strong>{{ lab.shortName }}</strong><small>北京航空航天大学 · 物理学院</small></span>
-      </a>
+      <PublicBrand variant="worldline" @click="menuOpen = false" />
       <button class="worldline-menu-toggle" type="button" :aria-expanded="menuOpen" aria-controls="worldline-navigation" @click="menuOpen = !menuOpen">{{ menuOpen ? '关闭菜单' : '菜单' }}</button>
       <nav id="worldline-navigation" class="worldline-navigation" :class="{ open: menuOpen }" aria-label="官网导航">
         <a href="#research" @click="menuOpen = false">研究方向</a>
@@ -45,7 +44,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
       </div>
 
       <div class="worldline-copy">
-        <div class="worldline-eyebrow"><span aria-hidden="true"></span> PARTICLE PHYSICS PHENOMENOLOGY</div>
+        <div class="worldline-eyebrow"><span aria-hidden="true"></span> {{ publicBrandIdentity.englishDescriptor.toUpperCase() }}</div>
         <h1 id="worldline-hero-title">Particle Physics<br><span>Research<br>Group</span></h1>
         <p class="worldline-intro">{{ lab.intro }}</p>
         <div class="worldline-actions">
@@ -126,7 +125,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 .worldline-affiliation { position: absolute; z-index: 3; left: clamp(24px, calc(50vw - 512px), 640px); bottom: clamp(48px, 12vh, 92px); color: #52606d; font: 500 10px/1.5 var(--font, Arial, sans-serif); letter-spacing: .06em; }
 .coordinate-right { right: 2%; bottom: 10%; writing-mode: vertical-rl; }
 .worldline-copy { position: relative; z-index: 3; width: min(600px, 100%); padding-block: 12px 26px; }
-.worldline-eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; color: var(--wl-muted); font-size: 10px; letter-spacing: .2em; }
+.worldline-eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; max-width: 100%; margin-bottom: 16px; color: var(--wl-muted); font-size: 10px; line-height: 1.6; letter-spacing: .12em; }
 .worldline-eyebrow span { width: 24px; height: 1px; background: #527a82; }
 .worldline-copy h1 { max-width: 600px; margin: 0; color: #141a21; font: 400 clamp(52px, 4.2vw, 88px)/.98 var(--serif, Georgia, 'Times New Roman', serif); letter-spacing: -.055em; }
 .worldline-copy h1 span { color: #1d3046; }
