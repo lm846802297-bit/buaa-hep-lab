@@ -13,6 +13,7 @@
 | 了解部署流程 | [Cloudflare 部署指南](CLOUDFLARE_DEPLOYMENT.md) | Pages、D1 与部署步骤；实际环境状态需另行核验 |
 | 准备研究内容 | [研究内容模板](research-content-template.md) | 新增研究内容时使用的模板 |
 | 了解仓库组织计划 | [仓库整理计划](REPOSITORY_ORGANIZATION_PLAN.md) | 文档治理和后续低风险整理顺序 |
+| 选择测试与验证命令 | [测试与验证命令对照表](TESTING_AND_VALIDATION.md) | 按变更风险选择本地测试、构建与环境检查 |
 
 ## 按用途浏览
 
@@ -34,6 +35,8 @@
 - [云迁移目录](cloud-migration/README.md)：自建部署向云端迁移的专项材料。
 
 ### 审计、测试与证据
+
+- [测试与验证命令对照表](TESTING_AND_VALIDATION.md)：根据改动范围选择当前仓库中实际存在的测试、构建和隔离环境检查命令。
 
 `audit/` 保存审计报告、核查记录、测试基线和证据快照。此类材料常带有时间、提交 SHA 或特定环境假设；引用前应核对日期、目标提交与适用范围，不能仅因文件存在就视为当前结论。
 
