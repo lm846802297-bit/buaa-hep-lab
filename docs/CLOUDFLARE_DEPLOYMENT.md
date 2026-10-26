@@ -1,5 +1,7 @@
 # LabOrbit Cloudflare Serverless 全托管部署与无缝迁移指南
 
+> **本仓库生产环境警告（优先级高于本文其余通用示例）：** 本文保留上游通用迁移说明，其中包含创建数据库、导入示例数据和直传部署命令；这些步骤**不适用于现有 BUAA HEP Hub 生产环境**。生产项目 `buaa-hep-hub` 和 D1 数据库已经存在。不要照本文创建新库、执行 `data_d1.sql`、或在本地直接运行生产 `pages:deploy`。仓库发布流程见 [GitHub Actions 发布说明](RELEASE_AUTHORITY.md)；同时，截至 2026-10-26，Cloudflare Pages Dashboard 仍开启原生 Git 自动部署，合并 `main` 可能触发另一条生产部署路径。本地预览使用 `npm run pages:dev`。当前 `frontend/wrangler.json` 不启用 R2，不能假定 R2 已绑定。
+
 本指南指导如何将课题组协作平台（LabOrbit）**彻底脱离对物理服务器的依赖**，完整迁移到 Cloudflare 全托管 Serverless 架构，实现免自备服务器的 Serverless 部署。免费套餐有明确用量上限，是否产生费用取决于账户套餐、资源配置及实际用量；请勿将免费额度视为永久保证。
 
 ---
