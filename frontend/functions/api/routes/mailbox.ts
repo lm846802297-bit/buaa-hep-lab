@@ -6,8 +6,15 @@ import { authMiddleware, adminOnlyMiddleware } from '../middleware/auth';
 import { CloudflareImapClient, decryptUserPassword, parseRawEmail, extractMessageId, extractDateHeader, extractSubjectHeader, isTalkEmail, isConferenceEmail, isNoticeEmail } from '../utils/imap';
 import { CloudflareSmtpClient, parseExternalEmails } from '../utils/smtp';
 
+function toDigestArrayBuffer(input: Uint8Array | ArrayBuffer): ArrayBuffer {
+  if (input instanceof ArrayBuffer) return input;
+  const copy = new ArrayBuffer(input.byteLength);
+  new Uint8Array(copy).set(input);
+  return copy;
+}
+
 async function computeSha256(data: Uint8Array | ArrayBuffer): Promise<string> {
-  const hashBuf = await crypto.subtle.digest('SHA-256', data);
+  const hashBuf = await crypto.subtle.digest('SHA-256', toDigestArrayBuffer(data));
   const hashArr = Array.from(new Uint8Array(hashBuf));
   return hashArr.map(b => b.toString(16).padStart(2, '0')).join('');
 }

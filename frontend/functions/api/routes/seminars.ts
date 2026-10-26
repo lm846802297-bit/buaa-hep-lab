@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { Env, UserRow } from '../types';
 import { authMiddleware, canManageSeminars, isAssignedPresenter, adminOnlyMiddleware, seminarManagerMiddleware } from '../middleware/auth';
 import { resolveOrCreateSeminarPaper, archiveSeminarPresentationArxiv, unarchiveSeminarPresentationArxiv, extractArxivId, extractAllArxivIds, fetchArxivMetadata, decodeHtmlEntities } from '../utils/papers';
@@ -892,7 +892,9 @@ app.put('/:id', async (c) => {
   return c.json({ ...updated, status: effectiveStatus, paper, presentations: presentations || [] });
 });
 
-async function handlePresentationShare(c: any) {
+type ApiContext = Context<{ Bindings: Env; Variables: { user: UserRow } }>;
+
+async function handlePresentationShare(c: ApiContext) {
   const user = c.get('user');
   const seminarId = parseInt(c.req.param('id'), 10);
   const body = await c.req.json().catch(() => ({}));
@@ -1272,7 +1274,7 @@ app.post('/batch-location', seminarManagerMiddleware, async (c) => {
   });
 });
 
-async function handlePostponeCascade(c: any, seminarIdParam?: string) {
+async function handlePostponeCascade(c: ApiContext, seminarIdParam?: string) {
   const body = await c.req.json().catch(() => ({}));
   const seminarId = seminarIdParam || body.seminar_id || body.id;
   const days = Number(body.days) || 7;

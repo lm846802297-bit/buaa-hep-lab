@@ -1,0 +1,43 @@
+name: Module architecture checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: module-architecture-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  module-boundaries:
+    name: Module dependency boundaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Test boundary rules
+        run: node scripts/check-module-boundaries.mjs --self-test
+      - name: Check source dependency directions
+        run: npm --prefix frontend run check:module-boundaries
+
+  cloudflare-types:
+    name: Cloudflare Pages TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install locked frontend dependencies
+        run: npm --prefix frontend ci
+      - name: Type-check Pages Functions
+        run: npm --prefix frontend run check:types:cloudflare
