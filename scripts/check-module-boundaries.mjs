@@ -12,6 +12,13 @@ const codeExtensions = new Set(['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts', '.
 const repoPath = (absolutePath) => path.relative(repositoryRoot, absolutePath).split(path.sep).join('/');
 const isWithin = (file, directory) => file === directory || file.startsWith(directory + '/');
 
+function isRuntimeSourceFile(file) {
+  const normalized = file.replaceAll('\\', '/');
+  const isTestDirectory = normalized.split('/').includes('__tests__');
+  const isTestFile = /\.(?:test|spec)\.[^.]+$/i.test(path.posix.basename(normalized));
+  return !isTestDirectory && !isTestFile;
+}
+
 function walkCodeFiles(directory) {
   const files = [];
   for (const entry of readdirSync(directory, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
@@ -117,6 +124,17 @@ function getBoundaryViolations(importer, target) {
 }
 
 function runSelfTest() {
+  assert.equal(
+    isRuntimeSourceFile('frontend/src/utils/papers.test.js'),
+    false,
+    'test modules may import server helpers for isolated behavioral tests',
+  );
+  assert.equal(
+    isRuntimeSourceFile('frontend/src/utils/papers.js'),
+    true,
+    'runtime modules remain subject to dependency-boundary checks',
+  );
+
   const cases = [
     ['frontend/src/utils/date.js', 'frontend/src/views/HomeView.vue', 'LAYER-001'],
     ['frontend/src/services/papers.js', 'frontend/src/components/PaperCard.vue', 'LAYER-001'],
@@ -171,7 +189,7 @@ function main() {
     path.join(frontendRoot, 'src'),
     path.join(frontendRoot, 'functions', 'api'),
   ];
-  const files = roots.flatMap(walkCodeFiles);
+  const files = roots.flatMap(walkCodeFiles).filter((file) => isRuntimeSourceFile(repoPath(file)));
   const violations = [];
   let checkedImports = 0;
 

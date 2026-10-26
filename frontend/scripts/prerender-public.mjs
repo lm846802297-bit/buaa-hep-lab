@@ -11,7 +11,7 @@ const isDemo = process.env.VITE_DEMO_MODE === 'true'
 const base = process.env.GITHUB_PAGES === 'true'
   ? `/${process.env.GITHUB_REPOSITORY?.split('/')[1] || 'lab-orbit'}/`
   : '/'
-const server = await createServer({ server: { middlewareMode: true }, appType: 'custom' })
+const server = await createServer({ server: { middlewareMode: true }, appType: 'custom', optimizeDeps: { noDiscovery: true } })
 
 function escapeHtml(value = '') {
   return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

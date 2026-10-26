@@ -78,7 +78,7 @@ jobs:
               frontend/public/learning/*|frontend/src/content/learning.js) learning=1 ;;
             esac
             case "$file" in
-              package.json|package-lock.json|frontend/functions/*|frontend/wrangler.json|frontend/package.json|frontend/package-lock.json|scripts/schema_d1.sql|scripts/verify-cloudflare.mjs|.github/workflows/deploy.yml)
+              package.json|package-lock.json|frontend/functions/*|frontend/benchmarks/bcrypt/*|frontend/wrangler.json|frontend/package.json|frontend/package-lock.json|scripts/schema_d1.sql|scripts/verify-cloudflare.mjs|.github/workflows/deploy.yml)
                 cloudflare=1 ;;
             esac
             case "$file" in
@@ -236,6 +236,23 @@ jobs:
       - name: Isolated Cloudflare security checks
         if: needs.changes.outputs.cloudflare == '1' && needs.changes.outputs.build != '1'
         run: node scripts/verify-cloudflare.mjs
+      - name: Validate isolated bcrypt Worker bundle without deployment
+        if: needs.changes.outputs.frontend_tests == '1'
+        working-directory: frontend
+        run: npx wrangler deploy --dry-run --outdir /tmp/buaa-hep-bcrypt-bundle --config benchmarks/bcrypt/wrangler.jsonc
+      - name: Reproducible bcrypt benchmark (local evidence only)
+        if: needs.changes.outputs.frontend_tests == '1'
+        run: |
+          node frontend/benchmarks/bcrypt/run.mjs --runtime node --samples 50 --warmup 5 --out benchmark-results/node.json
+          node frontend/benchmarks/bcrypt/run.mjs --runtime workerd --samples 50 --warmup 5 --out benchmark-results/workerd.json
+      - name: Retain benchmark samples and environment
+        if: always() && needs.changes.outputs.frontend_tests == '1'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bcrypt-local-evidence
+          path: benchmark-results/*.json
+          if-no-files-found: warn
+          retention-days: 90
 
   backend:
     needs: changes
