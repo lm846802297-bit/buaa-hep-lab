@@ -12,7 +12,9 @@
 
 ## 2. 正式发布路径
 
-仓库的正式发布流程由 `.github/workflows/deploy.yml` 管理。当前 Cloudflare Pages 还启用了连接 `main` 的原生 Git 自动部署，因此主线提交可能独立触发生产构建；该路径不会等待 GitHub Actions 验证。具体证据和双路径待处理事项见 [发布权威与核验记录](RELEASE_AUTHORITY.md)。不要为了方便而直接在本地运行 `wrangler pages deploy` 绕过门禁。
+仓库的正式发布流程由 `.github/workflows/deploy.yml` 管理。2026-10-27 的部署记录显示 Cloudflare Pages 还启用了连接 `main` 的原生 Git 自动部署，因此主线提交可能独立触发生产构建；该路径不会等待 GitHub Actions 验证。具体证据和双路径待处理事项见 [发布权威与核验记录](RELEASE_AUTHORITY.md)。不要为了方便而直接在本地运行 `wrangler pages deploy` 绕过门禁。
+
+在合并生产变更之前，先重新核实 Pages 控制台的 Git 集成设置，并决定是否关闭原生生产自动部署或将其改为仅创建预览，避免它绕过仓库工作流的验证。记录实际决定和部署路径后，再进行合并与发布。
 
 1. 在 PR 的**当前 HEAD** 上运行与改动范围相符的测试、构建、包体积、浏览器和隔离运行时检查。新提交产生新 SHA 后，旧 SHA 的成功记录不能替代新提交的验证。
 2. 合并后，Actions 工作流根据变更范围判断是否需要 Pages 发布；发布候选必须满足工作流中的 PR/验证条件，且提交消息不得含有 `[skip-prod-deploy]`。这一标记只约束仓库工作流，不会阻止当前 Pages 原生 Git 集成独立构建和发布。
@@ -32,11 +34,14 @@ npm --prefix frontend run check:bundle
 node scripts/verify-cloudflare.mjs
 ```
 
-若改动了 FastAPI 路由、模型、服务或数据库行为，还需运行：
+若改动了 FastAPI 路由、模型、服务或数据库行为，请先在隔离的 Python 环境中安装 `backend/requirements-test.txt`，然后使用仅供本地测试的密钥运行测试。例如，在 Windows PowerShell 中：
 
-```bash
-python -m pytest backend -q
+```powershell
+python -m pip install -r backend/requirements-test.txt
+powershell -NoProfile -Command '$env:LABHUB_SECRET_KEY = "isolated-local-test-secret-never-for-production-32-plus"; python -m pytest backend -q'
 ```
+
+示例密钥是公开的测试值，只能用于隔离测试数据库，不能用于生产。测试子进程中的环境变量不会覆盖当前 PowerShell 窗口的设置。
 
 若改动涉及全局壳层、路由、主题、公开首页/专题导航或烟测脚本，还需按项目规范运行 Chromium 烟测。部署后的线上核验使用：
 
