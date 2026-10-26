@@ -164,6 +164,8 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
     expect(indexCss).toContain(':root[data-color-scheme="worldline-console"]')
     expect(indexCss).toContain(':root[data-color-scheme="worldline-console"][data-bg-style="paper"] body')
     expect(indexCss).toContain(':root[data-color-scheme="worldline-console"] button:active:not(:disabled)')
+    expect(indexCss).toContain('worldline-card-signal')
+    expect(indexCss).toContain(':root[data-color-scheme="worldline-console"] .lab-public .physics-resource-card:hover::after')
     expect(appVue).toContain('<WorldlineEffects />')
     expect(worldlineEffects).toContain('prefers-reduced-motion: reduce')
     expect(worldlineEffects).toContain('世界线变动')
