@@ -13,5 +13,7 @@
       "binding": "DB"
     }
   ],
-  "vars": {}
+  "vars": {
+    "SCRAPER_ALLOWED_HOSTS": "physics.buaa.edu.cn,indico.cern.ch,indico.ihep.ac.cn"
+  }
 }
