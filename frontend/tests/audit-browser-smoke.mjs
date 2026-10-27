@@ -183,6 +183,11 @@ try {
     check(await page.evaluate(() => localStorage.getItem('labhub_public_hero_visual_mode')) === storedMode, label + ' mode persists independently')
     if (storedMode === 'blueprint') {
       await page.waitForFunction(() => getComputedStyle(document.querySelector('.worldline-detector-figure')).backgroundImage.includes('/images/particle-accelerator-blueprint.avif'))
+      // The photograph leaves through a <Transition mode="out-in"> with a 220ms leave
+      // animation, so it is still in the DOM right after the hero class flips. Wait for
+      // the leave transition to finish instead of racing it (a faster build used to make
+      // this check fail intermittently).
+      await page.waitForFunction(() => !document.querySelector('.worldline-detector-photo'), null, { timeout: 5000 })
       check(await page.locator('.worldline-detector-photo').count() === 0, 'blueprint mode renders the full composition without a second image')
       check(await page.getByText('Scientific Atelier · 粒子加速器蓝图概念插画', { exact: true }).count() === 1, 'blueprint mode identifies the local reference artwork')
       check(await page.locator('.worldline-image-credit a').count() === 0, 'blueprint mode does not invent an external attribution or license link')

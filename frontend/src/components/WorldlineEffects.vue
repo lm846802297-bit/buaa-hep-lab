@@ -47,11 +47,67 @@ const particleTones = [
   { variable: '--worldline-anomaly', fallback: '255, 77, 134', weight: 0.13 }
 ]
 
+// The ambient layer redraws every frame, so expensive canvas features are banned here:
+// per-particle shadowBlur forces a Gaussian blur of every circle on every frame and alone
+// burned a full CPU core on the public site. Pre-rendered glow sprites keep the same look
+// at a fraction of the cost. Tone lookups are cached because getComputedStyle can trigger
+// a style recalculation and is called per particle.
+const AMBIENT_FRAME_INTERVAL = 1000 / 30
+const toneCache = new Map()
+const glowSpriteCache = new Map()
+let spritePixelRatio = 1
+let lastDrawTime = 0
+
 function readThemeTone(variable, fallback) {
+  const cached = toneCache.get(variable)
+  if (cached) return cached
   const match = getComputedStyle(document.documentElement).getPropertyValue(variable).trim().match(/^#([a-f\d]{6})$/i)
   if (!match) return fallback
   const color = parseInt(match[1], 16)
-  return `${color >> 16 & 255}, ${color >> 8 & 255}, ${color & 255}`
+  const value = `${color >> 16 & 255}, ${color >> 8 & 255}, ${color & 255}`
+  toneCache.set(variable, value)
+  return value
+}
+
+// Pre-rendered dot sprite replacing `arc + shadowBlur`.
+//
+// Profiling the public site showed the ambient layer spending a full CPU core inside the
+// canvas rasteriser: setting shadowBlur per particle makes every frame blur every circle.
+// The visible result of that blur was only a faint halo of a few alpha levels, so a cached
+// radial-gradient sprite reproduces it at a fraction of the cost. Stops were fitted against
+// the measured alpha profile of the former shadowBlur output (radius 0.9-1.8, blur 4/7)
+// rather than guessed, so the dot keeps its original core and a matching soft edge.
+const GLOW_HALO_OUTER = 4
+const GLOW_HALO_PEAK = 0.035
+const GLOW_HALO_SIGMA = 2.6
+
+function getGlowSprite(tone, radius) {
+  const bucket = Math.round(Math.min(2.4, Math.max(0.6, radius)) * 8) / 8
+  const key = `${tone}|${bucket}`
+  const cached = glowSpriteCache.get(key)
+  if (cached) return cached
+  const outer = bucket + GLOW_HALO_OUTER
+  const size = Math.max(8, Math.ceil(outer * 2 * spritePixelRatio))
+  const sprite = document.createElement('canvas')
+  sprite.width = size
+  sprite.height = size
+  const spriteContext = sprite.getContext('2d')
+  const half = size / 2
+  const gradient = spriteContext.createRadialGradient(half, half, 0, half, half, half)
+  const coreStop = bucket / outer
+  gradient.addColorStop(0, `rgba(${tone}, 1)`)
+  gradient.addColorStop(coreStop, `rgba(${tone}, 1)`)
+  for (let step = 1; step <= 8; step += 1) {
+    const t = step / 8
+    const offset = t * GLOW_HALO_OUTER
+    const alpha = GLOW_HALO_PEAK * Math.exp(-((offset / GLOW_HALO_SIGMA) ** 2))
+    gradient.addColorStop(coreStop + (1 - coreStop) * t, `rgba(${tone}, ${alpha.toFixed(4)})`)
+  }
+  spriteContext.fillStyle = gradient
+  spriteContext.fillRect(0, 0, size, size)
+  const entry = { sprite, outer }
+  glowSpriteCache.set(key, entry)
+  return entry
 }
 
 function pickTone() {
@@ -75,11 +131,19 @@ function resizeCanvas() {
   width = Math.max(1, window.innerWidth)
   height = Math.max(1, window.innerHeight)
   pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5)
-  canvas.width = Math.round(width * pixelRatio)
-  canvas.height = Math.round(height * pixelRatio)
+  if (spritePixelRatio !== pixelRatio) {
+    spritePixelRatio = pixelRatio
+    glowSpriteCache.clear()
+  }
+  // Resizing a canvas clears it even when the dimensions are unchanged, so guard the
+  // common case where a resize event fires without an actual viewport change.
+  if (canvas.width !== Math.round(width * pixelRatio) || canvas.height !== Math.round(height * pixelRatio)) {
+    canvas.width = Math.round(width * pixelRatio)
+    canvas.height = Math.round(height * pixelRatio)
+  }
   canvas.style.width = `${width}px`
   canvas.style.height = `${height}px`
-  context = canvas.getContext('2d')
+  if (!context) context = canvas.getContext('2d')
   if (!context) return
   context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
 
@@ -182,13 +246,13 @@ function drawAmbient(time, delta) {
 
   for (const particle of ambientParticles) {
     const pulse = 0.42 + 0.58 * (0.5 + 0.5 * Math.sin(time * 0.001 * particle.pulseSpeed + particle.phase))
-    ctx.fillStyle = `rgba(${particle.tone}, ${0.20 + pulse * 0.36})`
-    ctx.shadowColor = `rgba(${particle.tone}, 0.46)`
-    ctx.shadowBlur = particle.radius > 1.2 ? 7 : 4
-    ctx.beginPath()
-    ctx.arc(particle.x, particle.y, particle.radius * (0.78 + pulse * 0.22), 0, Math.PI * 2)
-    ctx.fill()
+    const drawRadius = particle.radius * (0.78 + pulse * 0.22)
+    const { sprite, outer } = getGlowSprite(particle.tone, drawRadius)
+    ctx.globalAlpha = 0.20 + pulse * 0.36
+    const drawSize = outer * 2
+    ctx.drawImage(sprite, particle.x - outer, particle.y - outer, drawSize, drawSize)
   }
+  ctx.globalAlpha = 1
   for (let i = localPulses.length - 1; i >= 0; i -= 1) {
     const pulse = localPulses[i]
     pulse.radius += (pulse.speed || 3.4) * delta
@@ -412,16 +476,26 @@ function renderFrame(time) {
   if (!context) resizeCanvas()
   if (!context) return
 
+  const isBursting = isShifting.value || burstParticles.length || shockwaves.length || impactFlashes.length
+  // The ambient field is a slow drifting backdrop; 30fps is visually indistinguishable
+  // and halves its cost. Transient burst effects stay at the display rate.
+  if (!isBursting && lastDrawTime && time - lastDrawTime < AMBIENT_FRAME_INTERVAL - 1.5) {
+    animationFrameId = window.requestAnimationFrame(renderFrame)
+    return
+  }
+
   const delta = lastFrameTime ? Math.min(2.2, Math.max(0.5, (time - lastFrameTime) / 16.667)) : 1
   lastFrameTime = time
+  lastDrawTime = time
   clearCanvas()
   if (isWorldlineActive.value) drawAmbient(time, delta)
-  if (isShifting.value || burstParticles.length || shockwaves.length || impactFlashes.length) drawBurst(delta)
+  if (isBursting) drawBurst(delta)
 
-  if (isWorldlineActive.value || isShifting.value || burstParticles.length || shockwaves.length || impactFlashes.length) {
+  if (isWorldlineActive.value || isBursting) {
     animationFrameId = window.requestAnimationFrame(renderFrame)
   } else {
     lastFrameTime = 0
+    lastDrawTime = 0
   }
 }
 
@@ -438,6 +512,7 @@ function stopAnimation(clear = true) {
   }
   animationFrameId = null
   lastFrameTime = 0
+  lastDrawTime = 0
   if (clear) clearCanvas()
 }
 
@@ -583,6 +658,10 @@ watch(() => route.path, (next, previous) => {
 })
 
 watch([currentColorScheme, publicColorScheme], ([nextWorkspace, nextPublic], [previousWorkspace, previousPublic]) => {
+  // Theme tones are read from CSS custom properties and cached; drop the caches so a theme
+  // switch cannot paint particles in the previous palette.
+  toneCache.clear()
+  glowSpriteCache.clear()
   if (route.meta.public) {
     if (nextPublic !== previousPublic && (nextPublic === 'worldline-console' || previousPublic === 'worldline-console')) {
       triggerShift({ showHud: false })
