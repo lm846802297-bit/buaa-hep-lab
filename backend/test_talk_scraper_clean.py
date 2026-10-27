@@ -1,44 +1,4 @@
-import sys
-import types
-import os
-
-repo_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-if repo_dir not in sys.path:
-    sys.path.insert(0, repo_dir)
-
-# Mock third-party dependencies if not installed in current environment
-for mod in ['fastapi', 'fastapi.responses', 'sqlalchemy', 'sqlalchemy.orm', 'pydantic']:
-    if mod not in sys.modules:
-        sys.modules[mod] = types.ModuleType(mod)
-sys.modules['fastapi'].APIRouter = lambda *a, **k: types.SimpleNamespace(
-    post=lambda *a, **k: (lambda f: f),
-    get=lambda *a, **k: (lambda f: f),
-    put=lambda *a, **k: (lambda f: f),
-    delete=lambda *a, **k: (lambda f: f)
-)
-sys.modules['fastapi'].Depends = lambda *a, **k: None
-sys.modules['fastapi'].HTTPException = Exception
-sys.modules['fastapi'].UploadFile = None
-sys.modules['fastapi'].File = lambda *a, **k: None
-sys.modules['fastapi'].Form = lambda *a, **k: None
-sys.modules['sqlalchemy.orm'].Session = None
-sys.modules['pydantic'].BaseModel = object
-
-if 'backend.auth' not in sys.modules:
-    sys.modules['backend.auth'] = types.SimpleNamespace(get_current_user=None)
-if 'backend.database' not in sys.modules:
-    sys.modules['backend.database'] = types.SimpleNamespace(get_db=None)
-if 'backend.models' not in sys.modules:
-    sys.modules['backend.models'] = types.SimpleNamespace(ObservatoryTalk=None, User=None)
-if 'backend.schemas' not in sys.modules:
-    sys.modules['backend.schemas'] = types.SimpleNamespace(TalkInput=None)
-if 'backend.services' not in sys.modules:
-    sys.modules['backend.services'] = types.ModuleType('backend.services')
-if 'backend.services.email_service' not in sys.modules:
-    sys.modules['backend.services.email_service'] = types.SimpleNamespace(parse_mail=None)
-if 'backend.routers.files' not in sys.modules:
-    sys.modules['backend.routers.files'] = types.SimpleNamespace(MAX_BYTES=15*1024*1024, store_file=None)
-
+"""Tests for the HTML and structured-data helpers used by the talks scraper."""
 from backend.routers.talks import (
     clean_html_to_text,
     extract_main_content,
