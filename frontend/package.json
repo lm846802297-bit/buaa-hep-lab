@@ -15,7 +15,8 @@
     "preview": "vite preview",
     "preview:demo": "vite preview --outDir dist-demo --base /lab-orbit/ --port 4173",
     "test": "node scripts/check-topic-illustrations.mjs && vitest run",
-    "test:idle-cpu": "node tests/measure-idle-cpu.mjs"
+    "test:idle-cpu": "node tests/measure-idle-cpu.mjs",
+    "diagnose:render": "node tests/diagnose-render-cost.mjs"
   },
   "dependencies": {
     "@phosphor-icons/vue": "^2.2.1",
