@@ -79,3 +79,13 @@ scratch/
 
 # Browser audit outputs (user-facing copies live outside the source checkout)
 frontend/test-results/
+
+# Ad-hoc probe scripts and measurement snapshots (one-off diagnostics, never committed)
+frontend/tests/_perf-*.mjs
+frontend/tests/_perf-probes/
+frontend/tests/_dbg-*.mjs
+frontend/tests/_final-*.mjs
+frontend/tests/_hl.test.mjs
+frontend/tests/perf-idle-*.json
+frontend/tests/perf-idle-probe.tmp.mjs
+frontend/perf-*-_.json
