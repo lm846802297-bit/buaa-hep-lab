@@ -4,9 +4,28 @@
 
 ## 当前发布方式
 
-**仓库声明的正式发布流程是 GitHub Actions 工作流 `.github/workflows/deploy.yml`。** 工作流对 PR 与 main push 执行验证；仅当事件来自 `main` 且不是 PR 时，在完整 `validate` 成功后调用仓库锁定的 Wrangler CLI 发布 Cloudflare Pages。部署后执行 `scripts/verify-live.mjs`，检查健康接口、匿名授权、公开 HTML、robots/sitemap 与内部路由 noindex。功能分支的 CI 不会部署生产。
+**仓库的工作流文件 `.github/workflows/deploy.yml` 会依 PR 与 main push 执行验证，并在 `validate` 成功后调用仓库锁定的 Wrangler CLI 发布 Cloudflare Pages。** 部署后执行 `scripts/verify-live.mjs`，检查健康接口、匿名授权、公开 HTML、robots/sitemap 与内部路由 noindex。功能分支的 CI 不会部署生产。
 
-截至 2026-10-26，Cloudflare Pages Dashboard 显示该项目已连接 GitHub 仓库、生产分支为 `main`，且原生自动部署开启。2026-10-27 合并后，Pages 原生 Git 集成已将最新 `main` SHA 发布为 Active；对应 PR 的 GitHub Actions 验证因账户付款/支出限额问题未启动。因此双发布路径风险已实际出现。后续生产合并前仍需决定是否关闭 Cloudflare 自动部署或改为仅创建预览；不能把原生 Pages 部署标作 Actions 验证通过。
+**但实际生效的生产发布路径是 Cloudflare Pages 原生 Git 集成**（见下方维护者决定）；`deploy.yml` 因 PR-only 授权检查和账户付款状态，当前不是发布门禁。两者的事实必须分开陈述。
+
+截至 2026-10-26，Cloudflare Pages Dashboard 显示该项目已连接 GitHub 仓库、生产分支为 `main`，且原生自动部署开启。2026-10-27 合并后，Pages 原生 Git 集成已将最新 `main` SHA 发布为 Active；对应 PR 的 GitHub Actions 验证因账户付款/支出限额问题未启动。
+
+### 维护者决定：明确接受双发布路径（2026-10-27）
+
+**维护者已决定：保留双发布路径，生产发布以 Cloudflare Pages 原生 Git 集成为准，不因 GitHub Actions 失败而阻塞发布。** 据此：
+
+- `main` 推送后由 Pages 原生集成构建并发布，这是当前**预期且被接受**的生产路径；不再是待定风险项。
+- GitHub Actions（`deploy.yml` 等）维持仓库现状，**不作为发布门禁**。Actions 因账户付款/支出限额无法启动时，记录为已知的账户状态，不据此判定发布失败，也不要求为此修改工作流。
+- 不得为了“消除双路径”而单方面关闭 Pages 自动部署、改成仅预览，或移除 Actions 工作流；这类改动会直接改变现有发布方式，须维护者另行明确决定。
+
+仍然成立的边界（与上述决定不冲突）：
+
+- **不能把 Pages 原生部署描述为「Actions 验证通过」。** 两者是不同的事实，必须分开陈述。
+- 发布后的可用性核查仍应执行 `node scripts/verify-live.mjs https://buaa-hep-hub.pages.dev`（健康接口、匿名授权、公开 HTML、robots/sitemap、`/hub` noindex）。这是发布后检查，不是 CI 门禁。
+- 本地验证（单测、构建、浏览器回归、性能探针）仍是提交前的事实依据；Actions 不跑不等于不需要本地证据。
+- 判断生产是否包含某次改动物，应比对实际产物（chunk 文件名与内容哈希），而不是假设「推了就等于发布了」。
+
+2026-10-27 的性能修复提交 `66a14aa` 即按此路径发布：`assets/index-CQzHAqG8.js` 与 `assets/WorldlineEffects-B6GI6Kq6.js` 在生产站与本地构建的 md5 一致。同期三个 Actions 工作流因账户付款问题未启动，属已知账户状态，未作为发布失败处理。
 
 本次更新保留已有的 main push 自动发布链路，不将它改成仅手动发布。另增加本地 Node/workerd bcrypt 基准步骤和 artifact，并把“已请求的 main 发布但缺少 Cloudflare 凭据”从警告改为失败，避免出现“验证绿灯但没有发布”的误判。Wrangler 部署命令会记录 GitHub Actions 的完整源 SHA。不会在本地执行生产部署，也不会读取或复制任何 secret。
 
