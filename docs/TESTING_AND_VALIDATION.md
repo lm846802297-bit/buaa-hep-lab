@@ -97,7 +97,44 @@ node frontend/tests/audit-browser-smoke.mjs
 - 浏览器烟测截图是特定构建与视口下的证据；报告应记录 commit SHA。
 - 普通组件的小改动不必机械启动全套浏览器测试，按 `AGENTS.md` 的风险范围选择验证。
 
-## 5. 后端回归测试
+## 5. 渲染与空闲 CPU 诊断
+
+公开站曾出现一类 LCP/INP 看不出来的开销：页面加载正常，但空闲时主线程被持续占满（每帧对每个粒子设置 `shadowBlur`，导致光栅化器每帧模糊每个圆）。因此性能验证分两层，用途不同：
+
+### 空闲 CPU 回归门禁
+
+```bash
+npm --prefix frontend run test:idle-cpu
+```
+
+先构建再运行。脚本从 `frontend/dist` 启动本地服务，在桌面（1440×900）与移动（390×844）视口下测量公开路由空闲 8 秒的主线程占用与帧率，**超过单核 15% 判 FAIL 并返回非零退出码**。脚本支持 `--json <path>` 输出结果。
+
+该门禁的有效性经过阳性对照：把旧的 `shadowBlur` 实现换回去，同一脚本判 FAIL（约 104%），修复后判 PASS（约 5%）。仅凭“脚本存在”或“正常态通过”不能说明它有效。
+
+### 渲染成本定位
+
+```bash
+npm --prefix frontend run diagnose:render -- layers / --seconds 4
+npm --prefix frontend run diagnose:render -- profile /
+npm --prefix frontend run diagnose:render -- visibility / --selector "canvas.worldline-particle-canvas"
+```
+
+`--` 分隔符是必需的，否则 npm 会吞掉 `--seconds` 等选项，脚本会把多余参数当路由并构建出非法 URL。参数校验会直接报错并打印正确写法。
+
+| 子命令 | 回答的问题 |
+|---|---|
+| `layers` | 逐个禁用候选层（canvas、CSS 动画、`backdrop-filter`、混合模式、阴影）并重测空闲 CPU，跌幅最大者即责任层 |
+| `profile` | 对空闲页做 CPU 采样，区分「空闲」与「忙碌」，并判断成本落在原生绘制还是 JS |
+| `visibility` | 在多个滚动位置对比保留/隐藏某层的截图，找出“在绘制但看不见”的装饰性开销 |
+
+解释结论时的两条边界：
+
+- `profile` 在健康页面上应报告高比例空闲；若把采样中的 idle 计入绘制成本，会得出「101% 用于原生绘制」这类错误结论。工具已排除 idle 并单独报告。
+- `visibility` 显示某层“变化 0 像素”只说明该位置看不见，不等于整页无效；仍可能在页面下方起作用。是否移除应结合 CPU 代价与设计意图判断，不能仅凭这一点替维护者取舍。
+
+两个工具的源码都在 `frontend/tests/`，均为 Node 脚本、不参与 `vite build` 产物；它们不是 Vitest 用例，不会被 `npm run test` 收集。
+
+## 6. 后端回归测试
 
 先安装依赖，再运行：
 
@@ -122,7 +159,7 @@ python -m pytest backend -q
 
 不得把这些示例值用于生产，也不得让测试指向生产 D1、生产数据库或真实用户数据。认证/授权和迁移相关变更必须确认测试隔离生效。
 
-## 6. Cloudflare Functions 与 D1 隔离检查
+## 7. Cloudflare Functions 与 D1 隔离检查
 
 ```bash
 npm run verify:cloudflare
@@ -134,7 +171,7 @@ npm run verify:cloudflare
 - 如果同时修改前端入口或构建资源，优先运行 `npm run build`，它已包含此验证，然后运行 `npm run check:bundle`。
 - 本地 Miniflare 通过不等于 Cloudflare 预览或生产环境绑定已经正确配置；远程环境状态必须另行核验。
 
-## 7. 教学基准
+## 8. 教学基准
 
 当教学基准脚本或其输入数据变化时运行：
 
@@ -144,7 +181,7 @@ python frontend/public/learning/two_body_decay.py
 
 这项检查与常规前端单元测试、FastAPI 回归测试相互独立。
 
-## 8. 本地 Pages 预览与生产部署的区别
+## 9. 本地 Pages 预览与生产部署的区别
 
 | 命令 | 用途 | 边界 |
 |---|---|---|
@@ -154,7 +191,7 @@ python frontend/public/learning/two_body_decay.py
 
 合并 PR、预览部署和生产部署是三种不同事件。文档整理 PR 不需要手动部署。生产发布只应按仓库现有发布规则、权限和用户授权执行。
 
-## 9. 当前工作流的路径门控
+## 10. 当前工作流的路径门控
 
 `.github/workflows/deploy.yml` 会先根据 PR 的文件路径分类，再决定是否运行前端、后端、教学、Cloudflare、构建和浏览器检查。因此：
 
@@ -166,7 +203,7 @@ python frontend/public/learning/two_body_decay.py
 
 PR #57 中提议的模块边界与 Cloudflare 类型检查目前不作为本表的已合并基线。只有在相关实现合并到 `main` 后，才把它们列为当前可用命令。
 
-## 10. 结果记录模板
+## 11. 结果记录模板
 
 每次报告验证结果时，至少记录：
 
