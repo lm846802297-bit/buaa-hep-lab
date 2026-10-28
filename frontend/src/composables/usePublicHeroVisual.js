@@ -2,6 +2,12 @@ import { computed, onMounted, ref, watch } from 'vue'
 
 export const HERO_VISUAL_MODE_KEY = 'labhub_public_hero_visual_mode'
 
+// Only the blueprint composition is published. The former "ATLAS 实景" and "碰撞事件"
+// modes pointed at Wikimedia Commons files that do not resolve for visitors, so the hero
+// rendered an empty 950x836 grey box while still showing the borrowed attribution. The
+// owner rejected both images, so they are removed rather than re-hosted. Keeping the list
+// as the single source of truth makes the mode switcher disappear on its own, because the
+// templates render one button per entry.
 export const publicHeroVisualModes = [
   {
     id: 'blueprint',
@@ -14,30 +20,6 @@ export const publicHeroVisualModes = [
     licenseUrl: null,
     photoNote: '课题组提供的视觉参考图 · 非实验数据',
     caption: 'SCIENTIFIC ATELIER · BLUEPRINT'
-  },
-  {
-    id: 'photo',
-    label: 'ATLAS 实景',
-    src: 'https://commons.wikimedia.org/wiki/Special:FilePath/CERN_ATLAS_Detector.jpg?width=1600',
-    alt: 'CERN 大型强子对撞机 ATLAS 粒子探测器的全景实景照片。',
-    photoPage: 'https://commons.wikimedia.org/wiki/File:CERN_ATLAS_Detector.jpg',
-    photoCredit: 'ATLAS detector · photo by SimonWaldherr',
-    licenseLabel: 'CC BY-SA 4.0',
-    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
-    photoNote: 'image cropped to fit the hero',
-    caption: 'ATLAS · CERN · LHC'
-  },
-  {
-    id: 'terminal',
-    label: '碰撞事件',
-    src: 'https://commons.wikimedia.org/wiki/Special:FilePath/Event_display_of_a_4-muon_candidate_in_the_ATLAS_detector.png?width=1440',
-    alt: 'ATLAS Collaboration 发布的四缪子候选事例真实重建事件显示图。',
-    photoPage: 'https://commons.wikimedia.org/wiki/File:Event_display_of_a_4-muon_candidate_in_the_ATLAS_detector.png',
-    photoCredit: 'ATLAS Collaboration · 4-muon event display',
-    licenseLabel: 'CC BY-SA 3.0',
-    licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
-    photoNote: 'real event display; no additional tracks added',
-    caption: 'EVENT DISPLAY · 4 MUONS'
   }
 ]
 
@@ -53,6 +35,9 @@ export function usePublicHeroVisual() {
     try {
       const savedMode = localStorage.getItem(HERO_VISUAL_MODE_KEY)
       if (publicHeroVisualModes.some(mode => mode.id === savedMode)) heroVisualMode.value = savedMode
+      // A visitor who previously selected a removed mode keeps a stale value in storage;
+      // reset it so the class list and the stored state cannot drift apart.
+      else localStorage.setItem(HERO_VISUAL_MODE_KEY, 'blueprint')
     } catch {}
   })
 

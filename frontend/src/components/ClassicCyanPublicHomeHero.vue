@@ -51,27 +51,6 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
         <div class="hero-affiliation"><span>BEIHANG UNIVERSITY · HIGH-ENERGY PHYSICS</span><span>{{ lab.name }} <small v-if="lab.provisional">/ 暂定名称</small></span></div>
       </div>
       <figure class="collision-figure">
-        <div class="hero-visual-controls" role="group" aria-label="首页右侧主视觉模式">
-          <button
-            v-for="mode in heroVisualModes"
-            :key="mode.id"
-            type="button"
-            :class="{ active: heroVisualMode === mode.id }"
-            :aria-pressed="heroVisualMode === mode.id"
-            @click="heroVisualMode = mode.id"
-          >{{ mode.label }}</button>
-        </div>
-        <Transition name="hero-image" mode="out-in">
-          <img
-            :key="activeHeroVisual.id"
-            class="detector-photo"
-            :src="activeHeroVisual.src"
-            :alt="activeHeroVisual.alt"
-            loading="eager"
-            fetchpriority="high"
-            decoding="async"
-          >
-        </Transition>
         <svg viewBox="0 0 600 600" role="img" :aria-hidden="heroVisualMode !== 'blueprint'" aria-labelledby="collision-title collision-description">
           <title id="collision-title">叠加在 CMS 探测器照片上的粒子径迹示意</title>
           <desc id="collision-description">圆形几何环与向外延伸的粒子径迹是叠加在真实 CMS 探测器照片上的装饰性视觉元素，并非该照片对应的真实碰撞事件数据。</desc>

@@ -33,11 +33,13 @@ describe('Public academic website', () => {
     expect(html).toContain('Scientific Atelier · 粒子加速器蓝图概念插画')
     expect(html).toContain('课题组提供的视觉参考图 · 非实验数据')
     expect(html).not.toContain('worldline-track-overlay')
-    expect(html).toContain('首页右侧主视觉模式')
-    expect(html).toContain('蓝图叠加')
-    expect(html).toContain('ATLAS 实景')
-    expect(html).toContain('碰撞事件')
-    expect(html).toContain('aria-pressed="true"')
+    // Only the blueprint composition ships. The former "ATLAS 实景" and "碰撞事件"
+    // modes referenced Wikimedia files that never resolved for visitors, leaving an
+    // empty hero box, so the switcher is intentionally absent now.
+    expect(html).not.toContain('首页右侧主视觉模式')
+    expect(html).not.toContain('ATLAS 实景')
+    expect(html).not.toContain('碰撞事件')
+    expect(html).not.toContain('class="detector-photo"')
     expect(html).not.toContain('photo by zipckr (Flickr)')
     expect(html).not.toContain('https://creativecommons.org/licenses/by/2.0/')
     expect(html).toContain('并非真实实验事件显示图')

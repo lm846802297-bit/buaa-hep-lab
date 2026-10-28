@@ -56,9 +56,6 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
       </div>
 
       <figure class="worldline-detector-figure" :aria-label="heroVisualMode === 'blueprint' ? activeHeroVisual.alt : undefined">
-        <div class="worldline-visual-controls" role="group" aria-label="首页右侧主视觉模式">
-          <button v-for="mode in heroVisualModes" :key="mode.id" type="button" :class="{ active: heroVisualMode === mode.id }" :aria-pressed="heroVisualMode === mode.id" @click="heroVisualMode = mode.id">{{ mode.label }}</button>
-        </div>
         <Transition name="worldline-image" mode="out-in">
           <img v-if="heroVisualMode !== 'blueprint'" :key="activeHeroVisual.id" class="worldline-detector-photo" :src="activeHeroVisual.src" :alt="activeHeroVisual.alt" loading="eager" fetchpriority="high" decoding="async">
         </Transition>

@@ -163,54 +163,26 @@ try {
   }
   check(new Set(Object.values(themeAccents)).size === 5, 'all five public themes retain distinct computed accents')
 
+  // The hero ships a single published composition. The photo modes were removed because
+  // their Wikimedia sources never resolved for visitors, so instead of switching modes we
+  // assert the defects stay gone: no switcher, no stray <img>, and the blueprint artwork
+  // still renders with its own attribution.
   const heroModeGroup = page.getByRole('group', { name: '首页右侧主视觉模式' })
-  check(await heroModeGroup.getByRole('button').count() === 3, 'homepage hero exposes three adjustable visual modes')
-  for (const [label, className, storedMode] of [
-    ['ATLAS 实景', 'visual-photo', 'photo'],
-    ['碰撞事件', 'visual-terminal', 'terminal'],
-    ['蓝图叠加', '', 'blueprint']
-  ]) {
-    await heroModeGroup.getByRole('button', { name: label, exact: true }).click()
-    await page.waitForFunction(name => {
-      const root = document.querySelector('.lab-public')
-      const hero = root?.querySelector('.worldline-home') || root?.querySelector('[data-public-home-theme]')
-      return name
-        ? hero?.classList.contains(name)
-        : !hero?.classList.contains('visual-photo') && !hero?.classList.contains('visual-terminal') && !hero?.classList.contains('hero-visual-photo') && !hero?.classList.contains('hero-visual-terminal')
-    }, className)
-    check(await heroModeGroup.getByRole('button', { name: label, exact: true }).getAttribute('aria-pressed') === 'true', label + ' mode reports the selected state')
-    check(await page.locator('.worldline-track-overlay').count() === 0, label + ' mode avoids a duplicate decorative track overlay')
-    check(await page.evaluate(() => localStorage.getItem('labhub_public_hero_visual_mode')) === storedMode, label + ' mode persists independently')
-    if (storedMode === 'blueprint') {
-      await page.waitForFunction(() => getComputedStyle(document.querySelector('.worldline-detector-figure')).backgroundImage.includes('/images/particle-accelerator-blueprint.avif'))
-      // The photograph leaves through a <Transition mode="out-in"> with a 220ms leave
-      // animation, so it is still in the DOM right after the hero class flips. Wait for
-      // the leave transition to finish instead of racing it (a faster build used to make
-      // this check fail intermittently).
-      await page.waitForFunction(() => !document.querySelector('.worldline-detector-photo'), null, { timeout: 5000 })
-      check(await page.locator('.worldline-detector-photo').count() === 0, 'blueprint mode renders the full composition without a second image')
-      check(await page.getByText('Scientific Atelier · 粒子加速器蓝图概念插画', { exact: true }).count() === 1, 'blueprint mode identifies the local reference artwork')
-      check(await page.locator('.worldline-image-credit a').count() === 0, 'blueprint mode does not invent an external attribution or license link')
-    } else {
-      const expectedImagePath = storedMode === 'photo'
-        ? 'CERN_ATLAS_Detector.jpg'
-        : 'Event_display_of_a_4-muon_candidate_in_the_ATLAS_detector.png'
-      await page.waitForFunction(path => {
-        const image = document.querySelector('.worldline-detector-photo')
-        return Boolean(image && image.src.includes(path) && image.complete && image.naturalWidth > 0)
-      }, expectedImagePath, { timeout: 20000 })
-      check(await page.locator('.worldline-detector-photo').getAttribute('alt') !== '', label + ' mode has descriptive alternative text')
-      check(await page.locator('.worldline-detector-figure').evaluate(el => getComputedStyle(el).backgroundImage === 'none'), label + ' mode does not retain the full blueprint behind its own photograph')
-      const expectedLicense = storedMode === 'photo' ? 'CC BY-SA 4.0' : 'CC BY-SA 3.0'
-      const expectedCredit = storedMode === 'photo' ? /ATLAS detector · photo by SimonWaldherr/ : /ATLAS Collaboration · 4-muon event display/
-      check(await page.getByRole('link', { name: expectedCredit }).count() === 1, label + ' mode links the correct image source attribution')
-      const licenseLink = page.getByRole('link', { name: expectedLicense, exact: true })
-      check(await licenseLink.count() === 1, label + ' mode updates image attribution and license')
-      check(await licenseLink.getAttribute('href') === (storedMode === 'photo' ? 'https://creativecommons.org/licenses/by-sa/4.0/' : 'https://creativecommons.org/licenses/by-sa/3.0/'), label + ' mode links to the matching license text')
-    }
-  }
-  await heroModeGroup.getByRole('button', { name: '蓝图叠加', exact: true }).click()
-  await page.waitForFunction(() => !document.querySelector('.worldline-home')?.classList.contains('visual-photo') && !document.querySelector('.worldline-home')?.classList.contains('visual-terminal'))
+  check(await heroModeGroup.count() === 0, 'homepage hero no longer offers a visual mode switcher')
+  check(await page.locator('.worldline-detector-photo').count() === 0, 'hero renders no external photograph')
+  check(await page.locator('img.detector-photo').count() === 0, 'alternate hero skins render no external photograph')
+  check(await page.waitForFunction(() => getComputedStyle(document.querySelector('.worldline-detector-figure')).backgroundImage.includes('/images/particle-accelerator-blueprint.avif')).then(() => true).catch(() => false), 'blueprint artwork is the hero background')
+  check(await page.getByText('Scientific Atelier · 粒子加速器蓝图概念插画', { exact: true }).count() === 1, 'blueprint identifies the local reference artwork')
+  check(await page.locator('.worldline-image-credit a').count() === 0, 'blueprint does not invent an external attribution or license link')
+  check(await page.evaluate(() => localStorage.getItem('labhub_public_hero_visual_mode')) === 'blueprint', 'hero records the single published visual mode')
+  const staleModeReset = await page.evaluate(() => {
+    localStorage.setItem('labhub_public_hero_visual_mode', 'photo')
+    return localStorage.getItem('labhub_public_hero_visual_mode')
+  })
+  check(staleModeReset === 'photo', 'stale mode value can be seeded for the reset check')
+  await page.reload({ waitUntil: 'load' })
+  check(await page.waitForFunction(() => localStorage.getItem('labhub_public_hero_visual_mode') === 'blueprint').then(() => true).catch(() => false), 'a stale removed-mode value is reset to blueprint on load')
+
   const desktopBlueprint = await page.locator('.lab-public').evaluate(root => {
     const hero = root.querySelector('.worldline-hero') || root.querySelector('.public-hero')
     const copy = root.querySelector('.worldline-copy') || root.querySelector('.hero-copy')
