@@ -346,7 +346,7 @@ h1.hero-title span { color:var(--accent); }
   --accent: #263f5a;
   --accent-ink: #f8f6ef;
   --text: #202a36;
-  --muted: #657483;
+  --muted: #5B6875;
   --soft: #526170;
   --line: #c8cdd1;
   --bg: #f6f4ee;
