@@ -22,9 +22,11 @@ export function isDemoMode() {
       }
       if (demoParam === '0' || demoParam === 'false') {
         storage?.setItem('labhub_force_demo', '0')
-        if (storage?.getItem('labhub_token')?.startsWith('demo_')) {
-          storage?.removeItem('labhub_token')
-          storage?.removeItem('labhub_user')
+        for (const [tokenKey, userKey] of [['labhub_token', 'labhub_user'], ['laborbit_token', 'laborbit_user']]) {
+          if (storage?.getItem(tokenKey)?.startsWith('demo_')) {
+            storage?.removeItem(tokenKey)
+            storage?.removeItem(userKey)
+          }
         }
         return false
       }
@@ -46,9 +48,11 @@ export function isDemoMode() {
 
   // 5. 其余任何情况（标准本地或云服务器生产部署），绝对处于真实部署模式！
   // 若存在历史遗留的 demo_ token，顺手清理，杜绝状态污染
-  if (storage?.getItem('labhub_token')?.startsWith('demo_')) {
-    storage?.removeItem('labhub_token')
-    storage?.removeItem('labhub_user')
+  for (const [tokenKey, userKey] of [['labhub_token', 'labhub_user'], ['laborbit_token', 'laborbit_user']]) {
+    if (storage?.getItem(tokenKey)?.startsWith('demo_')) {
+      storage?.removeItem(tokenKey)
+      storage?.removeItem(userKey)
+    }
   }
 
   return false
