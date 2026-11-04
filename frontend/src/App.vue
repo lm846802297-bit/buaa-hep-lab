@@ -59,7 +59,7 @@ function cachedTutorialBelongsToUser(cachedUser, user) {
 }
 
 async function checkTutorialEligibility() {
-  const token = localStorage.getItem('laborbit_token') || localStorage.getItem('labhub_token')
+  const token = localStorage.getItem('labhub_token') || localStorage.getItem('laborbit_token')
   if (!token || isPublic.value || route.path === '/setup' || route.path === '/login' || route.path === '/quick-share') return
 
   if (checkedTutorialToken === token) return
@@ -69,7 +69,7 @@ async function checkTutorialEligibility() {
     try {
       const { authApi } = await import('./api/client')
       const user = await authApi.getMe()
-      const currentToken = localStorage.getItem('laborbit_token') || localStorage.getItem('labhub_token')
+      const currentToken = localStorage.getItem('labhub_token') || localStorage.getItem('laborbit_token')
       if (!user || currentToken !== token) return
 
       checkedTutorialToken = token
