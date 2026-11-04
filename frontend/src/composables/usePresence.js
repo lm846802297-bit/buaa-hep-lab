@@ -80,7 +80,7 @@ let lastHeartbeatSentAt = 0
 
 async function sendHeartbeatSafe() {
   if (typeof window === 'undefined' || window.location.pathname === import.meta.env.BASE_URL) return
-  const token = localStorage.getItem('labhub_token')
+  const token = localStorage.getItem('labhub_token') || localStorage.getItem('laborbit_token')
   if (!token) return
 
   // 节流：两次心跳间隔不少于 20 秒

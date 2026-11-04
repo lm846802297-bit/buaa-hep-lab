@@ -14,7 +14,7 @@ api.interceptors.request.use(async (config) => {
   if (isDemoMode()) {
     config.adapter = (await import('../mock/demoAdapter')).demoAxiosAdapter
   }
-  const token = localStorage.getItem('laborbit_token') || localStorage.getItem('labhub_token')
+  const token = localStorage.getItem('labhub_token') || localStorage.getItem('laborbit_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -196,7 +196,7 @@ export const mailboxApi = {
   clearEmails: () => api.delete('/api/mailbox/emails'),
   deleteEmail: id => api.delete(`/api/mailbox/emails/${id}`),
   syncStream: (onProgress, onDone, onError) => {
-    const token = localStorage.getItem('laborbit_token') || localStorage.getItem('labhub_token')
+    const token = localStorage.getItem('labhub_token') || localStorage.getItem('laborbit_token')
     const base = API_BASE_URL.replace(/\/$/, '')
     const url = `${base}/api/mailbox/sync-stream`
     const controller = new AbortController()

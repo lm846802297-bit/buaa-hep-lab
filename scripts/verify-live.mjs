@@ -21,5 +21,11 @@ assert.equal(home.response.status, 200)
 assert(home.text.includes('application/ld+json') && home.text.includes('https://arxiv.org/abs/'), 'Published homepage must contain prerendered content and structured metadata')
 assert((await request('/robots.txt')).text.includes('Disallow: /api/'))
 assert((await request('/sitemap.xml')).text.includes('https://buaa-hep-hub.pages.dev/'))
-const hub = await request('/hub'); assert(hub.response.headers.get('X-Robots-Tag')?.includes('noindex'))
-console.log('Published site: health, public HTML, metadata and anonymous authorization checks passed.')
+for (const path of ['/hub', '/login', '/seminars', '/resources', '/library', '/account']) {
+  const page = await request(path)
+  assert.equal(page.response.status, 200, `Direct route must return the SPA document: ${path}`)
+  assert(page.text.includes('<div id="app"'), `SPA mount point is present: ${path}`)
+  assert(page.text.includes('type="module"'), `Vite application entry is present: ${path}`)
+  assert(page.response.headers.get('X-Robots-Tag')?.includes('noindex'), `Private route remains noindex: ${path}`)
+}
+console.log('Published site: health, public HTML, metadata, anonymous authorization and private SPA deep-link checks passed.')
