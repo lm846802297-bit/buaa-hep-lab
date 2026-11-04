@@ -104,9 +104,11 @@ router.beforeEach(async (to, from, next) => {
     localStorage.setItem('labhub_force_demo', '1')
   } else if (to.query?.demo === '0' || to.query?.demo === 'false') {
     localStorage.removeItem('labhub_force_demo')
-    if (localStorage.getItem('labhub_token')?.startsWith('demo_')) {
-      localStorage.removeItem('labhub_token')
-      localStorage.removeItem('labhub_user')
+    for (const [tokenKey, userKey] of [['labhub_token', 'labhub_user'], ['laborbit_token', 'laborbit_user']]) {
+      if (localStorage.getItem(tokenKey)?.startsWith('demo_')) {
+        localStorage.removeItem(tokenKey)
+        localStorage.removeItem(userKey)
+      }
     }
   }
 
@@ -135,7 +137,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // 3. 身份认证权限校验
-  const token = localStorage.getItem('labhub_token')
+  const token = localStorage.getItem('labhub_token') || localStorage.getItem('laborbit_token')
   if (to.meta.requiresAuth && !token) {
     next({ path: '/login', query: { redirect: to.fullPath } })
   } else {
