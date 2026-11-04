@@ -157,4 +157,53 @@ app.post('/avatar', async (c) => {
   return c.json(updated);
 });
 
+// Synchronize the user's home dashboard layout across devices.
+// The schema already stores this JSON in users.home_layout; keep the payload
+// scoped to the authenticated user and bounded to prevent oversized writes.
+app.get('/home-layout', async (c) => {
+  const user = c.get('user');
+  const row = await c.env.DB.prepare('SELECT home_layout FROM users WHERE id = ?')
+    .bind(user.id)
+    .first<{ home_layout: string | null }>();
+  const raw = row?.home_layout || '';
+  if (!raw.trim()) return c.json({ has_custom_layout: false, layout: null });
+
+  try {
+    const layout = JSON.parse(raw);
+    if (layout && typeof layout === 'object' && !Array.isArray(layout)) {
+      return c.json({ has_custom_layout: true, layout });
+    }
+  } catch {
+    // A malformed legacy value is treated as no custom layout; it is not
+    // returned to the client or allowed to break the workspace shell.
+  }
+  return c.json({ has_custom_layout: false, layout: null });
+});
+
+app.put('/home-layout', async (c) => {
+  const user = c.get('user');
+  const layout = await c.req.json().catch(() => null);
+  if (!layout || typeof layout !== 'object' || Array.isArray(layout)) {
+    return c.json({ detail: '无效的首页布局数据' }, 400);
+  }
+
+  const serialized = JSON.stringify(layout);
+  if (new TextEncoder().encode(serialized).byteLength > 64 * 1024) {
+    return c.json({ detail: '首页布局数据不能超过 64 KiB' }, 413);
+  }
+
+  await c.env.DB.prepare('UPDATE users SET home_layout = ? WHERE id = ?')
+    .bind(serialized, user.id)
+    .run();
+  return c.json({ has_custom_layout: true, saved: true, layout });
+});
+
+app.delete('/home-layout', async (c) => {
+  const user = c.get('user');
+  await c.env.DB.prepare("UPDATE users SET home_layout = '' WHERE id = ?")
+    .bind(user.id)
+    .run();
+  return c.json({ has_custom_layout: false, reset: true, layout: null });
+});
+
 export default app;
