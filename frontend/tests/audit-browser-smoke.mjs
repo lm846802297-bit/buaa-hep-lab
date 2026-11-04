@@ -18,16 +18,33 @@ const server = createServer(async (req, res) => {
       return
     }
     let file = resolve(root, '.' + pathname)
+    let statusCode = 200
     if (file !== root && !file.startsWith(root + sep)) { res.writeHead(403).end(); return }
     try {
       const info = await stat(file)
       if (info.isDirectory()) file = resolve(file, 'index.html')
-      else if (!info.isFile()) file = resolve(root, 'index.html')
-    } catch { file = resolve(root, 'index.html') }
+      const resolvedInfo = await stat(file)
+      if (!resolvedInfo.isFile()) throw new Error('Not a file')
+    } catch {
+      // Cloudflare Pages serves a top-level 404.html as a real 404 instead of
+      // applying its automatic SPA fallback. Model that distinction locally.
+      const notFoundFile = resolve(root, '404.html')
+      try {
+        const notFoundInfo = await stat(notFoundFile)
+        if (notFoundInfo.isFile()) {
+          file = notFoundFile
+          statusCode = 404
+        } else {
+          file = resolve(root, 'index.html')
+        }
+      } catch {
+        file = resolve(root, 'index.html')
+      }
+    }
     if (file !== root && !file.startsWith(root + sep)) { res.writeHead(403).end(); return }
     const data = await readFile(file)
     const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.avif': 'image/avif', '.json': 'application/json' }
-    res.writeHead(200, { 'Content-Type': types[extname(file)] || 'application/octet-stream' }).end(data)
+    res.writeHead(statusCode, { 'Content-Type': types[extname(file)] || 'application/octet-stream' }).end(data)
   } catch { res.writeHead(500).end() }
 })
 await new Promise(r => server.listen(0, '127.0.0.1', r))
@@ -35,6 +52,24 @@ const base = `http://127.0.0.1:${server.address().port}`
 const browser = await chromium.launch()
 const checks = []
 function check(value, message) { assert(value, message); checks.push(message) }
+async function gotoDirectRoute(page, pathname, search = '') {
+  let status = null
+  const onResponse = response => {
+    try {
+      const url = new URL(response.url())
+      if (url.origin === base && url.pathname === pathname && status === null) {
+        status = response.status()
+      }
+    } catch {}
+  }
+  page.on('response', onResponse)
+  try {
+    await page.goto(base + pathname + search, { waitUntil: 'networkidle' })
+  } finally {
+    page.off('response', onResponse)
+  }
+  return status
+}
 try {
   const anonymous = await browser.newContext()
   const page = await anonymous.newPage()
@@ -813,14 +848,16 @@ try {
   const privatePage = await privateContext.newPage()
   const privateErrors = []; privatePage.on('pageerror', e => privateErrors.push(e.message))
   for (const route of ['/hub', '/seminars', '/resources', '/library', '/account']) {
-    await privatePage.goto(base + route + '?demo=1', { waitUntil: 'networkidle' })
+    const directStatus = await gotoDirectRoute(privatePage, route, '?demo=1')
+    check(directStatus === 200, `direct internal route ${route} returns HTTP 200`)
     await privatePage.locator('.app-shell.has-sidebar').waitFor()
     check(await privatePage.locator('meta[name="robots"]').getAttribute('content') === 'noindex,nofollow', `internal route ${route} is noindex`)
     check(await privatePage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${route} fits 390px`)
   }
   await privatePage.setViewportSize({ width: 1440, height: 900 })
   for (const route of ['/hub', '/library', '/seminars']) {
-    await privatePage.goto(base + route + '?demo=1', { waitUntil: 'networkidle' })
+    const directStatus = await gotoDirectRoute(privatePage, route, '?demo=1')
+    check(directStatus === 200, `direct desktop route ${route} returns HTTP 200`)
     await privatePage.locator('.app-shell.has-sidebar').waitFor()
     check(await privatePage.locator('meta[name="robots"]').getAttribute('content') === 'noindex,nofollow', `internal route ${route} is noindex on desktop`)
     check(await privatePage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `${route} fits 1440px`)
@@ -882,7 +919,8 @@ try {
   await loginPage.route('**/api/system/status', route => route.fulfill({ json: { initialized: true } }))
   for (const width of [390, 1440]) {
     await loginPage.setViewportSize({ width, height: 900 })
-    await loginPage.goto(base + '/login', { waitUntil: 'networkidle' })
+    const loginStatus = await gotoDirectRoute(loginPage, '/login')
+    check(loginStatus === 200, `direct login route returns HTTP 200 at ${width}px`)
     await loginPage.getByRole('heading', { name: '欢迎登录' }).waitFor()
     const loginForm = loginPage.locator('form').filter({ hasText: '登录邮箱' })
     check(await loginForm.locator('input[type="email"]').isVisible(), `login email field renders at ${width}px`)
@@ -891,7 +929,8 @@ try {
     check(await loginPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `login page fits ${width}px`)
     await loginPage.screenshot({ path: resolve(output, `login-${width}.png`), fullPage: true })
   }
-  await loginPage.goto(base + '/hub')
+  const anonymousHubStatus = await gotoDirectRoute(loginPage, '/hub')
+  check(anonymousHubStatus === 200, 'direct anonymous /hub request returns the SPA document')
   await loginPage.waitForURL('**/login?redirect=**')
   check(loginPage.url().includes('/login'), 'anonymous workbench access redirects to login')
   await loginPage.goto(base + '/learning/eft')
