@@ -60,7 +60,7 @@ function downloadBibtex() {
     <PublicHomeHero />
     <div class="research-strip"><span>高能粒子物理唯象学</span><span>暗物质</span><span>中微子</span><span>希格斯物理</span><span>超出标准模型</span></div>
 
-    <section id="research" class="public-section research-section">
+    <section id="research" tabindex="-1" class="public-section research-section">
       <div class="section-top"><div><span class="eyebrow">01 / RESEARCH</span><h2>让理论走向可检验的信号。</h2></div><p>从基本相互作用出发，<br>连接微观模型与实验观测。</p></div>
       <div class="research-layout">
         <div class="research-tabs" role="tablist" aria-label="研究方向" aria-orientation="vertical">
