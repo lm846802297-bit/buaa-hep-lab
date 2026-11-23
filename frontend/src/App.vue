@@ -22,6 +22,8 @@ const WorkspaceSession = defineAsyncComponent(() => import('./components/Workspa
 
 const route = useRoute()
 const isPublic = computed(() => !!route.meta.public)
+// These public views own their main landmark so they can also be prerendered alone.
+const publicPageOwnsMain = computed(() => isPublic.value && ['PublicPeople', 'PublicEvents', 'ResearchTopic'].includes(route.name))
 watch(isPublic, value => {
   document.documentElement.dataset.publicPage = String(value)
   // Keep the public site on its brand theme, then restore the user's selected
@@ -134,16 +136,16 @@ function onUpdatePinned(val) {
     <a href="#main-content" class="skip-link">跳到主要内容</a>
     <MobileHeader v-if="showNavbar" />
     <Navbar v-if="showNavbar" :pinned="isPinned" @update:pinned="onUpdatePinned" />
-    <main id="main-content" :class="!showNavbar ? 'public-workspace' : (isHome ? 'home-workspace' : (isAssistant ? 'assistant-workspace' : 'workspace'))">
+    <component :is="publicPageOwnsMain ? 'div' : 'main'" :id="publicPageOwnsMain ? undefined : 'main-content'" :class="!showNavbar ? 'public-workspace' : (isHome ? 'home-workspace' : (isAssistant ? 'assistant-workspace' : 'workspace'))">
       <router-view v-slot="{ Component }">
-        <component v-if="isPublic" :is="Component" :key="route.path" />
+        <component v-if="isPublic" :is="Component" :key="route.path" :id="publicPageOwnsMain ? 'main-content' : undefined" :tabindex="publicPageOwnsMain ? -1 : undefined" />
         <Transition v-else :css="false" mode="out-in" @enter="enterPage" @leave="leavePage">
           <KeepAlive include="AssistantView">
             <component :is="Component" :key="route.path" />
           </KeepAlive>
         </Transition>
       </router-view>
-    </main>
+    </component>
     <MobileNavBar v-if="showNavbar" />
     <FeedbackHost v-if="!isPublic" />
     <NoticeScanBanner v-if="!isPublic" />
