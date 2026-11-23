@@ -2819,7 +2819,8 @@ html[data-bg-style="clouds-static"] body {
   transition: opacity .22s ease;
 }
 .worldline-particle-canvas.is-visible { opacity: .50; }
-:root[data-color-scheme="worldline-console"] .app-shell > main {
+:root[data-color-scheme="worldline-console"] .app-shell > main,
+html[data-color-scheme="worldline-console"] .app-shell > .public-workspace {
   position: relative;
   z-index: 2;
 }
