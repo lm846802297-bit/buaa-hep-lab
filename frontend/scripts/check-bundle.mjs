@@ -22,6 +22,9 @@ for (const key of seen) {
 const html = await readFile('dist/index.html', 'utf8')
 assert(html.includes('conceptual') || html.includes('CONCEPTUAL'))
 assert(html.includes('高能粒子物理唯象学') && html.includes('https://arxiv.org/abs/'), 'Missing prerendered public content')
+assert.equal([...html.matchAll(/<main\b/g)].length, 1, 'Prerendered homepage needs one main landmark')
+assert(/<a\b[^>]*href="#research"[^>]*class="skip-link"[^>]*>[^<]+<\/a>\s*<main\b[\s\S]*<section\b[^>]*id="research"[^>]*tabindex="-1"/.test(html),
+  'Prerendered homepage needs a visible-on-focus skip link before main and a focusable research target')
 assert(!html.includes('rel="preload" as="image"'), 'Global background preload must not return')
 
 const publicRoutes = [

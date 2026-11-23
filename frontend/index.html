@@ -39,8 +39,9 @@
           // Public-site palette is independent from the signed-in workspace palette.
           var savedPublicScheme = localStorage.getItem('labhub_public_color_scheme');
           var validPublicSchemes = ['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'worldline-console'];
-          var publicScheme = validPublicSchemes.includes(savedPublicScheme) ? savedPublicScheme : 'quiet-research';
-          // Public pages default to Quiet Research but may restore a visitor's own choice.
+          // Keep the first paint aligned with the public SSR and runtime defaults.
+          var defaultPublicScheme = 'worldline-console';
+          var publicScheme = validPublicSchemes.includes(savedPublicScheme) ? savedPublicScheme : defaultPublicScheme;
           var scheme = isPublicRoute ? publicScheme : (savedScheme || (
             savedLegacy === 'galaxy' ? 'nebula-purple' :
             savedLegacy === 'vanta-fog' || savedLegacy === 'clouds-static' || savedLegacy === 'earth-orbit'
@@ -48,7 +49,7 @@
           ));
           if (!['quiet-research', 'classic-cyan', 'obsidian-gray', 'nebula-purple', 'worldline-console', 'custom'].includes(scheme) ||
               (isPublicRoute && !validPublicSchemes.includes(scheme))) {
-            scheme = 'quiet-research';
+            scheme = isPublicRoute ? defaultPublicScheme : 'quiet-research';
           }
 
           var legacyBg = ['galaxy', 'vanta-fog', 'clouds-static', 'earth-orbit', 'custom-local'].includes(savedLegacy)

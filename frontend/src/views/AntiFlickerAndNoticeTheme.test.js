@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
+import { runInNewContext } from 'node:vm'
 
 describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
   const indexCss = readFileSync(resolve(__dirname, '../index.css'), 'utf-8')
@@ -11,10 +12,56 @@ describe('Scroll Anti-Flicker Architecture & Theme Colors', () => {
   const assistantVue = readFileSync(resolve(__dirname, 'AssistantView.vue'), 'utf-8')
   const styleViewVue = readFileSync(resolve(__dirname, 'StyleView.vue'), 'utf-8')
 
-  it('uses Quiet Research on public routes and preserves the selected workspace theme', () => {
+  function renderFirstPaint(pathname, preferences = {}, base = '/') {
+    const script = [...indexHtml.matchAll(/<script>\s*([\s\S]*?)<\/script>/g)]
+      .map(match => match[1]).find(value => value.includes('savedPublicScheme'))
+    expect(script, 'missing first-paint theme script').toBeTruthy()
+    const attributes = {}
+    const documentElement = {
+      dataset: {},
+      style: {},
+      setAttribute(key, value) { attributes[key] = value },
+    }
+    // Execute the actual inline script, before Vue loads.
+    runInNewContext(script.replaceAll('%BASE_URL%', base), {
+      window: { location: { pathname } },
+      document: { documentElement },
+      localStorage: { getItem: key => preferences[key] ?? null },
+    })
+    return {
+      public: documentElement.dataset.publicPage,
+      color: attributes['data-color-scheme'],
+      background: attributes['data-bg-style'],
+      backgroundColor: documentElement.style.backgroundColor,
+    }
+  }
+
+  it.each(['/','/people','/events/','/research/dark'])('matches the public SSR theme at first paint on %s', pathname => {
+    expect(renderFirstPaint(pathname)).toEqual({ public: 'true', color: 'worldline-console', background: 'paper', backgroundColor: '#F4F1E9' })
+  })
+
+  it('defaults invalid public settings without inheriting workspace color or background', () => {
+    expect(renderFirstPaint('/lab/people/', {
+      labhub_public_color_scheme: 'invalid',
+      laborbit_color_scheme: 'obsidian-gray',
+      laborbit_bg_type: 'galaxy',
+    }, '/lab/')).toEqual({ public: 'true', color: 'worldline-console', background: 'paper', backgroundColor: '#F4F1E9' })
+  })
+
+  it('keeps the stored visitor preference separate from the workspace setting', () => {
+    const preferences = {
+      labhub_public_color_scheme: 'classic-cyan',
+      laborbit_color_scheme: 'nebula-purple',
+      laborbit_bg_type: 'galaxy',
+    }
+    expect(renderFirstPaint('/', preferences)).toEqual({ public: 'true', color: 'classic-cyan', background: 'paper', backgroundColor: '#081f28' })
+    expect(renderFirstPaint('/hub', preferences)).toEqual({ public: 'false', color: 'nebula-purple', background: 'galaxy', backgroundColor: '#03020a' })
+    expect(renderFirstPaint('/hub')).toEqual({ public: 'false', color: 'quiet-research', background: 'paper', backgroundColor: '#F7F5F0' })
+  })
+
+  it('retains first-paint theme namespaces, route classification, and fallbacks', () => {
     expect(indexHtml).toContain("localStorage.getItem('laborbit_color_scheme')")
     expect(indexHtml).toContain("localStorage.getItem('labhub_color_scheme')")
-    expect(indexHtml).toContain("var publicScheme = validPublicSchemes.includes(savedPublicScheme) ? savedPublicScheme : 'quiet-research';")
     expect(indexHtml).toContain("var scheme = isPublicRoute ? publicScheme : (savedScheme ||")
     expect(indexHtml).toContain("routePath === '/'")
     expect(indexHtml).toContain("routePath === '/people'")

@@ -90,6 +90,14 @@ describe('Public academic website', () => {
       expect(html).toContain(direction.title)
     }
   })
+  it('renders a bilingual research-to-publications link and a focusable destination before hydration', async () => {
+    const app = createSSRApp(PublicHomeView)
+    app.component('router-link', { props: ['to'], setup: (props, { slots }) => () => h('a', { href: props.to }, slots.default?.()) })
+    const html = await renderToString(app)
+    expect(html).toMatch(/<a href="#publications" class="button secondary related-papers"[^>]*>本方向代表论文 · <span lang="en"[^>]*>Selected papers<\/span><\/a>/)
+    expect(html).toMatch(/<section id="publications" tabindex="-1" aria-labelledby="publications-title"/)
+    expect(html).toMatch(/<h2 id="publications-title"[^>]*>以研究回应问题。<\/h2>/)
+  })
   it('keeps the public content profile limited to approved academic fields', () => {
     expect(Object.keys(lab).sort()).toEqual(['name', 'provisional', 'shortName', 'institution', 'field', 'english', 'advisor', 'source', 'intro'].sort())
     expect(lab.provisional).toBe(true)

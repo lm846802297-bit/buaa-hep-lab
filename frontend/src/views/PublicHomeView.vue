@@ -21,9 +21,11 @@ async function copyCitation(paper) {
   try { await navigator.clipboard.writeText(citationText(paper)); copyMessage.value = `已复制 arXiv:${paper.id} 的引用` }
   catch { copyMessage.value = '复制未完成，请使用 BibTeX 下载引用' }
 }
-function showRelatedPapers(id) {
+function showRelatedPapers(event, id) {
+  // Native fragment navigation handles history and focus, even without JavaScript.
+  // Leave modified clicks alone so opening a separate page does not filter this one.
+  if (event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
   filter.value = id; query.value = ''; selectedYear.value = 'all'
-  document.getElementById('publications')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
 }
 function moveResearchTab(event, index) {
   const target = { ArrowDown: (index + 1) % directions.length, ArrowUp: (index + directions.length - 1) % directions.length, Home: 0, End: directions.length - 1 }[event.key]
@@ -60,7 +62,7 @@ function downloadBibtex() {
     <PublicHomeHero />
     <div class="research-strip"><span>高能粒子物理唯象学</span><span>暗物质</span><span>中微子</span><span>希格斯物理</span><span>超出标准模型</span></div>
 
-    <section id="research" class="public-section research-section">
+    <section id="research" tabindex="-1" class="public-section research-section">
       <div class="section-top"><div><span class="eyebrow">01 / RESEARCH</span><h2>让理论走向可检验的信号。</h2></div><p>从基本相互作用出发，<br>连接微观模型与实验观测。</p></div>
       <div class="research-layout">
         <div class="research-tabs" role="tablist" aria-label="研究方向" aria-orientation="vertical">
@@ -76,7 +78,7 @@ function downloadBibtex() {
             <span class="topic-guide-arrow" aria-hidden="true">↗</span>
           </router-link>
           <div class="research-evidence"><h4>相关研究选读</h4><ul><li v-for="paper in relatedResearchPapers" :key="paper.id"><a :href="paper.source_url" target="_blank" rel="noopener noreferrer">{{ paper.title }} <span aria-hidden="true">↗</span></a><small>arXiv:{{ paper.id }}</small></li></ul></div>
-          <button class="button secondary related-papers" @click="showRelatedPapers(activeDirection.id)">查看相关论文 <span aria-hidden="true">↓</span></button>
+          <a href="#publications" class="button secondary related-papers" @click="showRelatedPapers($event, activeDirection.id)">本方向代表论文 · <span lang="en">Selected papers</span></a>
         </article>
       </div>
       <noscript><div class="research-static"><h3>全部研究方向</h3><article v-for="direction in directions" :key="direction.id"><h4>{{ direction.title }}</h4><p>{{ direction.text }}</p><dl><dt>研究问题</dt><dd>{{ direction.question }}</dd><dt>主要方法</dt><dd>{{ direction.methods }}</dd><dt>实验联系</dt><dd>{{ direction.probes }}</dd></dl><p>{{ direction.detail }}</p></article></div></noscript>
@@ -101,8 +103,8 @@ function downloadBibtex() {
       <p class="research-guides-note">导读用于建立概念地图与追溯原始来源；不替代论文原文、独立计算或实验分析复现。</p>
     </section>
 
-    <section id="publications" class="public-section publications-section">
-      <div class="section-top"><div><span class="eyebrow">03 / SELECTED PUBLICATIONS</span><h2>以研究回应问题。</h2></div><button class="button secondary" :disabled="!visiblePapers.length" @click="downloadBibtex">导出 BibTeX <span aria-hidden="true">↓</span></button></div>
+    <section id="publications" tabindex="-1" aria-labelledby="publications-title" class="public-section publications-section">
+      <div class="section-top"><div><span class="eyebrow">03 / SELECTED PUBLICATIONS</span><h2 id="publications-title">以研究回应问题。</h2></div><button class="button secondary" :disabled="!visiblePapers.length" @click="downloadBibtex">导出 BibTeX <span aria-hidden="true">↓</span></button></div>
       <p class="section-description">以下为公开代表成果选录，非完整或最新论文列表。16 篇选录已由课题组确认，书目信息交叉核对至 arXiv 与 INSPIRE-HEP；最近核对：2026-10-20。</p>
       <div class="publication-controls"><div class="segmented" aria-label="论文主题筛选"><button v-for="item in [{ id: 'all', label: '全部成果' }, ...publicationCategories]" :key="item.id" :aria-pressed="filter === item.id" :class="{ selected: filter === item.id }" @click="filter = item.id">{{ item.label }}</button></div><label class="paper-search"><span class="sr-only">搜索论文标题、作者、编号、DOI、期刊或主题</span><input v-model="query" type="search" placeholder="搜索标题、作者、编号或 DOI"/></label></div>
       <div class="publication-options"><label>年份 <select v-model="selectedYear" aria-label="论文年份"><option value="all">全部年份</option><option v-for="year in years" :key="year" :value="year">{{ year }}</option></select></label><label>排序 <select v-model="sortOrder" aria-label="论文排序"><option value="newest">年份由新到旧</option><option value="oldest">年份由旧到新</option></select></label><p role="status">显示 {{ visiblePapers.length }} / {{ publications.length }} 篇</p></div>
@@ -259,7 +261,7 @@ function downloadBibtex() {
   .blueprint-gear-small { width:150px; left:auto; right:4%; bottom:-35px; }
 }
 @media(max-width:650px) { .physics-resource-grid { grid-template-columns:1fr; } .physics-resource-card { padding:20px; } .research-explainer dd { font-size:14px; } }
-.related-papers { margin-top:24px; }
+.related-papers { margin-top:24px; max-width:100%; flex-wrap:wrap; gap:4px 8px; white-space:normal; text-align:center; }
 .topic-detail-link { margin:24px 0 0 8px; min-height:44px; display:inline-flex; align-items:center; gap:10px; }
 @media(max-width:650px) { .topic-detail-link { margin-left:0; } }
 .publication-controls { gap:20px; flex-wrap:wrap; }

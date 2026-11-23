@@ -59,7 +59,12 @@ async function renderPublicRoute(template, manifest, Component, props, meta, css
     props: ['to'],
     setup: (linkProps, { slots }) => () => h('a', { href: `${base.replace(/\/$/, '')}${linkProps.to}` }, slots.default?.()),
   })
-  const content = await renderToString(app)
+  const pageContent = await renderToString(app)
+  // The runtime App shell is not rendered here. Unlike the other static
+  // pages, the homepage view relies on the shell for its main landmark.
+  const content = meta.path === '/'
+    ? `<a href="#research" class="skip-link">跳到研究内容</a><main id="main-content" class="public-workspace">${pageContent}</main>`
+    : pageContent
   let html = withMetadata(template, {
     ...meta,
     css: routeCss(manifest, cssKey),
