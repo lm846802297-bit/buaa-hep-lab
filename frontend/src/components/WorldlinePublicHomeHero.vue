@@ -56,8 +56,10 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
       </div>
 
       <figure class="worldline-detector-figure" :aria-label="heroVisualMode === 'blueprint' ? activeHeroVisual.alt : undefined">
-        <img v-if="heroVisualMode === 'blueprint'" class="worldline-blueprint-art"
-          :src="activeHeroVisual.src" alt="" width="640" height="360" fetchpriority="high" decoding="async">
+        <div v-if="heroVisualMode === 'blueprint'" class="worldline-blueprint-window" aria-hidden="true">
+          <img class="worldline-blueprint-art" src="/images/particle-accelerator-blueprint-original.png"
+            alt="" width="1672" height="941" fetchpriority="high" decoding="async">
+        </div>
         <Transition v-else name="worldline-image" mode="out-in">
           <img :key="activeHeroVisual.id" class="worldline-detector-photo" :src="activeHeroVisual.src" :alt="activeHeroVisual.alt" loading="eager" fetchpriority="high" decoding="async">
         </Transition>
@@ -143,19 +145,34 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   background-color: var(--wl-paper);
 }
 .worldline-home.visual-blueprint .worldline-detector-figure::before { display: none; }
-/* Blend the artwork's own edge, not an arbitrary point in the full-width hero.
-   Keep the detector unfiltered on the right and the credit above the art. */
-.worldline-blueprint-art {
+/* The supplied 1672×941 design is a flattened mockup. The first 81 rows
+   show a sample navbar; clip them, then hide the sample copy and buttons with
+   intersecting transparent bands. The actual detector pixels remain unfiltered. */
+.worldline-blueprint-window {
   position: absolute;
   top: 0;
   right: 0;
   width: auto;
   height: 100%;
-  max-width: none;
+  aspect-ratio: 1672 / 860;
+  overflow: hidden;
   pointer-events: none;
-  --wl-art-fade: linear-gradient(to right, transparent, #000 min(25%, 340px));
+  --wl-art-fade: linear-gradient(to right, transparent, #000 min(24%, 340px));
   -webkit-mask-image: var(--wl-art-fade);
   mask-image: var(--wl-art-fade);
+}
+.worldline-blueprint-art {
+  position: absolute;
+  top: -9.419%; /* -81 / 860: exclude the mockup header */
+  right: 0;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  --wl-hide-copy:
+    linear-gradient(to right, #000 5%, transparent 7%, transparent 51%, #000 57%),
+    linear-gradient(to bottom, #000 25%, transparent 29%, transparent 71%, #000 77%);
+  -webkit-mask-image: var(--wl-hide-copy);
+  mask-image: var(--wl-hide-copy);
 }
 .worldline-home.visual-blueprint .worldline-image-credit { right: 22px; left: auto; max-width: min(80%, 520px); }
 .worldline-detector-photo { width: 100%; height: 100%; object-fit: cover; object-position: center; filter: saturate(.78) contrast(.96); transition: filter .25s ease, opacity .22s ease; }
@@ -189,7 +206,7 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 }
 @media (max-width: 820px) {
   .worldline-home.visual-blueprint .worldline-detector-figure { position: relative; inset: auto; width: calc(100% + 44px); height: auto; aspect-ratio: 16 / 9; margin: 20px -22px 0; }
-  .worldline-blueprint-art { --wl-art-fade: linear-gradient(to bottom, transparent, #000 min(20%, 76px)); }
+  .worldline-blueprint-window { --wl-art-fade: linear-gradient(to bottom, transparent, #000 min(20%, 76px)); }
   .worldline-home.visual-blueprint .worldline-image-credit { right: 8px; bottom: 8px; left: 8px; max-width: none; }
   .worldline-header { width: calc(100% - 32px); min-height: 66px; padding: 10px 0; }
   .worldline-brand-mark { width: 30px; height: 30px; }
