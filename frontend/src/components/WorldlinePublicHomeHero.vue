@@ -143,6 +143,11 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
 .worldline-home.visual-blueprint .worldline-detector-figure {
   top: 0; right: 0; bottom: 0; left: 0; width: 100%;
   background-color: var(--wl-paper);
+  /* Echo the artwork's fine grid through the faded areas and under live text. */
+  background-image:
+    linear-gradient(to right, rgb(41 65 93 / 2.5%) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(41 65 93 / 2.5%) 1px, transparent 1px);
+  background-size: 8px 8px;
 }
 .worldline-home.visual-blueprint .worldline-detector-figure::before { display: none; }
 /* The supplied 1672×941 design is a flattened mockup. The first 81 rows
@@ -169,8 +174,8 @@ const { heroVisualModes, heroVisualMode, activeHeroVisual } = usePublicHeroVisua
   height: auto;
   max-width: none;
   --wl-hide-copy:
-    linear-gradient(to right, #000 5%, transparent 7%, transparent 51%, #000 57%),
-    linear-gradient(to bottom, #000 25%, transparent 29%, transparent 71%, #000 77%);
+    linear-gradient(to right, #000 2%, transparent 7%, transparent 51%, rgb(0 0 0 / 10%) 54%, rgb(0 0 0 / 50%) 59%, rgb(0 0 0 / 88%) 64%, #000 67%),
+    linear-gradient(to bottom, #000 21%, rgb(0 0 0 / 40%) 25%, transparent 29%, transparent 71%, rgb(0 0 0 / 40%) 76%, #000 83%);
   -webkit-mask-image: var(--wl-hide-copy);
   mask-image: var(--wl-hide-copy);
 }
