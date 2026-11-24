@@ -104,6 +104,23 @@ try {
       const art = figure.locator('img.worldline-blueprint-art')
       check(await art.count() === 1 && await art.getAttribute('src') === '/images/particle-accelerator-blueprint-original.png', 'homepage blueprint mode uses one local reference artwork')
       check(await figure.locator('.worldline-blueprint-window').evaluate(el => getComputedStyle(el).maskImage.includes('to right')), 'the desktop artwork fades from its actual left edge')
+      const detectorProtection = await figure.evaluate(el => {
+        const crop = el.querySelector('.worldline-blueprint-window')
+        const art = el.querySelector('.worldline-blueprint-art')
+        const title = el.querySelector('.worldline-blueprint-content')
+        const caption = el.querySelector('.worldline-image-credit').getBoundingClientRect()
+        const dock = document.querySelector('.public-section-nav').getBoundingClientRect()
+        const artBox = art.getBoundingClientRect()
+        const detectorStart = artBox.left + .55 * artBox.width
+        return {
+          adjacentMasks: [getComputedStyle(title).maskImage, getComputedStyle(art).maskImage, getComputedStyle(crop).maskImage],
+          filter: getComputedStyle(art).filter,
+          captionRight: caption.right, dockRight: dock.right, detectorStart
+        }
+      })
+      check(detectorProtection.filter === 'none' && detectorProtection.adjacentMasks[0].includes('55%') && detectorProtection.adjacentMasks[1].includes('48%'), 'mockup masks reach full opacity before the detector detail')
+      check(Math.max(detectorProtection.captionRight, detectorProtection.dockRight) < detectorProtection.detectorStart, 'live caption and navigation do not cover the right-hand detector')
+
       check(await page.locator('.worldline-detector-photo').count() === 0, 'blueprint mode does not stack a second detector photograph over the complete reference image')
       const assetResponse = await page.evaluate(async () => {
         const response = await fetch('/images/particle-accelerator-blueprint-original.png')
@@ -288,6 +305,11 @@ try {
   }), 'mobile artwork fades into the preceding paper section')
   check(mobileBlueprint.figureTop >= mobileBlueprint.copyBottom - 2, 'mobile blueprint detector does not cover the headline or action buttons')
   check(mobileBlueprint.figureRight <= mobileBlueprint.viewportWidth + 1 && mobileBlueprint.imageWidth > 0, 'mobile blueprint detector stays within the viewport')
+  check(await page.locator('.worldline-detector-figure').evaluate(figure => {
+    const art = figure.querySelector('.worldline-blueprint-window').getBoundingClientRect()
+    const credit = figure.querySelector('.worldline-image-credit').getBoundingClientRect()
+    return credit.top >= art.bottom - 1
+  }), 'mobile credit sits below the art rather than covering its annotations')
   await page.setViewportSize({ width: 1440, height: 900 })
   await publicSkinTrigger.click()
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })

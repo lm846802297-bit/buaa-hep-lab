@@ -1,6 +1,8 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
+defineProps({ keepArtClear: Boolean })
+
 const sections = [
   { id: 'top', number: '00', label: '首页' },
   { id: 'research', number: '01', label: '研究方向' },
@@ -72,7 +74,7 @@ onBeforeUnmount(() => {
 
 <template>
   <Teleport to="body">
-    <aside class="public-section-nav" aria-label="页面快捷目录">
+    <aside class="public-section-nav" :class="{ 'public-section-nav--art-clear': keepArtClear }" aria-label="页面快捷目录">
     <span class="public-section-nav__title" aria-hidden="true">目录</span>
     <button
       class="public-section-nav__toggle"
@@ -194,6 +196,22 @@ onBeforeUnmount(() => {
   display: none;
 }
 
+/* Keep the Worldline detector pixels clear of the blurred navigation glass. */
+@media (min-width: 821px) {
+  .public-section-nav--art-clear { right: auto; left: 12px; }
+}
+@media (min-width: 1101px) {
+  .public-section-nav--art-clear .public-section-nav__label {
+    left: calc(100% + 9px);
+    right: auto;
+    transform: translate(-4px, -50%);
+  }
+  .public-section-nav--art-clear .public-section-nav__links a:hover .public-section-nav__label,
+  .public-section-nav--art-clear .public-section-nav__links a:focus-visible .public-section-nav__label {
+    transform: translate(0, -50%);
+  }
+}
+
 @media (max-width: 1100px) {
   .public-section-nav {
     top: auto;
@@ -286,6 +304,11 @@ onBeforeUnmount(() => {
     opacity: 1;
     transform: none;
   }
+}
+
+@media (min-width: 821px) and (max-width: 1100px) {
+  .public-section-nav.public-section-nav--art-clear { right: auto; left: 16px; align-items: flex-start; }
+  .public-section-nav--art-clear .public-section-nav__links { right: auto; left: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
