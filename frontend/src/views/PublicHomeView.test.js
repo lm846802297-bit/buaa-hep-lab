@@ -28,6 +28,8 @@ describe('Public academic website', () => {
     expect(html).toContain('id="worldline-hero-title"')
     expect(html).toContain('Particle Physics')
     expect(html).not.toContain('class="worldline-detector-photo"')
+    expect(html.match(/<img\b[^>]*class="worldline-blueprint-art"[^>]*>/g)).toHaveLength(1)
+    expect(html).toMatch(/class="worldline-blueprint-art"[^>]*src="\/images\/particle-accelerator-blueprint\.avif"[^>]*alt=""/)
     expect(html).toContain('class="worldline-home visual-blueprint"')
     expect(html).not.toContain('class="public-header"')
     expect(html).toContain('Scientific Atelier · 粒子加速器蓝图概念插画')
