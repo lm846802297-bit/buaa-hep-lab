@@ -20,7 +20,7 @@
 
 ## 1. 公开官网视觉与协作空间主题系统
 
-公开官网的默认视觉为 **Worldline Console（`worldline-console`）**：以用户批准的 Scientific Atelier 蓝图构图为基准。蓝图模式使用仓库内的优化静态图 `frontend/public/images/particle-accelerator-blueprint.avif` 呈现完整主视觉构图；切换到 ATLAS 实景或四缪子事件显示图时，只显示对应的单独图片，不得将其叠加在完整蓝图图像之上。外部科学图像必须保留原始来源与许可证链接；本地参考插画不得误标为第三方 Creative Commons 许可。导航、标题和页面内容由真实网页元素渲染。它不得覆盖协作空间的主题偏好。
+公开官网的默认视觉为 **Worldline Console（`worldline-console`）**：以用户批准的 Scientific Atelier 蓝图构图为基准。世界线首页使用课题组提供的 1672×941 原始 PNG（`frontend/public/images/particle-accelerator-blueprint-original.png`）。原稿中绘制的示例导航、文案和按钮须裁切或遮蔽，不能叠加在真实网页控件上；插画实际边缘淡入纸面，右侧探测器不加滤镜。外部科学图像必须保留原始来源与许可证链接；本地参考插画不得误标为第三方 Creative Commons 许可。导航、标题和页面内容由真实网页元素渲染。它不得覆盖协作空间的主题偏好。
 
 协作空间将 Quiet Research 作为一个可选主题，与 `classic-cyan`、`obsidian-gray`、`nebula-purple` 及用户自定义配色并列。新用户可默认使用 Quiet Research，但不能覆盖已有用户的主题、背景、玻璃风格或本地素材偏好。公开路由仅临时把 DOM 主题设为 Worldline Console 与蓝图所需的暖纸白背景，不写入工作台设置；离开公开路由时必须恢复用户所选的协作空间主题。
 

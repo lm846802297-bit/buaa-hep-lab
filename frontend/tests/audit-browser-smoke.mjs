@@ -43,7 +43,7 @@ const server = createServer(async (req, res) => {
     }
     if (file !== root && !file.startsWith(root + sep)) { res.writeHead(403).end(); return }
     const data = await readFile(file)
-    const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.avif': 'image/avif', '.json': 'application/json' }
+    const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.avif': 'image/avif', '.png': 'image/png', '.json': 'application/json' }
     res.writeHead(statusCode, { 'Content-Type': types[extname(file)] || 'application/octet-stream' }).end(data)
   } catch { res.writeHead(500).end() }
 })
@@ -101,17 +101,35 @@ try {
     }
     if (width === 1440) {
       const figure = page.locator('.worldline-detector-figure')
-      const background = await figure.evaluate(el => getComputedStyle(el).backgroundImage)
-      check(background.includes('/images/particle-accelerator-blueprint.avif'), 'homepage blueprint mode uses the optimized local reference artwork')
+      const art = figure.locator('img.worldline-blueprint-art')
+      check(await art.count() === 1 && await art.getAttribute('src') === '/images/particle-accelerator-blueprint-original.png', 'homepage blueprint mode uses one local reference artwork')
+      check(await figure.locator('.worldline-blueprint-window').evaluate(el => getComputedStyle(el).maskImage.includes('to right')), 'the desktop artwork fades from its actual left edge')
+      const detectorProtection = await figure.evaluate(el => {
+        const crop = el.querySelector('.worldline-blueprint-window')
+        const art = el.querySelector('.worldline-blueprint-art')
+        const title = el.querySelector('.worldline-blueprint-content')
+        const caption = el.querySelector('.worldline-image-credit').getBoundingClientRect()
+        const dock = document.querySelector('.public-section-nav').getBoundingClientRect()
+        const artBox = art.getBoundingClientRect()
+        const detectorStart = artBox.left + .55 * artBox.width
+        return {
+          adjacentMasks: [getComputedStyle(title).maskImage, getComputedStyle(art).maskImage, getComputedStyle(crop).maskImage],
+          filter: getComputedStyle(art).filter,
+          captionRight: caption.right, dockRight: dock.right, detectorStart
+        }
+      })
+      check(detectorProtection.filter === 'none' && detectorProtection.adjacentMasks[0].includes('55%') && detectorProtection.adjacentMasks[1].includes('48%'), 'mockup masks reach full opacity before the detector detail')
+      check(Math.max(detectorProtection.captionRight, detectorProtection.dockRight) < detectorProtection.detectorStart, 'live caption and navigation do not cover the right-hand detector')
+
       check(await page.locator('.worldline-detector-photo').count() === 0, 'blueprint mode does not stack a second detector photograph over the complete reference image')
       const assetResponse = await page.evaluate(async () => {
-        const response = await fetch('/images/particle-accelerator-blueprint.avif')
+        const response = await fetch('/images/particle-accelerator-blueprint-original.png')
         const image = new Image()
-        image.src = '/images/particle-accelerator-blueprint.avif'
+        image.src = '/images/particle-accelerator-blueprint-original.png'
         await image.decode()
         return { ok: response.ok, type: response.headers.get('content-type') || '', width: image.naturalWidth, height: image.naturalHeight }
       })
-      check(assetResponse.ok && assetResponse.type.includes('image/avif') && assetResponse.width >= 600 && assetResponse.height > 0, 'local blueprint artwork decodes at its expected image dimensions with the correct AVIF content type')
+      check(assetResponse.ok && assetResponse.type.includes('image/png') && assetResponse.width === 1672 && assetResponse.height === 941, 'the original 1672 × 941 PNG decodes without downsampling')
       check((await figure.getAttribute('aria-label'))?.includes('暖白工程蓝图'), 'blueprint composition has an accessible text alternative')
       check(await page.locator('.public-header .nav-hub, .worldline-header .worldline-hub-link').count() === 1, 'homepage header has exactly one collaboration entry')
       check(await page.locator('.public-header .header-hub-cta, .worldline-header .header-hub-cta').count() === 0, 'homepage header does not duplicate the collaboration entry')
@@ -200,13 +218,13 @@ try {
 
   // The hero ships a single published composition. The photo modes were removed because
   // their Wikimedia sources never resolved for visitors, so instead of switching modes we
-  // assert the defects stay gone: no switcher, no stray <img>, and the blueprint artwork
+  // assert the defects stay gone: no switcher, no stray external photograph, and the blueprint artwork
   // still renders with its own attribution.
   const heroModeGroup = page.getByRole('group', { name: '首页右侧主视觉模式' })
   check(await heroModeGroup.count() === 0, 'homepage hero no longer offers a visual mode switcher')
   check(await page.locator('.worldline-detector-photo').count() === 0, 'hero renders no external photograph')
   check(await page.locator('img.detector-photo').count() === 0, 'alternate hero skins render no external photograph')
-  check(await page.waitForFunction(() => getComputedStyle(document.querySelector('.worldline-detector-figure')).backgroundImage.includes('/images/particle-accelerator-blueprint.avif')).then(() => true).catch(() => false), 'blueprint artwork is the hero background')
+  check(await page.waitForFunction(() => document.querySelector('img.worldline-blueprint-art')?.naturalWidth > 0).then(() => true).catch(() => false), 'blueprint artwork is decoded in the hero')
   check(await page.getByText('Scientific Atelier · 粒子加速器蓝图概念插画', { exact: true }).count() === 1, 'blueprint identifies the local reference artwork')
   check(await page.locator('.worldline-image-credit a').count() === 0, 'blueprint does not invent an external attribution or license link')
   check(await page.evaluate(() => localStorage.getItem('labhub_public_hero_visual_mode')) === 'blueprint', 'hero records the single published visual mode')
@@ -226,14 +244,28 @@ try {
     const figureStyle = getComputedStyle(figure)
     const copyBox = copy.getBoundingClientRect()
     const figureBox = figure.getBoundingClientRect()
+    const art = figure.querySelector('img.worldline-blueprint-art')
+    const artBox = art.getBoundingClientRect()
+    const crop = figure.querySelector('.worldline-blueprint-window')
+    const cropBox = crop.getBoundingClientRect()
     return {
       blueprint: root.querySelector('.worldline-home')?.classList.contains('visual-blueprint') || root.classList.contains('hero-visual-blueprint'),
       worldline: root.classList.contains('worldline-theme'),
       grid: heroStyle.backgroundImage.includes('linear-gradient'),
       figurePosition: figureStyle.position,
-      figureBackground: figureStyle.backgroundImage,
-      figureBackgroundSize: figureStyle.backgroundSize,
-      figureBackgroundPosition: figureStyle.backgroundPosition,
+      artSource: art.currentSrc,
+      artCount: figure.querySelectorAll('img').length,
+      artTop: artBox.top,
+      artHeight: artBox.height,
+      cropTop: cropBox.top,
+      cropHeight: cropBox.height,
+      cropOverflow: getComputedStyle(crop).overflow,
+      copyMasks: getComputedStyle(art).maskImage.match(/linear-gradient/g)?.length,
+      figureHeight: figureBox.height,
+      artRight: artBox.right,
+      figureRight: figureBox.right,
+      artRatio: artBox.width / artBox.height,
+      nativeRatio: art.naturalWidth / art.naturalHeight,
       figureHasPhoto: Boolean(root.querySelector('.worldline-detector-photo')),
       copyWidth: copyBox.width,
       figureLeft: figureBox.left,
@@ -245,8 +277,9 @@ try {
   check(desktopBlueprint.blueprint && desktopBlueprint.worldline, 'Worldline blueprint mode is active by default')
   check(desktopBlueprint.grid, 'Worldline shell retains its technical-paper grid fallback')
   check(desktopBlueprint.figurePosition === 'absolute' && Math.abs(desktopBlueprint.figureLeft - desktopBlueprint.heroLeft) < 3 && Math.abs(desktopBlueprint.figureWidth - desktopBlueprint.heroWidth) < 3, 'desktop blueprint art spans the full hero composition')
-  check(desktopBlueprint.figureBackground.includes('/images/particle-accelerator-blueprint.avif') && !desktopBlueprint.figureHasPhoto, 'desktop blueprint mode uses one complete local image without duplicate photo layers')
-  check(desktopBlueprint.figureBackgroundSize === 'auto 100%' && (desktopBlueprint.figureBackgroundPosition.startsWith('100%') || desktopBlueprint.figureBackgroundPosition.includes('right')), 'desktop blueprint mode preserves the full reference image aspect ratio without cropping')
+  check(desktopBlueprint.artCount === 1 && desktopBlueprint.artSource.endsWith('/images/particle-accelerator-blueprint-original.png') && !desktopBlueprint.figureHasPhoto, 'desktop blueprint mode uses one complete local image without duplicate photo layers')
+  check(Math.abs(desktopBlueprint.artRatio - desktopBlueprint.nativeRatio) < .01 && Math.abs(desktopBlueprint.artRight - desktopBlueprint.figureRight) < 1 && Math.abs(desktopBlueprint.cropHeight - desktopBlueprint.figureHeight) < 1, 'desktop artwork preserves its native aspect ratio and is pinned to the right')
+  check(Math.abs((desktopBlueprint.cropTop - desktopBlueprint.artTop) / desktopBlueprint.artHeight - 81 / 941) < .003 && desktopBlueprint.cropOverflow === 'hidden' && desktopBlueprint.copyMasks === 2, 'the mockup navigation and controls are excluded from the live desktop hero')
   check(await page.getByText('Scientific Atelier · 粒子加速器蓝图概念插画', { exact: true }).isVisible(), 'blueprint source note remains visible without a false external license link')
 
   await page.setViewportSize({ width: 390, height: 844 })
@@ -265,8 +298,18 @@ try {
     }
   })
   check(mobileBlueprint.figurePosition === 'relative', 'mobile blueprint detector returns to document flow')
+  check(await page.locator('.worldline-blueprint-window').evaluate(el => {
+    const style = getComputedStyle(el)
+    // Chromium can omit the default "to bottom" direction when serializing mask-image.
+    return style.getPropertyValue('--wl-art-fade').includes('to bottom') && style.maskImage.startsWith('linear-gradient(') && !style.maskImage.includes('to right')
+  }), 'mobile artwork fades into the preceding paper section')
   check(mobileBlueprint.figureTop >= mobileBlueprint.copyBottom - 2, 'mobile blueprint detector does not cover the headline or action buttons')
   check(mobileBlueprint.figureRight <= mobileBlueprint.viewportWidth + 1 && mobileBlueprint.imageWidth > 0, 'mobile blueprint detector stays within the viewport')
+  check(await page.locator('.worldline-detector-figure').evaluate(figure => {
+    const art = figure.querySelector('.worldline-blueprint-window').getBoundingClientRect()
+    const credit = figure.querySelector('.worldline-image-credit').getBoundingClientRect()
+    return credit.top >= art.bottom - 1
+  }), 'mobile credit sits below the art rather than covering its annotations')
   await page.setViewportSize({ width: 1440, height: 900 })
   await publicSkinTrigger.click()
   await expect(page.locator('.worldline-shift-overlay')).toHaveCount(0, { timeout: 2500 })
